@@ -39,3 +39,8 @@ method:
   cl_module: dcl
   lambda_jsd: 12.0
 
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

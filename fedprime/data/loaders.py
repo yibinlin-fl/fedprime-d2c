@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import random
 
 import numpy as np
 import torch
@@ -10,6 +11,7 @@ import torch.utils.data as data
 import torchvision.transforms as T
 from torch.autograd import Variable
 from torchvision import datasets
+from PIL import ImageFilter
 
 from fedprime.utils.env import add_vendor_paths
 
@@ -24,6 +26,24 @@ CIFAR100_STD = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
 class DatasetStats:
     mean: list[float]
     std: list[float]
+
+
+class GaussianBlur:
+    def __init__(self, sigma=(0.1, 2.0)):
+        self.sigma = sigma
+
+    def __call__(self, x):
+        sigma = random.uniform(self.sigma[0], self.sigma[1])
+        return x.filter(ImageFilter.GaussianBlur(radius=sigma))
+
+
+class TwoViewTransform:
+    def __init__(self, transform, weak_transform):
+        self.transform = transform
+        self.weak_transform = weak_transform
+
+    def __call__(self, x):
+        return self.transform(x), self.weak_transform(x)
 
 
 def dataset_stats(name: str) -> DatasetStats:
@@ -69,6 +89,38 @@ def _private_train_transform(raw_for_prime: bool):
         T.ToTensor(),
         T.Normalize(CIFAR10_MEAN, CIFAR10_STD),
     ])
+
+
+def _prime_dcl_train_transform():
+    base = T.Compose([
+        T.ToTensor(),
+        T.Lambda(lambda x: F.pad(
+            Variable(x.unsqueeze(0), requires_grad=False),
+            (4, 4, 4, 4),
+            mode="reflect",
+        ).data.squeeze()),
+        T.ToPILImage(),
+        T.ColorJitter(),
+        T.RandomCrop(32),
+        T.RandomHorizontalFlip(),
+        T.ToTensor(),
+    ])
+    weak = T.Compose([
+        T.ToTensor(),
+        T.Lambda(lambda x: F.pad(
+            Variable(x.unsqueeze(0), requires_grad=False),
+            (4, 4, 4, 4),
+            mode="reflect",
+        ).data.squeeze()),
+        T.ToPILImage(),
+        T.RandomResizedCrop(size=32, scale=(0.2, 1.0)),
+        T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+        T.RandomGrayscale(p=0.2),
+        T.RandomApply([GaussianBlur()], p=0.5),
+        T.RandomHorizontalFlip(),
+        T.ToTensor(),
+    ])
+    return TwoViewTransform(base, weak)
 
 
 def _private_test_transform():
@@ -132,6 +184,53 @@ def build_private_loaders(
             dataidxs=dataidx_map[client_id],
             train=True,
             transform=_private_train_transform(raw_for_prime),
+            corrupt_rate=corrupt_rate,
+        )
+        train_loaders.append(data.DataLoader(
+            train_ds,
+            batch_size=train_batch_size,
+            shuffle=True,
+            drop_last=True,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+        ))
+
+    test_ds = CIFAR_C(
+        str(cifar10c_root),
+        train=False,
+        transform=_private_test_transform(),
+        corrupt_rate=test_corrupt_rate,
+    )
+    test_loader = data.DataLoader(
+        test_ds,
+        batch_size=test_batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+    )
+    return train_loaders, test_loader
+
+
+def build_prime_dcl_private_loaders(
+    cifar10c_root: str | Path,
+    dataidx_map: dict[int, list[int]],
+    train_batch_size: int,
+    test_batch_size: int,
+    corrupt_rate: float | int,
+    test_corrupt_rate: float | int,
+    num_workers: int,
+):
+    add_vendor_paths()
+    from Dataset.init_dataset import CIFAR_C
+
+    train_loaders = []
+    for client_id in sorted(dataidx_map):
+        train_ds = CIFAR_C(
+            str(cifar10c_root),
+            dataidxs=dataidx_map[client_id],
+            train=True,
+            transform=_prime_dcl_train_transform(),
             corrupt_rate=corrupt_rate,
         )
         train_loaders.append(data.DataLoader(

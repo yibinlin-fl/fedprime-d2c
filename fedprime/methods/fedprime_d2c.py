@@ -78,6 +78,7 @@ class FedPrimeD2CExperiment:
 
         models = build_models(model_cfg["names"], num_classes)
         models = {idx: model.to(self.device) for idx, model in models.items()}
+        self._load_models_if_configured(models)
         optimizers = {
             idx: self._build_optimizer(model)
             for idx, model in models.items()
@@ -245,6 +246,25 @@ class FedPrimeD2CExperiment:
         ckpt_dir.mkdir(parents=True, exist_ok=True)
         for client_id, model in models.items():
             torch.save(model.state_dict(), ckpt_dir / f"client_{client_id}.pt")
+
+    def _load_models_if_configured(self, models) -> None:
+        ckpt_cfg = self.config.get("checkpoints", {})
+        load_dir = ckpt_cfg.get("resume_dir") if ckpt_cfg.get("resume", False) else ckpt_cfg.get("load_dir")
+        if not load_dir:
+            return
+        load_dir = Path(load_dir)
+        for client_id, model in models.items():
+            path = load_dir / f"client_{client_id}.pt"
+            if not path.exists():
+                continue
+            state = torch.load(path, map_location=self.device)
+            if isinstance(state, dict) and "state_dict" in state:
+                state = state["state_dict"]
+            cleaned = {
+                (key[7:] if key.startswith("module.") else key): value
+                for key, value in state.items()
+            }
+            model.load_state_dict(cleaned, strict=bool(ckpt_cfg.get("strict", True)))
 
     def _build_oracle_prior(self, labels, dataidx_map, num_classes: int) -> torch.Tensor:
         priors = []

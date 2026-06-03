@@ -58,3 +58,9 @@ method:
     use_prior_debias: true
     use_class_balanced: true
     use_sample_confidence: true
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

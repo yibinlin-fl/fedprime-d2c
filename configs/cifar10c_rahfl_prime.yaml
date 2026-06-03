@@ -35,6 +35,8 @@ train:
 
 method:
   use_prime: true
+  use_dcl: true
+  cl_module: dcl
   lambda_jsd: 12.0
   prime:
     mixture_width: 3
@@ -43,3 +45,8 @@ method:
     no_jsd: false
     enabled_primitives: [diffeo, color, filter]
 
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

@@ -69,6 +69,50 @@ python scripts/run_grid.py \
   configs/fedprime_d2c_cifar10c_alpha01.yaml
 ```
 
+Run multiple seeds:
+
+```bash
+python scripts/run_multiseed.py \
+  --config configs/fedprime_d2c_cifar10c.yaml \
+  --seeds 0 1 2
+```
+
+Summarize finished runs:
+
+```bash
+python scripts/summarize_results.py --outputs outputs
+```
+
+Evaluate corruption groups after a run:
+
+```bash
+python scripts/evaluate_corruptions.py \
+  --config configs/fedprime_d2c_cifar10c.yaml \
+  --checkpoint_dir outputs/fedprime_d2c_cifar10c_alpha05_cr1/checkpoints \
+  --corruption_root /path/to/CIFAR-10-C \
+  --out_csv outputs/fedprime_d2c_cifar10c_alpha05_cr1/corruption_eval.csv
+```
+
+Load pre-trained client checkpoints:
+
+```yaml
+checkpoints:
+  load_dir: /path/to/client_checkpoints
+  resume: false
+  resume_dir:
+  strict: true
+```
+
+Resume from a previous run checkpoint directory:
+
+```yaml
+checkpoints:
+  load_dir:
+  resume: true
+  resume_dir: outputs/fedprime_d2c_cifar10c_alpha05_cr1/checkpoints
+  strict: true
+```
+
 ## Run Core Comparison
 
 ```bash

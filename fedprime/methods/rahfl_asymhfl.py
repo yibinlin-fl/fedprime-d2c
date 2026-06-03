@@ -10,6 +10,7 @@ import torch.optim as optim
 from fedprime.augmentations.prime_adapter import build_prime_module
 from fedprime.data.loaders import (
     build_augmix_private_loaders,
+    build_prime_dcl_private_loaders,
     build_private_loaders,
     build_public_loader,
     dataset_stats,
@@ -18,6 +19,7 @@ from fedprime.data.loaders import (
     partition_private_data,
 )
 from fedprime.methods.local_prime import train_local_prime_epoch
+from fedprime.methods.local_prime import train_local_prime_dcl_epoch
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.utils.config import save_config
@@ -56,17 +58,29 @@ class AsymHFLExperiment:
         )
 
         use_prime = bool(method_cfg.get("use_prime", False))
+        use_prime_dcl = use_prime and bool(method_cfg.get("use_dcl", True))
         if use_prime:
-            private_loaders, test_loader = build_private_loaders(
-                cifar10c_root=data_cfg["private_root"],
-                dataidx_map=dataidx_map,
-                train_batch_size=train_cfg["batch_size"],
-                test_batch_size=train_cfg.get("test_batch_size", 512),
-                corrupt_rate=data_cfg["private_corrupt_rate"],
-                test_corrupt_rate=data_cfg["test_corrupt_rate"],
-                num_workers=int(self.config.get("num_workers", 2)),
-                raw_for_prime=True,
-            )
+            if use_prime_dcl:
+                private_loaders, test_loader = build_prime_dcl_private_loaders(
+                    cifar10c_root=data_cfg["private_root"],
+                    dataidx_map=dataidx_map,
+                    train_batch_size=train_cfg["batch_size"],
+                    test_batch_size=train_cfg.get("test_batch_size", 512),
+                    corrupt_rate=data_cfg["private_corrupt_rate"],
+                    test_corrupt_rate=data_cfg["test_corrupt_rate"],
+                    num_workers=int(self.config.get("num_workers", 2)),
+                )
+            else:
+                private_loaders, test_loader = build_private_loaders(
+                    cifar10c_root=data_cfg["private_root"],
+                    dataidx_map=dataidx_map,
+                    train_batch_size=train_cfg["batch_size"],
+                    test_batch_size=train_cfg.get("test_batch_size", 512),
+                    corrupt_rate=data_cfg["private_corrupt_rate"],
+                    test_corrupt_rate=data_cfg["test_corrupt_rate"],
+                    num_workers=int(self.config.get("num_workers", 2)),
+                    raw_for_prime=True,
+                )
             prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device)
         else:
             private_loaders, test_loader, _, _ = build_augmix_private_loaders(
@@ -93,6 +107,7 @@ class AsymHFLExperiment:
 
         models = build_models(model_cfg["names"], num_classes)
         models = {idx: model.to(self.device) for idx, model in models.items()}
+        self._load_models_if_configured(models)
         optimizers = {idx: self._build_optimizer(model) for idx, model in models.items()}
 
         metrics_path = self.output_dir / "metrics.csv"
@@ -119,8 +134,10 @@ class AsymHFLExperiment:
                     private_loaders=private_loaders,
                     prime_aug=prime_aug,
                     use_prime=use_prime,
+                    use_prime_dcl=use_prime_dcl,
                     train_cfg=train_cfg,
                     method_cfg=method_cfg,
+                    stats=stats,
                 )
                 accs = self._evaluate(models, test_loader)
                 row = {
@@ -196,20 +213,33 @@ class AsymHFLExperiment:
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
 
-    def _local_phase(self, models, optimizers, private_loaders, prime_aug, use_prime, train_cfg, method_cfg) -> float:
+    def _local_phase(self, models, optimizers, private_loaders, prime_aug, use_prime, use_prime_dcl, train_cfg, method_cfg, stats) -> float:
         losses = []
         for client_id, loader in enumerate(private_loaders):
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 if use_prime:
-                    loss = train_local_prime_epoch(
-                        model=models[client_id],
-                        loader=loader,
-                        optimizer=optimizers[client_id],
-                        prime_aug=prime_aug,
-                        device=self.device,
-                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
-                        max_batches=train_cfg.get("max_local_batches"),
-                    )
+                    if use_prime_dcl:
+                        loss = train_local_prime_dcl_epoch(
+                            model=models[client_id],
+                            loader=loader,
+                            optimizer=optimizers[client_id],
+                            prime_aug=prime_aug,
+                            normalizer=lambda x: normalize_batch(x, stats),
+                            device=self.device,
+                            lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
+                            cl_module=method_cfg.get("cl_module", "dcl"),
+                            max_batches=train_cfg.get("max_local_batches"),
+                        )
+                    else:
+                        loss = train_local_prime_epoch(
+                            model=models[client_id],
+                            loader=loader,
+                            optimizer=optimizers[client_id],
+                            prime_aug=prime_aug,
+                            device=self.device,
+                            lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
+                            max_batches=train_cfg.get("max_local_batches"),
+                        )
                 else:
                     loss = train_local_augmix_dcl_epoch(
                         model=models[client_id],
@@ -247,3 +277,21 @@ class AsymHFLExperiment:
         for client_id, model in models.items():
             torch.save(model.state_dict(), ckpt_dir / f"client_{client_id}.pt")
 
+    def _load_models_if_configured(self, models) -> None:
+        ckpt_cfg = self.config.get("checkpoints", {})
+        load_dir = ckpt_cfg.get("resume_dir") if ckpt_cfg.get("resume", False) else ckpt_cfg.get("load_dir")
+        if not load_dir:
+            return
+        load_dir = Path(load_dir)
+        for client_id, model in models.items():
+            path = load_dir / f"client_{client_id}.pt"
+            if not path.exists():
+                continue
+            state = torch.load(path, map_location=self.device)
+            if isinstance(state, dict) and "state_dict" in state:
+                state = state["state_dict"]
+            cleaned = {
+                (key[7:] if key.startswith("module.") else key): value
+                for key, value in state.items()
+            }
+            model.load_state_dict(cleaned, strict=bool(ckpt_cfg.get("strict", True)))

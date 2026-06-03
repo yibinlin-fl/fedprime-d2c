@@ -34,6 +34,32 @@ RAHFL-master/Dataset/cifar_100/
 
 If running on Kaggle or a school server, change paths in `configs/*.yaml`.
 
+## Prepare Data
+
+Prepare CIFAR-100 public data and RAHFL-style random-corrupted CIFAR-10 files:
+
+```bash
+python scripts/prepare_data.py \
+  --config configs/fedprime_d2c_cifar10c.yaml \
+  --download \
+  --rates 0 0.5 1
+```
+
+This creates:
+
+```text
+RAHFL-master/Dataset/cifar_10_c/train/random_corrupt_1.npy
+RAHFL-master/Dataset/cifar_10_c/test/random_corrupt_1.npy
+RAHFL-master/Dataset/cifar_10_c/*/labels.npy
+RAHFL-master/Dataset/cifar_100/cifar-100-python/
+```
+
+Audit the Dirichlet client split:
+
+```bash
+python scripts/audit_partition.py --config configs/fedprime_d2c_cifar10c.yaml
+```
+
 ## Run FedPRIME-D2C MVP
 
 Check dependencies and paths first:

@@ -6,4 +6,4 @@ PyYAML>=6.0
 torch>=1.9
 torchvision>=0.10
 tqdm>=4.56
-
+matplotlib>=3.4

@@ -1,0 +1,140 @@
+# FedPRIME-D2C
+
+Distribution-Decoupled Communication for PRIME-based Robust Heterogeneous Federated Learning.
+
+This repository currently contains:
+
+- `PRIME-augmentations-main/`: original PRIME implementation.
+- `RAHFL-master/`: original RAHFL implementation.
+- `fedprime/`: configuration-driven FedPRIME-D2C MVP code.
+- `configs/`: experiment configs for Kaggle/server execution.
+- `docs/experiment_plan.md`: full experiment plan.
+
+## Install
+
+```bash
+pip install -r requirements.txt
+```
+
+Install a PyTorch build matching your CUDA version if needed.
+
+## Data Layout
+
+The default configs expect:
+
+```text
+RAHFL-master/Dataset/cifar_10_c/
+  train/random_corrupt_1.npy
+  train/labels.npy
+  test/random_corrupt_1.npy
+  test/labels.npy
+
+RAHFL-master/Dataset/cifar_100/
+```
+
+If running on Kaggle or a school server, change paths in `configs/*.yaml`.
+
+## Run FedPRIME-D2C MVP
+
+Check dependencies and paths first:
+
+```bash
+python scripts/check_environment.py --config configs/fedprime_d2c_cifar10c.yaml
+```
+
+```bash
+python scripts/run_experiment.py --config configs/fedprime_d2c_cifar10c.yaml
+```
+
+Severe Non-IID:
+
+```bash
+python scripts/run_experiment.py --config configs/fedprime_d2c_cifar10c_alpha01.yaml
+```
+
+Outputs are written to:
+
+```text
+outputs/<experiment_name>/
+  config.resolved.json
+  metrics.csv
+  checkpoints/
+```
+
+Run multiple configs:
+
+```bash
+python scripts/run_grid.py \
+  configs/fedprime_d2c_cifar10c.yaml \
+  configs/fedprime_d2c_cifar10c_alpha01.yaml
+```
+
+## Run Core Comparison
+
+```bash
+bash scripts/run_core_comparison.sh
+```
+
+Equivalent Python command:
+
+```bash
+python scripts/run_grid.py \
+  configs/cifar10c_rahfl.yaml \
+  configs/cifar10c_rahfl_prime.yaml \
+  configs/fedprime_d2c_cifar10c.yaml
+```
+
+## Run Ablations
+
+```bash
+python scripts/run_grid.py \
+  configs/ablations/fedprime_d2c_no_prime.yaml \
+  configs/ablations/fedprime_d2c_no_prior_debias.yaml \
+  configs/ablations/fedprime_d2c_no_class_balanced.yaml \
+  configs/ablations/fedprime_d2c_no_complementary_kd.yaml \
+  configs/ablations/fedprime_d2c_oracle_prior.yaml \
+  configs/ablations/fedprime_d2c_adaptive_ema_gate.yaml
+```
+
+## PRIME Reuse
+
+FedPRIME-D2C does not rewrite PRIME. It imports the official code in `PRIME-augmentations-main` through thin adapters:
+
+- `fedprime/augmentations/prime.py`
+- `fedprime/augmentations/rand_filter.py`
+- `fedprime/augmentations/diffeomorphism.py`
+- `fedprime/augmentations/color_jitter.py`
+- `fedprime/augmentations/prime_adapter.py`
+
+`prime_adapter.py` builds the official `GeneralizedPRIMEModule` with CIFAR normalization and returns the three-view tensor used by local CE+JSD training.
+
+## Kaggle / Server
+
+On Kaggle or a school server:
+
+1. Clone the repository.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Edit only the paths in a config file:
+   - `data.private_root`
+   - `data.public_root`
+   - `output_root`
+4. Run:
+
+```bash
+bash scripts/run_kaggle.sh configs/fedprime_d2c_cifar10c.yaml
+```
+
+or:
+
+```bash
+bash scripts/run_server.sh configs/fedprime_d2c_cifar10c.yaml
+```
+
+## Recommended Comparison Order
+
+1. Run original RAHFL from `RAHFL-master` as the first baseline.
+2. Run `FedPRIME-D2C` with `alpha=0.5` and `alpha=0.1`.
+3. Add `RAHFL + PRIME` as the strong baseline.
+4. Run D2C ablations.
+
+The key paper claim should be evaluated under model heterogeneity, Non-IID label skew, and corrupted private data.

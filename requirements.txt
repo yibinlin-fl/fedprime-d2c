@@ -1,0 +1,9 @@
+einops>=0.3.2
+numpy>=1.23
+opt-einsum>=3.3.0
+Pillow>=9.0
+PyYAML>=6.0
+torch>=1.9
+torchvision>=0.10
+tqdm>=4.56
+

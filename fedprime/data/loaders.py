@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import random
 
@@ -145,9 +146,25 @@ def partition_private_data(
     partition: str,
     dirichlet_alpha: float,
     max_samples_per_client: int | None = None,
+    partition_indices_path: str | Path | None = None,
 ) -> dict[int, list[int]]:
     add_vendor_paths()
     from Dataset.sampling import iid_sampling, non_iid_dirichlet_sampling
+
+    metadata = {
+        "num_labels": int(len(labels)),
+        "num_clients": int(num_clients),
+        "num_classes": int(num_classes),
+        "partition": str(partition),
+        "dirichlet_alpha": float(dirichlet_alpha),
+        "max_samples_per_client": (
+            None if max_samples_per_client is None else int(max_samples_per_client)
+        ),
+    }
+    if partition_indices_path:
+        path = Path(partition_indices_path)
+        if path.exists():
+            return _load_partition_indices(path, metadata)
 
     if partition == "iid":
         mapping = iid_sampling(labels, num_clients)
@@ -161,7 +178,42 @@ def partition_private_data(
             client_id: list(indices[:max_samples_per_client])
             for client_id, indices in mapping.items()
         }
+    if partition_indices_path:
+        _save_partition_indices(Path(partition_indices_path), mapping, metadata)
     return mapping
+
+
+def _load_partition_indices(path: Path, expected: dict[str, object]) -> dict[int, list[int]]:
+    with np.load(path, allow_pickle=False) as data:
+        if "__meta__" not in data:
+            raise ValueError(f"Partition file {path} has no metadata.")
+        metadata = json.loads(str(data["__meta__"].item()))
+        for key, value in expected.items():
+            if metadata.get(key) != value:
+                raise ValueError(
+                    f"Partition file {path} metadata mismatch for {key}: "
+                    f"expected {value!r}, got {metadata.get(key)!r}."
+                )
+        mapping = {}
+        for client_id in range(int(expected["num_clients"])):
+            key = f"client_{client_id}"
+            if key not in data:
+                raise ValueError(f"Partition file {path} is missing {key}.")
+            mapping[client_id] = data[key].astype(np.int64).tolist()
+    return mapping
+
+
+def _save_partition_indices(path: Path, mapping: dict[int, list[int]], metadata: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    arrays = {
+        f"client_{client_id}": np.asarray(indices, dtype=np.int64)
+        for client_id, indices in sorted(mapping.items())
+    }
+    np.savez_compressed(
+        path,
+        __meta__=json.dumps(metadata, ensure_ascii=False),
+        **arrays,
+    )
 
 
 def build_private_loaders(

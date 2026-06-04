@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 
 def entropy(probs: torch.Tensor, dim: int = -1, eps: float = 1e-8) -> torch.Tensor:
+    """Shannon entropy H(p), used to measure prior skew and prediction certainty."""
     return -(probs.clamp_min(eps) * probs.clamp_min(eps).log()).sum(dim=dim)
 
 
@@ -54,11 +55,23 @@ class D2CServer:
             raise ValueError(f"Expected logits [K, B, C], got {tuple(logits.shape)}")
 
         num_clients, _, num_classes = logits.shape
+
+        # Public predictions from all clients:
+        #   p_k(y|x) = softmax(z_k(x) / T)
+        # Shape: [K clients, B public samples, C classes].
         probs = F.softmax(logits / self.temperature, dim=-1)
+
+        # Predictive prior estimates each client's class tendency on public data:
+        #   pi_k(y) = mean_x p_k(y|x)
+        # This is the core signal for detecting Non-IID label bias. For oracle
+        # ablations, pi_k can be replaced by the true private label histogram.
         prior = oracle_prior.to(logits.device) if oracle_prior is not None else probs.mean(dim=1)
         prior = prior.clamp(min=self.p_min, max=1.0)
         prior = prior / prior.sum(dim=-1, keepdim=True)
 
+        # EMA prior smooths noisy batch-level prior estimates across rounds:
+        #   pi_k <- alpha * pi_k_ema + (1 - alpha) * pi_k_batch
+        # It should make D2C less sensitive to a single unlucky public batch.
         if self.ema_alpha is not None:
             if self._prior_ema is None or self._prior_ema.shape != prior.shape:
                 self._prior_ema = prior.detach()
@@ -69,6 +82,10 @@ class D2CServer:
                 )
             prior = self._prior_ema
 
+        # Prior debias removes the client's estimated label-prior preference:
+        #   z'_k(y|x) = z_k(y|x) - beta_k * log(pi_k(y) + eps)
+        # Under label shift, logits often contain a prior term. Subtracting it
+        # pushes public predictions closer to class-conditional evidence.
         beta = self._client_beta(prior, num_classes).view(num_clients, 1, 1)
         if self.use_prior_debias:
             debiased_logits = logits - beta * torch.log(prior[:, None, :] + self.eps)
@@ -76,18 +93,29 @@ class D2CServer:
             debiased_logits = logits
         debiased_probs = F.softmax(debiased_logits / self.temperature, dim=-1)
 
+        # Class-balanced aggregation builds a per-class client weight:
+        #   a_k,c = pi_k(c)^eta / sum_j pi_j(c)^eta
+        # The aim is not to average clients uniformly for every class. Instead,
+        # each class can borrow more from clients that appear informative for it.
         if self.use_class_balanced:
             class_weight = (prior + self.eps).pow(self.eta)
             class_weight = class_weight / class_weight.sum(dim=0, keepdim=True).clamp_min(self.eps)
         else:
             class_weight = torch.full_like(prior, 1.0 / num_clients)
 
+        # Sample confidence down-weights high-entropy client predictions:
+        #   conf_k(x) = 1 - H(p'_k(.|x)) / log(C)
+        # A client contributes less on public samples where it is uncertain.
         if self.use_sample_confidence:
             sample_conf = 1.0 - entropy(debiased_probs, dim=-1) / math.log(num_classes)
             sample_conf = sample_conf.clamp(min=0.0, max=1.0)
         else:
             sample_conf = torch.ones_like(debiased_probs[..., 0])
 
+        # Global D2C teacher:
+        #   q(y|x) = normalize_y sum_k a_k,y * conf_k(x) * p'_k(y|x)
+        # The teacher is detached because it is a server-side target, not a
+        # differentiable ensemble optimized jointly with the client models.
         weight = class_weight[:, None, :] * sample_conf[:, :, None]
         scores = (weight * debiased_probs).sum(dim=0)
         teacher = scores / scores.sum(dim=-1, keepdim=True).clamp_min(self.eps)
@@ -97,6 +125,10 @@ class D2CServer:
         if not self.adaptive_beta:
             return torch.full((prior.shape[0],), self.beta, device=prior.device)
 
+        # Adaptive beta strengthens debiasing for skewed clients:
+        #   beta_k = beta * (1 - H(pi_k) / log(C))
+        # If a client's prior is uniform, beta_k is small. If it is highly
+        # concentrated, beta_k approaches beta.
         normalized_entropy = entropy(prior, dim=-1) / math.log(num_classes)
         return self.beta * (1.0 - normalized_entropy).clamp(min=0.0, max=1.0)
 
@@ -111,9 +143,14 @@ def complementary_kd_loss(
     use_gate: bool = False,
     use_complementary: bool = True,
 ) -> torch.Tensor:
+    # Student distribution on public data, softened by the same KD temperature.
     student_probs = F.softmax(student_logits / temperature, dim=-1)
     student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
 
+    # Complementary KD emphasizes classes missing from this client's private
+    # label prior:
+    #   m_k(c) = (1 - pi_k(c))^rho
+    # A client receives stronger distillation on classes it has seen less often.
     if use_complementary:
         comp = (1.0 - client_prior).clamp_min(eps).pow(rho)
         comp = comp / comp.mean().clamp_min(eps)
@@ -123,9 +160,13 @@ def complementary_kd_loss(
     per_class_kl = teacher_probs * (teacher_probs.clamp_min(eps).log() - student_log_probs)
     per_sample = (per_class_kl * comp.view(1, -1)).sum(dim=-1)
 
+    # Self-preserving gate lets uncertain students learn more from the teacher:
+    #   gate(x) = H(p_k(.|x)) / log(C)
+    # Confident local predictions are disturbed less by public KD.
     if use_gate:
         num_classes = student_logits.shape[-1]
         gate = entropy(student_probs, dim=-1) / math.log(num_classes)
         per_sample = per_sample * gate.detach()
 
+    # Standard KD multiplies KL by T^2 to keep gradient scale comparable.
     return (temperature ** 2) * per_sample.mean()

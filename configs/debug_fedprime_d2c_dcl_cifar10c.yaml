@@ -1,8 +1,8 @@
-experiment_name: fedprime_d2c_adaptive_ema_gate_alpha05_cr1
+experiment_name: debug_fedprime_d2c_dcl_cifar10c
 method_name: fedprime_d2c
 seed: 0
 device: auto
-num_workers: 2
+num_workers: 0
 output_root: outputs
 
 data:
@@ -12,31 +12,41 @@ data:
   num_classes: 10
   private_corrupt_rate: 1
   test_corrupt_rate: 1
-  public_size: 5000
+  public_size: 512
   download_public: false
   partition: dirichlet
   dirichlet_alpha: 0.5
-  private_samples_per_client: 10000
-  partition_indices_path: outputs/partitions/cifar10c_alpha05_seed0_clients4_samples10000.npz
+  private_samples_per_client: 512
+  partition_indices_path: outputs/partitions/debug_cifar10c_alpha05_seed0_clients4_samples512.npz
 
 models:
-  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+  names:
+    - ResNet10
+    - ResNet12
+    - ShuffleNet
+    - Mobilenetv2
 
 train:
-  rounds: 40
+  rounds: 1
   local_epochs: 1
-  batch_size: 256
-  test_batch_size: 512
-  public_batch_size: 256
-  public_batches_per_round: 4
-  optimizer: {name: adam, lr: 0.001, weight_decay: 0.0}
+  batch_size: 64
+  test_batch_size: 256
+  public_batch_size: 64
+  public_batches_per_round: 1
+  max_local_batches: 1
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
 
 method:
   use_prime: true
+  use_dcl: true
+  cl_module: dcl
   lambda_jsd: 12.0
   lambda_d2c: 1.0
   rho: 1.0
-  use_self_gate: true
+  use_self_gate: false
   use_complementary_kd: true
   prior_source: predicted
   prime:
@@ -51,9 +61,14 @@ method:
     eta: 0.5
     p_min: 0.001
     eps: 0.000001
-    adaptive_beta: true
-    ema_alpha: 0.9
+    adaptive_beta: false
+    ema_alpha:
     use_prior_debias: true
     use_class_balanced: true
     use_sample_confidence: true
 
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

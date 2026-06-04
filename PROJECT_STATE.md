@@ -22,6 +22,15 @@ configs/debug_fedprime_d2c_cifar10c.yaml
 [round 000] avg_acc=9.72 worst_acc=9.04 local_loss=2.4352 d2c_loss=0.8128
 ```
 
+- Added FedPRIME-D2C + DCL configs and verified a debug smoke run:
+
+```text
+configs/fedprime_d2c_dcl_cifar10c.yaml
+configs/fedprime_d2c_dcl_cifar10c_alpha01.yaml
+configs/debug_fedprime_d2c_dcl_cifar10c.yaml
+[round 000] avg_acc=9.08 worst_acc=7.66 local_loss=16.6238 d2c_loss=0.5184
+```
+
 Additional environment dependencies installed in local `pytorch` env:
 
 ```text

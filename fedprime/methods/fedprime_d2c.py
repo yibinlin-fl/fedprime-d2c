@@ -8,6 +8,7 @@ import torch.optim as optim
 
 from fedprime.augmentations.prime_adapter import build_prime_module
 from fedprime.data.loaders import (
+    build_prime_dcl_private_loaders,
     build_private_loaders,
     build_public_loader,
     dataset_stats,
@@ -16,7 +17,11 @@ from fedprime.data.loaders import (
     partition_private_data,
 )
 from fedprime.methods.d2c import D2CServer, complementary_kd_loss
-from fedprime.methods.local_prime import train_local_prime_epoch, train_local_standard_epoch
+from fedprime.methods.local_prime import (
+    train_local_prime_dcl_epoch,
+    train_local_prime_epoch,
+    train_local_standard_epoch,
+)
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.utils.config import save_config
 from fedprime.utils.env import resolve_device, seed_everything
@@ -49,6 +54,7 @@ class FedPrimeD2CExperiment:
             partition=data_cfg.get("partition", "dirichlet"),
             dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
             max_samples_per_client=data_cfg.get("private_samples_per_client"),
+            partition_indices_path=data_cfg.get("partition_indices_path"),
         )
         oracle_prior = self._build_oracle_prior(
             labels=labels,
@@ -56,16 +62,29 @@ class FedPrimeD2CExperiment:
             num_classes=num_classes,
         )
 
-        private_loaders, test_loader = build_private_loaders(
-            cifar10c_root=data_cfg["private_root"],
-            dataidx_map=dataidx_map,
-            train_batch_size=train_cfg["batch_size"],
-            test_batch_size=train_cfg.get("test_batch_size", 512),
-            corrupt_rate=data_cfg["private_corrupt_rate"],
-            test_corrupt_rate=data_cfg["test_corrupt_rate"],
-            num_workers=int(self.config.get("num_workers", 2)),
-            raw_for_prime=True,
-        )
+        use_prime = bool(method_cfg.get("use_prime", True))
+        use_dcl = use_prime and bool(method_cfg.get("use_dcl", False))
+        if use_dcl:
+            private_loaders, test_loader = build_prime_dcl_private_loaders(
+                cifar10c_root=data_cfg["private_root"],
+                dataidx_map=dataidx_map,
+                train_batch_size=train_cfg["batch_size"],
+                test_batch_size=train_cfg.get("test_batch_size", 512),
+                corrupt_rate=data_cfg["private_corrupt_rate"],
+                test_corrupt_rate=data_cfg["test_corrupt_rate"],
+                num_workers=int(self.config.get("num_workers", 2)),
+            )
+        else:
+            private_loaders, test_loader = build_private_loaders(
+                cifar10c_root=data_cfg["private_root"],
+                dataidx_map=dataidx_map,
+                train_batch_size=train_cfg["batch_size"],
+                test_batch_size=train_cfg.get("test_batch_size", 512),
+                corrupt_rate=data_cfg["private_corrupt_rate"],
+                test_corrupt_rate=data_cfg["test_corrupt_rate"],
+                num_workers=int(self.config.get("num_workers", 2)),
+                raw_for_prime=True,
+            )
 
         public_loader = build_public_loader(
             cifar100_root=data_cfg["public_root"],
@@ -84,7 +103,6 @@ class FedPrimeD2CExperiment:
             for idx, model in models.items()
         }
 
-        use_prime = bool(method_cfg.get("use_prime", True))
         prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device) if use_prime else None
         d2c_server = D2CServer(**method_cfg.get("d2c", {}))
 
@@ -99,7 +117,13 @@ class FedPrimeD2CExperiment:
             public_iter = iter(public_loader)
             for round_idx in range(int(train_cfg["rounds"])):
                 local_loss = self._local_phase(
-                    models, optimizers, private_loaders, prime_aug, train_cfg, stats
+                    models,
+                    optimizers,
+                    private_loaders,
+                    prime_aug,
+                    train_cfg,
+                    method_cfg,
+                    stats,
                 )
                 d2c_loss = self._d2c_phase(
                     models,
@@ -145,8 +169,9 @@ class FedPrimeD2CExperiment:
             )
         return optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    def _local_phase(self, models, optimizers, private_loaders, prime_aug, train_cfg, stats) -> float:
+    def _local_phase(self, models, optimizers, private_loaders, prime_aug, train_cfg, method_cfg, stats) -> float:
         losses = []
+        use_dcl = prime_aug is not None and bool(method_cfg.get("use_dcl", False))
         for client_id, loader in enumerate(private_loaders):
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 if prime_aug is None:
@@ -158,6 +183,18 @@ class FedPrimeD2CExperiment:
                         device=self.device,
                         max_batches=train_cfg.get("max_local_batches"),
                     )
+                elif use_dcl:
+                    loss = train_local_prime_dcl_epoch(
+                        model=models[client_id],
+                        loader=loader,
+                        optimizer=optimizers[client_id],
+                        prime_aug=prime_aug,
+                        normalizer=lambda x: normalize_batch(x, stats),
+                        device=self.device,
+                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
+                        cl_module=method_cfg.get("cl_module", "dcl"),
+                        max_batches=train_cfg.get("max_local_batches"),
+                    )
                 else:
                     loss = train_local_prime_epoch(
                         model=models[client_id],
@@ -165,7 +202,7 @@ class FedPrimeD2CExperiment:
                         optimizer=optimizers[client_id],
                         prime_aug=prime_aug,
                         device=self.device,
-                        lambda_jsd=float(self.config["method"].get("lambda_jsd", 12.0)),
+                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         max_batches=train_cfg.get("max_local_batches"),
                     )
                 losses.append(loss)

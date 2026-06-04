@@ -2,13 +2,29 @@
 
 ## Immediate Next Steps
 
+0. Current continuation checkpoint.
+
+Done:
+
+- local data prepared
+- environment check passed
+- partition audit generated
+- debug FedPRIME-D2C smoke run passed
+
+Output:
+
+```text
+outputs/debug_fedprime_d2c_cifar10c/metrics.csv
+outputs/partition_audit/fedprime_d2c_cifar10c_alpha05_cr1/
+```
+
 1. Check Git status.
 
 ```powershell
 git status --short
 ```
 
-2. Prepare local data.
+2. Prepare local data if cloning on a new machine.
 
 ```powershell
 D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\prepare_data.py --config configs\fedprime_d2c_cifar10c.yaml --download --rates 0 0.5 1
@@ -43,23 +59,15 @@ outputs/partition_audit/<experiment_name>/client_class_counts.png
 
 5. Start with a tiny smoke training config before full training.
 
-Recommended temporary edits or create a debug config:
-
-```yaml
-train:
-  rounds: 1
-  local_epochs: 1
-  max_local_batches: 1
-  public_batches_per_round: 1
-```
+Use the committed debug config:
 
 Run:
 
 ```powershell
-D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\run_experiment.py --config configs/fedprime_d2c_cifar10c.yaml
+D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\run_experiment.py --config configs\debug_fedprime_d2c_cifar10c.yaml
 ```
 
-6. If smoke run passes, run core comparison.
+6. Run core comparison.
 
 ```powershell
 D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\run_grid.py configs\cifar10c_rahfl.yaml configs\cifar10c_rahfl_prime.yaml configs\fedprime_d2c_cifar10c.yaml
@@ -154,4 +162,3 @@ Tell Codex:
 ```text
 读取 PROJECT_STATE.md 和 TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。先检查 git 状态，然后准备数据和跑一个 debug smoke training。
 ```
-

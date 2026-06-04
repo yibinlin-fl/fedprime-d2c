@@ -19,6 +19,9 @@ REQUIRED_PACKAGES = [
     "yaml",
     "einops",
     "opt_einsum",
+    "pandas",
+    "seaborn",
+    "sklearn",
 ]
 
 

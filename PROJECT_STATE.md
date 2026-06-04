@@ -2,6 +2,40 @@
 
 Last updated: 2026-06-04
 
+## Resume Update - 2026-06-04
+
+Completed in the latest continuation:
+
+- Prepared local CIFAR data with `scripts/prepare_data.py`.
+- Generated RAHFL-style CIFAR-10-C caches for rates `0`, `0.5`, and `1`.
+- Confirmed `data.private_root` and `data.public_root` pass `scripts/check_environment.py`.
+- Ran partition audit for `configs/fedprime_d2c_cifar10c.yaml`.
+- Added a tiny debug config:
+
+```text
+configs/debug_fedprime_d2c_cifar10c.yaml
+```
+
+- Ran one debug FedPRIME-D2C smoke training successfully:
+
+```text
+[round 000] avg_acc=9.72 worst_acc=9.04 local_loss=2.4352 d2c_loss=0.8128
+```
+
+Additional environment dependencies installed in local `pytorch` env:
+
+```text
+pandas
+seaborn
+scikit-learn
+```
+
+Code/config changes from this continuation:
+
+- `.gitignore` now ignores `RAHFL-master/Dataset/cifar_10/`.
+- `requirements.txt` now includes RAHFL runner dependencies.
+- `configs/debug_fedprime_d2c_cifar10c.yaml` was added for local smoke tests.
+
 ## Goal
 
 Build and evaluate **FedPRIME-D2C**, a robust heterogeneous federated learning framework for:
@@ -333,4 +367,3 @@ Use:
 ```text
 读取 PROJECT_STATE.md 和 TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。
 ```
-

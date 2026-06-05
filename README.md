@@ -151,7 +151,8 @@ Equivalent Python command:
 python scripts/run_grid.py \
   configs/cifar10c_rahfl.yaml \
   configs/cifar10c_rahfl_prime.yaml \
-  configs/fedprime_d2c_cifar10c.yaml
+  configs/fedprime_d2c_cifar10c.yaml \
+  configs/fedprime_d2c_dcl_cifar10c.yaml
 ```
 
 ## Run Ablations
@@ -180,24 +181,57 @@ FedPRIME-D2C does not rewrite PRIME. It imports the official code in `PRIME-augm
 
 ## Kaggle / Server
 
-On Kaggle or a school server:
+On Kaggle, enable:
 
-1. Clone the repository.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Edit only the paths in a config file:
-   - `data.private_root`
-   - `data.public_root`
-   - `output_root`
-4. Run:
-
-```bash
-bash scripts/run_kaggle.sh configs/fedprime_d2c_cifar10c.yaml
+```text
+Accelerator: GPU
+Internet: On
 ```
 
-or:
+If the repository is public:
 
 ```bash
-bash scripts/run_server.sh configs/fedprime_d2c_cifar10c.yaml
+git clone https://github.com/yibinlin-fl/fedprime-d2c.git
+cd fedprime-d2c
+bash scripts/run_kaggle.sh
+```
+
+By default this script runs the urgent head-to-head comparison:
+
+```text
+RAHFL = AugMix + DCL + AsymHFL
+FedPRIME-D2C + DCL = PRIME + DCL + D2C
+```
+
+It also installs dependencies, downloads CIFAR-10/CIFAR-100 through torchvision,
+creates the RAHFL-style random corrupted CIFAR-10 caches, audits the shared
+Non-IID partition, runs the experiments, and writes `outputs/summary.csv`.
+
+No manual CIFAR-10-C upload is required for this first comparison. The generated
+data follows the RAHFL-style cached format:
+
+```text
+RAHFL-master/Dataset/cifar_10_c/train/random_corrupt_1.npy
+RAHFL-master/Dataset/cifar_10_c/test/random_corrupt_1.npy
+```
+
+Official CIFAR-10-C files are only needed later for per-corruption group
+evaluation.
+
+To include smoke tests before full training:
+
+```bash
+RUN_DEBUG=1 bash scripts/run_kaggle.sh
+```
+
+To run a custom config list:
+
+```bash
+bash scripts/run_kaggle.sh \
+  configs/cifar10c_rahfl.yaml \
+  configs/cifar10c_rahfl_prime.yaml \
+  configs/fedprime_d2c_cifar10c.yaml \
+  configs/fedprime_d2c_dcl_cifar10c.yaml
 ```
 
 ## Recommended Comparison Order

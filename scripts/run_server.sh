@@ -66,8 +66,8 @@ if [ "${RUN_SUMMARY}" = "1" ]; then
 fi
 
 if [ "${UPLOAD_C2NET}" = "1" ]; then
-  echo "===== Uploading outputs through c2net, if available ====="
-  "${PYTHON_BIN}" -c "from c2net.context import upload_output; upload_output()"
+  echo "===== Copying outputs to c2net output_path and uploading ====="
+  "${PYTHON_BIN}" -c "from pathlib import Path; import shutil; from c2net.context import prepare, upload_output; ctx = prepare(); src = Path('outputs'); dst = Path(ctx.output_path) / 'fedprime_outputs'; dst.mkdir(parents=True, exist_ok=True); shutil.copytree(src, dst, dirs_exist_ok=True) if src.exists() else (dst / 'NO_OUTPUTS.txt').write_text('outputs directory not found\n'); upload_output()"
 fi
 
 echo "===== Done ====="

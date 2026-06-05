@@ -313,6 +313,15 @@ On C2NET, if the platform expects outputs to be uploaded through its helper:
 UPLOAD_C2NET=1 RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_server.sh
 ```
 
+With `UPLOAD_C2NET=1`, the launcher copies local `outputs/` into:
+
+```text
+<c2net output_path>/fedprime_outputs/
+```
+
+and then calls `upload_output()`, so completed training-task results survive
+container teardown.
+
 For a quick environment-only check:
 
 ```bash

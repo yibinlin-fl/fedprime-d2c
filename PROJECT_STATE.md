@@ -1,6 +1,125 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-06-04
+Last updated: 2026-06-05
+
+## Resume Update - 2026-06-05
+
+Completed since the previous state update:
+
+- Added fixed shared partition indices for stricter fair comparison.
+  - Config field: `data.partition_indices_path`
+  - Main alpha=0.5 comparison now shares:
+
+```text
+outputs/partitions/cifar10c_alpha05_seed0_clients4_samples10000.npz
+```
+
+- Verified that RAHFL and FedPRIME-D2C load the same Non-IID client split.
+- Added explanatory comments in `fedprime/methods/d2c.py` for:
+  - prior debias
+  - class-balanced aggregation
+  - sample confidence
+  - complementary KD
+  - adaptive beta
+  - EMA prior
+  - self-gate
+  - oracle prior
+- Added optional FedPRIME-D2C + DCL configs:
+
+```text
+configs/fedprime_d2c_dcl_cifar10c.yaml
+configs/fedprime_d2c_dcl_cifar10c_alpha01.yaml
+configs/debug_fedprime_d2c_dcl_cifar10c.yaml
+```
+
+- Verified debug FedPRIME-D2C + DCL smoke run:
+
+```text
+[round 000] avg_acc=9.08 worst_acc=7.66 local_loss=16.6238 d2c_loss=0.5184
+```
+
+- Bound the local repo to GitHub SSH remote and pushed to:
+
+```text
+git@github.com:yibinlin-fl/fedprime-d2c.git
+```
+
+- Added Kaggle launcher:
+
+```text
+scripts/run_kaggle.sh
+```
+
+Current Kaggle default is intentionally **without DCL** for the main claim:
+
+```text
+RAHFL = AugMix + DCL + AsymHFL
+FedPRIME-D2C = PRIME + D2C
+```
+
+Run on Kaggle:
+
+```bash
+git clone https://github.com/yibinlin-fl/fedprime-d2c.git
+cd fedprime-d2c
+RUN_DEBUG=1 bash scripts/run_kaggle.sh
+```
+
+This first runs `configs/debug_fedprime_d2c_cifar10c.yaml`, then runs:
+
+```text
+configs/cifar10c_rahfl.yaml
+configs/fedprime_d2c_cifar10c.yaml
+```
+
+Latest commits:
+
+```text
+5973fd0 支持DCL增强版D2C并固定公平划分
+734e5ca kaggle 一键启动脚本
+321cabd 调整kaggle默认对比为无DCL主框架
+```
+
+## Quick 5-Round Decision Criteria
+
+Purpose:
+
+```text
+Use a short run to decide whether FedPRIME-D2C has a promising trend before
+spending many Kaggle GPU hours on full 40-round experiments.
+```
+
+Do **not** judge only by the absolute accuracy at round 5. In early rounds,
+both methods may still be near random or unstable. Judge by trends:
+
+1. `avg_acc` trend:
+   - Promising: FedPRIME-D2C average accuracy rises at a similar or faster rate than RAHFL.
+   - Warning: FedPRIME-D2C stays flat near random accuracy while RAHFL clearly rises.
+
+2. `worst_acc` trend:
+   - Promising: FedPRIME-D2C improves the worst client or narrows the gap to RAHFL.
+   - Very important because D2C is designed to help clients under Non-IID label skew.
+   - Warning: average accuracy rises but `worst_acc` collapses or remains far below RAHFL.
+
+3. Gap by round 5:
+   - Acceptable: FedPRIME-D2C is close to RAHFL, for example within about 3-5 accuracy points, and still improving.
+   - Strong warning: FedPRIME-D2C is more than about 8-10 points behind RAHFL and the gap is widening.
+
+4. `d2c_loss` behavior:
+   - Promising: finite, stable, not exploding to `nan` or very large values.
+   - Warning: `d2c_loss` becomes `nan`, explodes, or dominates training.
+
+5. Local loss behavior:
+   - Promising: finite and generally decreasing or stable.
+   - Warning: loss explodes or becomes `nan`.
+
+6. Final interpretation:
+   - If FedPRIME-D2C is slightly behind in 5 rounds but improving, continue to 40 rounds.
+   - If FedPRIME-D2C is clearly flat while RAHFL improves, inspect D2C hyperparameters first:
+     `beta`, `eta`, `temperature`, `lambda_d2c`, `use_sample_confidence`,
+     and whether PRIME local training is learning.
+   - If FedPRIME-D2C loses badly without DCL but FedPRIME-D2C + DCL performs well later,
+     the likely story is that D2C is useful but local representation learning needs the DCL module.
 
 ## Resume Update - 2026-06-04
 

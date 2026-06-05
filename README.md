@@ -95,6 +95,13 @@ python scripts/run_grid.py \
   configs/fedprime_d2c_cifar10c_alpha01.yaml
 ```
 
+Run the plain public-logit averaging baseline:
+
+```bash
+python scripts/run_experiment.py --config configs/logitavg_prime_cifar10c.yaml
+python scripts/run_experiment.py --config configs/logitavg_prime_cifar10c_alpha01.yaml
+```
+
 Run multiple seeds:
 
 ```bash
@@ -118,6 +125,17 @@ python scripts/evaluate_corruptions.py \
   --corruption_root /path/to/CIFAR-10-C \
   --out_csv outputs/fedprime_d2c_cifar10c_alpha05_cr1/corruption_eval.csv
 ```
+
+Diagnose whether D2C helps underrepresented client classes:
+
+```bash
+python scripts/diagnose_underrepresented.py \
+  --config configs/fedprime_d2c_cifar10c.yaml \
+  --checkpoint_dir outputs/fedprime_d2c_cifar10c_alpha05_cr1/checkpoints
+```
+
+The output CSV reports each client's `head_acc`, `tail_acc`, and `missing_acc`
+according to that client's private label distribution.
 
 Load pre-trained client checkpoints:
 

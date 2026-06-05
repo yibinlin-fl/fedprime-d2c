@@ -40,6 +40,8 @@ train:
 
 method:
   use_prime: true
+  communication: d2c
+  d2c_warmup_rounds: 0
   lambda_jsd: 12.0
   lambda_d2c: 1.0
   rho: 1.0

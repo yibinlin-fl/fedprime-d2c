@@ -80,6 +80,31 @@ Latest commits:
 321cabd 调整kaggle默认对比为无DCL主框架
 ```
 
+New implementation work after the Kaggle launcher:
+
+- Added `method.d2c_warmup_rounds`.
+  - Default is `0`, so existing experiments are unchanged.
+  - If set to `3` or `5`, the first rounds run local PRIME only and skip D2C.
+- Added `method.communication`.
+  - `d2c`: full D2C teacher.
+  - `logit_avg`: plain public-logit averaging teacher.
+- Added LogitAvg+PRIME baseline configs:
+
+```text
+configs/logitavg_prime_cifar10c.yaml
+configs/logitavg_prime_cifar10c_alpha01.yaml
+configs/debug_logitavg_prime_cifar10c.yaml
+```
+
+- Added underrepresented class diagnosis:
+
+```text
+scripts/diagnose_underrepresented.py
+```
+
+It loads trained checkpoints and reports per-client `head_acc`, `tail_acc`,
+and `missing_acc` according to each client's private class distribution.
+
 ## Quick 5-Round Decision Criteria
 
 Purpose:

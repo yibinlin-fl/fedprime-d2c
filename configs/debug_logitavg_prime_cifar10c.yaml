@@ -1,4 +1,4 @@
-experiment_name: debug_fedprime_d2c_cifar10c
+experiment_name: debug_logitavg_prime_cifar10c
 method_name: fedprime_d2c
 seed: 0
 device: auto
@@ -41,13 +41,13 @@ train:
 
 method:
   use_prime: true
-  communication: d2c
+  communication: logit_avg
   d2c_warmup_rounds: 0
   lambda_jsd: 12.0
   lambda_d2c: 1.0
   rho: 1.0
   use_self_gate: false
-  use_complementary_kd: true
+  use_complementary_kd: false
   prior_source: predicted
   prime:
     mixture_width: 3
@@ -63,9 +63,9 @@ method:
     eps: 0.000001
     adaptive_beta: false
     ema_alpha:
-    use_prior_debias: true
-    use_class_balanced: true
-    use_sample_confidence: true
+    use_prior_debias: false
+    use_class_balanced: false
+    use_sample_confidence: false
 
 checkpoints:
   load_dir:

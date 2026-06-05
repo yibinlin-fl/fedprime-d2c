@@ -125,16 +125,19 @@ class FedPrimeD2CExperiment:
                     method_cfg,
                     stats,
                 )
-                d2c_loss = self._d2c_phase(
-                    models,
-                    optimizers,
-                    public_loader,
-                    public_iter,
-                    d2c_server,
-                    stats,
-                    method_cfg,
-                    oracle_prior,
-                )
+                if round_idx < int(method_cfg.get("d2c_warmup_rounds", 0)):
+                    d2c_loss = 0.0
+                else:
+                    d2c_loss = self._d2c_phase(
+                        models,
+                        optimizers,
+                        public_loader,
+                        public_iter,
+                        d2c_server,
+                        stats,
+                        method_cfg,
+                        oracle_prior,
+                    )
                 accs = self._evaluate(models, test_loader)
                 row = {
                     "round": round_idx,
@@ -236,9 +239,15 @@ class FedPrimeD2CExperiment:
                 with torch.no_grad():
                     logits.append(forward_logits(models[client_id], images_norm))
             logits_all = torch.stack(logits, dim=0)
-            prior_source = method_cfg.get("prior_source", "predicted")
-            oracle = oracle_prior if prior_source == "oracle" else None
-            teacher, prior = d2c_server.build_teacher(logits_all, oracle_prior=oracle)
+            communication = method_cfg.get("communication", "d2c")
+            if communication == "logit_avg":
+                teacher, prior = self._build_logit_average_teacher(logits_all, d2c_server)
+            elif communication == "d2c":
+                prior_source = method_cfg.get("prior_source", "predicted")
+                oracle = oracle_prior if prior_source == "oracle" else None
+                teacher, prior = d2c_server.build_teacher(logits_all, oracle_prior=oracle)
+            else:
+                raise ValueError(f"Unsupported communication mode: {communication}")
 
             for client_id in sorted(models):
                 model = models[client_id]
@@ -259,6 +268,16 @@ class FedPrimeD2CExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    def _build_logit_average_teacher(self, logits_all, d2c_server):
+        temperature = float(d2c_server.temperature)
+        probs = torch.softmax(logits_all / temperature, dim=-1)
+        teacher = probs.mean(dim=0)
+        teacher = teacher / teacher.sum(dim=-1, keepdim=True).clamp_min(float(d2c_server.eps))
+        prior = probs.mean(dim=1)
+        prior = prior.clamp(min=float(d2c_server.p_min), max=1.0)
+        prior = prior / prior.sum(dim=-1, keepdim=True).clamp_min(float(d2c_server.eps))
+        return teacher.detach(), prior.detach()
 
     def _evaluate(self, models, test_loader) -> list[float]:
         accs = []

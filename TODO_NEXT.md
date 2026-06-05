@@ -85,6 +85,20 @@ D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\run_grid.py configs
 D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\summarize_results.py --outputs outputs
 ```
 
+8. Mechanism diagnostics after checkpoints exist.
+
+Run LogitAvg+PRIME to check whether D2C beats plain public-logit averaging:
+
+```powershell
+D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\run_experiment.py --config configs\logitavg_prime_cifar10c.yaml
+```
+
+Diagnose whether weak / underrepresented client classes improved:
+
+```powershell
+D:\anaconda3\Scripts\conda.exe run -n pytorch python scripts\diagnose_underrepresented.py --config configs\fedprime_d2c_cifar10c.yaml --checkpoint_dir outputs\fedprime_d2c_cifar10c_alpha05_cr1\checkpoints
+```
+
 ## Experimental Priorities
 
 ### Priority 1: Make Training Run

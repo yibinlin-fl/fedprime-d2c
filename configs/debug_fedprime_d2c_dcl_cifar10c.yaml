@@ -41,6 +41,8 @@ train:
 
 method:
   use_prime: true
+  communication: d2c
+  d2c_warmup_rounds: 0
   use_dcl: true
   cl_module: dcl
   lambda_jsd: 12.0

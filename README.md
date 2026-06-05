@@ -200,7 +200,7 @@ By default this script runs the urgent head-to-head comparison:
 
 ```text
 RAHFL = AugMix + DCL + AsymHFL
-FedPRIME-D2C + DCL = PRIME + DCL + D2C
+FedPRIME-D2C = PRIME + D2C
 ```
 
 It also installs dependencies, downloads CIFAR-10/CIFAR-100 through torchvision,
@@ -224,6 +224,9 @@ To include smoke tests before full training:
 RUN_DEBUG=1 bash scripts/run_kaggle.sh
 ```
 
+This first runs `configs/debug_fedprime_d2c_cifar10c.yaml`, then runs the
+default RAHFL vs FedPRIME-D2C comparison.
+
 To run a custom config list:
 
 ```bash
@@ -231,6 +234,15 @@ bash scripts/run_kaggle.sh \
   configs/cifar10c_rahfl.yaml \
   configs/cifar10c_rahfl_prime.yaml \
   configs/fedprime_d2c_cifar10c.yaml \
+  configs/fedprime_d2c_dcl_cifar10c.yaml
+```
+
+To run the stricter later-stage controlled comparison where both PRIME methods
+use DCL:
+
+```bash
+bash scripts/run_kaggle.sh \
+  configs/cifar10c_rahfl_prime.yaml \
   configs/fedprime_d2c_dcl_cifar10c.yaml
 ```
 

@@ -281,6 +281,44 @@ bash scripts/run_kaggle.sh \
   configs/fedprime_d2c_dcl_cifar10c.yaml
 ```
 
+## Generic Server / C2NET
+
+For a normal Linux GPU server or C2NET-style task container, use:
+
+```bash
+git clone https://github.com/yibinlin-fl/fedprime-d2c.git
+cd fedprime-d2c
+RUN_DEBUG=1 bash scripts/run_server.sh
+```
+
+The server launcher defaults to:
+
+```text
+configs/server_safe_rahfl.yaml
+configs/server_safe_fedprime_d2c.yaml
+```
+
+These configs use the same shared Non-IID split as the Kaggle-safe configs and
+keep `batch_size=64`, which is suitable for V100/A10/T4-class GPUs.
+
+If the data has already been downloaded in the same task container:
+
+```bash
+RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_server.sh
+```
+
+On C2NET, if the platform expects outputs to be uploaded through its helper:
+
+```bash
+UPLOAD_C2NET=1 RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_server.sh
+```
+
+For a quick environment-only check:
+
+```bash
+RUN_TRAIN=0 RUN_SUMMARY=0 RUN_DEBUG=1 bash scripts/run_server.sh
+```
+
 ## Recommended Comparison Order
 
 1. Run original RAHFL from `RAHFL-master` as the first baseline.

@@ -6,6 +6,17 @@ Last updated: 2026-06-05
 
 Completed since the previous state update:
 
+- Fixed the Kaggle formal comparison OOM by adding T4-safe configs:
+
+```text
+configs/kaggle_t4_rahfl.yaml
+configs/kaggle_t4_fedprime_d2c.yaml
+```
+
+These keep the same shared partition file and method choices, but lower
+`batch_size` to `64` and `public_batch_size` to `128`. The original full configs
+are still available for larger GPUs.
+
 - Added fixed shared partition indices for stricter fair comparison.
   - Config field: `data.partition_indices_path`
   - Main alpha=0.5 comparison now shares:

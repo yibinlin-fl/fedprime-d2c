@@ -102,6 +102,9 @@ Current Kaggle default:
 ```text
 RAHFL vs FedPRIME-D2C
 no DCL in FedPRIME-D2C
+T4-safe batch sizes
+configs/kaggle_t4_rahfl.yaml
+configs/kaggle_t4_fedprime_d2c.yaml
 ```
 
 ### Data
@@ -589,12 +592,20 @@ Default script runs:
 
 ```text
 debug FedPRIME-D2C
-RAHFL vs FedPRIME-D2C
+RAHFL vs FedPRIME-D2C with T4-safe configs
 summary
 ```
 
 No manual CIFAR-10-C upload is needed for the first comparison. The script
 generates RAHFL-style random corruption caches.
+
+If data has already been downloaded in the active Kaggle session, rerun only the
+training stage:
+
+```bash
+git pull
+RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_kaggle.sh
+```
 
 Full four-method comparison:
 

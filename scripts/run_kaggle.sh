@@ -6,14 +6,14 @@ RUN_INSTALL="${RUN_INSTALL:-1}"
 RUN_PREPARE_DATA="${RUN_PREPARE_DATA:-1}"
 RUN_DEBUG="${RUN_DEBUG:-0}"
 RATES="${RATES:-0 0.5 1}"
-PREP_CONFIG="${PREP_CONFIG:-configs/fedprime_d2c_cifar10c.yaml}"
+PREP_CONFIG="${PREP_CONFIG:-configs/kaggle_t4_fedprime_d2c.yaml}"
 
 if [ "$#" -gt 0 ]; then
   CONFIGS=("$@")
 else
   CONFIGS=(
-    "configs/cifar10c_rahfl.yaml"
-    "configs/fedprime_d2c_cifar10c.yaml"
+    "configs/kaggle_t4_rahfl.yaml"
+    "configs/kaggle_t4_fedprime_d2c.yaml"
   )
 fi
 
@@ -41,8 +41,8 @@ echo "===== Checking environment ====="
 "${PYTHON_BIN}" scripts/check_environment.py --config "${PREP_CONFIG}"
 
 echo "===== Auditing shared Non-IID partition ====="
-"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/cifar10c_rahfl.yaml"
-"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/fedprime_d2c_cifar10c.yaml"
+"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/kaggle_t4_rahfl.yaml"
+"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/kaggle_t4_fedprime_d2c.yaml"
 
 if [ "${RUN_DEBUG}" = "1" ]; then
   echo "===== Running debug smoke tests ====="

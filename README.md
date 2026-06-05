@@ -221,6 +221,17 @@ RAHFL = AugMix + DCL + AsymHFL
 FedPRIME-D2C = PRIME + D2C
 ```
 
+The Kaggle default uses T4-safe configs:
+
+```text
+configs/kaggle_t4_rahfl.yaml
+configs/kaggle_t4_fedprime_d2c.yaml
+```
+
+These keep the same shared Non-IID split and method settings as the core
+comparison, but reduce batch sizes so the RAHFL AugMix+DCL multi-view training
+does not run out of memory on a single 14 GB T4.
+
 It also installs dependencies, downloads CIFAR-10/CIFAR-100 through torchvision,
 creates the RAHFL-style random corrupted CIFAR-10 caches, audits the shared
 Non-IID partition, runs the experiments, and writes `outputs/summary.csv`.
@@ -249,10 +260,16 @@ To run a custom config list:
 
 ```bash
 bash scripts/run_kaggle.sh \
-  configs/cifar10c_rahfl.yaml \
-  configs/cifar10c_rahfl_prime.yaml \
-  configs/fedprime_d2c_cifar10c.yaml \
-  configs/fedprime_d2c_dcl_cifar10c.yaml
+  configs/kaggle_t4_rahfl.yaml \
+  configs/kaggle_t4_fedprime_d2c.yaml
+```
+
+If the Kaggle session already downloaded data and only the training config needs
+to be rerun:
+
+```bash
+git pull
+RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_kaggle.sh
 ```
 
 To run the stricter later-stage controlled comparison where both PRIME methods

@@ -2,67 +2,64 @@
 
 ## Current Authoritative Next Steps - 2026-06-06
 
-### Now: rerun only the repaired FedPRIME-D2C experiment
+### Now: save and diagnose the completed repaired FedPRIME-D2C experiment
 
-The first comparison produced a valid completed RAHFL baseline, but the
-FedPRIME-D2C side diverged because of a now-fixed PRIME JSD gradient issue.
-
-```text
-configs/kaggle_t4_fedprime_d2c_warmup3.yaml
-```
-
-Current status:
+The repaired FedPRIME-D2C warmup=3 experiment completed all 40 rounds without
+NaN/Inf.
 
 ```text
-RAHFL round 39: avg_acc=56.41, worst_acc=44.72
-FedPRIME-D2C original run: invalid because local_loss became NaN before D2C
-Numerically stable JSD fix: implemented and locally verified on all four models
+RAHFL final:            avg_acc=56.41, worst_acc=44.72
+FedPRIME-D2C final:     avg_acc=52.31, worst_acc=39.78
+FedPRIME-D2C best avg:  avg_acc=52.83 at round 37
 ```
 
-Before a full rerun, use the fast PRIME stability diagnostic:
+Conclusion:
+
+```text
+PRIME + D2C is numerically stable and learns, but the first valid run does not
+beat RAHFL. The final gaps are -4.10 avg_acc and -4.94 worst_acc.
+```
+
+Run the underrepresented-class diagnosis before ending the Kaggle session:
 
 ```bash
-python scripts/diagnose_prime_stability.py \
+python scripts/diagnose_underrepresented.py \
   --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml \
-  --batches 200
+  --checkpoint_dir outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/checkpoints
 ```
 
-Then run only FedPRIME-D2C:
+Then summarize and preserve:
 
 ```bash
-python scripts/run_experiment.py \
-  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+python scripts/summarize_results.py --outputs outputs
 ```
 
-Watch for:
-
-```text
-rounds 0, 1, 2: finite local_loss and d2c_loss=0
-round 3 onward: finite local_loss and finite non-zero d2c_loss
-avg_acc / worst_acc must remain above random-guess 10% and trend upward
-```
-
-### Immediately after the repaired experiment finishes
-
-Save the Kaggle notebook version and collect:
+Collect:
 
 ```text
 outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/metrics.csv
+outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/underrepresented_accuracy.csv
+outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/checkpoints/
+outputs/summary.csv
 ```
-
-Then:
-
-1. Compare final `avg_acc` and `worst_acc` against RAHFL 56.41 / 44.72.
-2. Plot or inspect per-round learning trends.
-3. Confirm warmup behavior from `d2c_loss`.
-4. Decide whether FedPRIME-D2C is promising, needs tuning, or needs an added module.
-5. Run `scripts/diagnose_underrepresented.py` after checkpoints are available.
 
 ### Next experiments, in priority order
 
-1. Finish the repaired FedPRIME-D2C warmup=3 run and compare against the
-   completed lightweight RAHFL baseline.
-2. After confirming the design is promising, add a strong RAHFL comparison:
+1. Run a T4-safe `LogitAvg + PRIME` baseline to isolate whether D2C improves or
+   harms PRIME local learning.
+2. Inspect `tail_acc` and `missing_acc`; the round-3 worst-client drop suggests
+   early D2C may be too aggressive.
+3. Test targeted D2C stabilization before adding more modules:
+
+```text
+longer warmup
+EMA prior
+self-preserving gate
+smaller lambda_d2c or beta
+```
+
+4. Run a T4-safe alpha=0.1 Severe Non-IID comparison after D2C is competitive.
+5. After confirming the design is promising, add a strong RAHFL comparison:
 
 ```text
 40 local pretraining epochs before communication
@@ -70,25 +67,22 @@ larger/full public communication budget per round
 the same strengthened training budget for FedPRIME-D2C
 ```
 
-3. Warmup ablation:
+6. Warmup ablation:
 
 ```text
 configs/kaggle_t4_fedprime_d2c.yaml
 configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
-4. Create and run a T4-safe `LogitAvg + PRIME` baseline.
-5. Create and run T4-safe alpha=0.1 Severe Non-IID configs.
-6. Create T4-safe controlled configs for:
+7. Create T4-safe controlled configs for:
 
 ```text
 RAHFL+PRIME = PRIME + DCL + AsymHFL
 FedPRIME-D2C+DCL = PRIME + DCL + D2C
 ```
 
-7. Run D2C component ablations.
-8. Compare `worst_acc`, `tail_acc`, and `missing_acc`.
-9. Run seeds 0, 1, 2 after the design is stable.
+8. Run D2C component ablations.
+9. Run seeds 0, 1, 2 only after the design is stable.
 10. Evaluate official CIFAR-10-C corruption groups later.
 
 Full experiment descriptions and configuration paths:

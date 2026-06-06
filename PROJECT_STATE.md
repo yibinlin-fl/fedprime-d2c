@@ -104,12 +104,41 @@ The detailed Chinese experiment/configuration and metric guide is:
 EXPERIMENT_GUIDE_ZH.md
 ```
 
+The repaired FedPRIME-D2C warmup=3 run has now completed successfully:
+
+```text
+round 0:  avg_acc=19.92 worst_acc=18.89 local_loss=1.6707 d2c_loss=0.0000
+round 2:  avg_acc=25.93 worst_acc=24.03 local_loss=1.4589 d2c_loss=0.0000
+round 3:  avg_acc=28.15 worst_acc=15.74 local_loss=1.4052 d2c_loss=1.8864
+round 37: avg_acc=52.83 worst_acc=38.39 local_loss=0.9280 d2c_loss=1.0381
+round 39: avg_acc=52.31 worst_acc=39.78 local_loss=0.9123 d2c_loss=1.0764
+```
+
+Comparison against the completed lightweight RAHFL baseline:
+
+```text
+                         final avg_acc   final worst_acc
+RAHFL                         56.41             44.72
+FedPRIME-D2C warmup=3         52.31             39.78
+gap                            -4.10             -4.94
+```
+
+Interpretation:
+
+```text
+The numerical fix worked: all 40 rounds are finite and local_loss decreases.
+PRIME + D2C learns substantially, but does not beat RAHFL in this first valid run.
+The weakest client drops sharply when D2C first turns on at round 3, then recovers.
+This suggests the current early D2C teacher/prior may be too aggressive for weak clients.
+```
+
 Current action:
 
 ```text
-Push the numerical-stability fix.
-Rerun only configs/kaggle_t4_fedprime_d2c_warmup3.yaml on Kaggle.
-Do not rerun RAHFL; its completed 40-round result is already the baseline.
+Save the Kaggle outputs and run underrepresented-class diagnosis.
+Do not run multi-seed yet.
+Next establish whether the gap comes from PRIME local learning or D2C by running
+a T4-safe LogitAvg+PRIME baseline and targeted D2C diagnostics/ablations.
 ```
 
 ## Resume Update - 2026-06-05

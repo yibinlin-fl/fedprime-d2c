@@ -99,20 +99,28 @@ JSD 概率 clamp + 重新归一化
 
 修复后四个异构客户端均已在本地通过完整 PRIME 本地训练轮次。
 
-因此下一次 Kaggle 不需要重新跑 RAHFL，只运行：
+修复后的 FedPRIME-D2C warmup=3 已经在 Kaggle 完整运行 40 轮：
 
-```bash
-python scripts/run_experiment.py \
-  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```text
+FedPRIME-D2C final: avg_acc=52.31, worst_acc=39.78
+FedPRIME-D2C best avg: 52.83 at round 37
+RAHFL final: avg_acc=56.41, worst_acc=44.72
 ```
 
-正式运行前可先快速检查：
+最终差距：
 
-```bash
-python scripts/diagnose_prime_stability.py \
-  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml \
-  --batches 200
+```text
+avg_acc: -4.10
+worst_acc: -4.94
 ```
+
+这次结果证明数值修复有效，且 PRIME + D2C 能够稳定学习；但当前版本尚未击败
+RAHFL。特别需要关注的是，D2C 在 round 3 首次开启时，`worst_acc` 从 24.03
+下降到 15.74。弱客户端之后虽然恢复，但最终仍落后 RAHFL，提示早期 D2C
+teacher/prior 或蒸馏强度可能对弱客户端过于激进。
+
+下一步优先运行 `LogitAvg + PRIME` 和弱势类别诊断，分离 PRIME 本地学习能力与
+D2C 通信贡献，而不是立即盲目增加新模块。
 
 启动脚本：
 

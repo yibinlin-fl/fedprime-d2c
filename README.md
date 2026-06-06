@@ -248,6 +248,15 @@ RAHFL-master/Dataset/cifar_10_c/test/random_corrupt_1.npy
 Official CIFAR-10-C files are only needed later for per-corruption group
 evaluation.
 
+When the prepared dataset is mounted at `/kaggle/input/fedprime-data`, import
+and verify it before training:
+
+```bash
+python scripts/import_prepared_data.py \
+  --source /kaggle/input/fedprime-data \
+  --destination .
+```
+
 To include smoke tests before full training:
 
 ```bash

@@ -1004,7 +1004,7 @@ configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 batch_size=64
 public_batch_size=128
 避免单张 T4 上 RAHFL AugMix+DCL OOM
-FedPRIME-D2C warmup3 使用 max_grad_norm=5.0 作为额外数值防护
+FedPRIME-D2C 与已完成的 RAHFL 均不启用梯度裁剪，保持优化设置公平
 ```
 
 ### 7.2 普通服务器 / C2NET

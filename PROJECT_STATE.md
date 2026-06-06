@@ -93,13 +93,10 @@ ShuffleNet: PASS
 Mobilenetv2: PASS
 ```
 
-All four clients completed a full local PRIME epoch without NaN/Inf. The
-Kaggle warmup config now also sets:
-
-```yaml
-train:
-  max_grad_norm: 5.0
-```
+All four clients completed a full local PRIME epoch without NaN/Inf. The main
+Kaggle warmup config does not enable gradient clipping, matching the completed
+RAHFL optimizer settings. Non-finite gradient detection remains enabled and
+will stop the run immediately if numerical instability returns.
 
 The detailed Chinese experiment/configuration and metric guide is:
 

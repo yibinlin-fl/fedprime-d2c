@@ -60,25 +60,36 @@ Then:
 
 ### Next experiments, in priority order
 
-1. Warmup ablation:
+1. Finish the repaired FedPRIME-D2C warmup=3 run and compare against the
+   completed lightweight RAHFL baseline.
+2. After confirming the design is promising, add a strong RAHFL comparison:
+
+```text
+40 local pretraining epochs before communication
+larger/full public communication budget per round
+the same strengthened training budget for FedPRIME-D2C
+```
+
+3. Warmup ablation:
 
 ```text
 configs/kaggle_t4_fedprime_d2c.yaml
 configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
-2. Create and run a T4-safe `LogitAvg + PRIME` baseline.
-3. Create and run T4-safe alpha=0.1 Severe Non-IID configs.
-4. Create T4-safe controlled configs for:
+4. Create and run a T4-safe `LogitAvg + PRIME` baseline.
+5. Create and run T4-safe alpha=0.1 Severe Non-IID configs.
+6. Create T4-safe controlled configs for:
 
 ```text
 RAHFL+PRIME = PRIME + DCL + AsymHFL
 FedPRIME-D2C+DCL = PRIME + DCL + D2C
 ```
 
-5. Run D2C component ablations.
-6. Run seeds 0, 1, 2 after the design is stable.
-7. Evaluate official CIFAR-10-C corruption groups later.
+7. Run D2C component ablations.
+8. Compare `worst_acc`, `tail_acc`, and `missing_acc`.
+9. Run seeds 0, 1, 2 after the design is stable.
+10. Evaluate official CIFAR-10-C corruption groups later.
 
 Full experiment descriptions and configuration paths:
 

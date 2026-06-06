@@ -45,8 +45,12 @@ outputs/summary.csv
 
 ### Next experiments, in priority order
 
-1. Run a T4-safe `LogitAvg + PRIME` baseline to isolate whether D2C improves or
-   harms PRIME local learning.
+1. Run the T4-safe `LogitAvg + PRIME` baseline to isolate whether D2C improves
+   or harms PRIME local learning:
+
+```text
+configs/kaggle_t4_logitavg_prime_warmup3.yaml
+```
 2. Inspect `tail_acc` and `missing_acc`; the round-3 worst-client drop suggests
    early D2C may be too aggressive.
 3. Test targeted D2C stabilization before adding more modules:

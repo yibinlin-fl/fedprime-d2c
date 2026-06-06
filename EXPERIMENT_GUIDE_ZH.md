@@ -709,6 +709,23 @@ python scripts/run_grid.py \
 
 ### 4.2 LogitAvg + PRIME 基线
 
+Kaggle T4 严格控制配置：
+
+```text
+configs/kaggle_t4_logitavg_prime_warmup3.yaml
+```
+
+它与 `configs/kaggle_t4_fedprime_d2c_warmup3.yaml` 使用完全相同的模型、
+固定 Non-IID partition、训练轮数、batch size、公共通信预算和 3 轮 warmup。
+唯一核心区别是：
+
+```text
+FedPRIME-D2C：D2C teacher + complementary KD
+LogitAvg+PRIME：普通客户端 logits 平均 teacher + 普通 KD
+```
+
+因此该实验用于判断当前 D2C 相比普通 logits 平均究竟带来提升还是伤害。
+
 配置：
 
 ```text

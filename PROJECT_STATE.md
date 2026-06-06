@@ -50,6 +50,19 @@ round 0: avg_acc=22.94 worst_acc=21.00 local_loss=15.1687 col_loss=0.1735
 round 39: avg_acc=56.41 worst_acc=44.72 local_loss=12.2930 col_loss=1.7927
 ```
 
+Important interpretation:
+
+```text
+This is a valid baseline for the current resource-limited unified runner.
+It is not a full reproduction of the paper's strongest RAHFL result.
+```
+
+The paper first pre-trains each local model for 40 epochs and then runs 40
+communication rounds. The current runner starts from random initialization,
+uses 4 public batches per round instead of the full 5000-image public set, and
+uses a more severe alpha=0.5 plus corruption-rate=1 Non-IID setting. See
+`EXPERIMENT_GUIDE_ZH.md` for the complete comparison.
+
 The original FedPRIME-D2C warmup=3 run diverged:
 
 ```text

@@ -216,10 +216,132 @@ round 3 开始：运行本地 PRIME + 公共数据 D2C
 验证模型先完成少量本地学习，再启动 D2C 是否能够击败 RAHFL。
 ```
 
+#### 40 轮实验中“本地轮次”和“通信轮次”的具体含义
+
+当前配置中的：
+
+```yaml
+train:
+  rounds: 40
+  local_epochs: 1
+  batch_size: 64
+  public_batch_size: 128
+  public_batches_per_round: 4
+```
+
+表示总共执行 40 个联邦通信轮。每一轮不是只更新一次参数，而是：
+
+```text
+FedPRIME-D2C 每轮：
+1. 每个客户端分别遍历自己的 10000 张私有训练数据 1 次
+   local_epochs=1，batch_size=64，约产生 10000/64≈156 个本地 batch 更新
+2. warmup 结束后，服务端使用 4 个 public batch 执行 D2C
+   每个 public batch 为 128 张 CIFAR-100 图片
+3. 每个客户端每轮约执行 4 次 D2C 蒸馏更新
+4. 在完整的共享测试集上分别评估四个客户端
+
+RAHFL 每轮：
+1. 使用 4 个 public batch 执行 AsymHFL 通信
+2. 每个客户端遍历自己的私有训练数据 1 次
+3. 在完整的共享测试集上分别评估四个客户端
+```
+
+因此当前 FedPRIME-D2C 的 warmup 行为是：
+
+```text
+round 0、1、2：每轮只进行约 156 个本地 batch 更新，不进行 D2C
+round 3 至 39：每轮进行约 156 个本地 batch 更新 + 4 个 D2C 更新
+```
+
+当前统一 runner 从随机初始化开始，不包含 RAHFL 论文中的独立 40 epoch
+本地预训练阶段。
+
 结果目录：
 
 ```text
 outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/
+```
+
+#### 当前 RAHFL 结果与原论文结果为什么不同
+
+当前统一 runner 的 RAHFL 第 39 轮结果：
+
+```text
+avg_acc=56.41
+worst_acc=44.72
+```
+
+这个结果可以作为当前轻量、公平配置下与 FedPRIME-D2C 的直接基线，但不能
+称为完整复现论文结果。原论文与当前实验存在以下差异：
+
+```text
+原论文：先本地预训练 40 epoch，再进行 40 个协作通信轮
+当前 runner：随机初始化后直接进行 40 个“本地训练 + 通信”轮
+
+原论文：batch_size=256
+当前 Kaggle 配置：batch_size=64
+
+原论文/原源码：每轮遍历公共 DataLoader，batch_size=256 时约 19 个 batch
+当前 Kaggle 配置：每轮只使用 4×128=512 张公共数据
+
+原论文 Non-IID 附录：Dirichlet beta=1.0，private corruption rate=0.5
+当前主实验：Dirichlet alpha=0.5，private corruption rate=1
+
+原论文随机损坏来自 CIFAR-10-C 的 15 类损坏
+当前 prepare_data.py 使用 6 类简化随机损坏
+```
+
+论文报告的参考结果：
+
+```text
+IID、private corruption rate=1、测试随机损坏：RAHFL avg=77.59
+Non-IID beta=1.0、private corruption rate=0.5、测试随机损坏：RAHFL avg=67.52
+```
+
+因此，56.41% 在更严重 Non-IID、无独立预训练和公共通信预算明显缩小的当前
+配置下并不反常。但论文最终需要同时报告：
+
+```text
+1. 当前资源受限、严格同配置的 RAHFL vs FedPRIME-D2C 对比
+2. 更接近原论文训练预算的强 RAHFL baseline 对比
+```
+
+#### 当前测试集是否 IID，以及它验证什么
+
+当前测试集读取：
+
+```text
+RAHFL-master/Dataset/cifar_10_c/test/random_corrupt_1.npy
+```
+
+它具有以下性质：
+
+```text
+与训练集图片完全独立：来自 CIFAR-10 原始 test split，不与 train split 重叠
+标签分布平衡：共 10000 张，每类约 1000 张
+对所有客户端共享：四个客户端都在同一个完整测试集上评估
+没有按客户端做 Non-IID 划分：因此测试标签分布可视为全局 IID / balanced
+损坏独立生成：测试图片使用与训练图片不同的随机种子生成随机损坏
+```
+
+这正适合检查每个客户端是否学到了超出其本地 Non-IID 类别分布的全局知识。
+如果某客户端本地几乎没有 class 8，但在共享 balanced test set 的 class 8 上仍有
+较高准确率，说明通信确实补充了外部知识。
+
+不过，仅看整体 `avg_acc` 不能完全证明这一点，还应结合：
+
+```text
+worst_acc
+tail_acc
+missing_acc
+每客户端、每类别准确率
+```
+
+此外，当前测试集是“全局 IID 标签分布 + 100% 随机损坏图片”，所以它同时衡量：
+
+```text
+全局类别泛化能力
+数据损坏鲁棒性
 ```
 
 #### Kaggle 运行命令

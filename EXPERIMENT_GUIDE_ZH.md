@@ -216,15 +216,177 @@ outputs/summary.md
 
 ### 3.2 当前实验需要观察的指标
 
-每轮主要观察：
+#### avg_acc：平均客户端准确率
+
+定义：
 
 ```text
-avg_acc：4 个客户端平均准确率
-worst_acc：最弱客户端准确率
-local_loss：本地训练损失
-col_loss：RAHFL AsymHFL 通信损失
-d2c_loss：FedPRIME-D2C 公共数据蒸馏损失
+avg_acc = 4 个异构客户端测试准确率的平均值
 ```
+
+意义：
+
+```text
+衡量整个联邦系统的总体分类性能。
+这是与 RAHFL 比较时最直接的主指标。
+```
+
+健康现象：
+
+```text
+随轮次总体上升，允许个别轮次小幅回落。
+FedPRIME-D2C 与 RAHFL 的差距逐渐缩小，或最终超过 RAHFL。
+```
+
+危险信号：
+
+```text
+长期停留在约 10% 的随机猜测水平。
+连续多轮明显下降。
+FedPRIME-D2C 比 RAHFL 落后 8 至 10 个点以上且差距继续扩大。
+```
+
+#### worst_acc：最弱客户端准确率
+
+定义：
+
+```text
+worst_acc = 4 个客户端测试准确率中的最小值
+```
+
+意义：
+
+```text
+衡量最弱客户端是否受益。
+对于 Non-IID 场景尤其重要，因为 D2C 的目标之一是帮助本地稀缺类别较多的客户端。
+```
+
+健康现象：
+
+```text
+总体上升。
+FedPRIME-D2C 的 worst_acc 高于 RAHFL，或差距比 avg_acc 更有优势。
+```
+
+危险信号：
+
+```text
+avg_acc 上升但 worst_acc 长期不升或明显下降。
+说明系统只改善强客户端，弱客户端可能被错误 teacher 伤害。
+```
+
+#### local_loss：本地训练损失
+
+RAHFL 的 `local_loss` 不是单独的交叉熵，而是：
+
+```text
+local_loss_RAHFL = CE + lambda_jsd × JSD + DCL
+lambda_jsd = 12
+```
+
+其中：
+
+```text
+CE：干净视图分类损失
+JSD：干净视图与两个 AugMix 强增强视图的一致性损失
+DCL：original、weak、strong 特征之间的对比与分布匹配损失
+```
+
+因此 RAHFL 的 `local_loss` 数值显著大于普通 CE 是正常的。例如当前实验中：
+
+```text
+round 0：15.1687
+round 5：14.1863
+```
+
+该趋势是健康的，因为损失有限并且持续下降。
+
+FedPRIME-D2C 无 DCL 主配置的本地损失为：
+
+```text
+local_loss_FedPRIME-D2C = CE + lambda_jsd × JSD
+```
+
+重要注意事项：
+
+```text
+不能直接用 RAHFL local_loss 与 FedPRIME-D2C local_loss 的绝对值判断谁更好。
+两者包含的损失项不同，RAHFL 额外包含 DCL。
+应该关注各自损失是否有限、稳定，以及在自身训练过程中是否总体下降。
+```
+
+健康现象：
+
+```text
+有限、无 NaN/Inf、总体下降或稳定。
+```
+
+危险信号：
+
+```text
+突然成倍增大并持续上涨。
+出现 NaN 或 Inf。
+准确率长期不升，同时 local_loss 也没有下降趋势。
+```
+
+#### col_loss：RAHFL AsymHFL 通信损失
+
+定义：
+
+```text
+col_loss = RAHFL 在公共 CIFAR-100 数据上的 AsymHFL KL 蒸馏损失
+```
+
+RAHFL 会让较弱客户端向当前准确率不低于自己的客户端学习：
+
+```text
+KL(student public prediction || selected teacher public prediction)
+```
+
+当前实验观测：
+
+```text
+round 0：0.1735
+round 1 至 5：约 2.1 至 3.0
+```
+
+这是正常现象。第 0 轮所有随机初始化模型的输出都接近均匀分布，彼此较相似，
+因此 KL 较小。随着客户端在不同 Non-IID 数据上学习，预测逐渐分化，通信 KL
+上升到非零值，然后在一定范围内波动。
+
+健康现象：
+
+```text
+保持有限，在一定范围内波动。
+通信后 avg_acc 和 worst_acc 总体改善。
+```
+
+危险信号：
+
+```text
+出现 NaN/Inf。
+连续多轮快速增大到远高于此前量级，同时准确率下降。
+长期为 0，可能意味着没有客户端发生有效协作。
+```
+
+注意：
+
+```text
+col_loss 并不是越低越好。
+较低可能表示客户端预测一致，也可能表示没有有效学习信号。
+必须结合准确率趋势解释。
+```
+
+#### d2c_loss：FedPRIME-D2C 公共数据蒸馏损失
+
+定义：
+
+```text
+d2c_loss = 客户端在公共数据上向 D2C teacher 学习的 complementary KD 损失
+```
+
+它由 D2C teacher、客户端 prior 和 complementary class 权重共同决定，并包含
+知识蒸馏温度的 `T²` 缩放。
 
 Warmup 是否生效的检查：
 
@@ -233,12 +395,106 @@ FedPRIME-D2C round 0、1、2 的 d2c_loss 应为 0
 round 3 开始 d2c_loss 应变为非零有限值
 ```
 
+健康现象：
+
+```text
+warmup 后为非零有限值。
+可以波动，但不应持续爆炸。
+启用 D2C 后 avg_acc 或 worst_acc 的增长速度改善。
+```
+
+危险信号：
+
+```text
+warmup 后仍长期为 0，可能表示 D2C 没有执行。
+出现 NaN/Inf。
+数值持续快速增大，同时准确率下降，可能是 teacher 或 prior 不稳定。
+```
+
+注意：
+
+```text
+d2c_loss 与 RAHFL col_loss 的公式不同，绝对值不能直接横向比较。
+```
+
+#### head_acc、tail_acc、missing_acc：类别覆盖诊断指标
+
+这些指标由以下脚本在训练完成后生成：
+
+```text
+scripts/diagnose_underrepresented.py
+```
+
+含义：
+
+```text
+head_acc：客户端本地多数类别的准确率
+tail_acc：客户端本地少数类别的准确率
+missing_acc：客户端本地完全缺失类别的准确率
+```
+
+意义：
+
+```text
+如果 D2C 的设计有效，tail_acc 和 missing_acc 应比普通 LogitAvg 或 RAHFL 更有优势。
+这是证明 D2C 确实缓解 Non-IID 类别知识缺失的重要机制指标。
+```
+
+#### corruption group accuracy：细分损坏鲁棒性
+
+由以下脚本评估：
+
+```text
+scripts/evaluate_corruptions.py
+```
+
+关注：
+
+```text
+noise、blur、weather、digital 等损坏组准确率
+```
+
+意义：
+
+```text
+判断 PRIME 带来的鲁棒性提升是否覆盖不同损坏类型，而不只是当前随机损坏缓存。
+```
+
+#### 多 seed 均值与标准差
+
+最终论文结果应至少报告：
+
+```text
+seed 0、1、2 的 mean ± std
+```
+
+意义：
+
+```text
+mean 衡量平均性能。
+std 衡量训练稳定性。
+只有单 seed 的优势可能是偶然结果，不能作为最终论文结论。
+```
+
+### 3.3 如何判断当前核心对比是否成功
+
 初步正向信号：
 
 ```text
 FedPRIME-D2C avg_acc 上升趋势不弱于 RAHFL
 FedPRIME-D2C worst_acc 更高或差距逐渐缩小
-d2c_loss 有限且稳定
+d2c_loss 在 warmup 后为非零有限值并保持稳定
+local_loss 有限且总体下降
+```
+
+强论文结果：
+
+```text
+FedPRIME-D2C 最终 avg_acc 超过 RAHFL
+FedPRIME-D2C worst_acc 明显超过 RAHFL
+tail_acc / missing_acc 提升，证明 D2C 帮助本地稀缺类别
+alpha=0.1 下优势比 alpha=0.5 更明显
+多 seed 下仍保持提升且标准差可控
 ```
 
 ## 四、下一批必须运行的实验

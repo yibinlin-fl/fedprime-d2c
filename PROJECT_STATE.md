@@ -11,11 +11,16 @@ Completed since the previous state update:
 ```text
 configs/kaggle_t4_rahfl.yaml
 configs/kaggle_t4_fedprime_d2c.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
 These keep the same shared partition file and method choices, but lower
 `batch_size` to `64` and `public_batch_size` to `128`. The original full configs
 are still available for larger GPUs.
+
+- Updated the default urgent Kaggle comparison to use FedPRIME-D2C with
+  `d2c_warmup_rounds: 3`. The original `warmup=0` config remains available for
+  the later warmup ablation.
 
 - Added fixed shared partition indices for stricter fair comparison.
   - Config field: `data.partition_indices_path`

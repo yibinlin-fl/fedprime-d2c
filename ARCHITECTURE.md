@@ -104,7 +104,8 @@ RAHFL vs FedPRIME-D2C
 no DCL in FedPRIME-D2C
 T4-safe batch sizes
 configs/kaggle_t4_rahfl.yaml
-configs/kaggle_t4_fedprime_d2c.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+FedPRIME-D2C uses three local PRIME-only warmup rounds
 ```
 
 ### Data

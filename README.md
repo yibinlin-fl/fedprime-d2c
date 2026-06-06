@@ -225,12 +225,13 @@ The Kaggle default uses T4-safe configs:
 
 ```text
 configs/kaggle_t4_rahfl.yaml
-configs/kaggle_t4_fedprime_d2c.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
 These keep the same shared Non-IID split and method settings as the core
 comparison, but reduce batch sizes so the RAHFL AugMix+DCL multi-view training
-does not run out of memory on a single 14 GB T4.
+does not run out of memory on a single 14 GB T4. The FedPRIME-D2C config uses
+three local PRIME-only warmup rounds before D2C communication begins.
 
 It also installs dependencies, downloads CIFAR-10/CIFAR-100 through torchvision,
 creates the RAHFL-style random corrupted CIFAR-10 caches, audits the shared
@@ -261,7 +262,7 @@ To run a custom config list:
 ```bash
 bash scripts/run_kaggle.sh \
   configs/kaggle_t4_rahfl.yaml \
-  configs/kaggle_t4_fedprime_d2c.yaml
+  configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
 If the Kaggle session already downloaded data and only the training config needs

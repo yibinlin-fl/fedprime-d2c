@@ -1,5 +1,92 @@
 # TODO Next
 
+## Current Authoritative Next Steps - 2026-06-06
+
+### Now: wait for the running Kaggle experiment
+
+The current Kaggle comparison is already running successfully:
+
+```text
+configs/kaggle_t4_rahfl.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```
+
+Current status:
+
+```text
+RAHFL has entered formal 40-round training.
+The observed RAHFL metrics through round 5 are healthy.
+FedPRIME-D2C will run automatically after RAHFL finishes.
+```
+
+While it runs, only watch for:
+
+```text
+OOM, NaN, Inf, or unexpected termination
+RAHFL avg_acc / worst_acc trend
+FedPRIME-D2C round 0, 1, 2 d2c_loss = 0
+FedPRIME-D2C round 3 onward d2c_loss becomes finite and non-zero
+```
+
+### Immediately after the experiment finishes
+
+Save the Kaggle notebook version and collect:
+
+```text
+outputs/summary.csv
+outputs/rahfl_cifar10c_alpha05_cr1_t4/metrics.csv
+outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/metrics.csv
+```
+
+Then:
+
+1. Compare final `avg_acc` and `worst_acc`.
+2. Plot or inspect per-round learning trends.
+3. Confirm warmup behavior from `d2c_loss`.
+4. Decide whether FedPRIME-D2C is promising, needs tuning, or needs an added module.
+5. Run `scripts/diagnose_underrepresented.py` after checkpoints are available.
+
+### Next experiments, in priority order
+
+1. Warmup ablation:
+
+```text
+configs/kaggle_t4_fedprime_d2c.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```
+
+2. Create and run a T4-safe `LogitAvg + PRIME` baseline.
+3. Create and run T4-safe alpha=0.1 Severe Non-IID configs.
+4. Create T4-safe controlled configs for:
+
+```text
+RAHFL+PRIME = PRIME + DCL + AsymHFL
+FedPRIME-D2C+DCL = PRIME + DCL + D2C
+```
+
+5. Run D2C component ablations.
+6. Run seeds 0, 1, 2 after the design is stable.
+7. Evaluate official CIFAR-10-C corruption groups later.
+
+Full experiment descriptions and configuration paths:
+
+```text
+EXPERIMENT_GUIDE_ZH.md
+```
+
+### Resume prompt
+
+```text
+读取 ARCHITECTURE.md、PROJECT_STATE.md、EXPERIMENT_GUIDE_ZH.md 和 TODO_NEXT.md，
+继续推进 FedPRIME-D2C。先检查当前 Kaggle 核心对比是否完成，并分析 summary.csv
+以及两个 metrics.csv。
+```
+
+## Historical Next Steps
+
+The section below records earlier plans and may be outdated. Use the
+`Current Authoritative Next Steps - 2026-06-06` section above first.
+
 ## Immediate Next Steps
 
 0. Current continuation checkpoint.

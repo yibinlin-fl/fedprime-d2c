@@ -109,6 +109,13 @@ configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 FedPRIME-D2C uses three local PRIME-only warmup rounds
 ```
 
+Current experiment status on 2026-06-06:
+
+```text
+The first complete Kaggle RAHFL vs FedPRIME-D2C warmup=3 comparison is running.
+RAHFL training has been observed through round 5 and is healthy.
+```
+
 ### Data
 
 ```text
@@ -132,6 +139,27 @@ Data preparation:
 
 ```text
 scripts/prepare_data.py
+```
+
+Prepared mounted-data import:
+
+```text
+scripts/import_prepared_data.py
+```
+
+This helper searches a mounted prepared-data root, including nested Kaggle input
+layouts, then copies and verifies:
+
+```text
+cifar_10_c -> RAHFL-master/Dataset/cifar_10_c
+cifar_100 -> RAHFL-master/Dataset/cifar_100
+outputs/partitions -> outputs/partitions
+```
+
+The current Kaggle prepared dataset is named:
+
+```text
+fedprime-data
 ```
 
 This downloads CIFAR-10/CIFAR-100 through torchvision and creates

@@ -1,6 +1,75 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
+
+## Current State - 2026-06-06
+
+The first complete Kaggle core comparison is currently running:
+
+```text
+RAHFL = AugMix + DCL + AsymHFL
+FedPRIME-D2C = PRIME + 3 local-only warmup rounds + D2C
+```
+
+Configs:
+
+```text
+configs/kaggle_t4_rahfl.yaml
+configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```
+
+Both methods use the same prepared data, heterogeneous models, optimizer
+settings, and fixed Non-IID partition:
+
+```text
+outputs/partitions/cifar10c_alpha05_seed0_clients4_samples10000.npz
+```
+
+Kaggle prepared data is stored as the mounted dataset `fedprime-data`. Kaggle
+automatically exposes its contents below `/kaggle/input`. The import helper:
+
+```text
+scripts/import_prepared_data.py
+```
+
+automatically locates the mounted CIFAR data and copies it into:
+
+```text
+RAHFL-master/Dataset/cifar_10_c
+RAHFL-master/Dataset/cifar_100
+outputs/partitions
+```
+
+This avoids downloading CIFAR data again for every new Kaggle session.
+
+The current RAHFL run is healthy. Observed through round 5:
+
+```text
+round 0: avg_acc=22.94 worst_acc=21.00 local_loss=15.1687 col_loss=0.1735
+round 5: avg_acc=38.36 worst_acc=30.59 local_loss=14.1863 col_loss=2.2618
+```
+
+Interpretation:
+
+```text
+avg_acc and worst_acc are improving
+RAHFL local_loss is decreasing
+col_loss is finite and behaving normally
+```
+
+The detailed Chinese experiment/configuration and metric guide is:
+
+```text
+EXPERIMENT_GUIDE_ZH.md
+```
+
+Current action:
+
+```text
+Wait for the Kaggle RAHFL vs FedPRIME-D2C warmup=3 run to finish.
+Do not change the running experiment.
+After completion, save/download summary.csv and both metrics.csv files.
+```
 
 ## Resume Update - 2026-06-05
 

@@ -68,11 +68,51 @@ Mobilenetv2
 RAHFL 与 FedPRIME-D2C 读取同一个固定 partition `.npz` 文件，因此客户端
 看到的样本索引完全一致。
 
-## 三、今天正在运行的实验
+## 三、当前核心实验状态
 
 ### 3.1 Kaggle T4 核心对比：RAHFL vs FedPRIME-D2C warmup=3
 
-这是当前优先级最高的实验。
+首轮对比中，RAHFL 已经完整跑完 40 轮：
+
+```text
+RAHFL round 39:
+avg_acc=56.41
+worst_acc=44.72
+local_loss=12.2930
+col_loss=1.7927
+```
+
+首轮 FedPRIME-D2C 结果无效，因为在 D2C 启用前的 warmup 阶段就出现了
+`local_loss=nan`。定位结果为：ShuffleNet 上的 PRIME JSD 概率目标发生
+softmax 下溢，损失仍有限，但 KLDiv 的目标侧梯度包含 `log(0)`，产生了
+非有限梯度。
+
+当前已完成：
+
+```text
+JSD 概率 clamp + 重新归一化
+输入、PRIME views、logits、各损失项有限值检查
+梯度有限值熔断
+可配置 max_grad_norm
+独立 PRIME 稳定性诊断脚本
+```
+
+修复后四个异构客户端均已在本地通过完整 PRIME 本地训练轮次。
+
+因此下一次 Kaggle 不需要重新跑 RAHFL，只运行：
+
+```bash
+python scripts/run_experiment.py \
+  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```
+
+正式运行前可先快速检查：
+
+```bash
+python scripts/diagnose_prime_stability.py \
+  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml \
+  --batches 200
+```
 
 启动脚本：
 
@@ -842,6 +882,7 @@ configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 batch_size=64
 public_batch_size=128
 避免单张 T4 上 RAHFL AugMix+DCL OOM
+FedPRIME-D2C warmup3 使用 max_grad_norm=5.0 作为额外数值防护
 ```
 
 ### 7.2 普通服务器 / C2NET

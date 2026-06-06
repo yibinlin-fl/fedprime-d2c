@@ -2,45 +2,57 @@
 
 ## Current Authoritative Next Steps - 2026-06-06
 
-### Now: wait for the running Kaggle experiment
+### Now: rerun only the repaired FedPRIME-D2C experiment
 
-The current Kaggle comparison is already running successfully:
+The first comparison produced a valid completed RAHFL baseline, but the
+FedPRIME-D2C side diverged because of a now-fixed PRIME JSD gradient issue.
 
 ```text
-configs/kaggle_t4_rahfl.yaml
 configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
 Current status:
 
 ```text
-RAHFL has entered formal 40-round training.
-The observed RAHFL metrics through round 5 are healthy.
-FedPRIME-D2C will run automatically after RAHFL finishes.
+RAHFL round 39: avg_acc=56.41, worst_acc=44.72
+FedPRIME-D2C original run: invalid because local_loss became NaN before D2C
+Numerically stable JSD fix: implemented and locally verified on all four models
 ```
 
-While it runs, only watch for:
+Before a full rerun, use the fast PRIME stability diagnostic:
+
+```bash
+python scripts/diagnose_prime_stability.py \
+  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml \
+  --batches 200
+```
+
+Then run only FedPRIME-D2C:
+
+```bash
+python scripts/run_experiment.py \
+  --config configs/kaggle_t4_fedprime_d2c_warmup3.yaml
+```
+
+Watch for:
 
 ```text
-OOM, NaN, Inf, or unexpected termination
-RAHFL avg_acc / worst_acc trend
-FedPRIME-D2C round 0, 1, 2 d2c_loss = 0
-FedPRIME-D2C round 3 onward d2c_loss becomes finite and non-zero
+rounds 0, 1, 2: finite local_loss and d2c_loss=0
+round 3 onward: finite local_loss and finite non-zero d2c_loss
+avg_acc / worst_acc must remain above random-guess 10% and trend upward
 ```
 
-### Immediately after the experiment finishes
+### Immediately after the repaired experiment finishes
 
 Save the Kaggle notebook version and collect:
 
 ```text
-outputs/summary.csv
-outputs/rahfl_cifar10c_alpha05_cr1_t4/metrics.csv
 outputs/fedprime_d2c_cifar10c_alpha05_cr1_t4_warmup3/metrics.csv
 ```
 
 Then:
 
-1. Compare final `avg_acc` and `worst_acc`.
+1. Compare final `avg_acc` and `worst_acc` against RAHFL 56.41 / 44.72.
 2. Plot or inspect per-round learning trends.
 3. Confirm warmup behavior from `d2c_loss`.
 4. Decide whether FedPRIME-D2C is promising, needs tuning, or needs an added module.

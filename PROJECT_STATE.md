@@ -4,7 +4,8 @@ Last updated: 2026-06-06
 
 ## Current State - 2026-06-06
 
-The first complete Kaggle core comparison is currently running:
+The first Kaggle core comparison exposed and helped isolate a PRIME numerical
+stability bug:
 
 ```text
 RAHFL = AugMix + DCL + AsymHFL
@@ -42,19 +43,49 @@ outputs/partitions
 
 This avoids downloading CIFAR data again for every new Kaggle session.
 
-The current RAHFL run is healthy. Observed through round 5:
+RAHFL completed all 40 rounds successfully:
 
 ```text
 round 0: avg_acc=22.94 worst_acc=21.00 local_loss=15.1687 col_loss=0.1735
-round 5: avg_acc=38.36 worst_acc=30.59 local_loss=14.1863 col_loss=2.2618
+round 39: avg_acc=56.41 worst_acc=44.72 local_loss=12.2930 col_loss=1.7927
 ```
 
-Interpretation:
+The original FedPRIME-D2C warmup=3 run diverged:
 
 ```text
-avg_acc and worst_acc are improving
-RAHFL local_loss is decreasing
-col_loss is finite and behaving normally
+rounds 0-2: local_loss=nan while d2c_loss=0
+round 3 onward: local_loss=nan and d2c_loss=nan
+```
+
+This proves D2C was not the initial cause. The failure began during PRIME local
+training before communication was enabled.
+
+Root cause and fix:
+
+```text
+Root cause: ShuffleNet PRIME JSD could have finite loss but non-finite gradients
+because softmax targets underflowed to exact zero inside KLDiv.
+
+Fix: clamp and renormalize each JSD target distribution before KLDiv.
+Added: first-failure finite checks, gradient checks, optional gradient clipping,
+and scripts/diagnose_prime_stability.py.
+```
+
+Local verification after the fix:
+
+```text
+ResNet10: PASS
+ResNet12: PASS
+ShuffleNet: PASS
+Mobilenetv2: PASS
+```
+
+All four clients completed a full local PRIME epoch without NaN/Inf. The
+Kaggle warmup config now also sets:
+
+```yaml
+train:
+  max_grad_norm: 5.0
 ```
 
 The detailed Chinese experiment/configuration and metric guide is:
@@ -66,9 +97,9 @@ EXPERIMENT_GUIDE_ZH.md
 Current action:
 
 ```text
-Wait for the Kaggle RAHFL vs FedPRIME-D2C warmup=3 run to finish.
-Do not change the running experiment.
-After completion, save/download summary.csv and both metrics.csv files.
+Push the numerical-stability fix.
+Rerun only configs/kaggle_t4_fedprime_d2c_warmup3.yaml on Kaggle.
+Do not rerun RAHFL; its completed 40-round result is already the baseline.
 ```
 
 ## Resume Update - 2026-06-05

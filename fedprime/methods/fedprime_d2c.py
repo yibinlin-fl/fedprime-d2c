@@ -18,6 +18,8 @@ from fedprime.data.loaders import (
 )
 from fedprime.methods.d2c import D2CServer, complementary_kd_loss
 from fedprime.methods.local_prime import (
+    optimizer_step_checked,
+    require_finite,
     train_local_prime_dcl_epoch,
     train_local_prime_epoch,
     train_local_standard_epoch,
@@ -175,8 +177,10 @@ class FedPrimeD2CExperiment:
     def _local_phase(self, models, optimizers, private_loaders, prime_aug, train_cfg, method_cfg, stats) -> float:
         losses = []
         use_dcl = prime_aug is not None and bool(method_cfg.get("use_dcl", False))
+        max_grad_norm = train_cfg.get("max_grad_norm")
         for client_id, loader in enumerate(private_loaders):
             for _ in range(int(train_cfg.get("local_epochs", 1))):
+                context = f"local phase, client={client_id}"
                 if prime_aug is None:
                     loss = train_local_standard_epoch(
                         model=models[client_id],
@@ -185,6 +189,8 @@ class FedPrimeD2CExperiment:
                         normalizer=lambda x: normalize_batch(x, stats),
                         device=self.device,
                         max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=max_grad_norm,
+                        context=context,
                     )
                 elif use_dcl:
                     loss = train_local_prime_dcl_epoch(
@@ -197,6 +203,8 @@ class FedPrimeD2CExperiment:
                         lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         cl_module=method_cfg.get("cl_module", "dcl"),
                         max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=max_grad_norm,
+                        context=context,
                     )
                 else:
                     loss = train_local_prime_epoch(
@@ -207,6 +215,8 @@ class FedPrimeD2CExperiment:
                         device=self.device,
                         lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=max_grad_norm,
+                        context=context,
                     )
                 losses.append(loss)
         return sum(losses) / max(len(losses), 1)
@@ -239,6 +249,7 @@ class FedPrimeD2CExperiment:
                 with torch.no_grad():
                     logits.append(forward_logits(models[client_id], images_norm))
             logits_all = torch.stack(logits, dim=0)
+            require_finite(logits_all, "public client logits", "D2C teacher construction")
             communication = method_cfg.get("communication", "d2c")
             if communication == "logit_avg":
                 teacher, prior = self._build_logit_average_teacher(logits_all, d2c_server)
@@ -248,6 +259,8 @@ class FedPrimeD2CExperiment:
                 teacher, prior = d2c_server.build_teacher(logits_all, oracle_prior=oracle)
             else:
                 raise ValueError(f"Unsupported communication mode: {communication}")
+            require_finite(teacher, "D2C teacher", "D2C teacher construction")
+            require_finite(prior, "D2C client prior", "D2C teacher construction")
 
             for client_id in sorted(models):
                 model = models[client_id]
@@ -263,9 +276,13 @@ class FedPrimeD2CExperiment:
                     use_complementary=bool(method_cfg.get("use_complementary_kd", True)),
                 )
                 loss = float(method_cfg.get("lambda_d2c", 1.0)) * loss
-                optimizers[client_id].zero_grad(set_to_none=True)
-                loss.backward()
-                optimizers[client_id].step()
+                optimizer_step_checked(
+                    loss,
+                    model,
+                    optimizers[client_id],
+                    context=f"D2C phase, client={client_id}",
+                    max_grad_norm=self.config["train"].get("max_grad_norm"),
+                )
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
 

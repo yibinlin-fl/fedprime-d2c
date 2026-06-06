@@ -6,6 +6,16 @@ Last updated: 2026-06-05
 
 Completed since the previous state update:
 
+- Added the Chinese experiment/configuration guide:
+
+```text
+EXPERIMENT_GUIDE_ZH.md
+```
+
+It records today's warmup=3 Kaggle comparison, all existing experiment configs,
+their purposes, expected outputs, recommended execution order, and missing
+T4-safe configs.
+
 - Fixed the Kaggle formal comparison OOM by adding T4-safe configs:
 
 ```text

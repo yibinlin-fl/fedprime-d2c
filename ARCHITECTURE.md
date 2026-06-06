@@ -6,6 +6,7 @@ Use it together with:
 
 ```text
 PROJECT_STATE.md
+EXPERIMENT_GUIDE_ZH.md
 TODO_NEXT.md
 ```
 

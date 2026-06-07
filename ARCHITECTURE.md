@@ -400,6 +400,71 @@ method:
   prior_source: predicted # or oracle
 ```
 
+### Oracle Prior Diagnostic
+
+Oracle Prior is a diagnostic upper bound, not a deployable privacy-preserving
+method. It replaces the predicted public-data prior with the true class
+histogram of each client's fixed private partition.
+
+The compatibility entry point remains:
+
+```text
+D2CServer.build_teacher() -> teacher, used_prior
+```
+
+Optional diagnostics use:
+
+```text
+D2CServer.build_teacher_with_diagnostics()
+```
+
+This keeps the original predicted-prior training path unchanged. Regression
+tests verify its teacher and prior are exactly equal to the legacy formula.
+
+T4-safe formal diagnostic:
+
+```text
+configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+```
+
+It is identical to `configs/kaggle_t4_fedprime_d2c_warmup3.yaml` except for the
+experiment name, `prior_source: oracle`, and diagnostic logging.
+
+Optional prior logging:
+
+```yaml
+method:
+  prior_diagnostics:
+    enabled: true
+    save_rounds: [3, 10, 20, 39]
+```
+
+Implementation:
+
+```text
+fedprime/engine/prior_diagnostics.py
+scripts/analyze_priors.py
+```
+
+Outputs:
+
+```text
+outputs/<experiment>/
+  prior_diagnostics.csv
+  prior_summary.json
+  priors/round_*.npz
+  prior_analysis/
+    prior_metrics_by_round.csv
+    prior_error_by_round.png
+    prior_heatmap_oracle.png
+    prior_heatmap_predicted.png
+    prior_heatmap_absolute_error.png
+```
+
+The CSV records every client/public-batch comparison, including complete
+predicted, oracle, and actually-used prior vectors plus L1, KL, cosine,
+entropy, and top-class-match metrics.
+
 ## Fixed Partition Fairness
 
 All main comparison configs share fixed partition files through:

@@ -765,6 +765,60 @@ complementary class weight 也接近普通 KD 权重
 因此下一项最高优先级实验是 Oracle Prior D2C。它直接使用真实客户端标签分布，
 用于判断 predicted prior 是否是当前 D2C 退化成 LogitAvg 的主要原因。
 
+T4 安全正式配置已经实现：
+
+```text
+configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+```
+
+它与已完成的 `configs/kaggle_t4_fedprime_d2c_warmup3.yaml` 保持相同的固定划分、
+模型、随机种子、40 轮训练、batch size、公共 batch 数和 warmup=3。除实验名与诊断
+日志外，唯一影响训练算法的差异为：
+
+```yaml
+method:
+  prior_source: oracle
+```
+
+Oracle 实验会同时计算 predicted prior，但只把真实标签 prior 用于 D2C。这样既能测试
+完美 prior 的性能上界，也能直接诊断当前 predicted prior 是否接近均匀或错误。
+
+启动正式 Oracle 实验：
+
+```bash
+python scripts/run_experiment.py \
+  --config configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+```
+
+每轮导出：
+
+```text
+outputs/fedprime_d2c_oracle_cifar10c_alpha05_cr1_t4_warmup3/
+  metrics.csv
+  prior_diagnostics.csv
+  prior_summary.json
+  priors/round_003.npz
+  priors/round_010.npz
+  priors/round_020.npz
+  priors/round_039.npz
+```
+
+`prior_diagnostics.csv` 包含完整 predicted/oracle/used prior 向量，以及 L1、KL、
+余弦相似度、熵和 top-class match。实验结束后运行：
+
+```bash
+python scripts/analyze_priors.py \
+  --experiment_dir outputs/fedprime_d2c_oracle_cifar10c_alpha05_cr1_t4_warmup3
+```
+
+判断标准：
+
+```text
+Oracle 达到约 58-60：D2C 有明显潜力，应重点重做隐私友好的 predicted prior 估计。
+Oracle 仍约 52-53：完美 prior 也无法帮助，需重做 D2C 聚合或 complementary KD。
+Oracle 更差：真实标签 prior 与跨域公共 logits 的修正假设可能不成立或去偏过强。
+```
+
 配置：
 
 ```text
@@ -969,6 +1023,8 @@ method:
 
 ```text
 configs/ablations/fedprime_d2c_oracle_prior.yaml
+configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+configs/debug_fedprime_d2c_oracle.yaml
 ```
 
 关键设置：

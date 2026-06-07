@@ -16,6 +16,7 @@ from fedprime.data.loaders import (
     normalize_batch,
     partition_private_data,
 )
+from fedprime.engine.prior_diagnostics import PriorDiagnosticsRecorder
 from fedprime.methods.d2c import D2CServer, complementary_kd_loss
 from fedprime.methods.local_prime import (
     optimizer_step_checked,
@@ -107,6 +108,7 @@ class FedPrimeD2CExperiment:
 
         prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device) if use_prime else None
         d2c_server = D2CServer(**method_cfg.get("d2c", {}))
+        prior_recorder = self._build_prior_recorder(method_cfg, oracle_prior)
 
         metrics_path = self.output_dir / "metrics.csv"
         with metrics_path.open("w", newline="", encoding="utf-8") as f:
@@ -139,6 +141,8 @@ class FedPrimeD2CExperiment:
                         stats,
                         method_cfg,
                         oracle_prior,
+                        prior_recorder=prior_recorder,
+                        round_idx=round_idx,
                     )
                 accs = self._evaluate(models, test_loader)
                 row = {
@@ -159,6 +163,8 @@ class FedPrimeD2CExperiment:
                 )
 
         self._save_models(models)
+        if prior_recorder is not None:
+            prior_recorder.finalize()
 
     def _build_optimizer(self, model):
         opt_cfg = self.config["train"].get("optimizer", {})
@@ -231,10 +237,12 @@ class FedPrimeD2CExperiment:
         stats,
         method_cfg,
         oracle_prior,
+        prior_recorder=None,
+        round_idx: int = 0,
     ) -> float:
         losses = []
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
-        for _ in range(num_batches):
+        for public_batch_idx in range(num_batches):
             try:
                 images, _ = next(public_iter)
             except StopIteration:
@@ -256,7 +264,19 @@ class FedPrimeD2CExperiment:
             elif communication == "d2c":
                 prior_source = method_cfg.get("prior_source", "predicted")
                 oracle = oracle_prior if prior_source == "oracle" else None
-                teacher, prior = d2c_server.build_teacher(logits_all, oracle_prior=oracle)
+                if prior_recorder is None:
+                    teacher, prior = d2c_server.build_teacher(logits_all, oracle_prior=oracle)
+                else:
+                    teacher, prior, diagnostics = d2c_server.build_teacher_with_diagnostics(
+                        logits_all,
+                        oracle_prior=oracle,
+                    )
+                    prior_recorder.record(
+                        round_idx=round_idx,
+                        public_batch_idx=public_batch_idx,
+                        predicted_prior=diagnostics.predicted_prior,
+                        used_prior=diagnostics.used_prior,
+                    )
             else:
                 raise ValueError(f"Unsupported communication mode: {communication}")
             require_finite(teacher, "D2C teacher", "D2C teacher construction")
@@ -285,6 +305,17 @@ class FedPrimeD2CExperiment:
                 )
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    def _build_prior_recorder(self, method_cfg, oracle_prior):
+        diagnostics_cfg = method_cfg.get("prior_diagnostics", {})
+        if not bool(diagnostics_cfg.get("enabled", False)):
+            return None
+        return PriorDiagnosticsRecorder(
+            output_dir=self.output_dir,
+            oracle_prior=oracle_prior,
+            prior_source=method_cfg.get("prior_source", "predicted"),
+            save_rounds=[int(value) for value in diagnostics_cfg.get("save_rounds", [])],
+        )
 
     def _build_logit_average_teacher(self, logits_all, d2c_server):
         temperature = float(d2c_server.temperature)

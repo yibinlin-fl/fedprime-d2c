@@ -1,6 +1,6 @@
 # TODO Next
 
-## Current Authoritative Next Steps - 2026-06-06
+## Current Authoritative Next Steps - 2026-06-07
 
 ### Now: diagnose why D2C collapses toward LogitAvg
 
@@ -60,6 +60,24 @@ outputs/summary.csv
    next diagnostic:
 
 ```text
+Implementation completed:
+  configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+  fedprime/engine/prior_diagnostics.py
+  scripts/analyze_priors.py
+
+Formal Kaggle run is still pending.
+```
+
+Run:
+
+```bash
+python scripts/run_experiment.py \
+  --config configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+python scripts/analyze_priors.py \
+  --experiment_dir outputs/fedprime_d2c_oracle_cifar10c_alpha05_cr1_t4_warmup3
+```
+
+```text
 If Oracle Prior improves substantially:
   predicted prior from cross-domain CIFAR-100 is the primary bottleneck.
 
@@ -67,8 +85,10 @@ If Oracle Prior remains near 52:
   class-balanced aggregation and/or complementary KD are the bottleneck.
 ```
 2. Inspect `tail_acc` and `missing_acc` for both D2C and LogitAvg checkpoints.
-3. Log and compare predicted prior against true private-label prior.
-4. Inspect whether predicted priors are nearly uniform under temperature=3.
+3. Predicted-vs-true prior logging is implemented. After Oracle training, export
+   and analyze `prior_diagnostics.csv`, `prior_summary.json`, and prior plots.
+4. Inspect whether predicted priors are nearly uniform under temperature=3
+   using normalized entropy, L1/KL, cosine similarity, and heatmaps.
 5. The round-3 worst-client drop also suggests
    early D2C may be too aggressive.
 6. Only after Oracle Prior, test targeted D2C stabilization:

@@ -1,6 +1,6 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-06-06
+Last updated: 2026-06-07
 
 ## Current State - 2026-06-06
 
@@ -173,6 +173,62 @@ Current next action:
 Run a T4-safe Oracle Prior D2C diagnostic first.
 If Oracle Prior substantially beats 52.31, redesign predicted-prior estimation.
 If Oracle Prior remains near 52, inspect aggregation and complementary KD.
+```
+
+## Oracle Prior Diagnostic Implementation - 2026-06-07
+
+The T4-safe Oracle Prior diagnostic and predicted-vs-true prior logging are now
+implemented:
+
+```text
+configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
+configs/debug_fedprime_d2c_oracle.yaml
+fedprime/engine/prior_diagnostics.py
+scripts/analyze_priors.py
+```
+
+Low-intrusion guarantee:
+
+```text
+The existing D2CServer.build_teacher() compatibility API remains available.
+Diagnostics use a separate build_teacher_with_diagnostics() API.
+When prior_diagnostics.enabled is false, the normal runner does not record or
+export diagnostic values.
+Regression tests prove the default predicted-prior teacher and prior are
+element-for-element equal to the previous D2C formula.
+```
+
+Oracle formal-run outputs:
+
+```text
+prior_diagnostics.csv  complete per-round/public-batch/client prior vectors
+prior_summary.json     aggregate L1/KL/cosine/entropy/top-match statistics
+priors/round_*.npz     compact full-prior snapshots for selected rounds
+```
+
+Analyze after the run:
+
+```bash
+python scripts/analyze_priors.py \
+  --experiment_dir outputs/fedprime_d2c_oracle_cifar10c_alpha05_cr1_t4_warmup3
+```
+
+Decision target:
+
+```text
+PRIME+LogitAvg is already 52.10.
+An Oracle result near 60 would demonstrate that D2C has roughly the desired
++8-point headroom and that predicted-prior estimation is the main bottleneck.
+An Oracle result still near 52 means the current D2C formulas need redesign.
+```
+
+Verification:
+
+```text
+5 unit/regression tests pass.
+The local full debug run could not start because the local CIFAR-100 directory
+failed torchvision integrity validation. Run the formal smoke/full experiment
+with the complete Kaggle mounted prepared dataset.
 ```
 
 ## Resume Update - 2026-06-05

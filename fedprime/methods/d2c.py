@@ -1,9 +1,21 @@
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 import torch
 import torch.nn.functional as F
+
+
+@dataclass(frozen=True)
+class D2CTeacherDiagnostics:
+    """Detached server-side values used to audit D2C without changing training."""
+
+    predicted_prior: torch.Tensor
+    used_prior: torch.Tensor
+    client_beta: torch.Tensor
+    class_weight: torch.Tensor
+    sample_confidence: torch.Tensor
 
 
 def entropy(probs: torch.Tensor, dim: int = -1, eps: float = 1e-8) -> torch.Tensor:
@@ -42,6 +54,18 @@ class D2CServer:
         logits: torch.Tensor,
         oracle_prior: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compatibility entry point returning only values used by training."""
+        teacher, prior, _ = self.build_teacher_with_diagnostics(
+            logits,
+            oracle_prior=oracle_prior,
+        )
+        return teacher, prior
+
+    def build_teacher_with_diagnostics(
+        self,
+        logits: torch.Tensor,
+        oracle_prior: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor, D2CTeacherDiagnostics]:
         """Build a D2C global teacher.
 
         Args:
@@ -50,6 +74,7 @@ class D2CServer:
         Returns:
             teacher: Tensor with shape [B, C].
             prior: Tensor with shape [K, C].
+            diagnostics: Detached intermediate values for prior auditing.
         """
         if logits.ndim != 3:
             raise ValueError(f"Expected logits [K, B, C], got {tuple(logits.shape)}")
@@ -65,9 +90,16 @@ class D2CServer:
         #   pi_k(y) = mean_x p_k(y|x)
         # This is the core signal for detecting Non-IID label bias. For oracle
         # ablations, pi_k can be replaced by the true private label histogram.
-        prior = oracle_prior.to(logits.device) if oracle_prior is not None else probs.mean(dim=1)
-        prior = prior.clamp(min=self.p_min, max=1.0)
-        prior = prior / prior.sum(dim=-1, keepdim=True)
+        predicted_prior = probs.mean(dim=1)
+        predicted_prior = predicted_prior.clamp(min=self.p_min, max=1.0)
+        predicted_prior = predicted_prior / predicted_prior.sum(dim=-1, keepdim=True)
+        if oracle_prior is None:
+            # Keep the original predicted-prior operation order exactly intact.
+            prior = predicted_prior
+        else:
+            prior = oracle_prior.to(logits.device)
+            prior = prior.clamp(min=self.p_min, max=1.0)
+            prior = prior / prior.sum(dim=-1, keepdim=True)
 
         # EMA prior smooths noisy batch-level prior estimates across rounds:
         #   pi_k <- alpha * pi_k_ema + (1 - alpha) * pi_k_batch
@@ -119,7 +151,14 @@ class D2CServer:
         weight = class_weight[:, None, :] * sample_conf[:, :, None]
         scores = (weight * debiased_probs).sum(dim=0)
         teacher = scores / scores.sum(dim=-1, keepdim=True).clamp_min(self.eps)
-        return teacher.detach(), prior.detach()
+        diagnostics = D2CTeacherDiagnostics(
+            predicted_prior=predicted_prior.detach(),
+            used_prior=prior.detach(),
+            client_beta=beta.view(num_clients).detach(),
+            class_weight=class_weight.detach(),
+            sample_confidence=sample_conf.detach(),
+        )
+        return teacher.detach(), prior.detach(), diagnostics
 
     def _client_beta(self, prior: torch.Tensor, num_classes: int) -> torch.Tensor:
         if not self.adaptive_beta:

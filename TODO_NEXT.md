@@ -2,7 +2,7 @@
 
 ## Current Authoritative Next Steps - 2026-06-06
 
-### Now: save and diagnose the completed repaired FedPRIME-D2C experiment
+### Now: diagnose why D2C collapses toward LogitAvg
 
 The repaired FedPRIME-D2C warmup=3 experiment completed all 40 rounds without
 NaN/Inf.
@@ -19,6 +19,17 @@ Conclusion:
 PRIME + D2C is numerically stable and learns, but the first valid run does not
 beat RAHFL. The final gaps are -4.10 avg_acc and -4.94 worst_acc.
 ```
+
+The strict LogitAvg+PRIME control has completed:
+
+```text
+LogitAvg+PRIME final: avg_acc=52.10, worst_acc=39.72
+FedPRIME-D2C final:   avg_acc=52.31, worst_acc=39.78
+D2C gain:             avg_acc=+0.21, worst_acc=+0.06
+```
+
+This is effectively a tie. Current D2C does not yet provide a meaningful gain
+over ordinary public-logit averaging.
 
 Run the underrepresented-class diagnosis before ending the Kaggle session:
 
@@ -45,15 +56,22 @@ outputs/summary.csv
 
 ### Next experiments, in priority order
 
-1. Run the T4-safe `LogitAvg + PRIME` baseline to isolate whether D2C improves
-   or harms PRIME local learning:
+1. Run a T4-safe Oracle Prior D2C experiment. This is the highest-information
+   next diagnostic:
 
 ```text
-configs/kaggle_t4_logitavg_prime_warmup3.yaml
+If Oracle Prior improves substantially:
+  predicted prior from cross-domain CIFAR-100 is the primary bottleneck.
+
+If Oracle Prior remains near 52:
+  class-balanced aggregation and/or complementary KD are the bottleneck.
 ```
-2. Inspect `tail_acc` and `missing_acc`; the round-3 worst-client drop suggests
+2. Inspect `tail_acc` and `missing_acc` for both D2C and LogitAvg checkpoints.
+3. Log and compare predicted prior against true private-label prior.
+4. Inspect whether predicted priors are nearly uniform under temperature=3.
+5. The round-3 worst-client drop also suggests
    early D2C may be too aggressive.
-3. Test targeted D2C stabilization before adding more modules:
+6. Only after Oracle Prior, test targeted D2C stabilization:
 
 ```text
 longer warmup
@@ -62,8 +80,8 @@ self-preserving gate
 smaller lambda_d2c or beta
 ```
 
-4. Run a T4-safe alpha=0.1 Severe Non-IID comparison after D2C is competitive.
-5. After confirming the design is promising, add a strong RAHFL comparison:
+7. Run a T4-safe alpha=0.1 Severe Non-IID comparison after D2C is competitive.
+8. After confirming the design is promising, add a strong RAHFL comparison:
 
 ```text
 40 local pretraining epochs before communication
@@ -71,23 +89,23 @@ larger/full public communication budget per round
 the same strengthened training budget for FedPRIME-D2C
 ```
 
-6. Warmup ablation:
+9. Warmup ablation:
 
 ```text
 configs/kaggle_t4_fedprime_d2c.yaml
 configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 ```
 
-7. Create T4-safe controlled configs for:
+10. Create T4-safe controlled configs for:
 
 ```text
 RAHFL+PRIME = PRIME + DCL + AsymHFL
 FedPRIME-D2C+DCL = PRIME + DCL + D2C
 ```
 
-8. Run D2C component ablations.
-9. Run seeds 0, 1, 2 only after the design is stable.
-10. Evaluate official CIFAR-10-C corruption groups later.
+11. Run D2C component ablations.
+12. Run seeds 0, 1, 2 only after the design is stable.
+13. Evaluate official CIFAR-10-C corruption groups later.
 
 Full experiment descriptions and configuration paths:
 

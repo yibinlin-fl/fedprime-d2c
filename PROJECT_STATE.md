@@ -137,8 +137,42 @@ Current action:
 ```text
 Save the Kaggle outputs and run underrepresented-class diagnosis.
 Do not run multi-seed yet.
-Next establish whether the gap comes from PRIME local learning or D2C by running
-a T4-safe LogitAvg+PRIME baseline and targeted D2C diagnostics/ablations.
+```
+
+The strict T4-safe LogitAvg+PRIME control experiment has also completed:
+
+```text
+LogitAvg+PRIME round 39: avg_acc=52.10, worst_acc=39.72
+LogitAvg+PRIME best avg: 52.19 at round 37
+LogitAvg+PRIME best worst: 39.98 at round 38
+```
+
+Direct communication comparison:
+
+```text
+                         final avg_acc   final worst_acc   best avg_acc
+LogitAvg+PRIME                 52.10             39.72          52.19
+FedPRIME-D2C                   52.31             39.78          52.83
+D2C improvement                +0.21             +0.06          +0.64
+```
+
+Interpretation:
+
+```text
+Current D2C is effectively tied with plain LogitAvg; the tiny gains are below
+what should be treated as a meaningful single-seed improvement.
+The main bottleneck is now confirmed to be the D2C mechanism, not numerical
+stability. Predicted priors estimated from cross-domain CIFAR-100 public images
+may be close to uniform or unreliable, causing prior debias, class balancing,
+and complementary KD to degenerate toward ordinary logit averaging.
+```
+
+Current next action:
+
+```text
+Run a T4-safe Oracle Prior D2C diagnostic first.
+If Oracle Prior substantially beats 52.31, redesign predicted-prior estimation.
+If Oracle Prior remains near 52, inspect aggregation and complementary KD.
 ```
 
 ## Resume Update - 2026-06-05

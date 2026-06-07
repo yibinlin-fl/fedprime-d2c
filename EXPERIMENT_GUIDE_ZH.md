@@ -726,6 +726,45 @@ LogitAvg+PRIME：普通客户端 logits 平均 teacher + 普通 KD
 
 因此该实验用于判断当前 D2C 相比普通 logits 平均究竟带来提升还是伤害。
 
+该严格控制实验已经完成：
+
+```text
+LogitAvg+PRIME final: avg_acc=52.10, worst_acc=39.72
+LogitAvg+PRIME best avg: 52.19
+FedPRIME-D2C final: avg_acc=52.31, worst_acc=39.78
+FedPRIME-D2C best avg: 52.83
+```
+
+D2C 相比 LogitAvg 的最终提升仅为：
+
+```text
+avg_acc: +0.21
+worst_acc: +0.06
+```
+
+该差距小于单次训练中应被视为有意义的改善，因此当前 D2C 实际上与普通
+LogitAvg 持平，尚未证明 prior debias、class-balanced aggregation 和
+complementary KD 的有效贡献。
+
+可能的机制原因：
+
+```text
+公共 CIFAR-100 与私有 CIFAR-10 类别域不一致
+temperature=3 进一步平滑预测
+predicted prior 可能接近均匀分布或不代表真实私有标签分布
+```
+
+若 prior 接近均匀分布：
+
+```text
+prior debias 对所有类别近似减去同一个常数，几乎无效
+class-balanced client weight 接近均匀平均
+complementary class weight 也接近普通 KD 权重
+```
+
+因此下一项最高优先级实验是 Oracle Prior D2C。它直接使用真实客户端标签分布，
+用于判断 predicted prior 是否是当前 D2C 退化成 LogitAvg 的主要原因。
+
 配置：
 
 ```text

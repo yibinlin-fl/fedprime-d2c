@@ -109,11 +109,16 @@ configs/kaggle_t4_fedprime_d2c_warmup3.yaml
 FedPRIME-D2C uses three local PRIME-only warmup rounds
 ```
 
-Current experiment status on 2026-06-06:
+Current experiment status on 2026-06-07:
 
 ```text
-The first complete Kaggle RAHFL vs FedPRIME-D2C warmup=3 comparison is running.
-RAHFL training has been observed through round 5 and is healthy.
+RAHFL final:          avg_acc=56.41, worst_acc=44.72
+FedPRIME-D2C final:   avg_acc=52.31, worst_acc=39.78
+LogitAvg+PRIME final: avg_acc=52.10, worst_acc=39.72
+
+Current D2C is effectively tied with ordinary LogitAvg. The next diagnostic is
+Oracle Prior D2C to test whether cross-domain predicted-prior estimation is the
+main bottleneck.
 ```
 
 ### Data

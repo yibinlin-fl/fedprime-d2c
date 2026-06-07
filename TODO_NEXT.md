@@ -68,6 +68,11 @@ Implementation completed:
 Formal Kaggle run is still pending.
 ```
 
+Local end-to-end Oracle debug is complete on the RTX 3050. It produced finite
+losses and all diagnostic outputs. The initial predicted prior had normalized
+entropy `0.9999`, strongly indicating near-uniform prior collapse. The next
+required experiment remains the full 40-round Kaggle Oracle run.
+
 Run:
 
 ```bash
@@ -132,6 +137,14 @@ Full experiment descriptions and configuration paths:
 ```text
 EXPERIMENT_GUIDE_ZH.md
 ```
+
+### Kaggle execution rule
+
+Kaggle background `Save Version` runs cannot be modified or inspected with new
+cells after starting. Prepare and validate the entire notebook before launch.
+Future launch snippets must automatically perform setup, checks, training,
+analysis, and result packaging. Never rely on adding a diagnostic cell during
+an active background run.
 
 ### Resume prompt
 

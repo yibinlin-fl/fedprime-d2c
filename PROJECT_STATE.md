@@ -231,6 +231,71 @@ failed torchvision integrity validation. Run the formal smoke/full experiment
 with the complete Kaggle mounted prepared dataset.
 ```
 
+## Kaggle Background-Run Constraint
+
+Kaggle `Save Version` / background execution is not interactive:
+
+```text
+Once execution starts, no new diagnostic cell can be run and no cell can be
+edited. Any change requires cancelling the run and starting a fresh version.
+```
+
+Therefore every future Kaggle experiment must be provided as a complete
+pre-validated sequence that automatically:
+
+```text
+clones code -> imports mounted data -> checks CUDA/config/paths -> starts
+training with unbuffered logging -> analyzes results -> packages outputs
+```
+
+Do not advise running another cell while a background version is executing.
+Inside a normal Python cell use `%cd /kaggle/working/fedprime-d2c`; use plain
+`cd /kaggle/working/fedprime-d2c` only inside a cell beginning with `%%bash`.
+
+## Local RTX 3050 Oracle Validation - 2026-06-07
+
+The Oracle implementation has now been validated through a real one-round
+end-to-end run on the local RTX 3050 Laptop GPU:
+
+```text
+torch: 2.8.0+cu126
+GPU: NVIDIA GeForce RTX 3050 Laptop GPU, 4 GB
+runtime: about 35 seconds
+round 0: avg_acc=9.74, worst_acc=9.09, local_loss=2.4352, d2c_loss=1.0566
+```
+
+The run successfully completed:
+
+```text
+PRIME local training
+Oracle D2C teacher construction
+client public-data distillation
+full shared-test evaluation
+metrics/prior CSV and JSON export
+selected-round NPZ export
+prior analysis plots
+four final client checkpoints
+```
+
+The original local CIFAR-100 extracted directory has a Windows ACL problem and
+cannot be read. For the validation, the existing CIFAR-100 tar archive was
+extracted into `outputs/local_debug_data/cifar_100` without modifying or
+deleting the inaccessible directory.
+
+The first real prior diagnostic strongly supports the current hypothesis:
+
+```text
+predicted normalized entropy mean: 0.999900
+oracle normalized entropy mean:    0.748475
+prior L1 mean:                     0.907714
+prior KL mean:                     0.568954
+top-class match:                   0.50
+```
+
+The predicted prior is almost perfectly uniform in this early debug round,
+while the real client priors are clearly skewed. The formal 40-round Oracle run
+is still required to measure the performance upper bound.
+
 ## Resume Update - 2026-06-05
 
 Completed since the previous state update:

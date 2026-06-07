@@ -790,6 +790,34 @@ python scripts/run_experiment.py \
   --config configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
 ```
 
+Kaggle 后台运行注意事项：
+
+```text
+Save Version / 后台实验一旦开始，就不能再新增、修改或运行诊断 Cell。
+任何修改都会要求取消任务并重新启动。
+因此正式运行前必须一次性准备好：代码与数据导入、CUDA/路径检查、无缓冲训练、
+结果分析和结果打包。
+```
+
+路径命令注意：
+
+```text
+普通 Python Cell 使用：%cd /kaggle/working/fedprime-d2c
+只有以 %%bash 开头的 Cell 才能使用：cd /kaggle/working/fedprime-d2c
+```
+
+本地 RTX 3050 已完成一轮 Oracle 全链路验证：
+
+```text
+round 0: avg_acc=9.74, worst_acc=9.09, local_loss=2.4352, d2c_loss=1.0566
+用时约 35 秒，训练、评估、prior 日志、分析图片和 checkpoint 均成功导出。
+```
+
+首次真实诊断中，predicted prior 的归一化熵均值约为 `0.9999`，几乎是均匀分布；
+Oracle prior 的归一化熵均值约为 `0.7485`。这支持当前 predicted prior 无法表达
+客户端 Non-IID 标签偏斜、进而使 D2C 接近 LogitAvg 的假设。仍需完整 40 轮 Oracle
+实验判断完美 prior 能否带来期望的性能提升。
+
 每轮导出：
 
 ```text

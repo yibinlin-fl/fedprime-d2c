@@ -818,6 +818,44 @@ Oracle prior 的归一化熵均值约为 `0.7485`。这支持当前 predicted pr
 客户端 Non-IID 标签偏斜、进而使 D2C 接近 LogitAvg 的假设。仍需完整 40 轮 Oracle
 实验判断完美 prior 能否带来期望的性能提升。
 
+完整 40 轮 Oracle 实验已经完成：
+
+```text
+Oracle final:        avg_acc=51.74, worst_acc=39.13
+Oracle best avg:     52.65
+Predicted D2C final: avg_acc=52.31, worst_acc=39.78
+LogitAvg final:      avg_acc=52.10, worst_acc=39.72
+```
+
+Oracle 没有提升，说明 predicted prior 不准确虽然真实存在，但不是当前 D2C 可以
+直接修复的唯一瓶颈。当前 D2C 对真实 prior 可能存在过度修正。
+
+特别需要注意：Oracle prior 来自私有 CIFAR-10 标签分布，而 teacher logits 来自
+跨域 CIFAR-100 公共图片。标准 label-shift prior correction 的同域假设不成立，
+因此该 Oracle 实验应称为“真实 prior 诊断”，不能再称为必然性能上界。
+
+warmup 后出现明显冲击：
+
+```text
+round 2 -> 3 worst_acc: 24.03 -> 17.39
+round 5 worst_acc:       10.42
+round 4 d2c_loss:         3.99
+```
+
+下一实验优先运行 `Oracle + no prior debias`。当前 `beta=0.5, p_min=0.001` 时，
+缺失类会被 `-beta*log(prior)` 增加约 `+3.45` logit，可能是弱客户端骤降的主要来源。
+
+Oracle 最终 checkpoint 的弱势类别诊断：
+
+```text
+client 2: head_acc=75.48, tail_acc=4.63, missing_acc=0.00
+client 3: head_acc=74.37, tail_acc=0.00, missing_acc=0.00
+```
+
+客户端 2 缺失 class 8/9，客户端 3 缺失 class 9，但对应 missing_acc 全部为 0。
+因此当前 complementary KD 没有实现“补齐本地缺失类别知识”的设计目标。后续方法
+优化必须把弱客户端 `tail_acc` 和 `missing_acc` 作为核心判断指标。
+
 每轮导出：
 
 ```text

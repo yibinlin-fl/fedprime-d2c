@@ -73,6 +73,39 @@ losses and all diagnostic outputs. The initial predicted prior had normalized
 entropy `0.9999`, strongly indicating near-uniform prior collapse. The next
 required experiment remains the full 40-round Kaggle Oracle run.
 
+The full 40-round Oracle run is now complete:
+
+```text
+Oracle final:        avg_acc=51.74, worst_acc=39.13
+Predicted D2C final: avg_acc=52.31, worst_acc=39.78
+LogitAvg final:      avg_acc=52.10, worst_acc=39.72
+```
+
+Oracle is not better, so do not spend the next run only improving predicted
+prior estimation. The next experiment priority is:
+
+```text
+1. T4-safe Oracle + no prior debias
+2. Oracle with beta=0.1 or beta=0.2
+3. Oracle + no class-balanced aggregation
+4. Oracle + no complementary KD
+5. smaller/ramped lambda_d2c
+```
+
+The first target is prior debias because missing classes receive up to about
+`+3.45` logit under the current `beta=0.5, p_min=0.001` configuration.
+
+The Oracle final checkpoints also show:
+
+```text
+client 2 missing_acc=0.00, tail_acc=4.63
+client 3 missing_acc=0.00, tail_acc=0.00
+```
+
+Future D2C redesigns must be judged primarily by weak-client `tail_acc` and
+`missing_acc`, not only average accuracy. A method that does not improve these
+metrics does not validate the complementary-knowledge claim.
+
 Run:
 
 ```bash

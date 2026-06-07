@@ -296,6 +296,79 @@ The predicted prior is almost perfectly uniform in this early debug round,
 while the real client priors are clearly skewed. The formal 40-round Oracle run
 is still required to measure the performance upper bound.
 
+## Full Oracle Prior Result - 2026-06-07
+
+The full 40-round T4 Oracle Prior experiment completed and was extracted under:
+
+```text
+outputs/oracle_result_extracted/
+```
+
+Results:
+
+```text
+Oracle final:      avg_acc=51.74, worst_acc=39.13
+Oracle best avg:   52.65 at round 37
+Oracle best worst: 39.89 at round 38
+
+Predicted D2C final: avg_acc=52.31, worst_acc=39.78
+LogitAvg final:      avg_acc=52.10, worst_acc=39.72
+RAHFL final:         avg_acc=56.41, worst_acc=44.72
+```
+
+Oracle did not improve D2C. Relative to predicted-prior D2C:
+
+```text
+final avg_acc:   -0.57
+final worst_acc: -0.65
+best avg_acc:    -0.18
+best worst_acc:  +0.11
+```
+
+Important interpretation:
+
+```text
+Predicted priors are too smooth and imperfect, but prior-estimation error alone
+does not explain the D2C bottleneck. The current formulas do not benefit from a
+true private-label prior and may over-correct clients.
+```
+
+Oracle communication caused a strong early weak-client shock:
+
+```text
+round 2 -> 3 worst_acc: 24.03 -> 17.39
+round 5 worst_acc:       10.42
+round 4 d2c_loss:         3.99
+```
+
+The current Oracle experiment must not be described as a guaranteed performance
+upper bound. The true prior is from private CIFAR-10 labels while teacher logits
+come from cross-domain CIFAR-100 images, so standard label-shift prior
+correction assumptions do not hold.
+
+Highest-priority next diagnostic:
+
+```text
+Oracle + no prior debias
+```
+
+The term `- beta * log(prior)` can add about `+3.45` logit to a missing class
+when `beta=0.5` and `p_min=0.001`, making it the strongest candidate for the
+early harmful communication shock. After that, separately ablate class-balanced
+aggregation and complementary KD, and test a smaller/ramped D2C strength.
+
+Final-checkpoint underrepresented-class diagnosis further confirms the failure
+mode:
+
+```text
+client 2: head_acc=75.48, tail_acc=4.63, missing_acc=0.00
+client 3: head_acc=74.37, tail_acc=0.00, missing_acc=0.00
+```
+
+Client 2 is missing classes 8/9 and client 3 is missing class 9. Oracle D2C
+learned none of those missing classes. The current complementary KD therefore
+does not achieve its intended purpose of transferring missing-class knowledge.
+
 ## Resume Update - 2026-06-05
 
 Completed since the previous state update:

@@ -856,6 +856,26 @@ client 3: head_acc=74.37, tail_acc=0.00, missing_acc=0.00
 因此当前 complementary KD 没有实现“补齐本地缺失类别知识”的设计目标。后续方法
 优化必须把弱客户端 `tail_acc` 和 `missing_acc` 作为核心判断指标。
 
+RAHFL-original 已经补充 missing/tail 诊断：
+
+```text
+RAHFL final: avg_acc=56.41, worst_acc=44.72
+
+client 2: head_acc=84.14, tail_acc=8.80, missing_acc=0.00
+client 3: head_acc=82.03, tail_acc=1.73, missing_acc=0.00
+```
+
+这说明 RAHFL 的整体优势并不等价于“通过 CIFAR-100 public logits 学会了完全缺失的
+CIFAR-10 类别”。在当前固定划分下，RAHFL 主要提升本地已有类别，尤其是 head 类；
+对完全缺失类仍然没有成功迁移。
+
+因此后续论文表述应更精确：
+
+```text
+RAHFL 可以作为抗损坏与模型异构协作强基线；
+但它没有显式解决严重 label-skew 下的 missing-class transfer。
+```
+
 每轮导出：
 
 ```text

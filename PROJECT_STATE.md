@@ -369,6 +369,54 @@ Client 2 is missing classes 8/9 and client 3 is missing class 9. Oracle D2C
 learned none of those missing classes. The current complementary KD therefore
 does not achieve its intended purpose of transferring missing-class knowledge.
 
+## RAHFL Missing/Tail Diagnostic - 2026-06-08
+
+RAHFL-original was rerun with the same T4-safe configuration and fixed
+partition, then diagnosed with `scripts/diagnose_underrepresented.py`.
+
+Overall result reproduced the previous baseline:
+
+```text
+RAHFL final:      avg_acc=56.41, worst_acc=44.72
+RAHFL best avg:   56.41 at round 39
+RAHFL best worst: 44.72 at round 39
+```
+
+Underrepresented-class result:
+
+```text
+client 0: overall=66.27, head=78.39, tail=38.00, missing=nan
+client 1: overall=64.92, head=79.54, tail=30.80, missing=nan
+client 2: overall=44.71, head=84.14, tail=8.80,  missing=0.00
+client 3: overall=49.74, head=82.03, tail=1.73,  missing=0.00
+```
+
+The fixed partition has:
+
+```text
+client 2 missing classes: 8, 9
+client 3 missing classes: 9
+```
+
+RAHFL-original still obtains `0%` missing accuracy for all missing classes.
+Therefore, in the current alpha=0.5 setting, RAHFL's higher average accuracy
+does not mean it transfers completely missing CIFAR-10 classes through
+cross-domain CIFAR-100 public logits. Its advantage mostly comes from stronger
+head-class performance and modest tail-class gains on classes that are still
+present locally.
+
+This result supports the paper angle:
+
+```text
+RAHFL can improve robust heterogeneous collaboration, but it does not explicitly
+solve class-missing knowledge transfer under label-skew Non-IID data.
+```
+
+Next design work should preserve PRIME and the public-logit communication
+interface, but should no longer rely on private-prior debiasing or assume
+cross-domain CIFAR-100 logits automatically carry missing target-class
+semantics.
+
 ## Resume Update - 2026-06-05
 
 Completed since the previous state update:

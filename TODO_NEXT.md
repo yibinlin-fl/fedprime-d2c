@@ -106,6 +106,20 @@ Future D2C redesigns must be judged primarily by weak-client `tail_acc` and
 `missing_acc`, not only average accuracy. A method that does not improve these
 metrics does not validate the complementary-knowledge claim.
 
+RAHFL-original missing/tail has now been measured:
+
+```text
+RAHFL final avg/worst: 56.41 / 44.72
+client 2 missing_acc: 0.00
+client 3 missing_acc: 0.00
+```
+
+So RAHFL's strong average performance does not demonstrate missing-class
+transfer in this fixed alpha=0.5 split. The next research step is not another
+RAHFL missing run. It is to design a public-logit communication module that can
+explicitly improve missing/tail classes, or to test whether a same-domain
+balanced public CIFAR-10 subset is required for that goal.
+
 Run:
 
 ```bash

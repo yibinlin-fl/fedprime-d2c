@@ -5,6 +5,7 @@ __pycache__/
 outputs/
 logs/
 runs/
+local_runs/
 wandb/
 
 *.pt

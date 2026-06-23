@@ -417,6 +417,45 @@ interface, but should no longer rely on private-prior debiasing or assume
 cross-domain CIFAR-100 logits automatically carry missing target-class
 semantics.
 
+## Pending PRIME Local-Backbone Control - 2026-06-23
+
+The next required fairness control is now configured but has not yet been run:
+
+```text
+configs/kaggle_t4_rahfl_prime.yaml
+```
+
+It runs:
+
+```text
+PRIME + DCL + original RAHFL AsymHFL
+```
+
+It is deliberately identical to the completed T4-safe RAHFL configuration in
+all data, fixed partition, heterogeneous models, optimizer, rounds, and public
+communication budget. The only change is the local robust learner:
+
+```text
+AugMix -> PRIME
+```
+
+This control must be completed before interpreting any new PRIME-based
+communication method. It answers whether PRIME improves the RAHFL local
+backbone under the same Non-IID/corruption setting.
+
+Local path verification is complete:
+
+```text
+config: configs/debug_rahfl_prime_cifar10c.yaml
+round:  1
+result: avg_acc=10.50, worst_acc=8.25, local_loss=18.0854, col_loss=0.2041
+```
+
+This is a random-initialization smoke result, not a performance result. It
+confirms that PRIME three-view training, original DCL, original AsymHFL public
+distillation, four heterogeneous models, metrics, and checkpoints run through
+one complete round together. The formal 40-round T4 result is still pending.
+
 ## Resume Update - 2026-06-05
 
 Completed since the previous state update:

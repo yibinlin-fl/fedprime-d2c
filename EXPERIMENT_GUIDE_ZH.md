@@ -178,6 +178,75 @@ method:
 outputs/rahfl_cifar10c_alpha05_cr1_t4/
 ```
 
+#### PRIME + DCL + AsymHFL 控制实验
+
+路径：
+
+```text
+configs/kaggle_t4_rahfl_prime.yaml
+```
+
+算法：
+
+```text
+PRIME + DCL + 原始 AsymHFL
+```
+
+该配置与 `configs/kaggle_t4_rahfl.yaml` 的数据、固定 Non-IID 划分、四个
+异构模型、优化器、40 个通信轮、batch size 和 public communication budget
+完全一致；唯一替换为：
+
+```text
+AugMix -> PRIME
+```
+
+目的：
+
+```text
+单独验证 PRIME 作为 RAHFL 本地鲁棒学习基座时的贡献。
+后续任何 PRIME 新通信方法都应优先与该控制组比较，避免将 PRIME 本身的收益
+错误归因给新通信模块。
+```
+
+结果目录：
+
+```text
+outputs/rahfl_prime_cifar10c_alpha05_cr1_t4/
+```
+
+本地或新环境的最小 smoke test：
+
+```text
+configs/debug_rahfl_prime_cifar10c.yaml
+```
+
+该配置只运行 1 个通信轮、每个客户端 1 个本地 batch、1 个 public batch，
+用于确认 `PRIME + DCL + AsymHFL` 的完整代码路径可启动，不用于报告性能。该本地
+smoke 配置输出到 `local_runs/`，并使用 `outputs/local_debug_data/cifar_100` 的本地
+可读副本，以避免本机挂载或旧实验输出目录的权限影响。Kaggle 正式配置不使用该路径。
+
+Kaggle 正式运行：
+
+```bash
+RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 \
+  bash scripts/run_kaggle.sh configs/kaggle_t4_rahfl_prime.yaml
+```
+
+运行结束后首先查看：
+
+```text
+outputs/rahfl_prime_cifar10c_alpha05_cr1_t4/metrics.csv
+outputs/summary.csv
+```
+
+然后使用相同固定 partition 做弱势类别诊断：
+
+```bash
+python scripts/diagnose_underrepresented.py \
+  --config configs/kaggle_t4_rahfl_prime.yaml \
+  --checkpoint_dir outputs/rahfl_prime_cifar10c_alpha05_cr1_t4/checkpoints
+```
+
 #### FedPRIME-D2C warmup=3 配置
 
 路径：

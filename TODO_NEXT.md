@@ -56,6 +56,20 @@ outputs/summary.csv
 
 ### Next experiments, in priority order
 
+0. Run the T4-safe PRIME local-backbone control before implementing another
+   communication mechanism:
+
+```text
+configs/kaggle_t4_rahfl_prime.yaml
+PRIME + DCL + original AsymHFL
+```
+
+This keeps all settings equal to `configs/kaggle_t4_rahfl.yaml` and changes
+only `AugMix -> PRIME`. Compare its final/best `avg_acc`, `worst_acc`, and
+underrepresented-class diagnosis against RAHFL. Do not attribute any later
+PRIME-based communication gain to the communication module until this control
+has been measured.
+
 1. Run a T4-safe Oracle Prior D2C experiment. This is the highest-information
    next diagnostic:
 

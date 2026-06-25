@@ -9,6 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from fedprime.methods.fedprime_d2c import FedPrimeD2CExperiment
+from fedprime.methods.fedprime_pair import FedPrimePairExperiment
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.utils.config import load_config
 
@@ -22,6 +23,8 @@ def main() -> None:
     method = config.get("method_name", "fedprime_d2c")
     if method == "fedprime_d2c":
         FedPrimeD2CExperiment(config).run()
+    elif method == "fedprime_pair":
+        FedPrimePairExperiment(config).run()
     elif method in {"rahfl", "rahfl_prime"}:
         AsymHFLExperiment(config).run()
     else:

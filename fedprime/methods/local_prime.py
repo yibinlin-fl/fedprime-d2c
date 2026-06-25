@@ -113,6 +113,117 @@ def train_local_prime_epoch(
     return sum(losses) / max(len(losses), 1)
 
 
+def _class_balanced_cbcl_loss(
+    features: torch.Tensor,
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    temperature: float = 0.2,
+    reliability_tau: float = 1.0,
+) -> torch.Tensor:
+    views, batch_size = features.shape[:2]
+    flat_features = F.normalize(features.reshape(views * batch_size, -1), dim=1)
+    flat_labels = labels.repeat(views)
+
+    logits_view = logits.reshape(views, batch_size, -1)
+    true_logits = logits_view.gather(
+        2,
+        labels.view(1, batch_size, 1).expand(views, -1, -1),
+    ).squeeze(-1)
+    class_mask = F.one_hot(labels, logits_view.size(-1)).bool().view(1, batch_size, -1)
+    competing_logits = logits_view.masked_fill(class_mask, float("-inf"))
+    margin = true_logits - competing_logits.max(dim=-1).values
+    anchor_weight = torch.sigmoid(
+        margin / max(float(reliability_tau), 1e-8)
+    ).reshape(-1).detach()
+
+    sim = torch.matmul(flat_features, flat_features.t()) / max(float(temperature), 1e-8)
+    eye = torch.eye(sim.size(0), dtype=torch.bool, device=sim.device)
+    sim = sim.masked_fill(eye, -1e9)
+    positive_mask = flat_labels.unsqueeze(0).eq(flat_labels.unsqueeze(1)) & ~eye
+    positive_count = positive_mask.sum(dim=1)
+    valid_anchor = positive_count > 0
+
+    log_prob = sim - torch.logsumexp(sim, dim=1, keepdim=True)
+    per_anchor = torch.zeros_like(anchor_weight)
+    per_anchor[valid_anchor] = -(
+        log_prob[valid_anchor].masked_fill(~positive_mask[valid_anchor], 0.0).sum(dim=1)
+        / positive_count[valid_anchor].clamp_min(1)
+    )
+    per_anchor = per_anchor * anchor_weight
+
+    class_losses = []
+    for class_id in labels.unique(sorted=True):
+        mask = (flat_labels == class_id) & valid_anchor
+        if mask.any():
+            class_losses.append(per_anchor[mask].mean())
+    if not class_losses:
+        return flat_features.sum() * 0.0
+    return torch.stack(class_losses).mean()
+
+
+def train_local_prime_cbcl_epoch(
+    model,
+    loader,
+    optimizer,
+    prime_aug,
+    device: torch.device,
+    lambda_jsd: float,
+    lambda_cbcl: float,
+    cbcl_temperature: float = 0.2,
+    cbcl_reliability_tau: float = 1.0,
+    max_batches: int | None = None,
+    max_grad_norm: float | None = None,
+    context: str = "PRIME+CBCL local training",
+) -> float:
+    model.train()
+    prime_aug.eval()
+    losses = []
+
+    for batch_idx, (images, labels) in enumerate(loader):
+        if max_batches is not None and batch_idx >= max_batches:
+            break
+        if isinstance(images, (tuple, list)):
+            images = images[0]
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True).long()
+
+        views = prime_aug(images)
+        batch_context = f"{context}, batch={batch_idx}"
+        require_finite(images, "input images", batch_context)
+        require_finite(views, "PRIME views", batch_context)
+
+        logits_all = forward_logits(model, views)
+        require_finite(logits_all, "model logits", batch_context)
+        logits_clean, logits_aug1, logits_aug2 = torch.split(logits_all, images.size(0))
+
+        ce_clean = F.cross_entropy(logits_clean, labels)
+        ce_aug1 = F.cross_entropy(logits_aug1, labels)
+        ce_aug2 = F.cross_entropy(logits_aug2, labels)
+        ce_loss = ce_clean + 0.5 * (ce_aug1 + ce_aug2)
+        jsd_loss = jsd_loss_from_logits(logits_clean, logits_aug1, logits_aug2)
+
+        features_all = _model_backbone(model)(views)
+        features_all = features_all.view(features_all.size(0), -1)
+        features = torch.stack(torch.split(features_all, images.size(0)), dim=0)
+        logits_view = torch.stack([logits_clean, logits_aug1, logits_aug2], dim=0)
+        cbcl_loss = _class_balanced_cbcl_loss(
+            features=features,
+            logits=logits_view,
+            labels=labels,
+            temperature=cbcl_temperature,
+            reliability_tau=cbcl_reliability_tau,
+        )
+        require_finite(ce_loss, "cross-entropy loss", batch_context)
+        require_finite(jsd_loss, "JSD loss", batch_context)
+        require_finite(cbcl_loss, "CBCL loss", batch_context)
+
+        loss = ce_loss + lambda_jsd * jsd_loss + float(lambda_cbcl) * cbcl_loss
+        optimizer_step_checked(loss, model, optimizer, batch_context, max_grad_norm)
+        losses.append(float(loss.detach().cpu()))
+
+    return sum(losses) / max(len(losses), 1)
+
+
 def train_local_standard_epoch(
     model,
     loader,

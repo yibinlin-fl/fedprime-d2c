@@ -5,6 +5,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 RUN_INSTALL="${RUN_INSTALL:-1}"
 RUN_PREPARE_DATA="${RUN_PREPARE_DATA:-1}"
 RUN_DEBUG="${RUN_DEBUG:-0}"
+DEBUG_CONFIG="${DEBUG_CONFIG:-configs/debug_fedprime_d2c_cifar10c.yaml}"
 RATES="${RATES:-0 0.5 1}"
 PREP_CONFIG="${PREP_CONFIG:-configs/kaggle_t4_fedprime_d2c_warmup3.yaml}"
 
@@ -41,12 +42,14 @@ echo "===== Checking environment ====="
 "${PYTHON_BIN}" scripts/check_environment.py --config "${PREP_CONFIG}"
 
 echo "===== Auditing shared Non-IID partition ====="
-"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/kaggle_t4_rahfl.yaml"
-"${PYTHON_BIN}" scripts/audit_partition.py --config "configs/kaggle_t4_fedprime_d2c_warmup3.yaml"
+"${PYTHON_BIN}" scripts/audit_partition.py --config "${PREP_CONFIG}"
+for cfg in "${CONFIGS[@]}"; do
+  "${PYTHON_BIN}" scripts/audit_partition.py --config "${cfg}"
+done
 
 if [ "${RUN_DEBUG}" = "1" ]; then
   echo "===== Running debug smoke tests ====="
-  "${PYTHON_BIN}" scripts/run_experiment.py --config "configs/debug_fedprime_d2c_cifar10c.yaml"
+  "${PYTHON_BIN}" scripts/run_experiment.py --config "${DEBUG_CONFIG}"
 fi
 
 echo "===== Running core comparison ====="

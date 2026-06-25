@@ -1,6 +1,95 @@
 # TODO Next
 
-## Current Authoritative Next Steps - 2026-06-07
+## Current Authoritative Next Steps - 2026-06-25
+
+### Now: run the new FedPRIME-PAIR full experiment
+
+FedPRIME-PAIR has been implemented as a switchable method:
+
+```text
+method_name: fedprime_pair
+FedPRIME-PAIR = PRIME + CBCL + CPAD
+```
+
+Smoke test passed:
+
+```text
+configs/debug_fedprime_pair_cifar10c.yaml
+round 0: avg_acc=11.52, worst_acc=10.00, local_loss=5.1416, cpad_loss=0.7056
+```
+
+The next formal Kaggle run is:
+
+```text
+configs/kaggle_t4_fedprime_pair_full.yaml
+```
+
+It matches the previous T4 fair setting:
+
+```text
+rounds=40
+local_epochs=1
+batch_size=64
+public_batch_size=128
+public_batches_per_round=4
+fixed partition: outputs/partitions/cifar10c_alpha05_seed0_clients4_samples10000.npz
+```
+
+The first comparison should be against the already reproduced baseline:
+
+```text
+RAHFL final: avg_acc=56.41, worst_acc=44.72
+```
+
+Primary decision criteria:
+
+```text
+1. final/best avg_acc vs 56.41
+2. final/best worst_acc vs 44.72
+3. cpad_loss finite and not exploding
+4. pair_expertise heatmaps show client-class-pair differences
+5. underrepresented diagnosis after checkpoints exist
+```
+
+If full FedPRIME-PAIR is below RAHFL, do not immediately redesign again. First
+rerun with switches:
+
+```yaml
+method.use_cbcl: false   # PRIME + CPAD
+method.use_cpad: false   # PRIME + CBCL local-only control
+```
+
+This identifies whether CBCL or CPAD is the bottleneck.
+
+Kaggle prepared dataset remains:
+
+```text
+fedprime-data
+```
+
+Use `scripts/import_prepared_data.py` before training.
+
+### Previous D2C diagnostic context
+
+The repaired FedPRIME-D2C warmup=3 experiment completed all 40 rounds without
+NaN/Inf, but did not beat RAHFL:
+
+```text
+RAHFL final:            avg_acc=56.41, worst_acc=44.72
+FedPRIME-D2C final:     avg_acc=52.31, worst_acc=39.78
+FedPRIME-D2C best avg:  avg_acc=52.83 at round 37
+LogitAvg+PRIME final:   avg_acc=52.10, worst_acc=39.72
+Oracle D2C final:       avg_acc=51.74, worst_acc=39.13
+```
+
+Conclusion:
+
+```text
+Old D2C public-prior debiasing is not the current main route.
+FedPRIME-PAIR/CPAD is the new implementation to validate.
+```
+
+## Historical D2C Next Steps - 2026-06-07
 
 ### Now: diagnose why D2C collapses toward LogitAvg
 

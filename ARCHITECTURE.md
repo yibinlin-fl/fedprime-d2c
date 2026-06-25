@@ -82,6 +82,7 @@ Dispatches by `method_name`:
 
 ```text
 fedprime_d2c -> FedPrimeD2CExperiment
+fedprime_pair -> FedPrimePairExperiment
 rahfl        -> AsymHFLExperiment
 rahfl_prime  -> AsymHFLExperiment
 ```
@@ -309,6 +310,63 @@ PRIME + DCL + D2C
 ```
 
 It is intended as a stricter controlled comparison, not the first default claim.
+
+### FedPRIME-PAIR Runner
+
+```text
+fedprime/methods/fedprime_pair.py
+```
+
+FedPRIME-PAIR is the new switchable implementation for:
+
+```text
+PRIME + CBCL + CPAD
+```
+
+It is designed after the D2C diagnostics showed that public-prior debiasing is
+effectively tied with LogitAvg. The new communication unit is a directed class
+pair boundary `c -> j`, not a full softmax vector or a client-level route.
+
+Core files:
+
+```text
+fedprime/methods/cpad.py          CPAD tensor logic and expertise export
+fedprime/methods/local_prime.py   PRIME+CBCL local training
+scripts/analyze_pair_expertise.py class-pair expertise CSV/heatmap
+```
+
+Core switches:
+
+```yaml
+method:
+  use_prime: true
+  use_cbcl: true
+  use_cpad: true
+  lambda_jsd: 12.0
+  cbcl:
+    lambda_cbcl: 0.2
+  cpad:
+    warmup_rounds: 3
+    lambda_cpad: 1.0
+    leave_one_out: true
+```
+
+Implemented MVP flow:
+
+```text
+1. local PRIME training with optional CBCL
+2. estimate directed client-class-pair expertise E_{k,c->j}
+3. build leave-one-client-out class-pair teachers on public logits
+4. optimize CPAD PairBCE on public data
+5. write metrics, checkpoints, and pair-expertise snapshots
+```
+
+Configs:
+
+```text
+configs/debug_fedprime_pair_cifar10c.yaml
+configs/kaggle_t4_fedprime_pair_full.yaml
+```
 
 ## D2C Module
 

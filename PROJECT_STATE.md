@@ -1,6 +1,89 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-06-07
+Last updated: 2026-06-25
+
+## FedPRIME-PAIR Implementation - 2026-06-25
+
+The project now includes a switchable first implementation of the new
+FedPRIME-PAIR route:
+
+```text
+FedPRIME-PAIR = PRIME + CBCL + CPAD
+```
+
+The motivation is the completed D2C diagnostics:
+
+```text
+PRIME + D2C final:      avg_acc=52.31, worst_acc=39.78
+PRIME + LogitAvg final: avg_acc=52.10, worst_acc=39.72
+Oracle D2C final:       avg_acc=51.74, worst_acc=39.13
+RAHFL final:            avg_acc=56.41, worst_acc=44.72
+```
+
+Current D2C is effectively tied with LogitAvg, so the new route no longer uses
+public logits to infer a private prior. Instead, it estimates which client is
+reliable on each directed class-pair boundary and distills public logits at the
+class-pair level.
+
+Implemented files:
+
+```text
+fedprime/methods/cpad.py
+fedprime/methods/fedprime_pair.py
+fedprime/methods/local_prime.py       # added PRIME+CBCL local training
+scripts/analyze_pair_expertise.py
+```
+
+Entry point:
+
+```text
+method_name: fedprime_pair
+```
+
+Configs:
+
+```text
+configs/debug_fedprime_pair_cifar10c.yaml
+configs/kaggle_t4_fedprime_pair_full.yaml
+```
+
+Default full setting:
+
+```text
+PRIME + JSD + CBCL + CPAD
+cpad.warmup_rounds = 3
+leave_one_out = true
+```
+
+All major modules are configurable:
+
+```yaml
+method:
+  use_prime: true
+  use_cbcl: true
+  use_cpad: true
+```
+
+Local smoke test passed on the local `pytorch` conda environment:
+
+```text
+config: configs/debug_fedprime_pair_cifar10c.yaml
+round 0: avg_acc=11.52, worst_acc=10.00,
+         local_loss=5.1416, cpad_loss=0.7056,
+         expertise_mean=0.7439
+```
+
+Generated outputs:
+
+```text
+outputs/debug_fedprime_pair_cifar10c/metrics.csv
+outputs/debug_fedprime_pair_cifar10c/checkpoints/client_*.pt
+outputs/debug_fedprime_pair_cifar10c/pair_expertise/round_000.npz
+outputs/debug_fedprime_pair_cifar10c/pair_expertise_analysis/
+```
+
+The smoke result is only a path validation result, not a performance result.
+The next formal run should be the 40-round Kaggle T4 full config.
 
 ## Current State - 2026-06-06
 

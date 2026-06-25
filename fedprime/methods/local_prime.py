@@ -173,6 +173,7 @@ def train_local_prime_cbcl_epoch(
     cbcl_reliability_tau: float = 1.0,
     max_batches: int | None = None,
     max_grad_norm: float | None = None,
+    progress_every: int | None = None,
     context: str = "PRIME+CBCL local training",
 ) -> float:
     model.train()
@@ -192,7 +193,12 @@ def train_local_prime_cbcl_epoch(
         require_finite(images, "input images", batch_context)
         require_finite(views, "PRIME views", batch_context)
 
-        logits_all = forward_logits(model, views)
+        output = model(views)
+        if isinstance(output, tuple):
+            logits_all, features_all = output[0], output[1]
+        else:
+            logits_all = output
+            features_all = _model_backbone(model)(views)
         require_finite(logits_all, "model logits", batch_context)
         logits_clean, logits_aug1, logits_aug2 = torch.split(logits_all, images.size(0))
 
@@ -202,7 +208,6 @@ def train_local_prime_cbcl_epoch(
         ce_loss = ce_clean + 0.5 * (ce_aug1 + ce_aug2)
         jsd_loss = jsd_loss_from_logits(logits_clean, logits_aug1, logits_aug2)
 
-        features_all = _model_backbone(model)(views)
         features_all = features_all.view(features_all.size(0), -1)
         features = torch.stack(torch.split(features_all, images.size(0)), dim=0)
         logits_view = torch.stack([logits_clean, logits_aug1, logits_aug2], dim=0)
@@ -220,6 +225,12 @@ def train_local_prime_cbcl_epoch(
         loss = ce_loss + lambda_jsd * jsd_loss + float(lambda_cbcl) * cbcl_loss
         optimizer_step_checked(loss, model, optimizer, batch_context, max_grad_norm)
         losses.append(float(loss.detach().cpu()))
+        if progress_every is not None and progress_every > 0 and (batch_idx + 1) % progress_every == 0:
+            print(
+                f"[heartbeat] {context} batch={batch_idx + 1} "
+                f"loss={float(loss.detach().cpu()):.4f}",
+                flush=True,
+            )
 
     return sum(losses) / max(len(losses), 1)
 

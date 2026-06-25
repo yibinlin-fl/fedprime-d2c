@@ -33,6 +33,7 @@ train:
   test_batch_size: 256
   public_batch_size: 128
   public_batches_per_round: 4
+  progress_every_batches: 50
   optimizer:
     name: adam
     lr: 0.001

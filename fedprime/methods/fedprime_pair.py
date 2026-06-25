@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
+import time
 
 import torch
 import torch.optim as optim
@@ -111,7 +112,10 @@ class FedPrimePairExperiment:
 
             public_iter = iter(public_loader)
             for round_idx in range(int(train_cfg["rounds"])):
+                round_start = time.perf_counter()
+                print(f"[heartbeat] round {round_idx:03d} start", flush=True)
                 local_loss = self._local_phase(
+                    round_idx=round_idx,
                     models=models,
                     optimizers=optimizers,
                     private_loaders=private_loaders,
@@ -128,7 +132,9 @@ class FedPrimePairExperiment:
                 counts = None
                 cpad_warmup = int(method_cfg.get("cpad", {}).get("warmup_rounds", 0))
                 if use_cpad and round_idx >= cpad_warmup:
+                    print(f"[heartbeat] round {round_idx:03d} estimating pair expertise", flush=True)
                     expertise_raw, expertise_weighted, counts = self._estimate_all_pair_expertise(
+                        round_idx=round_idx,
                         models=models,
                         private_loaders=private_loaders,
                         prime_aug=prime_aug,
@@ -137,7 +143,9 @@ class FedPrimePairExperiment:
                         num_classes=num_classes,
                     )
                     self._maybe_save_expertise(round_idx, expertise_weighted, expertise_raw, counts, method_cfg)
+                    print(f"[heartbeat] round {round_idx:03d} running CPAD public distillation", flush=True)
                     cpad_loss = self._cpad_phase(
+                        round_idx=round_idx,
                         models=models,
                         optimizers=optimizers,
                         public_loader=public_loader,
@@ -153,6 +161,7 @@ class FedPrimePairExperiment:
                     expertise_mean = 0.0
                     expertise_max = 0.0
 
+                print(f"[heartbeat] round {round_idx:03d} evaluating clients", flush=True)
                 accs = self._evaluate(models, test_loader)
                 row = {
                     "round": round_idx,
@@ -171,7 +180,9 @@ class FedPrimePairExperiment:
                     f"worst_acc={row['worst_acc']:.2f} "
                     f"local_loss={local_loss:.4f} "
                     f"cpad_loss={cpad_loss:.4f} "
-                    f"expertise_mean={expertise_mean:.4f}"
+                    f"expertise_mean={expertise_mean:.4f} "
+                    f"elapsed={time.perf_counter() - round_start:.1f}s",
+                    flush=True,
                 )
 
         self._save_models(models)
@@ -192,6 +203,7 @@ class FedPrimePairExperiment:
 
     def _local_phase(
         self,
+        round_idx: int,
         models,
         optimizers,
         private_loaders,
@@ -207,6 +219,8 @@ class FedPrimePairExperiment:
         max_grad_norm = train_cfg.get("max_grad_norm")
         lambda_jsd = float(method_cfg.get("lambda_jsd", 12.0)) if bool(method_cfg.get("use_jsd", True)) else 0.0
         for client_id, loader in enumerate(private_loaders):
+            client_start = time.perf_counter()
+            print(f"[heartbeat] round {round_idx:03d} local client {client_id} start", flush=True)
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 context = f"FedPRIME-PAIR local phase, client={client_id}"
                 if use_prime and use_cbcl:
@@ -222,6 +236,7 @@ class FedPrimePairExperiment:
                         cbcl_reliability_tau=float(cbcl_cfg.get("view_reliability_tau", 1.0)),
                         max_batches=train_cfg.get("max_local_batches"),
                         max_grad_norm=max_grad_norm,
+                        progress_every=train_cfg.get("progress_every_batches"),
                         context=context,
                     )
                 elif use_prime:
@@ -248,10 +263,16 @@ class FedPrimePairExperiment:
                         context=context,
                     )
                 losses.append(loss)
+            print(
+                f"[heartbeat] round {round_idx:03d} local client {client_id} done "
+                f"loss={loss:.4f} elapsed={time.perf_counter() - client_start:.1f}s",
+                flush=True,
+            )
         return sum(losses) / max(len(losses), 1)
 
     def _estimate_all_pair_expertise(
         self,
+        round_idx: int,
         models,
         private_loaders,
         prime_aug,
@@ -264,6 +285,7 @@ class FedPrimePairExperiment:
         weighted_list = []
         count_list = []
         for client_id, loader in enumerate(private_loaders):
+            start = time.perf_counter()
             expertise = estimate_pair_expertise(
                 model=models[client_id],
                 loader=loader,
@@ -281,6 +303,12 @@ class FedPrimePairExperiment:
             raw_list.append(expertise.raw)
             weighted_list.append(expertise.weighted)
             count_list.append(expertise.counts)
+            print(
+                f"[heartbeat] round {round_idx:03d} expertise client {client_id} done "
+                f"mean={float(expertise.weighted.mean().detach().cpu()):.4f} "
+                f"elapsed={time.perf_counter() - start:.1f}s",
+                flush=True,
+            )
         raw = torch.stack(raw_list, dim=0)
         weighted = torch.stack(weighted_list, dim=0)
         counts = torch.stack(count_list, dim=0)
@@ -290,6 +318,7 @@ class FedPrimePairExperiment:
 
     def _cpad_phase(
         self,
+        round_idx: int,
         models,
         optimizers,
         public_loader,
@@ -302,6 +331,7 @@ class FedPrimePairExperiment:
         cpad_cfg = method_cfg.get("cpad", {})
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
         for public_batch_idx in range(num_batches):
+            batch_start = time.perf_counter()
             try:
                 images, _ = next(public_iter)
             except StopIteration:
@@ -346,6 +376,11 @@ class FedPrimePairExperiment:
                     max_grad_norm=self.config["train"].get("max_grad_norm"),
                 )
                 losses.append(float(loss.detach().cpu()))
+            print(
+                f"[heartbeat] round {round_idx:03d} CPAD public_batch {public_batch_idx} done "
+                f"elapsed={time.perf_counter() - batch_start:.1f}s",
+                flush=True,
+            )
         return sum(losses) / max(len(losses), 1)
 
     def _maybe_save_expertise(self, round_idx, expertise_weighted, expertise_raw, counts, method_cfg) -> None:

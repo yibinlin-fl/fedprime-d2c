@@ -33,6 +33,12 @@ def parse_args() -> argparse.Namespace:
         default=Path("."),
         help="FedPRIME-D2C repository root.",
     )
+    parser.add_argument(
+        "--repo-root",
+        dest="destination",
+        type=Path,
+        help="Backward-compatible alias for --destination.",
+    )
     return parser.parse_args()
 
 

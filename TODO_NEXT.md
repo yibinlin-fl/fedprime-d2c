@@ -24,6 +24,43 @@ The next formal Kaggle run is:
 configs/kaggle_t4_fedprime_pair_full.yaml
 ```
 
+Important runtime note:
+
+```text
+Use code at or after commit 9942276.
+The setup cell must show git log -1 containing 9942276 or a later commit.
+```
+
+This version includes:
+
+```text
+1. FedPRIME-PAIR heartbeat logs in the full run.
+2. CBCL forward-pass optimization that reuses model embeddings.
+3. Kaggle data import compatibility for both --destination and --repo-root.
+```
+
+Expected full-run heartbeat:
+
+```text
+[heartbeat] round 000 start
+[heartbeat] round 000 local client 0 start
+[heartbeat] FedPRIME-PAIR local phase, client=0 batch=50 loss=...
+```
+
+Preferred one-shot Kaggle entry after the next push:
+
+```bash
+RUN_DEBUG=1 bash scripts/run_kaggle_pair.sh
+```
+
+This script performs data import, environment check, partition audit, optional
+debug smoke, full FedPRIME-PAIR training, pair-expertise analysis, summary, and
+output packaging in one uninterrupted background-safe command.
+
+If a fresh full run reaches training but prints no heartbeat for about 10
+minutes, stop it. Do not wait for hours. Inspect whether the notebook pulled
+the latest commit and whether data import completed successfully.
+
 It matches the previous T4 fair setting:
 
 ```text

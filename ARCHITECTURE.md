@@ -361,6 +361,105 @@ Implemented MVP flow:
 5. write metrics, checkpoints, and pair-expertise snapshots
 ```
 
+Code-level round flow:
+
+```text
+scripts/run_experiment.py
+  method_name: fedprime_pair
+    -> FedPrimePairExperiment.run()
+
+FedPrimePairExperiment.run()
+  1. load labels from RAHFL-style CIFAR-10-C caches
+  2. load or create the fixed Dirichlet partition
+  3. build private loaders and CIFAR-100 public loader
+  4. build heterogeneous RAHFL models
+  5. build the official PRIME module through prime_adapter.py
+  6. for each round:
+       a. _local_phase()
+       b. if round >= cpad.warmup_rounds: _estimate_all_pair_expertise()
+       c. if round >= cpad.warmup_rounds: _cpad_phase()
+       d. _evaluate()
+       e. append metrics.csv
+  7. save final client checkpoints
+```
+
+CBCL implementation:
+
+```text
+fedprime/methods/local_prime.py
+  train_local_prime_cbcl_epoch()
+    views = prime_aug(images)
+    output = model(views)
+    if output is (logits, embedding):
+      reuse both logits and embedding from the same forward pass
+    loss = CE(clean/aug views) + lambda_jsd * JSD + lambda_cbcl * CBCL
+```
+
+CBCL loss:
+
+```text
+_class_balanced_cbcl_loss()
+  - normalizes embeddings from clean + PRIME views
+  - builds supervised positives by class label
+  - gives each anchor a reliability weight based on true-class margin
+  - averages loss per local class first, then averages classes
+```
+
+CPAD implementation:
+
+```text
+fedprime/methods/cpad.py
+  normalize_logits()
+  pair_margins()
+  estimate_pair_expertise()
+  cpad_pair_bce_loss()
+```
+
+Pair expertise:
+
+```text
+For a local labeled sample with class c:
+  margin(c -> j) = normalized_logit_c - normalized_logit_j
+
+Across clean/PRIME views:
+  robust_margin = softmin(view margins)
+
+Client expertise:
+  E_raw[k,c,j] = mean sigmoid(robust_margin(c -> j) / expertise_tau)
+  E_weighted[k,c,j] = E_raw[k,c,j] * support(count_k,c)
+```
+
+CPAD public distillation:
+
+```text
+public_logits_all: [K, B, C]
+pair margins:      [K, B, C, C]
+
+For every student client i:
+  optionally remove client i from the teacher pool (leave-one-out)
+  aggregate teacher pair margins by E_weighted[k,c,j]
+  convert teacher/student margins to pair probabilities with sigmoid
+  optimize pairwise BCE, weighted by:
+    - gate: learn boundary only when global experts are stronger
+    - confidence: ignore teacher boundaries near 0.5
+    - agreement: downweight high-disagreement boundaries
+```
+
+Runtime logging:
+
+```text
+configs/kaggle_t4_fedprime_pair_full.yaml
+  train.progress_every_batches: 50
+
+FedPRIME-PAIR prints heartbeat logs for:
+  round start
+  each local client start/done
+  every N local batches
+  pair expertise estimation
+  CPAD public batches
+  evaluation and final round metrics
+```
+
 Configs:
 
 ```text

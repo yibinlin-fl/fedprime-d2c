@@ -54,7 +54,9 @@ class FedPrimePairExperiment:
         num_classes = int(data_cfg.get("num_classes", 10))
         stats = dataset_stats(data_cfg.get("private_dataset", "cifar10"))
 
+        print("[setup] FedPRIME-PAIR loading private labels", flush=True)
         labels = load_private_labels(data_cfg["private_root"], data_cfg["private_corrupt_rate"])
+        print("[setup] FedPRIME-PAIR loading/creating private partition", flush=True)
         dataidx_map = partition_private_data(
             labels=labels,
             num_clients=num_clients,
@@ -69,6 +71,7 @@ class FedPrimePairExperiment:
         use_cbcl = use_prime and bool(method_cfg.get("use_cbcl", True))
         use_cpad = bool(method_cfg.get("use_cpad", True))
 
+        print("[setup] FedPRIME-PAIR building private/test loaders", flush=True)
         private_loaders, test_loader = build_private_loaders(
             cifar10c_root=data_cfg["private_root"],
             dataidx_map=dataidx_map,
@@ -79,6 +82,7 @@ class FedPrimePairExperiment:
             num_workers=int(self.config.get("num_workers", 2)),
             raw_for_prime=use_prime,
         )
+        print("[setup] FedPRIME-PAIR building public loader", flush=True)
         public_loader = build_public_loader(
             cifar100_root=data_cfg["public_root"],
             public_size=int(data_cfg.get("public_size", 5000)),
@@ -88,11 +92,14 @@ class FedPrimePairExperiment:
             download=bool(data_cfg.get("download_public", False)),
         )
 
+        print("[setup] FedPRIME-PAIR building heterogeneous client models", flush=True)
         models = build_models(model_cfg["names"], num_classes)
         models = {idx: model.to(self.device) for idx, model in models.items()}
         self._load_models_if_configured(models)
+        print("[setup] FedPRIME-PAIR building optimizers and PRIME module", flush=True)
         optimizers = {idx: self._build_optimizer(model) for idx, model in models.items()}
         prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device) if use_prime else None
+        print("[setup] FedPRIME-PAIR setup complete; entering training rounds", flush=True)
 
         metrics_path = self.output_dir / "metrics.csv"
         with metrics_path.open("w", newline="", encoding="utf-8") as f:

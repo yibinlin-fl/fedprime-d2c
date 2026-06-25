@@ -11,6 +11,54 @@ FedPRIME-PAIR route:
 FedPRIME-PAIR = PRIME + CBCL + CPAD
 ```
 
+Latest code/runtime update:
+
+```text
+105e6c6 optimize FedPRIME-PAIR heartbeat logging and CBCL forward pass
+9942276 make import_prepared_data.py accept both --destination and --repo-root
+```
+
+The previous Kaggle full run that showed no round output for hours should not
+be interpreted as a valid algorithm result. It was started before the heartbeat
+and CBCL-forward optimization. The current full config now prints:
+
+```text
+[heartbeat] round 000 start
+[heartbeat] round 000 local client 0 start
+[heartbeat] FedPRIME-PAIR local phase, client=0 batch=50 loss=...
+[heartbeat] round 000 local client 0 done ...
+```
+
+If a fresh Kaggle run reaches setup successfully but prints no heartbeat for
+more than about 10 minutes, stop it and inspect the setup/logs instead of
+waiting multiple hours.
+
+The CBCL optimization is an engineering fix, not an algorithmic change. RAHFL
+heterogeneous models normally return `(logits, embedding)`. The first CBCL
+implementation used `forward_logits(model, views)`, which kept only logits and
+discarded the already-computed embedding, then ran the backbone again to obtain
+features for contrastive learning. The current code calls `model(views)` once
+and reuses both outputs:
+
+```text
+logits_all, features_all = output[0], output[1]
+```
+
+Only models that return logits alone fall back to a second backbone call.
+
+Kaggle data import helper:
+
+```text
+scripts/import_prepared_data.py
+```
+
+now accepts both of the following equivalent arguments:
+
+```bash
+--destination /kaggle/working/fedprime-d2c
+--repo-root /kaggle/working/fedprime-d2c
+```
+
 The motivation is the completed D2C diagnostics:
 
 ```text

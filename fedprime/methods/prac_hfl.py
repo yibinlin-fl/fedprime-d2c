@@ -137,20 +137,28 @@ class PRACHFLExperiment:
                 )
 
                 print(f"[heartbeat] round {round_idx:03d} running PRAC communication", flush=True)
-                prac_stats = []
-                for public_batch_idx in range(int(train_cfg.get("public_batches_per_round", 1))):
-                    public_images, public_iter = self._next_public_batch(public_loader, public_iter, stats)
-                    prac_stats.append(self._prac_phase(
-                        round_idx=round_idx,
-                        public_batch_idx=public_batch_idx,
-                        models=models,
-                        public_images=public_images,
-                        private_loaders=private_loaders,
-                        private_iters=private_iters,
-                        num_classes=num_classes,
-                        method_cfg=method_cfg,
-                    ))
-                prac_stats = self._average_prac_stats(prac_stats)
+                warmup_rounds = int(method_cfg.get("prac", {}).get("warmup_rounds", 0))
+                if round_idx < warmup_rounds:
+                    print(
+                        f"[heartbeat] round {round_idx:03d} PRAC warmup: skip communication",
+                        flush=True,
+                    )
+                    prac_stats = self._average_prac_stats([])
+                else:
+                    prac_stats = []
+                    for public_batch_idx in range(int(train_cfg.get("public_batches_per_round", 1))):
+                        public_images, public_iter = self._next_public_batch(public_loader, public_iter, stats)
+                        prac_stats.append(self._prac_phase(
+                            round_idx=round_idx,
+                            public_batch_idx=public_batch_idx,
+                            models=models,
+                            public_images=public_images,
+                            private_loaders=private_loaders,
+                            private_iters=private_iters,
+                            num_classes=num_classes,
+                            method_cfg=method_cfg,
+                        ))
+                    prac_stats = self._average_prac_stats(prac_stats)
 
                 print(f"[heartbeat] round {round_idx:03d} evaluating clients", flush=True)
                 accs = self._evaluate(models, test_loader)
@@ -206,6 +214,9 @@ class PRACHFLExperiment:
                     lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                     cl_module=method_cfg.get("cl_module", "dcl"),
                     max_batches=train_cfg.get("max_local_batches"),
+                    max_grad_norm=train_cfg.get("max_grad_norm"),
+                    skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
+                    context=f"PRAC-HFL local phase, round={round_idx}, client={client_id}",
                 )
                 losses.append(loss)
             print(
@@ -213,7 +224,10 @@ class PRACHFLExperiment:
                 f"loss={loss:.4f} elapsed={time.perf_counter() - client_start:.1f}s",
                 flush=True,
             )
-        return sum(losses) / max(len(losses), 1)
+        local_loss = sum(losses) / max(len(losses), 1)
+        if not torch.isfinite(torch.tensor(local_loss)):
+            raise FloatingPointError(f"PRAC-HFL local phase produced non-finite loss: {local_loss}")
+        return local_loss
 
     def _next_public_batch(self, public_loader, public_iter, stats):
         try:
@@ -255,6 +269,7 @@ class PRACHFLExperiment:
         max_teachers = int(prac_cfg.get("num_candidate_teachers", num_clients - 1))
         temperature = float(prac_cfg.get("temperature", 3.0))
         virtual_lr = float(prac_cfg.get("virtual_lr", 0.05))
+        head_max_grad_norm = prac_cfg.get("head_max_grad_norm")
         margin = float(prac_cfg.get("positive_margin", 0.0))
         gate_tau = float(prac_cfg.get("gate_tau", 0.05))
         accept_eps = float(prac_cfg.get("accept_epsilon", 0.0))
@@ -292,8 +307,19 @@ class PRACHFLExperiment:
 
             for teacher_id in teachers:
                 kd_loss = self._kd_loss(model, public_images, teacher_probs[teacher_id], temperature)
-                self._apply_head_step(kd_loss, head_params, virtual_lr)
-                virt_route = self._robust_risk_by_class(model, route_batch, num_classes, method_cfg)
+                step_ok = self._apply_head_step(
+                    kd_loss,
+                    head_params,
+                    virtual_lr,
+                    max_grad_norm=head_max_grad_norm,
+                )
+                if step_ok:
+                    virt_route = self._robust_risk_by_class(model, route_batch, num_classes, method_cfg)
+                else:
+                    virt_route = {
+                        "overall": base_route["overall"] + 1.0,
+                        "per_class": [value + 1.0 for value in base_route["per_class"]],
+                    }
                 _restore_params(head_params, saved_head)
 
                 delta = base_route["overall"] - virt_route["overall"]
@@ -335,10 +361,18 @@ class PRACHFLExperiment:
             accept_before = self._robust_risk_by_class(model, accept_batch, num_classes, method_cfg)["overall"]
             saved_head = _clone_params(head_params)
             mix_loss = self._kd_loss(model, public_images, mixed.detach(), temperature)
-            self._apply_head_step(mix_loss, head_params, virtual_lr)
-            accept_after = self._robust_risk_by_class(model, accept_batch, num_classes, method_cfg)["overall"]
+            step_ok = self._apply_head_step(
+                mix_loss,
+                head_params,
+                virtual_lr,
+                max_grad_norm=head_max_grad_norm,
+            )
+            if step_ok:
+                accept_after = self._robust_risk_by_class(model, accept_batch, num_classes, method_cfg)["overall"]
+            else:
+                accept_after = accept_before + 1.0
 
-            if accept_after <= accept_before - accept_eps:
+            if torch.isfinite(torch.tensor(accept_after)) and accept_after <= accept_before - accept_eps:
                 accept_count += 1
                 prac_losses.append(float(mix_loss.detach().cpu()))
                 print(
@@ -387,12 +421,38 @@ class PRACHFLExperiment:
             reduction="batchmean",
         )
 
-    def _apply_head_step(self, loss: torch.Tensor, params: list[torch.nn.Parameter], lr: float) -> None:
+    def _apply_head_step(
+        self,
+        loss: torch.Tensor,
+        params: list[torch.nn.Parameter],
+        lr: float,
+        max_grad_norm: float | None = None,
+    ) -> bool:
+        if not torch.isfinite(loss):
+            return False
         grads = torch.autograd.grad(loss, params, retain_graph=False, create_graph=False, allow_unused=True)
+        finite_grads = [grad for grad in grads if grad is not None]
+        if any(not torch.isfinite(grad).all() for grad in finite_grads):
+            return False
+        if max_grad_norm is not None and finite_grads:
+            total_norm = torch.linalg.vector_norm(
+                torch.stack([torch.linalg.vector_norm(grad.detach(), 2) for grad in finite_grads]),
+                2,
+            )
+            clip_coef = float(max_grad_norm) / (float(total_norm.detach().cpu()) + 1e-12)
+            if clip_coef < 1.0:
+                finite_grads = [grad * clip_coef if grad is not None else None for grad in grads]
+            else:
+                finite_grads = list(grads)
+        else:
+            finite_grads = list(grads)
         with torch.no_grad():
-            for param, grad in zip(params, grads):
+            for param, grad in zip(params, finite_grads):
                 if grad is not None:
                     param.add_(grad, alpha=-lr)
+                    if not torch.isfinite(param).all():
+                        return False
+        return True
 
     def _robust_risk_by_class(self, model, batch, num_classes: int, method_cfg: dict) -> dict[str, object]:
         model.eval()

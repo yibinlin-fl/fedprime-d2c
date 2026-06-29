@@ -29,6 +29,8 @@ train:
   test_batch_size: 256
   public_batch_size: 128
   public_batches_per_round: 1
+  max_grad_norm: 5.0
+  skip_nonfinite: true
   optimizer:
     name: adam
     lr: 0.001
@@ -39,15 +41,17 @@ method:
   cl_module: dcl
   lambda_jsd: 12.0
   prac:
+    warmup_rounds: 3
     num_candidate_teachers: 3
     classwise: true
     temperature: 3.0
-    virtual_lr: 0.05
+    virtual_lr: 0.005
+    head_max_grad_norm: 1.0
     positive_margin: 0.0
     gate_tau: 0.05
     accept_epsilon: 0.0
-    risk_lambda_aug: 1.0
-    risk_lambda_js: 12.0
+    risk_lambda_aug: 0.0
+    risk_lambda_js: 0.0
 
 checkpoints:
   load_dir:

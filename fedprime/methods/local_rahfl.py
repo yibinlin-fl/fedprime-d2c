@@ -19,6 +19,9 @@ def train_local_augmix_dcl_epoch(
     lambda_jsd: float = 12.0,
     cl_module: str | None = "dcl",
     max_batches: int | None = None,
+    max_grad_norm: float | None = None,
+    skip_nonfinite: bool = False,
+    context: str = "RAHFL local phase",
 ) -> float:
     add_vendor_paths()
     from loss import DCLLoss, SupConLoss
@@ -78,10 +81,30 @@ def train_local_augmix_dcl_epoch(
                     labels=labels,
                 )
 
+        if not torch.isfinite(loss):
+            message = f"{context}: non-finite loss at batch {batch_idx}: {float(loss.detach().cpu())}"
+            if skip_nonfinite:
+                print(f"[warning] {message}; skipping batch", flush=True)
+                continue
+            raise FloatingPointError(message)
+
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
+        grads_finite = True
+        for param in model.parameters():
+            if param.grad is not None and not torch.isfinite(param.grad).all():
+                grads_finite = False
+                break
+        if not grads_finite:
+            optimizer.zero_grad(set_to_none=True)
+            message = f"{context}: non-finite gradient at batch {batch_idx}"
+            if skip_nonfinite:
+                print(f"[warning] {message}; skipping batch", flush=True)
+                continue
+            raise FloatingPointError(message)
+        if max_grad_norm is not None:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
         optimizer.step()
         losses.append(float(loss.detach().cpu()))
 
     return sum(losses) / max(len(losses), 1)
-

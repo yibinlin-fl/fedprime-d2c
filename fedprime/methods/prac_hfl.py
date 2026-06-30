@@ -19,6 +19,7 @@ from fedprime.data.loaders import (
     partition_private_data,
 )
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
+from fedprime.methods.nir_dcl import NIRDCLFeatureQueue
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.utils.config import save_config
 from fedprime.utils.env import resolve_device, seed_everything
@@ -51,6 +52,7 @@ class PRACHFLExperiment:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         save_config(config, self.output_dir / "config.resolved.json")
         seed_everything(int(config.get("seed", 0)))
+        self._nir_dcl_queues: dict[int, NIRDCLFeatureQueue] = {}
 
     def run(self) -> None:
         data_cfg = self.config["data"]
@@ -86,15 +88,21 @@ class PRACHFLExperiment:
             num_workers=int(self.config.get("num_workers", 2)),
             augmix_module=method_cfg.get("augmix_module", "jsd"),
         )
-        print("[setup] PRAC-HFL building public loader", flush=True)
-        public_loader = build_public_loader(
-            cifar100_root=data_cfg["public_root"],
-            public_size=int(data_cfg.get("public_size", 5000)),
-            batch_size=train_cfg["public_batch_size"],
-            num_workers=int(self.config.get("num_workers", 2)),
-            seed=int(self.config.get("seed", 0)),
-            download=bool(data_cfg.get("download_public", False)),
-        )
+        warmup_rounds = int(method_cfg.get("prac", {}).get("warmup_rounds", 0))
+        skip_prac_all_rounds = warmup_rounds >= int(train_cfg["rounds"])
+        if skip_prac_all_rounds:
+            print("[setup] PRAC-HFL local-only mode: skip public loader", flush=True)
+            public_loader = None
+        else:
+            print("[setup] PRAC-HFL building public loader", flush=True)
+            public_loader = build_public_loader(
+                cifar100_root=data_cfg["public_root"],
+                public_size=int(data_cfg.get("public_size", 5000)),
+                batch_size=train_cfg["public_batch_size"],
+                num_workers=int(self.config.get("num_workers", 2)),
+                seed=int(self.config.get("seed", 0)),
+                download=bool(data_cfg.get("download_public", False)),
+            )
 
         print("[setup] PRAC-HFL building heterogeneous client models", flush=True)
         models = build_models(model_cfg["names"], num_classes)
@@ -120,8 +128,8 @@ class PRACHFLExperiment:
             )
             writer.writeheader()
 
-            public_iter = iter(public_loader)
-            private_iters = [iter(loader) for loader in private_loaders]
+            public_iter = iter(public_loader) if public_loader is not None else None
+            private_iters = [iter(loader) for loader in private_loaders] if not skip_prac_all_rounds else None
             print("[setup] PRAC-HFL setup complete; entering training rounds", flush=True)
             for round_idx in range(int(train_cfg["rounds"])):
                 round_start = time.perf_counter()
@@ -134,6 +142,7 @@ class PRACHFLExperiment:
                     private_loaders=private_loaders,
                     train_cfg=train_cfg,
                     method_cfg=method_cfg,
+                    num_classes=num_classes,
                 )
 
                 print(f"[heartbeat] round {round_idx:03d} running PRAC communication", flush=True)
@@ -145,9 +154,13 @@ class PRACHFLExperiment:
                     )
                     prac_stats = self._average_prac_stats([])
                 else:
+                    if public_loader is None or public_iter is None:
+                        raise RuntimeError("PRAC communication requires a public loader.")
                     prac_stats = []
                     for public_batch_idx in range(int(train_cfg.get("public_batches_per_round", 1))):
                         public_images, public_iter = self._next_public_batch(public_loader, public_iter, stats)
+                        if private_iters is None:
+                            raise RuntimeError("PRAC communication requires private route iterators.")
                         prac_stats.append(self._prac_phase(
                             round_idx=round_idx,
                             public_batch_idx=public_batch_idx,
@@ -200,11 +213,23 @@ class PRACHFLExperiment:
             )
         return optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    def _local_phase(self, round_idx, models, optimizers, private_loaders, train_cfg, method_cfg) -> float:
+    def _get_nir_dcl_queue(self, client_id: int, num_classes: int, method_cfg: dict) -> NIRDCLFeatureQueue:
+        if client_id not in self._nir_dcl_queues:
+            nir_cfg = method_cfg.get("nir_dcl", {})
+            self._nir_dcl_queues[client_id] = NIRDCLFeatureQueue(
+                num_classes=num_classes,
+                max_size_per_class=int(nir_cfg.get("queue_size", 64)),
+            )
+        return self._nir_dcl_queues[client_id]
+
+    def _local_phase(self, round_idx, models, optimizers, private_loaders, train_cfg, method_cfg, num_classes: int) -> float:
         losses = []
         for client_id, loader in enumerate(private_loaders):
             client_start = time.perf_counter()
             print(f"[heartbeat] round {round_idx:03d} local client {client_id} start", flush=True)
+            feature_queue = None
+            if method_cfg.get("cl_module", "dcl") == "nir_dcl":
+                feature_queue = self._get_nir_dcl_queue(client_id, num_classes, method_cfg)
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 loss = train_local_augmix_dcl_epoch(
                     model=models[client_id],
@@ -213,9 +238,13 @@ class PRACHFLExperiment:
                     device=self.device,
                     lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                     cl_module=method_cfg.get("cl_module", "dcl"),
+                    num_classes=num_classes,
+                    nir_dcl_cfg=method_cfg.get("nir_dcl", {}),
+                    feature_queue=feature_queue,
                     max_batches=train_cfg.get("max_local_batches"),
                     max_grad_norm=train_cfg.get("max_grad_norm"),
                     skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
+                    log_interval=train_cfg.get("local_log_interval"),
                     context=f"PRAC-HFL local phase, round={round_idx}, client={client_id}",
                 )
                 losses.append(loss)

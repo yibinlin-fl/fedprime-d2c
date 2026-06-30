@@ -21,6 +21,7 @@ from fedprime.data.loaders import (
 from fedprime.methods.local_prime import train_local_prime_epoch
 from fedprime.methods.local_prime import train_local_prime_dcl_epoch
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
+from fedprime.methods.nir_dcl import NIRDCLFeatureQueue
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.utils.config import save_config
 from fedprime.utils.env import resolve_device, seed_everything
@@ -36,6 +37,7 @@ class AsymHFLExperiment:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         save_config(config, self.output_dir / "config.resolved.json")
         seed_everything(int(config.get("seed", 0)))
+        self._nir_dcl_queues: dict[int, NIRDCLFeatureQueue] = {}
 
     def run(self) -> None:
         data_cfg = self.config["data"]
@@ -139,6 +141,7 @@ class AsymHFLExperiment:
                     train_cfg=train_cfg,
                     method_cfg=method_cfg,
                     stats=stats,
+                    num_classes=num_classes,
                 )
                 accs = self._evaluate(models, test_loader)
                 row = {
@@ -214,7 +217,16 @@ class AsymHFLExperiment:
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
 
-    def _local_phase(self, models, optimizers, private_loaders, prime_aug, use_prime, use_prime_dcl, train_cfg, method_cfg, stats) -> float:
+    def _get_nir_dcl_queue(self, client_id: int, num_classes: int, method_cfg: dict) -> NIRDCLFeatureQueue:
+        if client_id not in self._nir_dcl_queues:
+            nir_cfg = method_cfg.get("nir_dcl", {})
+            self._nir_dcl_queues[client_id] = NIRDCLFeatureQueue(
+                num_classes=num_classes,
+                max_size_per_class=int(nir_cfg.get("queue_size", 64)),
+            )
+        return self._nir_dcl_queues[client_id]
+
+    def _local_phase(self, models, optimizers, private_loaders, prime_aug, use_prime, use_prime_dcl, train_cfg, method_cfg, stats, num_classes: int) -> float:
         losses = []
         for client_id, loader in enumerate(private_loaders):
             for _ in range(int(train_cfg.get("local_epochs", 1))):
@@ -242,6 +254,9 @@ class AsymHFLExperiment:
                             max_batches=train_cfg.get("max_local_batches"),
                         )
                 else:
+                    feature_queue = None
+                    if method_cfg.get("cl_module", "dcl") == "nir_dcl":
+                        feature_queue = self._get_nir_dcl_queue(client_id, num_classes, method_cfg)
                     loss = train_local_augmix_dcl_epoch(
                         model=models[client_id],
                         loader=loader,
@@ -249,7 +264,13 @@ class AsymHFLExperiment:
                         device=self.device,
                         lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         cl_module=method_cfg.get("cl_module", "dcl"),
+                        num_classes=num_classes,
+                        nir_dcl_cfg=method_cfg.get("nir_dcl", {}),
+                        feature_queue=feature_queue,
                         max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=train_cfg.get("max_grad_norm"),
+                        skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
+                        log_interval=train_cfg.get("local_log_interval"),
                     )
                 losses.append(loss)
         return sum(losses) / max(len(losses), 1)

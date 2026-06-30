@@ -3,6 +3,7 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F
 
+from fedprime.methods.nir_dcl import NIRDCLFeatureQueue, NIRDCLLoss
 from fedprime.models.factory import forward_logits
 from fedprime.utils.env import add_vendor_paths
 
@@ -18,9 +19,13 @@ def train_local_augmix_dcl_epoch(
     device: torch.device,
     lambda_jsd: float = 12.0,
     cl_module: str | None = "dcl",
+    num_classes: int = 10,
+    nir_dcl_cfg: dict | None = None,
+    feature_queue: NIRDCLFeatureQueue | None = None,
     max_batches: int | None = None,
     max_grad_norm: float | None = None,
     skip_nonfinite: bool = False,
+    log_interval: int | None = None,
     context: str = "RAHFL local phase",
 ) -> float:
     add_vendor_paths()
@@ -28,12 +33,14 @@ def train_local_augmix_dcl_epoch(
 
     model.train()
     criterion = torch.nn.CrossEntropyLoss().to(device)
+    nir_dcl_cfg = nir_dcl_cfg or {}
     losses = []
 
     for batch_idx, (images, labels) in enumerate(loader):
         if max_batches is not None and batch_idx >= max_batches:
             break
 
+        pending_queue_update = None
         labels = labels.to(device, non_blocking=True).long()
         if not isinstance(images, (tuple, list)):
             images = images.to(device, non_blocking=True)
@@ -80,6 +87,33 @@ def train_local_augmix_dcl_epoch(
                     strong_feature=fstrong.unsqueeze(1),
                     labels=labels,
                 )
+            elif cl_module == "nir_dcl":
+                images_cont = torch.cat([images[0], images[1], images[3]], dim=0)
+                features = _model_backbone(model)(images_cont)
+                features = F.normalize(features.view(features.size(0), -1), dim=1)
+                fclean, fstrong, fweak = torch.split(features, images[0].size(0))
+                nir_loss, _ = NIRDCLLoss(
+                    num_classes=num_classes,
+                    temperature=float(nir_dcl_cfg.get("temperature", 0.2)),
+                    relation_temperature=float(nir_dcl_cfg.get("relation_temperature", 0.2)),
+                    beta=float(nir_dcl_cfg.get("beta", 1.0)),
+                    reliability_tau=float(nir_dcl_cfg.get("reliability_tau", 1.0)),
+                    reliability_min=float(nir_dcl_cfg.get("reliability_min", 0.05)),
+                    use_class_balance=bool(nir_dcl_cfg.get("use_class_balance", True)),
+                    use_queue=bool(nir_dcl_cfg.get("use_queue", True)),
+                )(
+                    original_feature=fclean,
+                    weak_feature=fweak,
+                    strong_feature=fstrong,
+                    labels=labels,
+                    strong_logits=logits_aug1,
+                    feature_queue=feature_queue,
+                )
+                loss = loss + float(nir_dcl_cfg.get("lambda_nir", 1.0)) * nir_loss
+                pending_queue_update = (fweak.detach(), labels.detach())
+            else:
+                if cl_module not in (None, "none"):
+                    raise ValueError(f"Unknown contrastive module: {cl_module}")
 
         if not torch.isfinite(loss):
             message = f"{context}: non-finite loss at batch {batch_idx}: {float(loss.detach().cpu())}"
@@ -105,6 +139,20 @@ def train_local_augmix_dcl_epoch(
         if max_grad_norm is not None:
             torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
         optimizer.step()
+        if (
+            isinstance(images, (tuple, list))
+            and cl_module == "nir_dcl"
+            and feature_queue is not None
+            and pending_queue_update is not None
+        ):
+            queue_features, queue_labels = pending_queue_update
+            feature_queue.enqueue(queue_features, queue_labels)
         losses.append(float(loss.detach().cpu()))
+        if log_interval and (batch_idx + 1) % int(log_interval) == 0:
+            print(
+                f"[heartbeat] {context} batch={batch_idx + 1} "
+                f"loss={float(loss.detach().cpu()):.4f}",
+                flush=True,
+            )
 
     return sum(losses) / max(len(losses), 1)

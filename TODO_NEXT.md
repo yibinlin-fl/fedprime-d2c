@@ -1,5 +1,244 @@
 # TODO Next
 
+## 当前工作方向 - 2026-06-30
+
+### 总方向
+
+当前项目不要再定位成“简单替换 RAHFL 的通信模块”。
+
+更合适的研究方向是：
+
+```text
+面向数据损坏 + 模型异构 + 数据异构的 Non-IID-aware 鲁棒异构联邦学习框架
+```
+
+核心问题不是“把 RAHFL 的粗粒度通信改成细粒度通信”这么简单，而是：
+
+```text
+RAHFL 主要解决了模型异构和数据损坏，
+但在 label-skew Non-IID 场景下，
+它的本地 DCL 和客户端级 AsymHFL 通信都没有充分考虑类别分布偏斜。
+```
+
+因此后续工作应围绕两条主线展开：
+
+```text
+1. Non-IID-aware robust local representation learning
+   改进 AugMix + DCL，使其在类别不均衡、tail class、weak client 下更稳。
+
+2. Receiver-safe heterogeneous communication
+   改进 public-logit 通信，使客户端只吸收对自己本地分布真正有益的外部知识。
+```
+
+论文动机应表述为：
+
+```text
+RAHFL 使用强本地鲁棒增强和客户端级非对称通信，
+但整体客户端准确率在 label-skew Non-IID 下不是可靠的知识可迁移性指标。
+高准确率客户端可能只擅长自己的 head classes，
+并不一定能为其他客户端的 tail/missing classes 提供可靠知识。
+
+因此，我们研究如何在数据损坏和模型异构同时存在时，
+进行 Non-IID-aware 的鲁棒表征学习和安全知识迁移。
+```
+
+### 当前实验事实
+
+已有结果：
+
+```text
+RAHFL public4:
+  final avg_acc   = 56.41
+  final worst_acc = 44.72
+
+PRAC-HFL public1:
+  final avg_acc   = 54.63
+  final worst_acc = 41.88
+  best avg_acc    = 55.53
+
+PRAC-HFL public4:
+  final avg_acc   = 52.96
+  final worst_acc = 43.27
+
+AugMix + DCL local-only:
+  final avg_acc   = 56.11
+  final worst_acc = 44.23
+  best avg_acc    = 56.94 at round 38
+  best worst_acc  = 44.23 at round 39
+```
+
+当前结论：
+
+```text
+local-only 最终 avg_acc=56.11，几乎追平 RAHFL final 56.41；
+local-only best avg_acc=56.94，已经超过 RAHFL final 56.41；
+local-only final 同时高于 PRAC public1 和 PRAC public4。
+
+这说明当前性能主要来自 RAHFL-style AugMix + DCL 本地鲁棒学习，
+而当前 PRAC 通信没有提供稳定正增益，甚至可能引入负迁移。
+后续不应继续盲目微调 PRAC 超参数。
+```
+
+### 立即工作重点
+
+当前第一优先级不再是继续修 PRAC 通信，而是设计：
+
+```text
+Non-IID-aware robust DCL / local representation learning
+```
+
+可优先考虑：
+
+```text
+1. class-balanced DCL
+   防止 head class 在 DCL 中支配特征空间。
+
+2. tail-aware supervised contrastive learning
+   提升少样本类和 weak client 的表征质量。
+
+3. corruption-view reliability weighting
+   对过强、语义可能被破坏的增强视图降低对比拉近强度。
+
+4. client-adaptive contrastive loss strength
+   根据客户端类别偏斜程度调整 DCL 权重。
+
+5. communication as secondary
+   只有在本地 Non-IID-aware DCL 稳定后，再考虑轻量安全通信。
+```
+
+PRAC 可以作为历史探索保留，但不能作为当前论文主线。
+
+### 已实现的新版本 - NIR-DCL
+
+2026-07-01 已实现：
+
+```text
+NIR-DCL = Non-IID-aware Robust DCL
+```
+
+实现文件：
+
+```text
+fedprime/methods/nir_dcl.py
+fedprime/methods/local_rahfl.py
+fedprime/methods/prac_hfl.py
+fedprime/methods/rahfl_asymhfl.py
+```
+
+配置入口：
+
+```text
+configs/debug_nir_dcl_local_only.yaml
+configs/kaggle_t4_nir_dcl_local_only.yaml
+configs/kaggle_t4_nir_dcl_rahfl.yaml
+```
+
+当前最应该先跑：
+
+```text
+configs/kaggle_t4_nir_dcl_local_only.yaml
+```
+
+原因：
+
+```text
+先验证只改本地 DCL 是否能超过 AugMix+DCL local-only 和 RAHFL。
+如果 NIR-DCL local-only 没有提升，就不要急着接通信。
+如果 NIR-DCL local-only 已经明显提升，再跑 NIR-DCL + AsymHFL。
+```
+
+### 必须补的严谨性
+
+后续正式实验前，必须避免审稿人攻击：
+
+```text
+1. 不能只在 alpha=0.1 极端 Non-IID 上赢。
+2. 至少覆盖 IID、alpha=1.0、0.5、0.3、0.1。
+3. 正常场景不能明显低于 RAHFL。
+4. severe Non-IID 下要重点看 avg_acc、worst_acc、tail_acc。
+5. 通信路由不能使用最终测试集。
+6. PRAC 的 route/accept 应使用本地 held-out validation split。
+```
+
+推荐最终实验定位：
+
+```text
+正常/IID 场景：保持 RAHFL 级别鲁棒性，不显著下降。
+中重度 Non-IID：提升 worst-client / tail-class / average accuracy。
+通信成本：如果 public1 接近 public4，应强调低通信开销。
+```
+
+### 当前不要做的事
+
+暂时不要继续：
+
+```text
+1. 盲目设计新的 public-logit 通信模块。
+2. 只在 PRAC 上反复调超参数。
+3. 只追求 alpha=0.1 上超过 RAHFL。
+4. 只报告 avg_acc，不分析 worst_acc / tail_acc。
+5. 把工作讲成“RAHFL 粗粒度，我细粒度”。
+```
+
+更好的表述是：
+
+```text
+RAHFL-inspired but Non-IID-aware:
+我们沿用强鲁棒本地增强思想作为公平基座，
+但针对 RAHFL 在 label-skew 下的本地对比学习偏斜和客户端级通信偏差进行改进。
+```
+
+## Current Authoritative Next Steps - 2026-06-30
+
+### Now: run AugMix + DCL local-only control
+
+The key unanswered question is whether current PRAC communication adds value
+beyond RAHFL-style local robust training.
+
+Run:
+
+```text
+configs/kaggle_t4_augmix_dcl_local_only.yaml
+```
+
+Meaning:
+
+```text
+method_name: prac_hfl
+warmup_rounds: 999
+40 rounds of AugMix + CE + JSD + DCL local training
+no PRAC communication in any round
+```
+
+Compare against:
+
+```text
+RAHFL public4 final:      avg_acc=56.41, worst_acc=44.72
+PRAC public1 final:       avg_acc=54.63, worst_acc=41.88
+PRAC public4 final:       avg_acc=52.96, worst_acc=43.27
+```
+
+Decision rule:
+
+```text
+If local-only >= PRAC public1/public4:
+  current PRAC communication has weak or negative contribution.
+
+If PRAC > local-only but still < RAHFL:
+  PRAC has useful signal, but communication strength / accept policy needs tuning.
+
+If local-only is much lower than PRAC:
+  PRAC communication is useful and should be optimized rather than discarded.
+```
+
+Important current interpretation:
+
+```text
+PRAC is not empty: accept_rate is nonzero.
+But public4 lowered avg_acc compared with public1 while improving final worst_acc.
+This suggests weak-client help plus average-performance negative transfer.
+```
+
 ## Current Authoritative Next Steps - 2026-06-25
 
 ### Now: run the new FedPRIME-PAIR full experiment
@@ -27,8 +266,8 @@ configs/kaggle_t4_fedprime_pair_full.yaml
 Important runtime note:
 
 ```text
-Use code at or after commit 9942276.
-The setup cell must show git log -1 containing 9942276 or a later commit.
+Use code at or after commit 8a4ee15.
+The setup cell must show git log -1 containing 8a4ee15 or a later commit.
 ```
 
 This version includes:
@@ -47,15 +286,26 @@ Expected full-run heartbeat:
 [heartbeat] FedPRIME-PAIR local phase, client=0 batch=50 loss=...
 ```
 
-Preferred one-shot Kaggle entry after the next push:
+Preferred Kaggle entry:
 
-```bash
-RUN_DEBUG=1 bash scripts/run_kaggle_pair.sh
+```text
+Use the Python streaming launcher cell, not a long %%bash cell.
+The Python cell should call:
+  RUN_DEBUG=1 PYTHONUNBUFFERED=1 bash scripts/run_kaggle_pair.sh
 ```
 
 This script performs data import, environment check, partition audit, optional
 debug smoke, full FedPRIME-PAIR training, pair-expertise analysis, summary, and
 output packaging in one uninterrupted background-safe command.
+
+Reason:
+
+```text
+Kaggle/IPython may buffer %%bash stdout until the subprocess exits.
+The Python streaming launcher uses subprocess.Popen and prints a driver
+heartbeat every 60 seconds, so the run never appears silent.
+Do not use sys.stdout.reconfigure in Kaggle; its OutStream has no reconfigure.
+```
 
 If a fresh full run reaches training but prints no heartbeat for about 10
 minutes, stop it. Do not wait for hours. Inspect whether the notebook pulled
@@ -522,6 +772,73 @@ Current `prepare_data.py` creates RAHFL-style random corrupted CIFAR-10. Officia
 RAHFL paper uses local pretraining. Current unified runner supports checkpoint loading but does not yet include a dedicated pretraining script in `fedprime`.
 
 ## If Continuing With Codex Tomorrow
+
+## 2026-06-29 Next Actions
+
+Current mainline:
+
+```text
+PRAC-HFL
+```
+
+D2C and FedPRIME-PAIR are now historical diagnostic results, not the active main method.
+
+Immediate next task:
+
+```text
+Rerun safe PRAC-HFL on Kaggle from commit 5e476ea.
+```
+
+Before running, verify:
+
+```text
+git log -1 --oneline
+5e476ea 增强PRAC-HFL数值稳定性
+```
+
+Use:
+
+```text
+configs/kaggle_t4_prac_hfl.yaml
+scripts/run_kaggle_prac.sh
+```
+
+Safe PRAC-HFL has:
+
+```text
+warmup_rounds=3
+CE-only route/accept risk
+virtual_lr=0.005
+head_max_grad_norm=1.0
+train.max_grad_norm=5.0
+skip_nonfinite=true
+```
+
+Judgment criteria:
+
+```text
+No NaN through round 039.
+avg_acc should approach or exceed RAHFL 56.41.
+worst_acc should approach or exceed RAHFL 44.72.
+accept_rate should not remain zero forever.
+avg_delta should become less negative than the first unstable run.
+```
+
+If safe PRAC-HFL works:
+
+```text
+1. Run PRAC-HFL multi-seed.
+2. Run RAHFL local-only / Average-KD / AsymHFL / PRAC-HFL communication ablation.
+3. Add underrepresented head/tail/missing diagnosis to PRAC-HFL checkpoints.
+```
+
+If safe PRAC-HFL still underperforms:
+
+```text
+1. Try accept gate with patience or EMA route risk.
+2. Try classwise=false model-level PRAC to reduce noisy class routing.
+3. Try full-model accepted KD only after head-only version is stable.
+```
 
 Tell Codex:
 

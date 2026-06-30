@@ -37,20 +37,23 @@ Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older fil
 Current active method:
 
 ```text
-PRAC-HFL = RAHFL local robust training + receiver-adaptive safe communication
+NIR-DCL = RAHFL AugMix/JSD local robust training + Non-IID-aware Robust DCL
 ```
 
 Current main implementation:
 
 ```text
-fedprime/methods/prac_hfl.py
+fedprime/methods/nir_dcl.py
 fedprime/methods/local_rahfl.py
-configs/kaggle_t4_prac_hfl.yaml
-configs/debug_prac_hfl_cifar10c.yaml
+fedprime/methods/prac_hfl.py
+configs/kaggle_t4_nir_dcl_local_only.yaml
+configs/debug_nir_dcl_local_only.yaml
 scripts/run_kaggle_prac.sh
 ```
 
-D2C and FedPRIME-PAIR are historical diagnostic routes, not the current main method.
+D2C, FedPRIME-PAIR, and current PRAC-HFL communication are historical/diagnostic
+routes. PRAC-HFL runner is still reused because it has the best Kaggle heartbeat
+logging and can disable communication with `warmup_rounds: 999`.
 
 ## Latest Important Commits
 
@@ -106,6 +109,63 @@ train.max_grad_norm: 5.0
 train.skip_nonfinite: true
 ```
 
+Safe PRAC-HFL public1 result:
+
+```text
+public_batches_per_round=1
+final avg_acc=54.63
+final worst_acc=41.88
+best avg_acc=55.53
+best worst_acc=43.43
+```
+
+Safe PRAC-HFL public4 fair result:
+
+```text
+public_batches_per_round=4
+final avg_acc=52.96
+final worst_acc=43.27
+best avg_acc=52.96
+best worst_acc=43.27
+gap vs RAHFL final: avg_acc=-3.45, worst_acc=-1.45
+```
+
+Interpretation:
+
+```text
+PRAC communication has nonzero behavior, but public4 did not improve average accuracy.
+It may help worst-client accuracy somewhat while introducing negative transfer.
+The decisive next control is AugMix+DCL local-only.
+```
+
+Local-only control:
+
+```text
+configs/kaggle_t4_augmix_dcl_local_only.yaml
+method_name: prac_hfl
+warmup_rounds: 999
+meaning: AugMix + CE + JSD + DCL local training only, no PRAC communication.
+```
+
+Local-only control result:
+
+```text
+final avg_acc=56.11
+final worst_acc=44.23
+best avg_acc=56.94 at round 38
+best worst_acc=44.23 at round 39
+all PRAC metrics are zero
+```
+
+Interpretation:
+
+```text
+AugMix + DCL local-only nearly matches RAHFL and beats both PRAC public1/public4
+on final average accuracy. Current PRAC communication does not provide positive
+average-accuracy gain over local robust training and should not remain the main
+claim without redesign.
+```
+
 Historical negative/diagnostic routes:
 
 ```text
@@ -113,6 +173,21 @@ PRIME + LogitAvg final avg_acc about 52.10
 FedPRIME-D2C final avg_acc about 52.31
 Oracle D2C final avg_acc about 51.74
 FedPRIME-PAIR final avg_acc about 50.15, best avg about 51.10
+Safe PRAC-HFL public4 final avg_acc about 52.96
+```
+
+Current new route:
+
+```text
+NIR-DCL local-only:
+  config: configs/kaggle_t4_nir_dcl_local_only.yaml
+  debug:  configs/debug_nir_dcl_local_only.yaml
+  communication: disabled by warmup_rounds=999
+  goal: improve AugMix+DCL local-only under label-skew Non-IID before revisiting communication
+
+NIR-DCL + AsymHFL:
+  config: configs/kaggle_t4_nir_dcl_rahfl.yaml
+  goal: optional stronger comparison after local-only signal is known
 ```
 
 ## Kaggle Run Memory
@@ -174,6 +249,14 @@ The current practical direction is:
 
 ```text
 Use RAHFL local robust learning as the strong base.
-Improve communication beyond AsymHFL through receiver-side validation and safe adaptive knowledge transfer.
+First improve local DCL to be Non-IID-aware.
 Beat the fair RAHFL baseline under Non-IID + corruption + model heterogeneity.
+```
+
+Immediate next experiment:
+
+```text
+Use the local-only result as the decision point.
+Shift focus from current PRAC communication to Non-IID-aware robust DCL/local representation learning,
+unless PRAC is redesigned with held-out routing and weaker/aggregated communication.
 ```

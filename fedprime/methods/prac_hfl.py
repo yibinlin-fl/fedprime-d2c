@@ -215,7 +215,7 @@ class PRACHFLExperiment:
 
     def _get_nir_dcl_queue(self, client_id: int, num_classes: int, method_cfg: dict) -> NIRDCLFeatureQueue:
         if client_id not in self._nir_dcl_queues:
-            nir_cfg = method_cfg.get("nir_dcl", {})
+            nir_cfg = method_cfg.get("cara_l", method_cfg.get("nir_dcl", {}))
             self._nir_dcl_queues[client_id] = NIRDCLFeatureQueue(
                 num_classes=num_classes,
                 max_size_per_class=int(nir_cfg.get("queue_size", 64)),
@@ -228,7 +228,7 @@ class PRACHFLExperiment:
             client_start = time.perf_counter()
             print(f"[heartbeat] round {round_idx:03d} local client {client_id} start", flush=True)
             feature_queue = None
-            if method_cfg.get("cl_module", "dcl") == "nir_dcl":
+            if method_cfg.get("cl_module", "dcl") in {"nir_dcl", "cara_l"}:
                 feature_queue = self._get_nir_dcl_queue(client_id, num_classes, method_cfg)
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 loss = train_local_augmix_dcl_epoch(
@@ -239,7 +239,7 @@ class PRACHFLExperiment:
                     lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                     cl_module=method_cfg.get("cl_module", "dcl"),
                     num_classes=num_classes,
-                    nir_dcl_cfg=method_cfg.get("nir_dcl", {}),
+                    nir_dcl_cfg=method_cfg.get("cara_l", method_cfg.get("nir_dcl", {})),
                     feature_queue=feature_queue,
                     max_batches=train_cfg.get("max_local_batches"),
                     max_grad_norm=train_cfg.get("max_grad_norm"),

@@ -17,7 +17,7 @@ The current baseline to beat is the unified-runner RAHFL baseline.
 The current mainline is:
 
 ```text
-NIR-DCL = RAHFL AugMix/JSD local robust training + Non-IID-aware Robust DCL
+FedCARA = AugMix/JSD + CARA-L + CARA-C
 ```
 
 The project is no longer centered on D2C, FedPRIME-PAIR, or current PRAC-HFL
@@ -25,9 +25,10 @@ communication. Those are now historical diagnostic experiments. PRAC-HFL runner
 is still useful for local-only experiments because it has robust Kaggle heartbeat
 logging and can skip communication with `warmup_rounds: 999`.
 
-## NIR-DCL Design
+## CARA-L Design
 
-NIR-DCL modifies only the local DCL branch:
+CARA-L is the paper-facing name for the previously implemented NIR-DCL local
+module. It modifies only the local DCL branch:
 
 ```text
 CE(clean)
@@ -62,6 +63,129 @@ fedprime/methods/local_rahfl.py
 configs/kaggle_t4_nir_dcl_local_only.yaml
 configs/debug_nir_dcl_local_only.yaml
 configs/kaggle_t4_nir_dcl_rahfl.yaml
+```
+
+## CARA-C Design
+
+CARA-C is the FedCARA communication module. It replaces RAHFL AsymHFL's
+overall-accuracy teacher routing with class-wise reliable teaching.
+
+Original AsymHFL:
+
+```text
+If overall_acc(student) <= overall_acc(teacher),
+the student learns the teacher's full public softmax distribution.
+```
+
+CARA-C:
+
+```text
+For receiver i, teacher j, class c:
+  weight_{i,j,c} = reliability_{j,c} * need_{i,c}
+
+where:
+  reliability_{j,c} = per-class acc of teacher j on class c
+  need_{i,c}        = 1 - per-class acc of receiver i on class c
+```
+
+The first implementation also uses:
+
+```text
+better_only: true
+only teach class c if teacher_acc_{j,c} > student_acc_{i,c} + margin
+```
+
+The public-logit KL becomes:
+
+```text
+weighted_KL = sum_c weight_{i,j,c} * p_teacher,c * log(p_teacher,c / p_student,c)
+```
+
+Key files/configs:
+
+```text
+fedprime/methods/rahfl_asymhfl.py
+configs/debug_fedcara_cifar10c.yaml
+configs/kaggle_t4_fedcara.yaml
+```
+
+## CARA-L / NIR-DCL Results - 2026-07-01
+
+Two Kaggle runs finished:
+
+```text
+outputs/nir_dcl_local_only_results.tar.gz
+outputs/nir_dcl_rahfl_results.tar.gz
+```
+
+Results:
+
+```text
+NIR-DCL local-only:
+  final avg_acc   = 53.30
+  final worst_acc = 36.01
+  best avg_acc    = 54.74 at round 37
+  best worst_acc  = 37.37 at round 26
+
+NIR-DCL + AsymHFL:
+  final avg_acc   = 57.36
+  final worst_acc = 46.23
+  best avg_acc    = 57.89 at round 34
+  best worst_acc  = 46.33 at round 34
+```
+
+Comparison:
+
+```text
+RAHFL baseline final:        avg_acc=56.41, worst_acc=44.72
+AugMix+DCL local-only final: avg_acc=56.11, worst_acc=44.23
+
+NIR-DCL local-only gap vs AugMix+DCL local-only:
+  avg_acc=-2.81
+  worst_acc=-8.22
+
+NIR-DCL + AsymHFL gap vs RAHFL:
+  avg_acc=+0.95
+  worst_acc=+1.51
+```
+
+Interpretation:
+
+```text
+NIR-DCL alone hurts local-only performance, especially worst-client accuracy.
+However, NIR-DCL combined with AsymHFL exceeds the RAHFL baseline on both
+average accuracy and worst-client accuracy under the current alpha=0.5 setting.
+
+This suggests NIR-DCL may improve the quality/compatibility of public-logit
+communication even if it is too restrictive as a purely local objective.
+The next research story should focus on synergy:
+  RAHFL local DCL is strong by itself;
+  CARA-L regularizes local representations so AsymHFL communication becomes
+  more beneficial under Non-IID label skew.
+```
+
+## Next FedCARA Experiment
+
+Run:
+
+```text
+configs/kaggle_t4_fedcara.yaml
+```
+
+Compare against:
+
+```text
+RAHFL baseline:        56.41 / 44.72
+CARA-L + AsymHFL:      57.36 / 46.23
+```
+
+Goal:
+
+```text
+FedCARA should ideally match or exceed CARA-L + AsymHFL.
+If it beats 57.36 / 46.23, the communication innovation is immediately useful.
+If it stays above RAHFL but below CARA-L + AsymHFL, CARA-C still has a valid
+class-aware communication story but needs tuning.
 ```
 
 ## PRAC-HFL Design

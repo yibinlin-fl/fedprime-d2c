@@ -147,6 +147,96 @@ configs/kaggle_t4_nir_dcl_local_only.yaml
 如果 NIR-DCL local-only 已经明显提升，再跑 NIR-DCL + AsymHFL。
 ```
 
+### CARA-L / NIR-DCL 首轮结果
+
+已完成：
+
+```text
+NIR-DCL local-only:
+  final avg_acc   = 53.30
+  final worst_acc = 36.01
+  best avg_acc    = 54.74
+
+NIR-DCL + AsymHFL:
+  final avg_acc   = 57.36
+  final worst_acc = 46.23
+  best avg_acc    = 57.89
+
+RAHFL baseline:
+  final avg_acc   = 56.41
+  final worst_acc = 44.72
+```
+
+结论：
+
+```text
+NIR-DCL local-only 不成立，明显弱于 AugMix+DCL local-only。
+但 NIR-DCL + AsymHFL 超过 RAHFL，说明 NIR-DCL 可能不是单独提升本地性能，
+而是让本地表征更适合 AsymHFL public-logit 通信。
+```
+
+下一步不要马上大规模消融。更合理的下一步：
+
+```text
+1. 先复跑 seed=1 或 alpha=0.3 中的一个，确认这个提升不是 seed-0 偶然。
+2. 补 tail_acc / per-client / per-class 指标，确认 worst_acc 提升来自哪里。
+3. 如果还有算力，再跑 alpha=1.0，确认正常 Non-IID 不掉。
+```
+
+### 已实现 FedCARA / CARA-C
+
+2026-07-01 新增：
+
+```text
+FedCARA = AugMix + CARA-L + CARA-C
+```
+
+其中：
+
+```text
+CARA-L: 原 NIR-DCL 的正式命名，负责类别自适应鲁棒本地对齐。
+CARA-C: 新通信模块，负责类别自适应可靠教师蒸馏。
+```
+
+CARA-C v1 公式：
+
+```text
+w_{i,j,c} = acc_{j,c} * (1 - acc_{i,c})
+```
+
+默认还加一个安全门：
+
+```text
+only use class c if acc_{j,c} > acc_{i,c}
+```
+
+然后在 public logits 上做 class-weighted KL：
+
+```text
+L = sum_c w_{i,j,c} * p_j,c * log(p_j,c / p_i,c)
+```
+
+配置入口：
+
+```text
+configs/debug_fedcara_cifar10c.yaml
+configs/kaggle_t4_fedcara.yaml
+```
+
+下一步先跑：
+
+```text
+configs/kaggle_t4_fedcara.yaml
+```
+
+比较：
+
+```text
+RAHFL baseline:   56.41 / 44.72
+CARA-L+AsymHFL:   57.36 / 46.23
+FedCARA:          待跑
+```
+
 ### 必须补的严谨性
 
 后续正式实验前，必须避免审稿人攻击：

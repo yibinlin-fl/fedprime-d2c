@@ -28,7 +28,7 @@ from fedprime.utils.env import resolve_device, seed_everything
 
 
 class AsymHFLExperiment:
-    """Unified runner for original RAHFL-style AsymHFL and RAHFL+PRIME."""
+    """Unified runner for RAHFL-style AsymHFL, RAHFL+PRIME, and FedCARA."""
 
     def __init__(self, config: dict):
         self.config = config
@@ -49,7 +49,9 @@ class AsymHFLExperiment:
         num_classes = int(data_cfg.get("num_classes", 10))
         stats = dataset_stats(data_cfg.get("private_dataset", "cifar10"))
 
+        print("[setup] AsymHFL/FedCARA loading private labels", flush=True)
         labels = load_private_labels(data_cfg["private_root"], data_cfg["private_corrupt_rate"])
+        print("[setup] AsymHFL/FedCARA loading/creating private partition", flush=True)
         dataidx_map = partition_private_data(
             labels=labels,
             num_clients=num_clients,
@@ -63,6 +65,7 @@ class AsymHFLExperiment:
         use_prime = bool(method_cfg.get("use_prime", False))
         use_prime_dcl = use_prime and bool(method_cfg.get("use_dcl", True))
         if use_prime:
+            print("[setup] building PRIME private loaders", flush=True)
             if use_prime_dcl:
                 private_loaders, test_loader = build_prime_dcl_private_loaders(
                     cifar10c_root=data_cfg["private_root"],
@@ -86,6 +89,7 @@ class AsymHFLExperiment:
                 )
             prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device)
         else:
+            print("[setup] building AugMix private loaders", flush=True)
             private_loaders, test_loader, _, _ = build_augmix_private_loaders(
                 cifar10c_root=data_cfg["private_root"],
                 dataidx_map=dataidx_map,
@@ -98,6 +102,7 @@ class AsymHFLExperiment:
             )
             prime_aug = None
 
+        print("[setup] building public loader", flush=True)
         public_loader = build_public_loader(
             cifar100_root=data_cfg["public_root"],
             public_size=int(data_cfg.get("public_size", 5000)),
@@ -108,6 +113,7 @@ class AsymHFLExperiment:
         )
         public_iter = iter(public_loader)
 
+        print("[setup] building heterogeneous client models", flush=True)
         models = build_models(model_cfg["names"], num_classes)
         models = {idx: model.to(self.device) for idx, model in models.items()}
         self._load_models_if_configured(models)
@@ -122,15 +128,23 @@ class AsymHFLExperiment:
             writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
-                accs_before = self._evaluate(models, test_loader)
+                print(f"[heartbeat] round {round_idx:03d} start", flush=True)
+                if self._use_cara_communication(method_cfg):
+                    accs_before, class_accs_before = self._evaluate_detailed(models, test_loader, num_classes)
+                else:
+                    accs_before = self._evaluate(models, test_loader)
+                    class_accs_before = None
+                print(f"[heartbeat] round {round_idx:03d} collaborative phase", flush=True)
                 col_loss = self._collaborative_phase(
                     models=models,
                     optimizers=optimizers,
                     public_loader=public_loader,
                     public_iter=public_iter,
                     accs=accs_before,
+                    class_accs=class_accs_before,
                     stats=stats,
                 )
+                print(f"[heartbeat] round {round_idx:03d} local phase", flush=True)
                 local_loss = self._local_phase(
                     models=models,
                     optimizers=optimizers,
@@ -158,7 +172,8 @@ class AsymHFLExperiment:
                     f"avg_acc={row['avg_acc']:.2f} "
                     f"worst_acc={row['worst_acc']:.2f} "
                     f"local_loss={local_loss:.4f} "
-                    f"col_loss={col_loss:.4f}"
+                    f"col_loss={col_loss:.4f}",
+                    flush=True,
                 )
 
         self._save_models(models)
@@ -177,9 +192,14 @@ class AsymHFLExperiment:
             )
         return optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    def _collaborative_phase(self, models, optimizers, public_loader, public_iter, accs, stats) -> float:
+    def _use_cara_communication(self, method_cfg: dict) -> bool:
+        return method_cfg.get("communication", "asymhfl").lower() in {"cara", "cara_c", "fedcara"}
+
+    def _collaborative_phase(self, models, optimizers, public_loader, public_iter, accs, class_accs, stats) -> float:
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
+        method_cfg = self.config.get("method", {})
+        use_cara = self._use_cara_communication(method_cfg)
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
         for _ in range(num_batches):
             try:
@@ -206,7 +226,22 @@ class AsymHFLExperiment:
                 for other_id in sorted(models):
                     if other_id == client_id:
                         continue
-                    if accs[client_id] <= accs[other_id]:
+                    if use_cara:
+                        if class_accs is None:
+                            raise RuntimeError("CARA-C communication requires class-wise accuracies.")
+                        class_weights = self._cara_class_weights(
+                            student_class_acc=class_accs[client_id],
+                            teacher_class_acc=class_accs[other_id],
+                            method_cfg=method_cfg,
+                        )
+                        if class_weights is None:
+                            continue
+                        learn_losses.append(self._weighted_kd_loss(
+                            student_log_probs=student_log_probs[client_id],
+                            teacher_probs=target_probs[other_id],
+                            class_weights=class_weights,
+                        ))
+                    elif accs[client_id] <= accs[other_id]:
                         learn_losses.append(criterion(student_log_probs[client_id], target_probs[other_id]))
                 if not learn_losses:
                     continue
@@ -217,9 +252,46 @@ class AsymHFLExperiment:
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
 
+    def _cara_class_weights(
+        self,
+        student_class_acc: torch.Tensor,
+        teacher_class_acc: torch.Tensor,
+        method_cfg: dict,
+    ) -> torch.Tensor | None:
+        cara_cfg = method_cfg.get("cara", {})
+        student = student_class_acc.to(self.device).float().clamp(0.0, 1.0)
+        teacher = teacher_class_acc.to(self.device).float().clamp(0.0, 1.0)
+        margin = float(cara_cfg.get("better_margin", 0.0))
+        teacher_power = float(cara_cfg.get("teacher_power", 1.0))
+        need_power = float(cara_cfg.get("need_power", 1.0))
+        min_weight = float(cara_cfg.get("min_weight", 1e-6))
+
+        teacher_reliability = teacher.clamp_min(0.0).pow(teacher_power)
+        receiver_need = (1.0 - student).clamp_min(0.0).pow(need_power)
+        weights = teacher_reliability * receiver_need
+        if bool(cara_cfg.get("better_only", True)):
+            weights = weights * (teacher > student + margin).float()
+        weights = torch.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
+        if float(weights.sum().detach().cpu()) <= min_weight:
+            return None
+        if bool(cara_cfg.get("normalize", True)):
+            active = weights > min_weight
+            weights = weights / weights[active].mean().clamp_min(min_weight)
+        return weights.detach()
+
+    def _weighted_kd_loss(
+        self,
+        student_log_probs: torch.Tensor,
+        teacher_probs: torch.Tensor,
+        class_weights: torch.Tensor,
+    ) -> torch.Tensor:
+        safe_teacher = teacher_probs.clamp_min(1e-8)
+        per_class_kl = safe_teacher * (safe_teacher.log() - student_log_probs)
+        return (per_class_kl * class_weights.view(1, -1)).sum(dim=1).mean()
+
     def _get_nir_dcl_queue(self, client_id: int, num_classes: int, method_cfg: dict) -> NIRDCLFeatureQueue:
         if client_id not in self._nir_dcl_queues:
-            nir_cfg = method_cfg.get("nir_dcl", {})
+            nir_cfg = method_cfg.get("cara_l", method_cfg.get("nir_dcl", {}))
             self._nir_dcl_queues[client_id] = NIRDCLFeatureQueue(
                 num_classes=num_classes,
                 max_size_per_class=int(nir_cfg.get("queue_size", 64)),
@@ -255,7 +327,7 @@ class AsymHFLExperiment:
                         )
                 else:
                     feature_queue = None
-                    if method_cfg.get("cl_module", "dcl") == "nir_dcl":
+                    if method_cfg.get("cl_module", "dcl") in {"nir_dcl", "cara_l"}:
                         feature_queue = self._get_nir_dcl_queue(client_id, num_classes, method_cfg)
                     loss = train_local_augmix_dcl_epoch(
                         model=models[client_id],
@@ -265,7 +337,7 @@ class AsymHFLExperiment:
                         lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         cl_module=method_cfg.get("cl_module", "dcl"),
                         num_classes=num_classes,
-                        nir_dcl_cfg=method_cfg.get("nir_dcl", {}),
+                        nir_dcl_cfg=method_cfg.get("cara_l", method_cfg.get("nir_dcl", {})),
                         feature_queue=feature_queue,
                         max_batches=train_cfg.get("max_local_batches"),
                         max_grad_norm=train_cfg.get("max_grad_norm"),
@@ -292,6 +364,34 @@ class AsymHFLExperiment:
                     correct += (pred == labels).sum().item()
             accs.append(100.0 * correct / max(total, 1))
         return accs
+
+    def _evaluate_detailed(self, models, test_loader, num_classes: int) -> tuple[list[float], dict[int, torch.Tensor]]:
+        accs = []
+        class_accs = {}
+        for client_id in sorted(models):
+            model = models[client_id]
+            model.eval()
+            correct = 0
+            total = 0
+            class_correct = torch.zeros(num_classes, dtype=torch.float64)
+            class_total = torch.zeros(num_classes, dtype=torch.float64)
+            with torch.no_grad():
+                for images, labels in test_loader:
+                    images = images.to(self.device, non_blocking=True)
+                    labels = labels.to(self.device, non_blocking=True).long()
+                    logits = forward_logits(model, images)
+                    pred = logits.argmax(dim=1)
+                    total += labels.numel()
+                    correct_mask = pred == labels
+                    correct += correct_mask.sum().item()
+                    for class_id in range(num_classes):
+                        mask = labels == class_id
+                        if mask.any():
+                            class_total[class_id] += mask.sum().item()
+                            class_correct[class_id] += correct_mask[mask].sum().item()
+            accs.append(100.0 * correct / max(total, 1))
+            class_accs[client_id] = (class_correct / class_total.clamp_min(1.0)).float()
+        return accs, class_accs
 
     def _save_models(self, models) -> None:
         ckpt_dir = self.output_dir / "checkpoints"

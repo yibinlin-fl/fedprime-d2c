@@ -87,7 +87,7 @@ def train_local_augmix_dcl_epoch(
                     strong_feature=fstrong.unsqueeze(1),
                     labels=labels,
                 )
-            elif cl_module == "nir_dcl":
+            elif cl_module in {"nir_dcl", "cara_l"}:
                 images_cont = torch.cat([images[0], images[1], images[3]], dim=0)
                 features = _model_backbone(model)(images_cont)
                 features = F.normalize(features.view(features.size(0), -1), dim=1)
@@ -141,7 +141,7 @@ def train_local_augmix_dcl_epoch(
         optimizer.step()
         if (
             isinstance(images, (tuple, list))
-            and cl_module == "nir_dcl"
+            and cl_module in {"nir_dcl", "cara_l"}
             and feature_queue is not None
             and pending_queue_update is not None
         ):

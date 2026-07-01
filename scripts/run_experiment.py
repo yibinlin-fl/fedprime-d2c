@@ -28,7 +28,7 @@ def main() -> None:
         FedPrimePairExperiment(config).run()
     elif method == "prac_hfl":
         PRACHFLExperiment(config).run()
-    elif method in {"rahfl", "rahfl_prime"}:
+    elif method in {"rahfl", "rahfl_prime", "fedcara"}:
         AsymHFLExperiment(config).run()
     else:
         raise ValueError(f"Unsupported method_name: {method}")

@@ -37,7 +37,7 @@ Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older fil
 Current active method:
 
 ```text
-NIR-DCL = RAHFL AugMix/JSD local robust training + Non-IID-aware Robust DCL
+FedCARA = AugMix/JSD + CARA-L + CARA-C
 ```
 
 Current main implementation:
@@ -45,6 +45,14 @@ Current main implementation:
 ```text
 fedprime/methods/nir_dcl.py
 fedprime/methods/local_rahfl.py
+fedprime/methods/rahfl_asymhfl.py
+configs/kaggle_t4_fedcara.yaml
+configs/debug_fedcara_cifar10c.yaml
+```
+
+Legacy/diagnostic runner implementation:
+
+```text
 fedprime/methods/prac_hfl.py
 configs/kaggle_t4_nir_dcl_local_only.yaml
 configs/debug_nir_dcl_local_only.yaml
@@ -179,15 +187,39 @@ Safe PRAC-HFL public4 final avg_acc about 52.96
 Current new route:
 
 ```text
-NIR-DCL local-only:
+CARA-L local-only:
   config: configs/kaggle_t4_nir_dcl_local_only.yaml
   debug:  configs/debug_nir_dcl_local_only.yaml
   communication: disabled by warmup_rounds=999
   goal: improve AugMix+DCL local-only under label-skew Non-IID before revisiting communication
 
-NIR-DCL + AsymHFL:
+CARA-L + AsymHFL:
   config: configs/kaggle_t4_nir_dcl_rahfl.yaml
   goal: optional stronger comparison after local-only signal is known
+
+FedCARA:
+  config: configs/kaggle_t4_fedcara.yaml
+  debug:  configs/debug_fedcara_cifar10c.yaml
+  local module: CARA-L
+  communication module: CARA-C
+```
+
+Latest NIR-DCL result:
+
+```text
+NIR-DCL local-only final avg/worst = 53.30/36.01
+NIR-DCL + AsymHFL final avg/worst = 57.36/46.23
+RAHFL baseline final avg/worst = 56.41/44.72
+```
+
+Interpretation:
+
+```text
+NIR-DCL local-only is worse than AugMix+DCL local-only, but NIR-DCL + AsymHFL
+beats RAHFL by +0.95 avg_acc and +1.51 worst_acc under alpha=0.5.
+The promising claim is not "NIR-DCL alone is stronger"; it is "NIR-DCL improves
+the compatibility of local robust features with AsymHFL communication under
+Non-IID label skew."
 ```
 
 ## Kaggle Run Memory
@@ -249,7 +281,8 @@ The current practical direction is:
 
 ```text
 Use RAHFL local robust learning as the strong base.
-First improve local DCL to be Non-IID-aware.
+Use CARA-L to make robust local features class-adaptive under label skew.
+Use CARA-C to replace AsymHFL's overall-accuracy routing with class-wise reliable teaching.
 Beat the fair RAHFL baseline under Non-IID + corruption + model heterogeneity.
 ```
 

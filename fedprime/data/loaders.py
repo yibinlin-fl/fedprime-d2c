@@ -337,6 +337,14 @@ def build_augmix_private_loaders(
             test_corrupt_rate=test_corrupt_rate,
             augmix_module=augmix_module,
         )
+        train_dl = data.DataLoader(
+            train_ds,
+            batch_size=train_batch_size,
+            shuffle=True,
+            drop_last=True,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+        )
         train_loaders.append(train_dl)
         train_datasets.append(train_ds)
 
@@ -348,6 +356,14 @@ def build_augmix_private_loaders(
         corrupt_rate=corrupt_rate,
         test_corrupt_rate=test_corrupt_rate,
         augmix_module=None,
+    )
+    test_loader = data.DataLoader(
+        test_ds,
+        batch_size=test_batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
     )
     return train_loaders, test_loader, train_datasets, test_ds
 

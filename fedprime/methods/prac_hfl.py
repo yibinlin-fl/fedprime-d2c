@@ -76,6 +76,7 @@ class PRACHFLExperiment:
             max_samples_per_client=data_cfg.get("private_samples_per_client"),
             partition_indices_path=data_cfg.get("partition_indices_path"),
         )
+        self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
 
         print("[setup] PRAC-HFL building RAHFL AugMix/DCL private loaders", flush=True)
         private_loaders, test_loader, _, _ = build_augmix_private_loaders(
@@ -222,6 +223,15 @@ class PRACHFLExperiment:
             )
         return self._nir_dcl_queues[client_id]
 
+    def _build_client_class_counts(self, labels, dataidx_map, num_classes: int) -> dict[int, torch.Tensor]:
+        label_tensor = torch.as_tensor(labels, dtype=torch.long)
+        counts = {}
+        for client_id, indices in dataidx_map.items():
+            idx_tensor = torch.as_tensor(indices, dtype=torch.long)
+            client_labels = label_tensor[idx_tensor]
+            counts[int(client_id)] = torch.bincount(client_labels, minlength=num_classes).float()
+        return counts
+
     def _local_phase(self, round_idx, models, optimizers, private_loaders, train_cfg, method_cfg, num_classes: int) -> float:
         losses = []
         for client_id, loader in enumerate(private_loaders):
@@ -240,7 +250,9 @@ class PRACHFLExperiment:
                     cl_module=method_cfg.get("cl_module", "dcl"),
                     num_classes=num_classes,
                     nir_dcl_cfg=method_cfg.get("cara_l", method_cfg.get("nir_dcl", {})),
+                    sara_cfg=method_cfg.get("sara", {}),
                     feature_queue=feature_queue,
+                    client_class_counts=getattr(self, "_client_class_counts", {}).get(client_id),
                     max_batches=train_cfg.get("max_local_batches"),
                     max_grad_norm=train_cfg.get("max_grad_norm"),
                     skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),

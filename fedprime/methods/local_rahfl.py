@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 
 from fedprime.methods.nir_dcl import NIRDCLFeatureQueue, NIRDCLLoss
+from fedprime.methods.sara import SARALoss
 from fedprime.models.factory import forward_logits
 from fedprime.utils.env import add_vendor_paths
 
@@ -21,7 +22,9 @@ def train_local_augmix_dcl_epoch(
     cl_module: str | None = "dcl",
     num_classes: int = 10,
     nir_dcl_cfg: dict | None = None,
+    sara_cfg: dict | None = None,
     feature_queue: NIRDCLFeatureQueue | None = None,
+    client_class_counts: torch.Tensor | None = None,
     max_batches: int | None = None,
     max_grad_norm: float | None = None,
     skip_nonfinite: bool = False,
@@ -34,6 +37,7 @@ def train_local_augmix_dcl_epoch(
     model.train()
     criterion = torch.nn.CrossEntropyLoss().to(device)
     nir_dcl_cfg = nir_dcl_cfg or {}
+    sara_cfg = sara_cfg or {}
     losses = []
 
     for batch_idx, (images, labels) in enumerate(loader):
@@ -111,6 +115,33 @@ def train_local_augmix_dcl_epoch(
                 )
                 loss = loss + float(nir_dcl_cfg.get("lambda_nir", 1.0)) * nir_loss
                 pending_queue_update = (fweak.detach(), labels.detach())
+            elif cl_module in {"sara", "sara_cl"}:
+                images_cont = torch.cat([images[0], images[1], images[3]], dim=0)
+                features = _model_backbone(model)(images_cont)
+                features = F.normalize(features.view(features.size(0), -1), dim=1)
+                fclean, fstrong, fweak = torch.split(features, images[0].size(0))
+                sara_loss, _ = SARALoss(
+                    num_classes=num_classes,
+                    temperature=float(sara_cfg.get("temperature", 0.2)),
+                    relation_temperature=float(sara_cfg.get("relation_temperature", 0.2)),
+                    beta=float(sara_cfg.get("beta", 1.0)),
+                    class_weight_min=float(sara_cfg.get("class_weight_min", 0.75)),
+                    class_weight_max=float(sara_cfg.get("class_weight_max", 1.5)),
+                    class_weight_power=float(sara_cfg.get("class_weight_power", 0.5)),
+                    reliability_tau=float(sara_cfg.get("reliability_tau", 1.0)),
+                    reliability_min=float(sara_cfg.get("reliability_min", 0.05)),
+                    use_class_calibration=bool(sara_cfg.get("use_class_calibration", True)),
+                    use_view_reliability=bool(sara_cfg.get("use_view_reliability", True)),
+                    use_relation_alignment=bool(sara_cfg.get("use_relation_alignment", True)),
+                )(
+                    original_feature=fclean,
+                    weak_feature=fweak,
+                    strong_feature=fstrong,
+                    labels=labels,
+                    strong_logits=logits_aug1,
+                    class_counts=client_class_counts,
+                )
+                loss = loss + float(sara_cfg.get("lambda_sara", 1.0)) * sara_loss
             else:
                 if cl_module not in (None, "none"):
                     raise ValueError(f"Unknown contrastive module: {cl_module}")

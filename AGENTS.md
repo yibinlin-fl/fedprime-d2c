@@ -37,17 +37,18 @@ Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older fil
 Current active method:
 
 ```text
-FedCARA = AugMix/JSD + CARA-L + CARA-C
+SARA + AsymHFL = AugMix/JSD + Skew-Aware Robust Alignment + RAHFL AsymHFL
 ```
 
 Current main implementation:
 
 ```text
-fedprime/methods/nir_dcl.py
+fedprime/methods/sara.py
 fedprime/methods/local_rahfl.py
 fedprime/methods/rahfl_asymhfl.py
-configs/kaggle_t4_fedcara.yaml
-configs/debug_fedcara_cifar10c.yaml
+configs/kaggle_t4_sara_rahfl.yaml
+configs/kaggle_t4_sara_local_only.yaml
+configs/debug_sara_local_only.yaml
 ```
 
 Legacy/diagnostic runner implementation:
@@ -65,10 +66,10 @@ logging and can disable communication with `warmup_rounds: 999`.
 
 ## Latest Important Commits
 
-Latest pushed mainline commit:
+Latest SARA implementation commit:
 
 ```text
-5e476ea
+9df13a7
 ```
 
 Previous PRAC-HFL implementation commit:
@@ -81,7 +82,7 @@ Kaggle PRAC-HFL runs should verify:
 
 ```text
 git log -1 --oneline
-expected head starts with: 5e476ea
+expected SARA implementation is present: 9df13a7 or later
 ```
 
 ## Current Experiment Facts
@@ -222,6 +223,64 @@ the compatibility of local robust features with AsymHFL communication under
 Non-IID label skew."
 ```
 
+Latest FedCARA v1 result:
+
+```text
+FedCARA final avg/worst = 55.88/45.93
+FedCARA best avg/worst = 56.86/45.93
+RAHFL baseline final avg/worst = 56.41/44.72
+CARA-L + AsymHFL final avg/worst = 57.36/46.23
+```
+
+Interpretation:
+
+```text
+FedCARA v1 improves worst-client accuracy over RAHFL (+1.21) but loses average
+accuracy (-0.53). It is below CARA-L + original AsymHFL. CARA-C v1 is therefore
+not final; it should become a hybrid auxiliary communication term rather than a
+full replacement for AsymHFL.
+```
+
+Latest SARA result - 2026-07-02:
+
+```text
+Result archive:
+  outputs/sara_rahfl_results.tar.gz
+
+SARA local-only:
+  config: configs/kaggle_t4_sara_local_only.yaml
+  method_name: prac_hfl
+  communication disabled by warmup_rounds=999
+  final avg/worst = 54.10 / 32.06
+  best avg/worst  = 54.59 / 33.96
+
+SARA + AsymHFL:
+  config: configs/kaggle_t4_sara_rahfl.yaml
+  method_name: rahfl
+  cl_module: sara
+  final avg/worst = 57.83 / 46.59
+  best avg/worst  = 57.83 / 46.59
+
+RAHFL baseline:
+  config: configs/kaggle_t4_rahfl.yaml
+  final avg/worst = 56.41 / 44.72
+```
+
+Interpretation:
+
+```text
+SARA local-only is weak, especially on worst-client accuracy. It should not be
+claimed as a standalone local-training improvement.
+
+SARA + AsymHFL is currently the best mainline result:
+  gap vs RAHFL = +1.42 avg_acc and +1.87 worst_acc.
+
+The working hypothesis is synergy:
+  SARA changes local representation geometry/class balance in a way that makes
+  public-logit AsymHFL communication more effective under label-skew Non-IID,
+  even though SARA alone over-regularizes weak clients.
+```
+
 ## Kaggle Run Memory
 
 Kaggle notebooks are often executed as one-shot background runs. Therefore:
@@ -281,15 +340,19 @@ The current practical direction is:
 
 ```text
 Use RAHFL local robust learning as the strong base.
-Use CARA-L to make robust local features class-adaptive under label skew.
-Use CARA-C to replace AsymHFL's overall-accuracy routing with class-wise reliable teaching.
+Use SARA to make robust local contrastive alignment skew-aware.
+Keep AsymHFL for now because SARA + AsymHFL is the first result that beats RAHFL
+on both final average accuracy and final worst-client accuracy.
 Beat the fair RAHFL baseline under Non-IID + corruption + model heterogeneity.
 ```
 
 Immediate next experiment:
 
 ```text
-Use the local-only result as the decision point.
-Shift focus from current PRAC communication to Non-IID-aware robust DCL/local representation learning,
-unless PRAC is redesigned with held-out routing and weaker/aggregated communication.
+Do not replace communication yet.
+First verify SARA + AsymHFL:
+  1. rerun seeds 1 and 2 under alpha=0.5
+  2. run alpha=0.3 and alpha=0.1 for stronger Non-IID
+  3. run alpha=1.0 to check normal/non-extreme Non-IID
+  4. rerun RAHFL for matching seeds/settings if SARA remains positive
 ```

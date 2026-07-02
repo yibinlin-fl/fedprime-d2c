@@ -1,6 +1,6 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-01
+Updated: 2026-07-02
 
 ## Current Goal
 
@@ -17,13 +17,142 @@ The current baseline to beat is the unified-runner RAHFL baseline.
 The current mainline is:
 
 ```text
-FedCARA = AugMix/JSD + CARA-L + CARA-C
+SARA + AsymHFL = AugMix/JSD + Skew-Aware Robust Alignment + RAHFL AsymHFL
 ```
 
-The project is no longer centered on D2C, FedPRIME-PAIR, or current PRAC-HFL
-communication. Those are now historical diagnostic experiments. PRAC-HFL runner
-is still useful for local-only experiments because it has robust Kaggle heartbeat
-logging and can skip communication with `warmup_rounds: 999`.
+The project is no longer centered on D2C, FedPRIME-PAIR, PRAC-HFL, or FedCARA.
+Those are historical diagnostic experiments. PRAC-HFL runner is still useful for
+local-only controls because it has robust Kaggle heartbeat logging and can skip
+communication with `warmup_rounds: 999`.
+
+SARA is currently the best-performing mainline because SARA + original RAHFL
+AsymHFL is the first setting that beats the fair RAHFL baseline on both final
+average accuracy and final worst-client accuracy.
+
+Key files/configs:
+
+```text
+fedprime/methods/sara.py
+fedprime/methods/local_rahfl.py
+fedprime/methods/rahfl_asymhfl.py
+configs/kaggle_t4_sara_local_only.yaml
+configs/kaggle_t4_sara_rahfl.yaml
+configs/debug_sara_local_only.yaml
+```
+
+Latest pushed SARA commit:
+
+```text
+9df13a7 实现SARA偏斜感知鲁棒对齐
+```
+
+## SARA Design
+
+SARA means:
+
+```text
+Skew-Aware Robust Alignment
+```
+
+It replaces RAHFL's DCL branch while keeping the RAHFL-style robust local base:
+
+```text
+CE(clean)
++ lambda_jsd * JSD(clean, aug1, aug2)
++ lambda_sara * SARA(clean_feature, weak_feature, strong_feature)
+```
+
+SARA contains:
+
+```text
+1. Skew-aware supervised contrastive alignment
+   Uses client class counts to rebalance contrastive contributions from head and
+   tail classes under label-skew Non-IID.
+
+2. PRIME/AugMix-view reliability gate
+   Uses strong-view true-class margin to down-weight unreliable augmented views.
+
+3. Relation alignment
+   Uses stable softmax(sim / T) relation matching instead of the more fragile
+   softmax(exp(sim) / T) style relation.
+```
+
+Current implementation uses AugMix/JSD views from the RAHFL local base, not PRIME.
+PRIME remains a historical route unless explicitly resumed.
+
+## SARA Results - 2026-07-02
+
+Result archive:
+
+```text
+outputs/sara_rahfl_results.tar.gz
+```
+
+Contained runs:
+
+```text
+SARA local-only:
+  config: configs/kaggle_t4_sara_local_only.yaml
+  method_name: prac_hfl
+  communication disabled by warmup_rounds=999
+  final avg_acc   = 54.10
+  final worst_acc = 32.06
+  best avg_acc    = 54.59 at round 38
+  best worst_acc  = 33.96 at round 17
+
+SARA + AsymHFL:
+  config: configs/kaggle_t4_sara_rahfl.yaml
+  method_name: rahfl
+  cl_module: sara
+  final avg_acc   = 57.83
+  final worst_acc = 46.59
+  best avg_acc    = 57.83 at round 39
+  best worst_acc  = 46.59 at round 39
+```
+
+Main comparisons:
+
+```text
+RAHFL baseline:
+  final avg_acc   = 56.41
+  final worst_acc = 44.72
+
+AugMix+DCL local-only:
+  final avg_acc   = 56.11
+  final worst_acc = 44.23
+
+FedCARA v1:
+  final avg_acc   = 55.88
+  final worst_acc = 45.93
+```
+
+Interpretation:
+
+```text
+SARA local-only is not strong and should not be claimed as a standalone local
+training improvement. It appears to over-regularize or hurt weak clients.
+
+SARA + AsymHFL is currently the best mainline result:
+  vs RAHFL: +1.42 avg_acc, +1.87 worst_acc
+  vs AugMix+DCL local-only: +1.72 avg_acc, +2.36 worst_acc
+  vs FedCARA: +1.95 avg_acc, +0.66 worst_acc
+
+The key story is synergy:
+  SARA alone may be too strict, but it changes local robust representations in
+  a way that makes AsymHFL public-logit communication more effective under
+  label-skew Non-IID.
+```
+
+Next required validation:
+
+```text
+1. Run SARA + AsymHFL with seeds 1 and 2 under alpha=0.5.
+2. Run alpha=0.3 and alpha=0.1 to test stronger label skew.
+3. Run alpha=1.0 to ensure normal/non-extreme Non-IID does not collapse.
+4. If SARA remains positive, rerun RAHFL under the same seeds/settings.
+5. Only redesign communication after these validations. Do not replace AsymHFL
+   immediately, because SARA + AsymHFL is currently the strongest evidence.
+```
 
 ## CARA-L Design
 
@@ -186,6 +315,69 @@ FedCARA should ideally match or exceed CARA-L + AsymHFL.
 If it beats 57.36 / 46.23, the communication innovation is immediately useful.
 If it stays above RAHFL but below CARA-L + AsymHFL, CARA-C still has a valid
 class-aware communication story but needs tuning.
+```
+
+## FedCARA v1 Result - 2026-07-01
+
+Result archive:
+
+```text
+outputs/fedcara_results.tar.gz
+```
+
+FedCARA v1:
+
+```text
+config: configs/kaggle_t4_fedcara.yaml
+method_name: fedcara
+local: CARA-L
+communication: CARA-C class-weighted public-logit KD
+```
+
+Final and best metrics:
+
+```text
+FedCARA:
+  final avg_acc   = 55.88
+  final worst_acc = 45.93
+  best avg_acc    = 56.86 at round 34
+  best worst_acc  = 45.93 at round 39
+
+RAHFL baseline:
+  final avg_acc   = 56.41
+  final worst_acc = 44.72
+
+CARA-L + AsymHFL:
+  final avg_acc   = 57.36
+  final worst_acc = 46.23
+```
+
+Interpretation:
+
+```text
+FedCARA v1 does not beat RAHFL on final average accuracy:
+  avg_acc gap vs RAHFL = -0.53
+
+But it does beat RAHFL on final worst-client accuracy:
+  worst_acc gap vs RAHFL = +1.21
+
+It is also below CARA-L + original AsymHFL:
+  avg_acc gap = -1.48
+  worst_acc gap = -0.30
+```
+
+Current judgment:
+
+```text
+CARA-C v1 is not the final communication module yet.
+It appears to bias learning toward weaker clients/classes, improving worst_acc
+but sacrificing average accuracy. The class-aware communication direction is not
+dead, but pure replacement of AsymHFL with hard class weighting is too conservative.
+
+Best next version should be hybrid:
+  keep part of original AsymHFL full-softmax KD
+  add CARA-C class-aware weighted KD as an auxiliary or residual term
+instead of fully replacing AsymHFL.
 ```
 
 ## PRAC-HFL Design

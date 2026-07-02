@@ -1,5 +1,49 @@
 # TODO Next
 
+## 2026-07-02 Immediate Mainline: SARA + AsymHFL
+
+Current best result:
+
+```text
+SARA + AsymHFL
+config: configs/kaggle_t4_sara_rahfl.yaml
+archive: outputs/sara_rahfl_results.tar.gz
+alpha=0.5, seed=0, corrupt_rate=1, rounds=40
+final avg_acc   = 57.83
+final worst_acc = 46.59
+```
+
+Comparison:
+
+```text
+RAHFL baseline:            56.41 / 44.72
+AugMix+DCL local-only:     56.11 / 44.23
+FedCARA v1:                55.88 / 45.93
+SARA local-only:           54.10 / 32.06
+SARA + AsymHFL:            57.83 / 46.59
+```
+
+Interpretation:
+
+```text
+SARA local-only is not strong. It hurts weak-client performance.
+SARA + AsymHFL is strong and currently beats RAHFL on both final average and
+final worst-client accuracy.
+
+Do not replace AsymHFL yet. The next priority is to verify whether this gain is
+stable across seeds and Non-IID strengths.
+```
+
+Next experiments:
+
+```text
+1. Run SARA + AsymHFL with seed=1 and seed=2 at alpha=0.5.
+2. Run SARA + AsymHFL at alpha=0.3 and alpha=0.1.
+3. Run SARA + AsymHFL at alpha=1.0 to check non-extreme Non-IID.
+4. If SARA remains positive, rerun RAHFL on matching seeds/settings.
+5. Then decide whether a communication module replacement is necessary.
+```
+
 ## 当前工作方向 - 2026-06-30
 
 ### 总方向
@@ -234,7 +278,27 @@ configs/kaggle_t4_fedcara.yaml
 ```text
 RAHFL baseline:   56.41 / 44.72
 CARA-L+AsymHFL:   57.36 / 46.23
-FedCARA:          待跑
+FedCARA v1:       55.88 / 45.93
+```
+
+结论：
+
+```text
+FedCARA v1 final avg_acc 没超过 RAHFL，但 worst_acc 超过 RAHFL。
+说明当前 CARA-C 过于偏向弱类/弱客户端，提升公平性但牺牲平均精度。
+```
+
+下一步若继续改通信，建议不要纯替换 AsymHFL，而是做 hybrid：
+
+```text
+L_comm = L_AsymHFL + lambda_cara * L_CARA-C
+```
+
+或者：
+
+```text
+teacher selection 仍用 AsymHFL overall routing，
+但 KD loss 中加入 class-aware residual weight。
 ```
 
 ### 必须补的严谨性

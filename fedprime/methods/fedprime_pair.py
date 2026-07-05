@@ -65,6 +65,7 @@ class FedPrimePairExperiment:
             dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
             max_samples_per_client=data_cfg.get("private_samples_per_client"),
             partition_indices_path=data_cfg.get("partition_indices_path"),
+            partition_seed=int(self.config.get("seed", 0)),
         )
 
         use_prime = bool(method_cfg.get("use_prime", True))

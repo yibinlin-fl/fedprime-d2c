@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import tarfile
 from pathlib import Path
 
 
@@ -19,6 +20,24 @@ def find_partition_files(source: Path) -> list[Path]:
     return sorted(source.rglob("cifar10c_alpha*_seed*_clients*_samples*.npz"))
 
 
+def import_from_archive(source: Path, target_dir: Path) -> int:
+    copied = 0
+    with tarfile.open(source, "r:*") as tar:
+        for member in tar.getmembers():
+            name = Path(member.name).name
+            if not name.startswith("cifar10c_alpha") or not name.endswith(".npz"):
+                continue
+            file_obj = tar.extractfile(member)
+            if file_obj is None:
+                continue
+            target = target_dir / name
+            with target.open("wb") as out:
+                shutil.copyfileobj(file_obj, out)
+            print(f"Copied {member.name} -> {target}")
+            copied += 1
+    return copied
+
+
 def main() -> None:
     args = parse_args()
     source = args.source.resolve()
@@ -29,16 +48,23 @@ def main() -> None:
     if not source.exists():
         raise FileNotFoundError(f"Partition pack source does not exist: {source}")
 
-    files = find_partition_files(source)
-    if not files:
+    if source.is_file() and source.suffixes[-2:] == [".tar", ".gz"]:
+        copied = import_from_archive(source, target_dir)
+    else:
+        files = find_partition_files(source)
+        if not files:
+            raise FileNotFoundError(f"No partition .npz files found under: {source}")
+        copied = 0
+        for path in files:
+            target = target_dir / path.name
+            shutil.copy2(path, target)
+            print(f"Copied {path} -> {target}")
+            copied += 1
+
+    if copied == 0:
         raise FileNotFoundError(f"No partition .npz files found under: {source}")
 
-    for path in files:
-        target = target_dir / path.name
-        shutil.copy2(path, target)
-        print(f"Copied {path} -> {target}")
-
-    print(f"Imported {len(files)} partition files into {target_dir}")
+    print(f"Imported {copied} partition files into {target_dir}")
 
 
 if __name__ == "__main__":

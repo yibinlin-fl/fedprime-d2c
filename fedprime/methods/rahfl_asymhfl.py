@@ -60,6 +60,7 @@ class AsymHFLExperiment:
             dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
             max_samples_per_client=data_cfg.get("private_samples_per_client"),
             partition_indices_path=data_cfg.get("partition_indices_path"),
+            partition_seed=int(self.config.get("seed", 0)),
         )
         self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
 

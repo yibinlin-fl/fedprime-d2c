@@ -1,8 +1,8 @@
 # TODO Next
 
-## 2026-07-02 Immediate Mainline: SARA + AsymHFL
+## 2026-07-05 Immediate Mainline: SARA + AsymHFL
 
-Current best result:
+Current best single run:
 
 ```text
 SARA + AsymHFL
@@ -13,34 +13,63 @@ final avg_acc   = 57.83
 final worst_acc = 46.59
 ```
 
-Comparison:
+New alpha=0.5 seed validation archives:
 
 ```text
-RAHFL baseline:            56.41 / 44.72
-AugMix+DCL local-only:     56.11 / 44.23
-FedCARA v1:                55.88 / 45.93
-SARA local-only:           54.10 / 32.06
-SARA + AsymHFL:            57.83 / 46.59
+outputs/rahfl_seed1_results.tar.gz
+outputs/sara_rahfl_seed12_results.tar.gz
+```
+
+Completed alpha=0.5 results:
+
+```text
+RAHFL seed0:          56.41   / 44.72
+RAHFL seed1:          56.645  / 45.29
+
+SARA + AsymHFL seed0: 57.83   / 46.59
+SARA + AsymHFL seed1: 57.2975 / 46.23
+SARA + AsymHFL seed2: 58.0025 / 45.90
+
+Seed1 paired gap:
+  SARA - RAHFL = +0.6525 avg_acc, +0.94 worst_acc
+
+SARA seeds0/1/2 mean final:
+  avg_acc   = 57.71
+  worst_acc = 46.24
 ```
 
 Interpretation:
 
 ```text
 SARA local-only is not strong. It hurts weak-client performance.
-SARA + AsymHFL is strong and currently beats RAHFL on both final average and
-final worst-client accuracy.
+SARA + AsymHFL remains strong and now has a positive seed=1 matched comparison
+against RAHFL on both final average and final worst-client accuracy.
+
+Important caveat:
+  The archived alpha=0.5 partition files named seed0/seed1/seed2 have identical
+  hashes and identical client_class_counts. Treat current seed validation as
+  training/randomness stability on one fixed partition, not as cross-partition
+  validation.
+
+2026-07-06 fix:
+  partition_private_data no longer calls RAHFL-master/Dataset/sampling.py, whose
+  import-time seed=0 reset caused newly generated seed1/seed2 partition files to
+  duplicate seed0. New partition generation now uses config.seed explicitly.
+  Historical archives remain unchanged; regenerate partition packs for true
+  cross-partition experiments.
 
 Do not replace AsymHFL yet. The next priority is to verify whether this gain is
-stable across seeds and Non-IID strengths.
+stable across Non-IID strengths and to complete the missing RAHFL seed=2 control.
 ```
 
 Next experiments:
 
 ```text
-1. Run SARA + AsymHFL with seed=1 and seed=2 at alpha=0.5.
-2. Run SARA + AsymHFL at alpha=0.3 and alpha=0.1.
-3. Run SARA + AsymHFL at alpha=1.0 to check non-extreme Non-IID.
-4. If SARA remains positive, rerun RAHFL on matching seeds/settings.
+1. Run RAHFL seed=2 at alpha=0.5 for the missing matched control.
+2. Generate or verify genuinely distinct alpha=0.5 partitions if needed for
+   paper-level cross-partition multi-seed reporting.
+3. Run SARA + AsymHFL at alpha=0.3 and alpha=0.1.
+4. Run SARA + AsymHFL at alpha=1.0 to check non-extreme Non-IID.
 5. Then decide whether a communication module replacement is necessary.
 ```
 
@@ -52,13 +81,28 @@ configs/kaggle_t4_rahfl_seed2.yaml
 scripts/run_kaggle_rahfl_seed12.sh
 ```
 
-Recommended order:
+Recommended order now:
 
 ```text
-1. Let current SARA seed=1 finish.
-2. Run SARA seed=2 if seed=1 is positive.
-3. Then run RAHFL seed=1/2 with scripts/run_kaggle_rahfl_seed12.sh.
-4. Report seed-matched mean/std, not seed0-only conclusions.
+1. Run only the missing RAHFL seed=2 control, or adapt the launcher to skip
+   already completed seed=1.
+2. Do not claim cross-partition robustness from the current alpha=0.5 seed pack.
+3. Prioritize alpha=0.3/0.1/1.0 SARA runs before redesigning communication.
+4. Report seed-matched mean/std once RAHFL seed=2 is available.
+```
+
+Current status - 2026-07-05:
+
+```text
+Done:
+  - SARA + AsymHFL seed=1, alpha=0.5
+  - SARA + AsymHFL seed=2, alpha=0.5
+  - RAHFL seed=1, alpha=0.5
+
+Pending:
+  - RAHFL seed=2, alpha=0.5
+  - alpha=0.3/0.1/1.0 validation
+  - partition audit/generation fix if distinct seed partitions are required
 ```
 
 Prepared alpha partition pack:

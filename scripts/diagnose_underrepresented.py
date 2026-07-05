@@ -107,6 +107,7 @@ def main() -> None:
         dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
         max_samples_per_client=data_cfg.get("private_samples_per_client"),
         partition_indices_path=data_cfg.get("partition_indices_path"),
+        partition_seed=int(config.get("seed", 0)),
     )
     _, test_loader = build_private_loaders(
         cifar10c_root=data_cfg["private_root"],

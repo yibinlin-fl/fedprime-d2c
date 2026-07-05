@@ -73,6 +73,7 @@ def main() -> None:
         dirichlet_alpha=float(config["data"].get("dirichlet_alpha", 0.5)),
         max_samples_per_client=config["data"].get("private_samples_per_client"),
         partition_indices_path=config["data"].get("partition_indices_path"),
+        partition_seed=int(config.get("seed", 0)),
     )
 
     counts = np.zeros((num_clients, num_classes), dtype=np.int64)

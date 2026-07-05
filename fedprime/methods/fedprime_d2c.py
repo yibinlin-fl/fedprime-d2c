@@ -58,6 +58,7 @@ class FedPrimeD2CExperiment:
             dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
             max_samples_per_client=data_cfg.get("private_samples_per_client"),
             partition_indices_path=data_cfg.get("partition_indices_path"),
+            partition_seed=int(self.config.get("seed", 0)),
         )
         oracle_prior = self._build_oracle_prior(
             labels=labels,

@@ -147,10 +147,8 @@ def partition_private_data(
     dirichlet_alpha: float,
     max_samples_per_client: int | None = None,
     partition_indices_path: str | Path | None = None,
+    partition_seed: int | None = None,
 ) -> dict[int, list[int]]:
-    add_vendor_paths()
-    from Dataset.sampling import iid_sampling, non_iid_dirichlet_sampling
-
     metadata = {
         "num_labels": int(len(labels)),
         "num_clients": int(num_clients),
@@ -166,10 +164,21 @@ def partition_private_data(
         if path.exists():
             return _load_partition_indices(path, metadata)
 
+    rng = np.random.default_rng(partition_seed)
     if partition == "iid":
-        mapping = iid_sampling(labels, num_clients)
+        mapping = _iid_partition_indices(len(labels), num_clients, rng)
     elif partition == "dirichlet":
-        mapping = non_iid_dirichlet_sampling(labels, num_classes, num_clients, dirichlet_alpha)
+        min_require_size = 10
+        if max_samples_per_client is not None:
+            min_require_size = int(max_samples_per_client)
+        mapping = _dirichlet_partition_indices(
+            labels=labels,
+            num_classes=num_classes,
+            num_clients=num_clients,
+            alpha=dirichlet_alpha,
+            rng=rng,
+            min_require_size=min_require_size,
+        )
     else:
         raise ValueError(f"Unknown partition: {partition}")
 
@@ -180,6 +189,56 @@ def partition_private_data(
         }
     if partition_indices_path:
         _save_partition_indices(Path(partition_indices_path), mapping, metadata)
+    return mapping
+
+
+def _iid_partition_indices(
+    num_labels: int,
+    num_clients: int,
+    rng: np.random.Generator,
+) -> dict[int, list[int]]:
+    indices = rng.permutation(num_labels)
+    splits = np.array_split(indices, num_clients)
+    return {client_id: split.astype(np.int64).tolist() for client_id, split in enumerate(splits)}
+
+
+def _dirichlet_partition_indices(
+    labels: np.ndarray,
+    num_classes: int,
+    num_clients: int,
+    alpha: float,
+    rng: np.random.Generator,
+    min_require_size: int = 10,
+) -> dict[int, list[int]]:
+    labels = np.asarray(labels)
+    num_labels = labels.shape[0]
+    min_size = 0
+    idx_batch: list[list[int]] = [[] for _ in range(num_clients)]
+
+    while min_size < min_require_size:
+        idx_batch = [[] for _ in range(num_clients)]
+        for class_id in range(num_classes):
+            class_indices = np.where(labels == class_id)[0]
+            rng.shuffle(class_indices)
+            proportions = rng.dirichlet(np.repeat(float(alpha), num_clients))
+            proportions = np.array(
+                [
+                    proportion * (len(client_indices) < num_labels / num_clients)
+                    for proportion, client_indices in zip(proportions, idx_batch)
+                ],
+                dtype=np.float64,
+            )
+            proportions = proportions / proportions.sum()
+            split_points = (np.cumsum(proportions) * len(class_indices)).astype(int)[:-1]
+            for client_indices, split in zip(idx_batch, np.split(class_indices, split_points)):
+                client_indices.extend(split.astype(np.int64).tolist())
+        min_size = min(len(client_indices) for client_indices in idx_batch)
+
+    mapping = {}
+    for client_id, client_indices in enumerate(idx_batch):
+        shuffled = np.asarray(client_indices, dtype=np.int64)
+        rng.shuffle(shuffled)
+        mapping[client_id] = shuffled.tolist()
     return mapping
 
 

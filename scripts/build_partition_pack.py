@@ -146,6 +146,7 @@ def main() -> None:
                 dirichlet_alpha=float(alpha),
                 max_samples_per_client=args.samples_per_client,
                 partition_indices_path=target_path,
+                partition_seed=int(seed),
             )
             audit_dir = audit_root / f"cifar10c_{alpha_tag(alpha)}_seed{seed}_clients{args.num_clients}"
             write_audit(

@@ -143,13 +143,120 @@ The key story is synergy:
   label-skew Non-IID.
 ```
 
+## SARA Alpha=0.5 Seed Validation - 2026-07-05
+
+New result archives:
+
+```text
+outputs/rahfl_seed1_results.tar.gz
+outputs/sara_rahfl_seed12_results.tar.gz
+```
+
+Completed runs:
+
+```text
+RAHFL seed=1:
+  config: configs/kaggle_t4_rahfl_seed1.yaml
+  final avg/worst = 56.645 / 45.29
+  best avg/worst  = 56.645 / 45.29
+
+SARA + AsymHFL seed=1:
+  config: configs/kaggle_t4_sara_rahfl_seed1.yaml
+  cl_module: sara
+  final avg/worst = 57.2975 / 46.23
+  best avg/worst  = 57.2975 / 46.23
+  paired gap vs RAHFL seed=1 = +0.6525 avg_acc, +0.94 worst_acc
+
+SARA + AsymHFL seed=2:
+  config: configs/kaggle_t4_sara_rahfl_seed2.yaml
+  cl_module: sara
+  final avg/worst = 58.0025 / 45.90
+  best avg/worst  = 58.0025 / 45.90
+```
+
+SARA final results across alpha=0.5 seeds 0/1/2:
+
+```text
+seed0: 57.83   / 46.59
+seed1: 57.2975 / 46.23
+seed2: 58.0025 / 45.90
+
+mean final avg_acc   = 57.71
+mean final worst_acc = 46.24
+population std avg   = 0.30
+population std worst = 0.28
+```
+
+Available RAHFL final results across alpha=0.5 seeds 0/1:
+
+```text
+seed0: 56.41  / 44.72
+seed1: 56.645 / 45.29
+
+mean final avg_acc   = 56.5275
+mean final worst_acc = 45.005
+```
+
+Important caveat:
+
+```text
+The archived partition files named seed0/seed1/seed2 have identical SHA-256
+prefixes and identical client_class_counts in these runs. Therefore the current
+alpha=0.5 seed validation is best interpreted as different training/randomness
+seeds on the same fixed label-skew partition, not as different data partitions.
+
+This is still useful for training stability, but formal paper claims should not
+describe it as cross-partition validation unless new genuinely distinct
+partition files are generated and audited.
+```
+
+Partition seed bug fix - 2026-07-06:
+
+```text
+Root cause:
+  fedprime/data/loaders.py reused RAHFL-master/Dataset/sampling.py for IID and
+  Dirichlet splits. That vendor file resets random.seed(0) and np.random.seed(0)
+  at import time, so missing seed1/seed2 partition files could be generated with
+  seed0 randomness despite different config seed names.
+
+Fix:
+  fedprime/data/loaders.py now implements local IID/Dirichlet partition
+  generation with np.random.default_rng(partition_seed).
+  All experiment runners and partition/audit/diagnostic scripts pass config.seed
+  into partition_private_data().
+
+Verification:
+  A temporary alpha=0.5 seed0/1/2 generation produced distinct .npz SHA-256
+  prefixes and each client had exactly 10000 samples.
+
+Important:
+  Existing historical archives are not changed. If a .npz already exists, the
+  runner still loads it for reproducibility. To get genuinely different
+  partitions, generate a new partition pack after this fix.
+```
+
+Interpretation:
+
+```text
+SARA + AsymHFL remains positive under the seed=1 matched comparison and SARA
+seed=2 is also strong. The gain over RAHFL is smaller than the original seed0
+gap but remains positive on both final average accuracy and final worst-client
+accuracy for the completed matched seed=1 run.
+
+The mainline claim is strengthened:
+  SARA does not appear to be a seed0-only accident under the fixed alpha=0.5
+  partition. It still needs RAHFL seed=2 and stronger/non-extreme alpha checks
+  before final paper-level claims.
+```
+
 Next required validation:
 
 ```text
-1. Run SARA + AsymHFL with seeds 1 and 2 under alpha=0.5.
-2. Run alpha=0.3 and alpha=0.1 to test stronger label skew.
-3. Run alpha=1.0 to ensure normal/non-extreme Non-IID does not collapse.
-4. If SARA remains positive, rerun RAHFL under the same seeds/settings.
+1. Run RAHFL seed=2 under alpha=0.5 for the missing matched control.
+2. Generate or verify genuinely distinct alpha=0.5 seed partitions if the paper
+   needs cross-partition multi-seed claims.
+3. Run alpha=0.3 and alpha=0.1 to test stronger label skew.
+4. Run alpha=1.0 to ensure normal/non-extreme Non-IID does not collapse.
 5. Only redesign communication after these validations. Do not replace AsymHFL
    immediately, because SARA + AsymHFL is currently the strongest evidence.
 ```
@@ -201,12 +308,26 @@ These configs are copied from the original unified-runner RAHFL baseline and
 only change `seed`, `experiment_name`, and fixed partition path. They do not add
 SARA-specific stability settings, so they remain an original RAHFL control.
 
-Use these only after the SARA seed=1/2 runs look promising, or when preparing
-formal mean/std reporting:
+Use the remaining RAHFL seed=2 control when preparing formal mean/std reporting:
 
 ```text
-SARA seed=1 vs RAHFL seed=1
-SARA seed=2 vs RAHFL seed=2
+SARA seed=1 vs RAHFL seed=1: completed and positive
+SARA seed=2 vs RAHFL seed=2: SARA completed, RAHFL seed=2 pending
+```
+
+Current alpha=0.5 validation status - 2026-07-05:
+
+```text
+Done:
+  SARA + AsymHFL seed=1
+  SARA + AsymHFL seed=2
+  RAHFL seed=1
+
+Pending:
+  RAHFL seed=2
+  alpha=0.3/0.1/1.0 SARA checks
+  partition-generation audit because archived alpha=0.5 seed partition files
+  are identical despite different seed names.
 ```
 
 ## CARA-L Design

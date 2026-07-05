@@ -158,10 +158,12 @@ Alpha validation preparation:
 
 ```text
 New configs:
+  configs/kaggle_t4_sara_rahfl_alpha01.yaml
   configs/kaggle_t4_sara_rahfl_alpha03.yaml
   configs/kaggle_t4_sara_rahfl_alpha10.yaml
 
 New Kaggle launcher:
+  scripts/run_kaggle_sara_alpha0103.sh
   scripts/run_kaggle_sara_alpha0310.sh
 
 New partition tools:
@@ -169,10 +171,13 @@ New partition tools:
   scripts/import_partition_pack.py
 
 Local generated pack:
+  local_runs/sara_partitions_alpha01_alpha03
+  local_runs/sara_partitions_alpha01_alpha03.tar.gz
   local_runs/sara_partitions_alpha03_alpha10
   local_runs/sara_partitions_alpha03_alpha10.tar.gz
 
 Suggested Kaggle dataset name:
+  sara-partitions-alpha01-alpha03
   sara-partitions-alpha03-alpha10
 ```
 

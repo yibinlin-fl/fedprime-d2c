@@ -47,6 +47,16 @@ Next experiments:
 Prepared alpha partition pack:
 
 ```text
+local_runs/sara_partitions_alpha01_alpha03
+local_runs/sara_partitions_alpha01_alpha03.tar.gz
+
+Contains:
+  alpha=0.1 seeds 0/1/2
+  alpha=0.3 seeds 0/1/2
+
+Suggested Kaggle dataset name:
+  sara-partitions-alpha01-alpha03
+
 local_runs/sara_partitions_alpha03_alpha10
 local_runs/sara_partitions_alpha03_alpha10.tar.gz
 
@@ -63,6 +73,13 @@ When running alpha=0.3/1.0 on Kaggle, mount both:
 ```text
 /kaggle/input/fedprime-data
 /kaggle/input/sara-partitions-alpha03-alpha10
+```
+
+When running alpha=0.3/0.1 on Kaggle, mount both:
+
+```text
+/kaggle/input/fedprime-data
+/kaggle/input/sara-partitions-alpha01-alpha03
 ```
 
 ## 当前工作方向 - 2026-06-30

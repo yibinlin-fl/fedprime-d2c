@@ -44,6 +44,27 @@ Next experiments:
 5. Then decide whether a communication module replacement is necessary.
 ```
 
+Prepared alpha partition pack:
+
+```text
+local_runs/sara_partitions_alpha03_alpha10
+local_runs/sara_partitions_alpha03_alpha10.tar.gz
+
+Contains:
+  alpha=0.3 seeds 0/1/2
+  alpha=1.0 seeds 0/1/2
+
+Suggested Kaggle dataset name:
+  sara-partitions-alpha03-alpha10
+```
+
+When running alpha=0.3/1.0 on Kaggle, mount both:
+
+```text
+/kaggle/input/fedprime-data
+/kaggle/input/sara-partitions-alpha03-alpha10
+```
+
 ## 当前工作方向 - 2026-06-30
 
 ### 总方向

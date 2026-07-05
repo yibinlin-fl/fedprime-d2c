@@ -154,6 +154,33 @@ Next required validation:
    immediately, because SARA + AsymHFL is currently the strongest evidence.
 ```
 
+Alpha validation preparation:
+
+```text
+New configs:
+  configs/kaggle_t4_sara_rahfl_alpha03.yaml
+  configs/kaggle_t4_sara_rahfl_alpha10.yaml
+
+New Kaggle launcher:
+  scripts/run_kaggle_sara_alpha0310.sh
+
+New partition tools:
+  scripts/build_partition_pack.py
+  scripts/import_partition_pack.py
+
+Local generated pack:
+  local_runs/sara_partitions_alpha03_alpha10
+  local_runs/sara_partitions_alpha03_alpha10.tar.gz
+
+Suggested Kaggle dataset name:
+  sara-partitions-alpha03-alpha10
+```
+
+The partition pack only contains fixed `.npz` partition files and audit metadata,
+not CIFAR image data. It should be mounted together with the existing
+`fedprime-data` dataset. This avoids re-uploading the large CIFAR-10-C/CIFAR-100
+prepared data while keeping alpha=0.3 and alpha=1.0 partitions reproducible.
+
 ## CARA-L Design
 
 CARA-L is the paper-facing name for the previously implemented NIR-DCL local

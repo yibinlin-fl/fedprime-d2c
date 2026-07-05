@@ -44,6 +44,23 @@ Next experiments:
 5. Then decide whether a communication module replacement is necessary.
 ```
 
+Matching RAHFL seed=1/2 controls are now prepared:
+
+```text
+configs/kaggle_t4_rahfl_seed1.yaml
+configs/kaggle_t4_rahfl_seed2.yaml
+scripts/run_kaggle_rahfl_seed12.sh
+```
+
+Recommended order:
+
+```text
+1. Let current SARA seed=1 finish.
+2. Run SARA seed=2 if seed=1 is positive.
+3. Then run RAHFL seed=1/2 with scripts/run_kaggle_rahfl_seed12.sh.
+4. Report seed-matched mean/std, not seed0-only conclusions.
+```
+
 Prepared alpha partition pack:
 
 ```text

@@ -1,6 +1,6 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-02
+Updated: 2026-07-05
 
 ## Current Goal
 
@@ -185,6 +185,29 @@ The partition pack only contains fixed `.npz` partition files and audit metadata
 not CIFAR image data. It should be mounted together with the existing
 `fedprime-data` dataset. This avoids re-uploading the large CIFAR-10-C/CIFAR-100
 prepared data while keeping alpha=0.3 and alpha=1.0 partitions reproducible.
+
+RAHFL multi-seed control preparation:
+
+```text
+New matching RAHFL seed configs:
+  configs/kaggle_t4_rahfl_seed1.yaml
+  configs/kaggle_t4_rahfl_seed2.yaml
+
+New Kaggle launcher:
+  scripts/run_kaggle_rahfl_seed12.sh
+```
+
+These configs are copied from the original unified-runner RAHFL baseline and
+only change `seed`, `experiment_name`, and fixed partition path. They do not add
+SARA-specific stability settings, so they remain an original RAHFL control.
+
+Use these only after the SARA seed=1/2 runs look promising, or when preparing
+formal mean/std reporting:
+
+```text
+SARA seed=1 vs RAHFL seed=1
+SARA seed=2 vs RAHFL seed=2
+```
 
 ## CARA-L Design
 

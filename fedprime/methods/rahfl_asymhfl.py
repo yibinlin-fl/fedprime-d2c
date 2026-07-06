@@ -202,6 +202,9 @@ class AsymHFLExperiment:
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
         method_cfg = self.config.get("method", {})
         use_cara = self._use_cara_communication(method_cfg)
+        use_class_residual = self._use_class_residual(method_cfg)
+        class_residual_cfg = method_cfg.get("class_residual", {})
+        class_residual_lambda = float(class_residual_cfg.get("lambda_residual", 0.0))
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
         for _ in range(num_batches):
             try:
@@ -244,7 +247,16 @@ class AsymHFLExperiment:
                             class_weights=class_weights,
                         ))
                     elif accs[client_id] <= accs[other_id]:
-                        learn_losses.append(criterion(student_log_probs[client_id], target_probs[other_id]))
+                        kd_loss = criterion(student_log_probs[client_id], target_probs[other_id])
+                        if use_class_residual and class_residual_lambda > 0:
+                            class_weights = self._private_class_need_weights(client_id, method_cfg)
+                            if class_weights is not None:
+                                kd_loss = kd_loss + class_residual_lambda * self._weighted_kd_loss(
+                                    student_log_probs=student_log_probs[client_id],
+                                    teacher_probs=target_probs[other_id],
+                                    class_weights=class_weights,
+                                )
+                        learn_losses.append(kd_loss)
                 if not learn_losses:
                     continue
                 loss = sum(learn_losses) / len(learn_losses)
@@ -279,6 +291,49 @@ class AsymHFLExperiment:
         if bool(cara_cfg.get("normalize", True)):
             active = weights > min_weight
             weights = weights / weights[active].mean().clamp_min(min_weight)
+        return weights.detach()
+
+    def _use_class_residual(self, method_cfg: dict) -> bool:
+        residual_cfg = method_cfg.get("class_residual", {})
+        return bool(residual_cfg.get("enabled", False))
+
+    def _private_class_need_weights(self, client_id: int, method_cfg: dict) -> torch.Tensor | None:
+        """Receiver-side class-need weights computed from private local counts.
+
+        The vector is used only inside the receiving client loss. In a real FL
+        deployment the server can still send ordinary public logits; the receiver
+        privately reweights its own KD objective without uploading counts.
+        """
+        counts = getattr(self, "_client_class_counts", {}).get(client_id)
+        if counts is None:
+            return None
+        cfg = method_cfg.get("class_residual", {})
+        counts = counts.detach().float().to(self.device)
+        if counts.numel() == 0:
+            return None
+
+        mode = str(cfg.get("need_mode", "inverse_count")).lower()
+        power = float(cfg.get("need_power", 0.5))
+        eps = float(cfg.get("eps", 1e-8))
+        if mode == "inverse_count":
+            smoothing = float(cfg.get("smoothing", 10.0))
+            reference = counts.sum().clamp_min(1.0) / float(counts.numel())
+            weights = (reference / (counts + smoothing).clamp_min(eps)).pow(power)
+        elif mode == "complement_prior":
+            prior = counts / counts.sum().clamp_min(1.0)
+            weights = (1.0 - prior).clamp_min(0.0).pow(power)
+        else:
+            raise ValueError(f"Unknown class_residual.need_mode: {mode}")
+
+        weights = torch.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
+        if bool(cfg.get("normalize", True)):
+            weights = weights / weights.mean().clamp_min(eps)
+        min_weight = cfg.get("min_weight")
+        max_weight = cfg.get("max_weight")
+        if min_weight is not None:
+            weights = weights.clamp_min(float(min_weight))
+        if max_weight is not None:
+            weights = weights.clamp_max(float(max_weight))
         return weights.detach()
 
     def _weighted_kd_loss(

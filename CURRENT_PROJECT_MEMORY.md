@@ -414,6 +414,132 @@ as SARA alpha=0.1:
 This is conservative for the baseline because it prevents RAHFL from crashing
 and can only make the RAHFL comparison stronger/safer.
 
+SARA Alpha=0.1 validation result - 2026-07-06:
+
+```text
+Result archive:
+  outputs/sara_vs_rahfl_alpha01_results.tar.gz
+
+Analysis deliverables:
+  deliverables/sara_vs_rahfl_alpha01_analysis/
+
+Setting:
+  alpha=0.1, seed=0, corrupt_rate=1, rounds=40
+  partition generated on Kaggle at run time
+```
+
+Results:
+
+```text
+RAHFL alpha=0.1:
+  final avg/worst = 35.6825 / 29.3300
+  best  avg/worst = 35.6825 / 29.3300
+
+SARA + AsymHFL alpha=0.1:
+  final avg/worst = 35.9625 / 29.1000
+  best  avg/worst = 35.9625 / 29.3000
+```
+
+Gaps:
+
+```text
+final avg_acc   +0.2800
+final worst_acc -0.2300
+best avg_acc    +0.2800
+best worst_acc  -0.0300
+last10 avg gap  +0.1505
+last10 worst gap -0.0060
+```
+
+Interpretation:
+
+```text
+This is essentially a tie, not a big win. SARA does not produce a strong
+advantage at alpha=0.1. Both methods collapse to low absolute accuracy under the
+extreme split. The earlier "larger gain under severe Non-IID" hypothesis is not
+supported by this run.
+```
+
+Partition audit:
+
+```text
+alpha=0.1 nonzero_classes_per_client = [8, 6, 7, 8]
+alpha=0.1 max_client_class_proportion = [0.4091, 0.3909, 0.4612, 0.3428]
+```
+
+The split has many effectively-missing classes with only a few samples, even if
+the nonzero class count is not extremely small.
+
+## SARA + Receiver-Side Class Residual - 2026-07-06
+
+Motivation:
+
+```text
+SARA improves alpha=0.5 and modestly improves alpha=0.3, but alpha=0.1 is almost
+tied with RAHFL. SARA alone cannot solve extreme missing-class transfer.
+```
+
+New method variant:
+
+```text
+SARA + AsymHFL + receiver-side class-aware residual KD
+```
+
+Key idea:
+
+```text
+Do not replace original AsymHFL.
+Do not upload class counts.
+The receiver computes a private class-need vector from its own local labels and
+uses it only to reweight an auxiliary KD term on received public logits.
+```
+
+Communication loss:
+
+```text
+L_comm = L_AsymHFL + lambda_residual * L_private_class_residual
+```
+
+Implementation:
+
+```text
+fedprime/methods/rahfl_asymhfl.py
+  _private_class_need_weights()
+  method.class_residual switch
+
+configs/kaggle_t4_sara_residual_rahfl.yaml
+configs/debug_sara_residual_rahfl.yaml
+scripts/run_kaggle_sara_residual_alpha05.sh
+```
+
+Default config:
+
+```text
+alpha=0.5, seed=0
+lambda_residual=0.1
+need_mode=inverse_count
+need_power=0.5
+smoothing=10
+min_weight=0.5
+max_weight=2.0
+```
+
+Privacy interpretation:
+
+```text
+Class counts are not uploaded. They are a receiver-local variable used only to
+weight the local distillation objective. The server can still send ordinary
+AsymHFL public logits.
+```
+
+First target comparison:
+
+```text
+RAHFL alpha=0.5 seed0:            56.41 / 44.72
+SARA + AsymHFL alpha=0.5 seed0:   57.83 / 46.59
+SARA residual target:             beat 57.83 / 46.59 or at least improve worst_acc
+```
+
 RAHFL multi-seed control preparation:
 
 ```text

@@ -111,6 +111,66 @@ Rerun from the latest commit where configs/kaggle_t4_rahfl_alpha01.yaml includes
   local_log_interval: 50
 ```
 
+Alpha=0.1 result received - 2026-07-06:
+
+```text
+Archive:
+  outputs/sara_vs_rahfl_alpha01_results.tar.gz
+
+RAHFL final/best:
+  35.6825 / 29.3300
+
+SARA final:
+  35.9625 / 29.1000
+
+SARA gap:
+  final avg  +0.28
+  final worst -0.23
+```
+
+Conclusion:
+
+```text
+Alpha=0.1 is not a big win. It is basically a tie.
+Do not claim SARA becomes stronger as Non-IID becomes extreme based on current
+results. The next useful check is alpha=1.0, then decide whether a stronger
+method change is required.
+```
+
+New last-shot method to test - 2026-07-06:
+
+```text
+SARA + receiver-side class-aware residual AsymHFL
+```
+
+Run first:
+
+```text
+configs/kaggle_t4_sara_residual_rahfl.yaml
+scripts/run_kaggle_sara_residual_alpha05.sh
+```
+
+Why alpha=0.5 first:
+
+```text
+This is the known setting where SARA already beats RAHFL.
+If residual cannot improve or at least preserve this setting, do not spend
+remaining compute on alpha=0.1.
+```
+
+Decision:
+
+```text
+If avg_acc > 57.83 or worst_acc > 46.59:
+  keep the residual route and later test alpha=0.3/0.1/1.0.
+
+If avg drops but worst improves:
+  lambda_residual is too strong; try smaller lambda such as 0.05 when compute is available.
+
+If both avg and worst drop:
+  abandon this residual version and preserve SARA as the main moderate-Non-IID result.
+```
+
 Recommended order now:
 
 ```text

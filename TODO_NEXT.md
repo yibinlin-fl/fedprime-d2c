@@ -175,6 +175,41 @@ Conclusion:
   simpler SARA + AsymHFL. Keep it as a diagnostic/optional fairness variant.
 ```
 
+New communication test - 2026-07-07:
+
+```text
+SARA + CCAD
+CCAD = Corruption-Consistent Asymmetric Distillation
+```
+
+Run:
+
+```text
+configs/kaggle_t4_sara_ccad.yaml
+scripts/run_kaggle_sara_ccad_alpha05.sh
+```
+
+Why:
+
+```text
+Instead of class-count reweighting, CCAD uses public-sample corruption
+consistency to choose reliable teachers and needy students. It is a stronger
+communication-motivation candidate than SARA residual.
+```
+
+Decision after alpha=0.5 seed=0:
+
+```text
+If CCAD >= SARA + AsymHFL:
+  promote CCAD as the main communication innovation and then test alpha=0.3/0.1/1.0.
+
+If CCAD beats RAHFL but not SARA + AsymHFL:
+  keep it as a communication diagnostic; the paper mainline remains FedSARA.
+
+If CCAD underperforms RAHFL:
+  stop public-logit communication redesign and focus on consolidating FedSARA.
+```
+
 Recommended order now:
 
 ```text

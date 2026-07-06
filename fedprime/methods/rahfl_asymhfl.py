@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import math
 from pathlib import Path
 
 import torch
@@ -133,6 +134,9 @@ class AsymHFLExperiment:
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
                 if self._use_cara_communication(method_cfg):
                     accs_before, class_accs_before = self._evaluate_detailed(models, test_loader, num_classes)
+                elif self._use_ccad_communication(method_cfg) and not self._ccad_uses_asymhfl_route(method_cfg):
+                    accs_before = [0.0 for _ in range(num_clients)]
+                    class_accs_before = None
                 else:
                     accs_before = self._evaluate(models, test_loader)
                     class_accs_before = None
@@ -197,14 +201,27 @@ class AsymHFLExperiment:
     def _use_cara_communication(self, method_cfg: dict) -> bool:
         return method_cfg.get("communication", "asymhfl").lower() in {"cara", "cara_c", "fedcara"}
 
+    def _use_ccad_communication(self, method_cfg: dict) -> bool:
+        return method_cfg.get("communication", "asymhfl").lower() in {"ccad", "ccad_hybrid"}
+
+    def _ccad_uses_asymhfl_route(self, method_cfg: dict) -> bool:
+        if not self._use_ccad_communication(method_cfg):
+            return False
+        ccad_cfg = method_cfg.get("ccad", {})
+        return float(ccad_cfg.get("base_asymhfl_weight", 0.0)) > 0
+
     def _collaborative_phase(self, models, optimizers, public_loader, public_iter, accs, class_accs, stats) -> float:
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
         method_cfg = self.config.get("method", {})
         use_cara = self._use_cara_communication(method_cfg)
+        use_ccad = self._use_ccad_communication(method_cfg)
         use_class_residual = self._use_class_residual(method_cfg)
         class_residual_cfg = method_cfg.get("class_residual", {})
         class_residual_lambda = float(class_residual_cfg.get("lambda_residual", 0.0))
+        ccad_cfg = method_cfg.get("ccad", {})
+        ccad_base_asym_weight = float(ccad_cfg.get("base_asymhfl_weight", 0.0))
+        ccad_lambda = float(ccad_cfg.get("lambda_ccad", 1.0))
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
         for _ in range(num_batches):
             try:
@@ -213,18 +230,25 @@ class AsymHFLExperiment:
                 public_iter = iter(public_loader)
                 images, _ = next(public_iter)
             images = images.to(self.device, non_blocking=True)
-            images = normalize_batch(images, stats)
 
-            target_probs = {}
-            student_log_probs = {}
-            for client_id in sorted(models):
-                models[client_id].eval()
-                with torch.no_grad():
+            if use_ccad:
+                views = self._ccad_public_views(images, stats, ccad_cfg)
+                ccad_state = self._ccad_collect_state(models, views, ccad_cfg)
+                target_probs = ccad_state["target_probs"]
+                student_log_probs = ccad_state["student_log_probs"]
+            else:
+                images = normalize_batch(images, stats)
+                target_probs = {}
+                student_log_probs = {}
+                for client_id in sorted(models):
+                    models[client_id].eval()
+                    with torch.no_grad():
+                        logits = forward_logits(models[client_id], images)
+                        target_probs[client_id] = F.softmax(logits, dim=1).detach()
+                    models[client_id].train()
                     logits = forward_logits(models[client_id], images)
-                    target_probs[client_id] = F.softmax(logits, dim=1).detach()
-                models[client_id].train()
-                logits = forward_logits(models[client_id], images)
-                student_log_probs[client_id] = F.log_softmax(logits, dim=1)
+                    student_log_probs[client_id] = F.log_softmax(logits, dim=1)
+
 
             for client_id in sorted(models):
                 learn_losses = []
@@ -246,6 +270,22 @@ class AsymHFLExperiment:
                             teacher_probs=target_probs[other_id],
                             class_weights=class_weights,
                         ))
+                    elif use_ccad:
+                        if ccad_base_asym_weight > 0 and accs[client_id] <= accs[other_id]:
+                            learn_losses.append(
+                                ccad_base_asym_weight
+                                * criterion(student_log_probs[client_id], target_probs[other_id])
+                            )
+                        ccad_loss = self._ccad_pair_loss(
+                            student_id=client_id,
+                            teacher_id=other_id,
+                            student_log_probs=student_log_probs[client_id],
+                            teacher_probs=target_probs[other_id],
+                            ccad_state=ccad_state,
+                            ccad_cfg=ccad_cfg,
+                        )
+                        if ccad_loss is not None:
+                            learn_losses.append(ccad_lambda * ccad_loss)
                     elif accs[client_id] <= accs[other_id]:
                         kd_loss = criterion(student_log_probs[client_id], target_probs[other_id])
                         if use_class_residual and class_residual_lambda > 0:
@@ -265,6 +305,160 @@ class AsymHFLExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    def _ccad_public_views(self, images: torch.Tensor, stats, ccad_cfg: dict) -> list[torch.Tensor]:
+        num_aug_views = int(ccad_cfg.get("num_aug_views", 2))
+        views = [normalize_batch(images, stats)]
+        for _ in range(num_aug_views):
+            views.append(normalize_batch(self._ccad_tensor_augment(images, ccad_cfg), stats))
+        return views
+
+    def _ccad_tensor_augment(self, images: torch.Tensor, ccad_cfg: dict) -> torch.Tensor:
+        x = images.detach()
+        batch_size, _, height, width = x.shape
+        padding = int(ccad_cfg.get("crop_padding", 4))
+        if padding > 0:
+            padded = F.pad(x, (padding, padding, padding, padding), mode="reflect")
+            max_offset = 2 * padding + 1
+            tops = torch.randint(0, max_offset, (batch_size,), device=x.device)
+            lefts = torch.randint(0, max_offset, (batch_size,), device=x.device)
+            x = torch.stack([
+                padded[idx, :, tops[idx]:tops[idx] + height, lefts[idx]:lefts[idx] + width]
+                for idx in range(batch_size)
+            ], dim=0)
+
+        flip_p = float(ccad_cfg.get("hflip_p", 0.5))
+        if flip_p > 0:
+            mask = torch.rand(batch_size, device=x.device) < flip_p
+            if mask.any():
+                x = x.clone()
+                x[mask] = torch.flip(x[mask], dims=[3])
+
+        brightness = float(ccad_cfg.get("brightness", 0.2))
+        if brightness > 0:
+            factor = 1.0 + (torch.rand(batch_size, 1, 1, 1, device=x.device) * 2.0 - 1.0) * brightness
+            x = x * factor
+
+        contrast = float(ccad_cfg.get("contrast", 0.2))
+        if contrast > 0:
+            mean = x.mean(dim=(2, 3), keepdim=True)
+            factor = 1.0 + (torch.rand(batch_size, 1, 1, 1, device=x.device) * 2.0 - 1.0) * contrast
+            x = (x - mean) * factor + mean
+
+        noise_std = float(ccad_cfg.get("noise_std", 0.03))
+        if noise_std > 0:
+            x = x + torch.randn_like(x) * noise_std
+        return x.clamp(0.0, 1.0)
+
+    def _ccad_collect_state(self, models, views: list[torch.Tensor], ccad_cfg: dict) -> dict[str, dict[int, torch.Tensor]]:
+        target_probs = {}
+        student_log_probs = {}
+        reliability = {}
+        need = {}
+        jsd = {}
+        entropy = {}
+        for client_id in sorted(models):
+            model = models[client_id]
+            model.eval()
+            with torch.no_grad():
+                probs = [F.softmax(forward_logits(model, view), dim=1).detach() for view in views]
+            clean_probs = probs[0]
+            client_jsd = self._ccad_jsd(probs)
+            client_entropy = self._ccad_entropy(clean_probs)
+            target_probs[client_id] = clean_probs
+            jsd[client_id] = client_jsd
+            entropy[client_id] = client_entropy
+            reliability[client_id] = self._ccad_reliability(clean_probs, client_jsd, client_entropy, ccad_cfg)
+            need[client_id] = self._ccad_need(client_jsd, client_entropy, ccad_cfg)
+
+            model.train()
+            logits = forward_logits(model, views[0])
+            student_log_probs[client_id] = F.log_softmax(logits, dim=1)
+
+        return {
+            "target_probs": target_probs,
+            "student_log_probs": student_log_probs,
+            "reliability": reliability,
+            "need": need,
+            "jsd": jsd,
+            "entropy": entropy,
+        }
+
+    def _ccad_jsd(self, probs: list[torch.Tensor]) -> torch.Tensor:
+        eps = 1e-8
+        safe_probs = [prob.clamp_min(eps) for prob in probs]
+        mixture = torch.stack(safe_probs, dim=0).mean(dim=0).clamp_min(eps)
+        divergences = [
+            (prob * (prob.log() - mixture.log())).sum(dim=1)
+            for prob in safe_probs
+        ]
+        return torch.stack(divergences, dim=0).mean(dim=0)
+
+    def _ccad_entropy(self, probs: torch.Tensor) -> torch.Tensor:
+        eps = 1e-8
+        num_classes = max(int(probs.shape[1]), 2)
+        entropy = -(probs.clamp_min(eps) * probs.clamp_min(eps).log()).sum(dim=1)
+        return (entropy / math.log(num_classes)).clamp(0.0, 1.0)
+
+    def _ccad_reliability(
+        self,
+        clean_probs: torch.Tensor,
+        jsd: torch.Tensor,
+        entropy: torch.Tensor,
+        ccad_cfg: dict,
+    ) -> torch.Tensor:
+        tau = float(ccad_cfg.get("consistency_tau", 0.05))
+        confidence_mode = str(ccad_cfg.get("confidence_mode", "max_prob")).lower()
+        if confidence_mode == "inverse_entropy":
+            confidence = (1.0 - entropy).clamp(0.0, 1.0)
+        else:
+            confidence = clean_probs.max(dim=1).values.clamp(0.0, 1.0)
+        confidence = confidence.pow(float(ccad_cfg.get("confidence_power", 1.0)))
+        consistency = torch.exp(-jsd / max(tau, 1e-8))
+        return (confidence * consistency).detach()
+
+    def _ccad_need(self, jsd: torch.Tensor, entropy: torch.Tensor, ccad_cfg: dict) -> torch.Tensor:
+        entropy_need = entropy.clamp(0.0, 1.0).pow(float(ccad_cfg.get("need_entropy_power", 1.0)))
+        tau = float(ccad_cfg.get("consistency_tau", 0.05))
+        instability = (jsd / max(tau, 1e-8)).clamp(0.0, float(ccad_cfg.get("max_instability", 4.0)))
+        need = entropy_need + float(ccad_cfg.get("need_instability_weight", 0.5)) * instability
+        return need.detach()
+
+    def _ccad_pair_loss(
+        self,
+        student_id: int,
+        teacher_id: int,
+        student_log_probs: torch.Tensor,
+        teacher_probs: torch.Tensor,
+        ccad_state: dict[str, dict[int, torch.Tensor]],
+        ccad_cfg: dict,
+    ) -> torch.Tensor | None:
+        eps = float(ccad_cfg.get("eps", 1e-8))
+        teacher_reliability = ccad_state["reliability"][teacher_id]
+        student_reliability = ccad_state["reliability"][student_id]
+        student_need = ccad_state["need"][student_id]
+
+        weights = teacher_reliability.pow(float(ccad_cfg.get("teacher_power", 1.0)))
+        weights = weights * student_need.clamp_min(0.0).pow(float(ccad_cfg.get("need_power", 1.0)))
+
+        if bool(ccad_cfg.get("better_only", True)):
+            margin = float(ccad_cfg.get("reliability_margin", 0.0))
+            weights = weights * (teacher_reliability > student_reliability + margin).float()
+
+        max_weight = ccad_cfg.get("max_pair_weight")
+        if max_weight is not None:
+            weights = weights.clamp_max(float(max_weight))
+        weights = torch.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
+        min_weight = float(ccad_cfg.get("min_pair_weight", 1e-6))
+        active = weights > min_weight
+        if not bool(active.any()):
+            return None
+        if bool(ccad_cfg.get("normalize_pair_weights", True)):
+            weights = weights / weights[active].mean().clamp_min(eps)
+
+        safe_teacher = teacher_probs.clamp_min(eps)
+        per_sample_kl = (safe_teacher * (safe_teacher.log() - student_log_probs)).sum(dim=1)
+        return (per_sample_kl * weights).sum() / weights.sum().clamp_min(eps)
 
     def _cara_class_weights(
         self,

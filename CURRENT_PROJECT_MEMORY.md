@@ -575,6 +575,65 @@ the simpler SARA + AsymHFL mainline. Do not spend scarce compute tuning this
 residual unless future work specifically targets worst-client fairness.
 ```
 
+## SARA + CCAD - 2026-07-07
+
+Motivation:
+
+```text
+Small class-count or residual-KD changes are not enough as a paper-facing
+communication innovation. CCAD moves the communication criterion from
+"which client has higher test accuracy" to "which client is more stable under
+public-sample corruption perturbations".
+```
+
+Method name:
+
+```text
+CCAD = Corruption-Consistent Asymmetric Distillation
+```
+
+Core rule:
+
+```text
+For each public image u, each client predicts clean/augmented public views.
+Teacher reliability is high when p(clean), p(aug1), p(aug2) are consistent and
+the clean prediction is confident. Student need is high when the student is
+uncertain or unstable under the same perturbations.
+
+Only reliable teachers distill to needy students on that public sample.
+```
+
+Implementation:
+
+```text
+fedprime/methods/rahfl_asymhfl.py
+  method.communication: ccad
+  _ccad_public_views()
+  _ccad_collect_state()
+  _ccad_pair_loss()
+
+configs/kaggle_t4_sara_ccad.yaml
+configs/debug_sara_ccad.yaml
+scripts/run_kaggle_sara_ccad_alpha05.sh
+```
+
+Default first run:
+
+```text
+alpha=0.5, seed=0, corrupt_rate=1
+SARA local module + pure CCAD communication
+base_asymhfl_weight=0.0
+```
+
+Verification:
+
+```text
+python -m py_compile fedprime/methods/rahfl_asymhfl.py
+config assertion passed for configs/kaggle_t4_sara_ccad.yaml and debug_sara_ccad.yaml
+CCAD tensor unit smoke passed with tiny dummy models
+local full debug could not run because local CIFAR-100 is not torchvision-valid
+```
+
 RAHFL multi-seed control preparation:
 
 ```text

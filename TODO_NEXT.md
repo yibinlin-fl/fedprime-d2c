@@ -137,13 +137,13 @@ results. The next useful check is alpha=1.0, then decide whether a stronger
 method change is required.
 ```
 
-New last-shot method to test - 2026-07-06:
+Last-shot method result - 2026-07-07:
 
 ```text
 SARA + receiver-side class-aware residual AsymHFL
 ```
 
-Run first:
+Run:
 
 ```text
 configs/kaggle_t4_sara_residual_rahfl.yaml
@@ -161,14 +161,18 @@ remaining compute on alpha=0.1.
 Decision:
 
 ```text
-If avg_acc > 57.83 or worst_acc > 46.59:
-  keep the residual route and later test alpha=0.3/0.1/1.0.
+Observed result:
+  final avg/worst = 57.655 / 46.54
 
-If avg drops but worst improves:
-  lambda_residual is too strong; try smaller lambda such as 0.05 when compute is available.
+Compared with RAHFL:
+  +1.245 avg_acc, +1.82 worst_acc
 
-If both avg and worst drop:
-  abandon this residual version and preserve SARA as the main moderate-Non-IID result.
+Compared with SARA + AsymHFL:
+  -0.17 avg_acc, -0.05 worst_acc
+
+Conclusion:
+  Residual AsymHFL is not the new mainline. It beats RAHFL but does not beat the
+  simpler SARA + AsymHFL. Keep it as a diagnostic/optional fairness variant.
 ```
 
 Recommended order now:

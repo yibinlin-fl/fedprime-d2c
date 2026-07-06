@@ -540,6 +540,41 @@ SARA + AsymHFL alpha=0.5 seed0:   57.83 / 46.59
 SARA residual target:             beat 57.83 / 46.59 or at least improve worst_acc
 ```
 
+Result archive and analysis:
+
+```text
+Archive:
+  outputs/sara_residual_alpha05_results.tar.gz
+
+Analysis deliverables:
+  deliverables/sara_residual_alpha05_analysis/
+```
+
+Final result:
+
+```text
+SARA + receiver-side residual AsymHFL:
+  final avg/worst = 57.655 / 46.54
+  best  avg/worst = 57.655 / 46.54
+
+Gap vs RAHFL:
+  +1.245 avg_acc
+  +1.82  worst_acc
+
+Gap vs SARA + AsymHFL:
+  -0.17 avg_acc
+  -0.05 worst_acc
+```
+
+Interpretation:
+
+```text
+The receiver-side residual is not a new breakthrough. It preserves most of
+SARA + AsymHFL performance and still beats RAHFL, but it does not improve over
+the simpler SARA + AsymHFL mainline. Do not spend scarce compute tuning this
+residual unless future work specifically targets worst-client fairness.
+```
+
 RAHFL multi-seed control preparation:
 
 ```text

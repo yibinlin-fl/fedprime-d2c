@@ -89,11 +89,17 @@ configs/kaggle_t4_sara_rahfl_alpha01.yaml
 scripts/run_kaggle_sara_vs_rahfl_alpha01.sh
 ```
 
+The alpha=0.1 launcher also writes alpha=0.3 partition files into outputs via a
+partition-only audit. It does not train alpha=0.3 in that run.
+
 Use the existing partition pack:
 
 ```text
 /kaggle/input/sara-partitions-alpha01-alpha03
 ```
+
+Or leave `PARTITION_SOURCE` empty to generate alpha=0.1 and alpha=0.3 seed0
+partition files inside the result archive.
 
 Recommended order now:
 

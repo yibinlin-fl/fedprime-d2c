@@ -14,6 +14,10 @@ CONFIGS=(
   "configs/kaggle_t4_sara_rahfl_alpha01.yaml"
 )
 
+EXTRA_PARTITION_CONFIGS=(
+  "configs/kaggle_t4_rahfl_alpha03.yaml"
+)
+
 echo "===== RAHFL vs SARA alpha=0.1 Kaggle launcher ====="
 echo "Python: ${PYTHON_BIN}"
 echo "Repository: $(pwd)"
@@ -23,6 +27,8 @@ echo "Data source: ${DATA_SOURCE}"
 echo "Partition source: ${PARTITION_SOURCE:-<none; generate if missing>}"
 echo "Experiment configs:"
 printf '  %s\n' "${CONFIGS[@]}"
+echo "Extra partition-only configs:"
+printf '  %s\n' "${EXTRA_PARTITION_CONFIGS[@]}"
 
 if [ "${RUN_INSTALL}" = "1" ]; then
   echo "===== Installing dependencies ====="
@@ -47,6 +53,12 @@ echo "===== Checking environment ====="
 echo "===== Auditing partitions ====="
 for cfg in "${CONFIGS[@]}"; do
   echo "===== Auditing ${cfg} ====="
+  "${PYTHON_BIN}" scripts/audit_partition.py --config "${cfg}"
+done
+
+echo "===== Generating extra partition files for future runs ====="
+for cfg in "${EXTRA_PARTITION_CONFIGS[@]}"; do
+  echo "===== Partition-only audit ${cfg} ====="
   "${PYTHON_BIN}" scripts/audit_partition.py --config "${cfg}"
 done
 

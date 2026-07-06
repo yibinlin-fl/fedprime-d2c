@@ -375,6 +375,19 @@ Mount:
 /kaggle/input/sara-partitions-alpha01-alpha03
 ```
 
+If `PARTITION_SOURCE` is empty, the alpha=0.1 paired launcher will generate the
+missing alpha=0.1 partition on the fly. It also performs a partition-only audit
+for `configs/kaggle_t4_rahfl_alpha03.yaml`, so the final result archive includes
+both:
+
+```text
+outputs/partitions/cifar10c_alpha01_seed0_clients4_samples10000.npz
+outputs/partitions/cifar10c_alpha03_seed0_clients4_samples10000.npz
+```
+
+This lets the user download one archive and later reuse the alpha=0.3 partition
+without another Kaggle data-generation pass.
+
 RAHFL multi-seed control preparation:
 
 ```text

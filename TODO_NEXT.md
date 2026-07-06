@@ -81,6 +81,20 @@ configs/kaggle_t4_rahfl_seed2.yaml
 scripts/run_kaggle_rahfl_seed12.sh
 ```
 
+Alpha=0.1 paired comparison is now prepared:
+
+```text
+configs/kaggle_t4_rahfl_alpha01.yaml
+configs/kaggle_t4_sara_rahfl_alpha01.yaml
+scripts/run_kaggle_sara_vs_rahfl_alpha01.sh
+```
+
+Use the existing partition pack:
+
+```text
+/kaggle/input/sara-partitions-alpha01-alpha03
+```
+
 Recommended order now:
 
 ```text
@@ -101,8 +115,39 @@ Done:
 
 Pending:
   - RAHFL seed=2, alpha=0.5
-  - alpha=0.3/0.1/1.0 validation
+  - alpha=0.1/1.0 validation
   - partition audit/generation fix if distinct seed partitions are required
+```
+
+Alpha=0.3 validation result - 2026-07-06:
+
+```text
+Archive:
+  outputs/sara_vs_rahfl_alpha03_results.tar.gz
+
+RAHFL alpha=0.3:
+  final avg/worst = 45.8425 / 41.9200
+  best  avg/worst = 46.3825 / 43.1300
+
+SARA + AsymHFL alpha=0.3:
+  final avg/worst = 46.7325 / 42.7700
+  best  avg/worst = 47.0825 / 44.1100
+
+Gap:
+  final +0.89 avg, +0.85 worst
+  best  +0.70 avg, +0.98 worst
+
+Trend:
+  SARA wins 36/40 rounds on avg_acc and 36/40 rounds on worst_acc.
+  Last-10-round mean gap is +0.6942 avg and +0.5270 worst.
+```
+
+Interpretation:
+
+```text
+Positive but modest. This supports SARA's robustness at alpha=0.3, but does not
+yet prove a large severe-Non-IID advantage. Continue alpha=0.1 and alpha=1.0
+before changing the method.
 ```
 
 Prepared alpha partition pack:

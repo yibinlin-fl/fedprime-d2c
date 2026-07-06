@@ -249,13 +249,78 @@ The mainline claim is strengthened:
   before final paper-level claims.
 ```
 
+## SARA Alpha=0.3 Validation - 2026-07-06
+
+Result archive:
+
+```text
+outputs/sara_vs_rahfl_alpha03_results.tar.gz
+```
+
+Setting:
+
+```text
+alpha=0.3
+seed=0
+corrupt_rate=1
+rounds=40
+same fixed partition for RAHFL and SARA
+```
+
+Results:
+
+```text
+RAHFL alpha=0.3:
+  final avg/worst = 45.8425 / 41.9200
+  best  avg/worst = 46.3825 / 43.1300
+
+SARA + AsymHFL alpha=0.3:
+  final avg/worst = 46.7325 / 42.7700
+  best  avg/worst = 47.0825 / 44.1100
+```
+
+SARA gap:
+
+```text
+final avg_acc   +0.8900
+final worst_acc +0.8500
+best avg_acc    +0.7000
+best worst_acc  +0.9800
+```
+
+Trend:
+
+```text
+SARA beats RAHFL in 36/40 rounds for avg_acc and 36/40 rounds for worst_acc.
+
+Last-10-round mean gap:
+  avg_acc   +0.6942
+  worst_acc +0.5270
+```
+
+Partition audit:
+
+```text
+nonzero_classes_per_client = [7, 6, 7, 10]
+max_client_class_proportion = [0.3625, 0.3669, 0.3583, 0.3716]
+```
+
+Interpretation:
+
+```text
+The alpha=0.3 split is clearly label-skewed and both methods use identical
+client class counts. SARA still wins consistently, but the gain is modest and
+smaller than the alpha=0.5 seed0 gain. Do not overclaim a large severe-Non-IID
+advantage from this single alpha=0.3 run. Continue with alpha=0.1 and alpha=1.0.
+```
+
 Next required validation:
 
 ```text
 1. Run RAHFL seed=2 under alpha=0.5 for the missing matched control.
 2. Generate or verify genuinely distinct alpha=0.5 seed partitions if the paper
    needs cross-partition multi-seed claims.
-3. Run alpha=0.3 and alpha=0.1 to test stronger label skew.
+3. Run alpha=0.1 to test stronger label skew.
 4. Run alpha=1.0 to ensure normal/non-extreme Non-IID does not collapse.
 5. Only redesign communication after these validations. Do not replace AsymHFL
    immediately, because SARA + AsymHFL is currently the strongest evidence.
@@ -265,11 +330,13 @@ Alpha validation preparation:
 
 ```text
 New configs:
+  configs/kaggle_t4_rahfl_alpha01.yaml
   configs/kaggle_t4_sara_rahfl_alpha01.yaml
   configs/kaggle_t4_sara_rahfl_alpha03.yaml
   configs/kaggle_t4_sara_rahfl_alpha10.yaml
 
 New Kaggle launcher:
+  scripts/run_kaggle_sara_vs_rahfl_alpha01.sh
   scripts/run_kaggle_sara_alpha0103.sh
   scripts/run_kaggle_sara_alpha0310.sh
 
@@ -292,6 +359,21 @@ The partition pack only contains fixed `.npz` partition files and audit metadata
 not CIFAR image data. It should be mounted together with the existing
 `fedprime-data` dataset. This avoids re-uploading the large CIFAR-10-C/CIFAR-100
 prepared data while keeping alpha=0.3 and alpha=1.0 partitions reproducible.
+
+For the alpha=0.1 paired comparison, use:
+
+```text
+configs/kaggle_t4_rahfl_alpha01.yaml
+configs/kaggle_t4_sara_rahfl_alpha01.yaml
+scripts/run_kaggle_sara_vs_rahfl_alpha01.sh
+```
+
+Mount:
+
+```text
+/kaggle/input/fedprime-data
+/kaggle/input/sara-partitions-alpha01-alpha03
+```
 
 RAHFL multi-seed control preparation:
 

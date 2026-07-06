@@ -101,6 +101,16 @@ Use the existing partition pack:
 Or leave `PARTITION_SOURCE` empty to generate alpha=0.1 and alpha=0.3 seed0
 partition files inside the result archive.
 
+2026-07-06 rerun note:
+
+```text
+First alpha=0.1 attempt crashed in RAHFL at round 007 due to non-finite gradient.
+Rerun from the latest commit where configs/kaggle_t4_rahfl_alpha01.yaml includes:
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 50
+```
+
 Recommended order now:
 
 ```text

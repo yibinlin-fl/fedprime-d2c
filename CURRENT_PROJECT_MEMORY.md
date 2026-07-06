@@ -388,6 +388,32 @@ outputs/partitions/cifar10c_alpha03_seed0_clients4_samples10000.npz
 This lets the user download one archive and later reuse the alpha=0.3 partition
 without another Kaggle data-generation pass.
 
+Alpha=0.1 first Kaggle attempt interruption - 2026-07-06:
+
+```text
+RAHFL alpha=0.1 reached round 007 and interrupted with:
+  FloatingPointError: RAHFL local phase: non-finite gradient at batch 26
+
+The generated alpha=0.1 split was extremely skewed, for example:
+  client0 mostly classes 2/8
+  client1 mostly classes 3/4/5
+  client2 mostly classes 7/9
+  client3 mostly classes 0/1/6
+```
+
+Fix:
+
+```text
+configs/kaggle_t4_rahfl_alpha01.yaml now uses the same numerical safety settings
+as SARA alpha=0.1:
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 50
+```
+
+This is conservative for the baseline because it prevents RAHFL from crashing
+and can only make the RAHFL comparison stronger/safer.
+
 RAHFL multi-seed control preparation:
 
 ```text

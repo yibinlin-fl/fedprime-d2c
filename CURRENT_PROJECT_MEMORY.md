@@ -581,9 +581,9 @@ Motivation:
 
 ```text
 Small class-count or residual-KD changes are not enough as a paper-facing
-communication innovation. CCAD moves the communication criterion from
-"which client has higher test accuracy" to "which client is more stable under
-public-sample corruption perturbations".
+communication innovation. CCAD keeps AsymHFL as the stable client-level route,
+then adds public-sample corruption consistency as a sample-level communication
+calibration signal.
 ```
 
 Method name:
@@ -600,7 +600,9 @@ Teacher reliability is high when p(clean), p(aug1), p(aug2) are consistent and
 the clean prediction is confident. Student need is high when the student is
 uncertain or unstable under the same perturbations.
 
-Only reliable teachers distill to needy students on that public sample.
+AsymHFL still provides the main client-level direction. CCAD adds a residual KD
+term so that reliable teachers distill more strongly to needy students on
+public samples where corruption consistency supports the transfer.
 ```
 
 Implementation:
@@ -621,8 +623,10 @@ Default first run:
 
 ```text
 alpha=0.5, seed=0, corrupt_rate=1
-SARA local module + pure CCAD communication
-base_asymhfl_weight=0.0
+SARA local module + AsymHFL + CCAD residual calibration
+base_asymhfl_weight=1.0
+lambda_ccad=0.2
+max_pair_weight=2.0
 ```
 
 Verification:

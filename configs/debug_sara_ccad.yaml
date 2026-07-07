@@ -58,8 +58,8 @@ method:
     use_view_reliability: true
     use_relation_alignment: true
   ccad:
-    lambda_ccad: 1.0
-    base_asymhfl_weight: 0.0
+    lambda_ccad: 0.2
+    base_asymhfl_weight: 1.0
     num_aug_views: 2
     consistency_tau: 0.05
     confidence_mode: max_prob
@@ -73,7 +73,7 @@ method:
     reliability_margin: 0.0
     normalize_pair_weights: true
     min_pair_weight: 1.0e-6
-    max_pair_weight: 3.0
+    max_pair_weight: 2.0
     crop_padding: 4
     hflip_p: 0.5
     brightness: 0.2

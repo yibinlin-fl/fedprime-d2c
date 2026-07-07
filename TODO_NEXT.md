@@ -193,8 +193,9 @@ Why:
 
 ```text
 Instead of class-count reweighting, CCAD uses public-sample corruption
-consistency to choose reliable teachers and needy students. It is a stronger
-communication-motivation candidate than SARA residual.
+consistency to calibrate AsymHFL communication at the sample level. It is a
+stronger communication-motivation candidate than SARA residual while preserving
+the stable AsymHFL route.
 ```
 
 Decision after alpha=0.5 seed=0:

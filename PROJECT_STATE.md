@@ -1,6 +1,156 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-06-25
+Last updated: 2026-07-08
+
+## FedSARA-CS Corruption-Skew Protocol - 2026-07-08
+
+Implemented a new corruption-skew scenario for a stronger paper motivation:
+
+```text
+model heterogeneity + label-skew Non-IID + corruption-skew Non-IID
+```
+
+Instead of only using RAHFL-style globally random corruption, each client now has
+a dominant corruption group:
+
+```text
+client 0: noise
+client 1: blur
+client 2: weather
+client 3: digital
+```
+
+Generated formal prepared dataset:
+
+```text
+local_runs/fedsara_cs_prepared/fedsara_cs_prepared_alpha05_rho07_seed0.tar.gz
+```
+
+Dataset metadata:
+
+```text
+alpha = 0.5
+rho = 0.7
+seed = 0
+clients = 4
+samples_per_client = 10000
+balanced test groups = noise / blur / weather / digital
+```
+
+The audit files show both label-skew and corruption-skew are present:
+
+```text
+local_runs/fedsara_cs_prepared/fedsara_cs_prepared_alpha05_rho07_seed0/
+  cifar_10_cs/alpha05_rho07_seed0/audit/client_label_counts.csv
+  cifar_10_cs/alpha05_rho07_seed0/audit/client_corruption_counts.csv
+```
+
+Implemented code/configs:
+
+```text
+fedprime/data/corruptions.py
+fedprime/data/loaders.py
+fedprime/methods/rahfl_asymhfl.py
+scripts/prepare_corruption_skew_data.py
+scripts/import_fedsara_cs_data.py
+scripts/run_openi_fedsara_cs.sh
+configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
+configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
+configs/debug_rahfl_cs.yaml
+configs/debug_fedsara_cs.yaml
+FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+```
+
+Formal comparison to run on OpenI:
+
+```text
+RAHFL-CS:
+  AugMix/JSD + DCL + AsymHFL
+  config: configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
+
+FedSARA-CS:
+  AugMix/JSD + SARA + CS-AsymHFL
+  config: configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
+```
+
+Both formal configs enable 40-epoch local CE pretraining:
+
+```text
+pretrain_epochs: 40
+rounds: 40
+```
+
+The pretraining path uses a plain corruption-skew CE loader for efficiency and
+fairness. Formal training rounds still use the AugMix/JSD local base.
+
+Local smoke tests passed:
+
+```text
+python scripts/run_experiment.py --config configs/debug_fedsara_cs.yaml
+python scripts/run_experiment.py --config configs/debug_rahfl_cs.yaml
+```
+
+The smoke tests validated:
+
+```text
+1. corruption-skew data import
+2. CIFAR-100 public tar fallback loader
+3. RAHFL-CS runner path
+4. FedSARA-CS runner path
+5. metrics.csv, corruption_group_acc.csv, client_group_acc.csv output
+```
+
+## SARA + AsymHFL Seed Validation - 2026-07-05
+
+New archives analyzed:
+
+```text
+outputs/rahfl_seed1_results.tar.gz
+outputs/sara_rahfl_seed12_results.tar.gz
+```
+
+Alpha=0.5, corrupt_rate=1, 40-round unified-runner results:
+
+```text
+RAHFL seed0:          56.41   / 44.72
+RAHFL seed1:          56.645  / 45.29
+
+SARA + AsymHFL seed0: 57.83   / 46.59
+SARA + AsymHFL seed1: 57.2975 / 46.23
+SARA + AsymHFL seed2: 58.0025 / 45.90
+```
+
+Seed1 matched comparison:
+
+```text
+SARA - RAHFL = +0.6525 avg_acc, +0.94 worst_acc
+```
+
+SARA seeds0/1/2 mean final:
+
+```text
+avg_acc   = 57.71
+worst_acc = 46.24
+```
+
+Important caveat:
+
+```text
+The archived alpha=0.5 partition files named seed0/seed1/seed2 are byte-identical
+by SHA-256 prefix and have identical client_class_counts. Current alpha=0.5
+multi-seed evidence validates training/randomness stability on one fixed
+label-skew partition, not cross-partition robustness.
+```
+
+Current next actions:
+
+```text
+1. Run the missing RAHFL seed=2 matched control.
+2. Verify/generate genuinely distinct fixed partitions if cross-partition claims
+   are needed.
+3. Run SARA + AsymHFL at alpha=0.3, alpha=0.1, and alpha=1.0 before changing
+   the communication module.
+```
 
 ## FedPRIME-PAIR Implementation - 2026-06-25
 
@@ -382,6 +532,54 @@ training with unbuffered logging -> analyzes results -> packages outputs
 Do not advise running another cell while a background version is executing.
 Inside a normal Python cell use `%cd /kaggle/working/fedprime-d2c`; use plain
 `cd /kaggle/working/fedprime-d2c` only inside a cell beginning with `%%bash`.
+
+## Kaggle Streaming Launcher Rule - 2026-06-25
+
+For long Kaggle `Save Version` runs, do **not** use a long `%%bash` cell as the
+primary launcher. Kaggle/IPython may buffer `%%bash` stdout until the subprocess
+finishes, which can make a live experiment look frozen for hours while only
+showing kernel/debugger warnings.
+
+Use a single Python streaming launcher cell instead. It must run shell commands
+through `subprocess.Popen`, read stdout line by line, and print a driver
+heartbeat every 60 seconds. Do not call `sys.stdout.reconfigure(...)` inside
+Kaggle notebooks, because Kaggle uses an `OutStream` object that does not
+provide `reconfigure`.
+
+The streaming launcher must verify these items before training:
+
+```text
+1. print START immediately
+2. list /kaggle/input
+3. clone or pull the repo with GIT_TERMINAL_PROMPT=0
+4. print git log -1 --oneline
+5. confirm commit is 8a4ee15 or later for FedPRIME-PAIR
+6. run scripts/run_kaggle_pair.sh with RUN_DEBUG=1 and PYTHONUNBUFFERED=1
+```
+
+A healthy FedPRIME-PAIR Kaggle run should show:
+
+```text
+===== START FedPRIME-PAIR Kaggle streaming launcher =====
+8a4ee15 增强FedPRIME-PAIR启动日志与Kaggle一键脚本
+===== FedPRIME-PAIR Kaggle one-shot launcher =====
+===== Importing prepared Kaggle data =====
+===== Running FedPRIME-PAIR debug smoke =====
+===== Running FedPRIME-PAIR full experiment =====
+[setup] FedPRIME-PAIR loading private labels
+[heartbeat] round 000 local client 0 start
+[heartbeat] FedPRIME-PAIR local phase, client=0 batch=50 loss=...
+```
+
+If a future Kaggle log only shows:
+
+```text
+Debugger warning: It seems that frozen modules are being used
+```
+
+for many minutes, do not interpret it as training progress. Stop the run and
+check whether the saved notebook version contains the Python streaming launcher
+cell and whether `git log -1` reaches `8a4ee15` or later.
 
 ## Local RTX 3050 Oracle Validation - 2026-06-07
 
@@ -1125,6 +1323,87 @@ Smoke tests passed:
 - No paper figures generated yet except partition audit heatmap.
 
 ## Tomorrow Resume Prompt
+
+## 2026-06-29 Current Mainline: PRAC-HFL
+
+The current main experimental direction is PRAC-HFL. D2C and FedPRIME-PAIR are now historical diagnostic experiments rather than the main method.
+
+```text
+PRAC-HFL = RAHFL local robust training + receiver-adaptive safe communication
+```
+
+Local training follows the strong RAHFL local baseline:
+
+```text
+AugMix multi-view training + CE + JSD consistency + RAHFL DCLLoss
+```
+
+Implementation files:
+
+```text
+fedprime/methods/local_rahfl.py
+fedprime/methods/prac_hfl.py
+configs/kaggle_t4_prac_hfl.yaml
+configs/debug_prac_hfl_cifar10c.yaml
+scripts/run_kaggle_prac.sh
+```
+
+Latest pushed commits:
+
+```text
+fa108f7 实现PRAC-HFL接收端自适应通信
+5e476ea 增强PRAC-HFL数值稳定性
+```
+
+Safe PRAC-HFL config:
+
+```text
+warmup_rounds: 3
+risk_lambda_aug: 0.0
+risk_lambda_js: 0.0
+virtual_lr: 0.005
+head_max_grad_norm: 1.0
+train.max_grad_norm: 5.0
+train.skip_nonfinite: true
+```
+
+Historical results now archived:
+
+```text
+RAHFL unified runner: final avg_acc=56.41, worst_acc=44.72, no 40-epoch pretraining.
+PRIME + LogitAvg: final avg_acc≈52.10, worst_acc≈39.72.
+FedPRIME-D2C: final avg_acc≈52.31, worst_acc≈39.78.
+Oracle D2C: final avg_acc≈51.74, worst_acc≈39.13.
+FedPRIME-PAIR: final avg_acc≈50.15, worst_acc≈39.83.
+```
+
+Current interpretation:
+
+```text
+D2C and PAIR are negative/diagnostic public-logit communication results.
+PRAC-HFL has the strongest signal so far.
+First PRAC run reached round 028 with avg_acc=53.86, higher than same-round RAHFL 53.21,
+but worst_acc=39.52 was below same-round RAHFL 41.64, and round 029 produced NaN.
+Safe PRAC-HFL must be rerun from commit 5e476ea.
+```
+
+Generated comparison deliverables:
+
+```text
+deliverables/prac_vs_rahfl_analysis/rahfl_prac_hfl_comparison.xlsx
+deliverables/prac_vs_rahfl_analysis/avg_accuracy_curve.png
+deliverables/prac_vs_rahfl_analysis/worst_accuracy_curve.png
+deliverables/prac_vs_rahfl_analysis/prac_diagnostics.png
+```
+
+Kaggle memory:
+
+```text
+Use Python streaming launcher, not long silent %%bash cells.
+Dataset input: /kaggle/input/fedprime-data
+Before running PRAC-HFL, verify: git log -1 --oneline == 5e476ea 增强PRAC-HFL数值稳定性
+Expected logs include [heartbeat] round xxx ... and [round xxx] avg_acc=... worst_acc=...
+```
 
 Use:
 

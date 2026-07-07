@@ -1,5 +1,86 @@
 # TODO Next
 
+## 2026-07-08 Immediate Mainline: FedSARA-CS on Corruption-Skew
+
+New immediate direction:
+
+```text
+Run RAHFL-CS vs FedSARA-CS under the new corruption-skew protocol.
+```
+
+Why this matters:
+
+```text
+The old random-corruption setting made the story too close to RAHFL.
+The new protocol introduces corruption-skew across clients, so the paper can
+target model heterogeneity + label-skew + corruption-skew together.
+```
+
+Prepared dataset:
+
+```text
+local_runs/fedsara_cs_prepared/fedsara_cs_prepared_alpha05_rho07_seed0.tar.gz
+```
+
+Upload this tarball to OpenI / 启智 as a dataset, suggested name:
+
+```text
+fedsara-cs-alpha05-rho07-seed0
+```
+
+Configs to run:
+
+```text
+configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
+configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
+```
+
+Both configs use:
+
+```text
+pretrain_epochs: 40
+rounds: 40
+```
+
+Debug configs already passed locally:
+
+```text
+configs/debug_rahfl_cs.yaml
+configs/debug_fedsara_cs.yaml
+```
+
+OpenI launcher:
+
+```text
+scripts/run_openi_fedsara_cs.sh
+```
+
+Detailed run guide:
+
+```text
+FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+```
+
+Primary metrics to inspect:
+
+```text
+avg_acc
+worst_acc
+worst_group_acc
+worst_client_group_acc
+```
+
+Decision rule:
+
+```text
+If FedSARA-CS beats RAHFL-CS on avg_acc and clearly improves worst_group_acc or
+worst_client_group_acc, this becomes the new paper story.
+
+If FedSARA-CS only ties RAHFL-CS, inspect corruption_group_acc.csv and
+client_group_acc.csv to see whether it improves specific corruption-skew
+failure modes before changing the method again.
+```
+
 ## 2026-07-05 Immediate Mainline: SARA + AsymHFL
 
 Current best single run:

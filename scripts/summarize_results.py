@@ -40,6 +40,8 @@ def summarize_experiment(exp_dir: Path) -> dict[str, object] | None:
     final = rows[-1]
     best_avg = max(rows, key=lambda r: as_float(r, "avg_acc"))
     best_worst = max(rows, key=lambda r: as_float(r, "worst_acc"))
+    best_group = max(rows, key=lambda r: as_float(r, "worst_group_acc"))
+    best_client_group = max(rows, key=lambda r: as_float(r, "worst_client_group_acc"))
 
     return {
         "experiment": exp_dir.name,
@@ -53,6 +55,12 @@ def summarize_experiment(exp_dir: Path) -> dict[str, object] | None:
         "best_avg_round": best_avg.get("round", ""),
         "best_worst_acc": f"{as_float(best_worst, 'worst_acc'):.4f}",
         "best_worst_round": best_worst.get("round", ""),
+        "final_worst_group_acc": f"{as_float(final, 'worst_group_acc'):.4f}",
+        "best_worst_group_acc": f"{as_float(best_group, 'worst_group_acc'):.4f}",
+        "best_worst_group_round": best_group.get("round", ""),
+        "final_worst_client_group_acc": f"{as_float(final, 'worst_client_group_acc'):.4f}",
+        "best_worst_client_group_acc": f"{as_float(best_client_group, 'worst_client_group_acc'):.4f}",
+        "best_worst_client_group_round": best_client_group.get("round", ""),
     }
 
 
@@ -101,4 +109,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,6 +1,88 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-05
+Updated: 2026-07-08
+
+## FedSARA-CS New Scenario - 2026-07-08
+
+New active scenario:
+
+```text
+model heterogeneity + label-skew Non-IID + corruption-skew Non-IID
+```
+
+This extends the previous RAHFL-style random corruption setting. Each client now
+has both a different class distribution and a dominant corruption group:
+
+```text
+client 0: mainly noise
+client 1: mainly blur
+client 2: mainly weather
+client 3: mainly digital
+```
+
+Protocol:
+
+```text
+alpha = 0.5
+rho = 0.7
+seed = 0
+clients = 4
+samples_per_client = 10000
+test protocol = balanced noise / blur / weather / digital corruption groups
+```
+
+Generated prepared dataset:
+
+```text
+local_runs/fedsara_cs_prepared/fedsara_cs_prepared_alpha05_rho07_seed0.tar.gz
+size: about 386 MB
+```
+
+Important files:
+
+```text
+fedprime/data/corruptions.py
+scripts/prepare_corruption_skew_data.py
+scripts/import_fedsara_cs_data.py
+scripts/run_openi_fedsara_cs.sh
+configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
+configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
+configs/debug_rahfl_cs.yaml
+configs/debug_fedsara_cs.yaml
+FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+```
+
+Both formal configs use:
+
+```text
+pretrain_epochs: 40
+rounds: 40
+batch_size: 64
+public_batches_per_round: 4
+```
+
+The 40-epoch pretrain path uses a plain corruption-skew CE loader, not the
+AugMix three-view loader. This avoids wasting compute while keeping RAHFL-CS and
+FedSARA-CS fair. Formal communication rounds still use AugMix/JSD plus DCL or
+SARA.
+
+New metrics:
+
+```text
+worst_group_acc
+worst_client_group_acc
+corruption_group_acc.csv
+client_group_acc.csv
+```
+
+Smoke tests passed locally:
+
+```text
+python scripts/run_experiment.py --config configs/debug_fedsara_cs.yaml
+python scripts/run_experiment.py --config configs/debug_rahfl_cs.yaml
+```
+
+Both tests completed one round and wrote metrics/group metrics.
 
 ## Current Goal
 

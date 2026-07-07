@@ -1,0 +1,80 @@
+experiment_name: fedsara_cs_alpha05_rho07_seed0_v100
+method_name: fedsara_cs
+seed: 0
+device: auto
+num_workers: 2
+output_root: outputs
+
+data:
+  scenario: corruption_skew
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_cs/alpha05_rho07_seed0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 5000
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 40
+  rounds: 40
+  local_epochs: 1
+  batch_size: 64
+  test_batch_size: 256
+  public_batch_size: 128
+  public_batches_per_round: 4
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  pretrain_log_interval: 100
+  local_log_interval: 50
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: sara
+  lambda_jsd: 12.0
+  communication: cs_asymhfl
+  sara:
+    lambda_sara: 1.0
+    temperature: 0.2
+    relation_temperature: 0.2
+    beta: 1.0
+    class_weight_min: 0.75
+    class_weight_max: 1.5
+    class_weight_power: 0.5
+    reliability_tau: 1.0
+    reliability_min: 0.05
+    use_class_calibration: true
+    use_view_reliability: true
+    use_relation_alignment: true
+  cs_asymhfl:
+    base_asymhfl_weight: 1.0
+    lambda_cs: 0.2
+    probe_groups: [clean, noise, blur, weather, digital]
+    consistency_tau: 0.05
+    need_instability_weight: 0.5
+    max_instability: 4.0
+    teacher_power: 1.0
+    need_power: 1.0
+    better_only: true
+    reliability_margin: 0.0
+    normalize_pair_weights: true
+    max_pair_weight: 2.0
+    min_pair_weight: 0.000001
+    noise_std: 0.08
+    blur_kernel: 3
+    weather_strength: 0.25
+    pixelate_size: 16
+    digital_contrast: 0.7
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

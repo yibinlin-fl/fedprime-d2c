@@ -15,6 +15,7 @@ wandb/
 *.npz
 
 RAHFL-master/Dataset/cifar_10_c/
+RAHFL-master/Dataset/cifar_10_cs/
 RAHFL-master/Dataset/cifar_10/
 RAHFL-master/Dataset/cifar_100/
 RAHFL-master/Dataset/cifar_100_c/

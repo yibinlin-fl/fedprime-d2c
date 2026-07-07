@@ -11,10 +11,14 @@ import torch.optim as optim
 from fedprime.augmentations.prime_adapter import build_prime_module
 from fedprime.data.loaders import (
     build_augmix_private_loaders,
+    build_corruption_skew_augmix_loaders,
+    build_corruption_skew_pretrain_loaders,
     build_prime_dcl_private_loaders,
     build_private_loaders,
     build_public_loader,
+    corruption_group_names_from_test_loader,
     dataset_stats,
+    load_corruption_skew_client_labels,
     load_private_labels,
     normalize_batch,
     partition_private_data,
@@ -50,24 +54,53 @@ class AsymHFLExperiment:
         num_classes = int(data_cfg.get("num_classes", 10))
         stats = dataset_stats(data_cfg.get("private_dataset", "cifar10"))
 
-        print("[setup] AsymHFL/FedCARA loading private labels", flush=True)
-        labels = load_private_labels(data_cfg["private_root"], data_cfg["private_corrupt_rate"])
-        print("[setup] AsymHFL/FedCARA loading/creating private partition", flush=True)
-        dataidx_map = partition_private_data(
-            labels=labels,
-            num_clients=num_clients,
-            num_classes=num_classes,
-            partition=data_cfg.get("partition", "dirichlet"),
-            dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
-            max_samples_per_client=data_cfg.get("private_samples_per_client"),
-            partition_indices_path=data_cfg.get("partition_indices_path"),
-            partition_seed=int(self.config.get("seed", 0)),
-        )
-        self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
-
         use_prime = bool(method_cfg.get("use_prime", False))
         use_prime_dcl = use_prime and bool(method_cfg.get("use_dcl", True))
-        if use_prime:
+        scenario = str(data_cfg.get("scenario", "rahfl_cifar10c")).lower()
+        pretrain_loaders = None
+        if scenario == "corruption_skew":
+            if use_prime:
+                raise ValueError("corruption_skew currently supports AugMix/SARA-style local training, not PRIME.")
+            print("[setup] building corruption-skew AugMix private loaders", flush=True)
+            private_loaders, test_loader, _, _ = build_corruption_skew_augmix_loaders(
+                root=data_cfg["private_root"],
+                num_clients=num_clients,
+                train_batch_size=train_cfg["batch_size"],
+                test_batch_size=train_cfg.get("test_batch_size", 512),
+                num_workers=int(self.config.get("num_workers", 2)),
+                augmix_module=method_cfg.get("augmix_module", "jsd"),
+            )
+            pretrain_loaders = build_corruption_skew_pretrain_loaders(
+                root=data_cfg["private_root"],
+                num_clients=num_clients,
+                train_batch_size=train_cfg["batch_size"],
+                num_workers=int(self.config.get("num_workers", 2)),
+            )
+            client_labels = load_corruption_skew_client_labels(data_cfg["private_root"], num_clients)
+            self._client_class_counts = {
+                client_id: torch.bincount(torch.as_tensor(labels, dtype=torch.long), minlength=num_classes).float()
+                for client_id, labels in client_labels.items()
+            }
+            self._corruption_group_names = corruption_group_names_from_test_loader(test_loader)
+            prime_aug = None
+        else:
+            print("[setup] AsymHFL/FedCARA loading private labels", flush=True)
+            labels = load_private_labels(data_cfg["private_root"], data_cfg["private_corrupt_rate"])
+            print("[setup] AsymHFL/FedCARA loading/creating private partition", flush=True)
+            dataidx_map = partition_private_data(
+                labels=labels,
+                num_clients=num_clients,
+                num_classes=num_classes,
+                partition=data_cfg.get("partition", "dirichlet"),
+                dirichlet_alpha=float(data_cfg.get("dirichlet_alpha", 0.5)),
+                max_samples_per_client=data_cfg.get("private_samples_per_client"),
+                partition_indices_path=data_cfg.get("partition_indices_path"),
+                partition_seed=int(self.config.get("seed", 0)),
+            )
+            self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
+            self._corruption_group_names = []
+
+        if scenario != "corruption_skew" and use_prime:
             print("[setup] building PRIME private loaders", flush=True)
             if use_prime_dcl:
                 private_loaders, test_loader = build_prime_dcl_private_loaders(
@@ -91,7 +124,7 @@ class AsymHFLExperiment:
                     raw_for_prime=True,
                 )
             prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device)
-        else:
+        elif scenario != "corruption_skew":
             print("[setup] building AugMix private loaders", flush=True)
             private_loaders, test_loader, _, _ = build_augmix_private_loaders(
                 cifar10c_root=data_cfg["private_root"],
@@ -122,13 +155,51 @@ class AsymHFLExperiment:
         self._load_models_if_configured(models)
         optimizers = {idx: self._build_optimizer(model) for idx, model in models.items()}
 
+        pretrain_epochs = int(train_cfg.get("pretrain_epochs", 0))
+        if pretrain_epochs > 0:
+            print(f"[setup] running local CE pretraining for {pretrain_epochs} epochs", flush=True)
+            self._pretrain_phase(
+                models,
+                optimizers,
+                pretrain_loaders if pretrain_loaders is not None else private_loaders,
+                pretrain_epochs,
+                train_cfg,
+            )
+
         metrics_path = self.output_dir / "metrics.csv"
+        group_names = getattr(self, "_corruption_group_names", [])
+        group_metrics_path = self.output_dir / "corruption_group_acc.csv"
+        client_group_metrics_path = self.output_dir / "client_group_acc.csv"
+        group_file = group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
+        client_group_file = client_group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         with metrics_path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
-                fieldnames=["round", "avg_acc", "worst_acc", "local_loss", "col_loss"],
+                fieldnames=[
+                    "round",
+                    "avg_acc",
+                    "worst_acc",
+                    "worst_group_acc",
+                    "worst_client_group_acc",
+                    "local_loss",
+                    "col_loss",
+                ],
             )
             writer.writeheader()
+            group_writer = None
+            client_group_writer = None
+            if group_file is not None:
+                group_writer = csv.DictWriter(
+                    group_file,
+                    fieldnames=["round", *group_names, "worst_group_acc"],
+                )
+                group_writer.writeheader()
+            if client_group_file is not None:
+                client_group_writer = csv.DictWriter(
+                    client_group_file,
+                    fieldnames=["round", "client", *group_names, "worst_client_group_acc"],
+                )
+                client_group_writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
@@ -164,24 +235,49 @@ class AsymHFLExperiment:
                     num_classes=num_classes,
                 )
                 accs = self._evaluate(models, test_loader)
+                group_summary = self._evaluate_corruption_groups(models, test_loader, group_names)
                 row = {
                     "round": round_idx,
                     "avg_acc": sum(accs) / len(accs),
                     "worst_acc": min(accs),
+                    "worst_group_acc": group_summary.get("worst_group_acc", ""),
+                    "worst_client_group_acc": group_summary.get("worst_client_group_acc", ""),
                     "local_loss": local_loss,
                     "col_loss": col_loss,
                 }
                 writer.writerow(row)
                 f.flush()
+                if group_writer is not None:
+                    group_writer.writerow({"round": round_idx, **group_summary.get("groups", {}), "worst_group_acc": group_summary.get("worst_group_acc", "")})
+                    group_file.flush()
+                if client_group_writer is not None:
+                    for client_id, values in group_summary.get("clients", {}).items():
+                        client_group_writer.writerow({
+                            "round": round_idx,
+                            "client": client_id,
+                            **values,
+                            "worst_client_group_acc": min(values.values()) if values else "",
+                        })
+                    client_group_file.flush()
                 print(
                     f"[round {round_idx:03d}] "
                     f"avg_acc={row['avg_acc']:.2f} "
                     f"worst_acc={row['worst_acc']:.2f} "
+                    + (
+                        f"worst_group_acc={float(row['worst_group_acc']):.2f} "
+                        f"worst_client_group_acc={float(row['worst_client_group_acc']):.2f} "
+                        if row["worst_group_acc"] != "" else ""
+                    )
+                    +
                     f"local_loss={local_loss:.4f} "
                     f"col_loss={col_loss:.4f}",
                     flush=True,
                 )
 
+        if group_file is not None:
+            group_file.close()
+        if client_group_file is not None:
+            client_group_file.close()
         self._save_models(models)
 
     def _build_optimizer(self, model):
@@ -204,6 +300,9 @@ class AsymHFLExperiment:
     def _use_ccad_communication(self, method_cfg: dict) -> bool:
         return method_cfg.get("communication", "asymhfl").lower() in {"ccad", "ccad_hybrid"}
 
+    def _use_cs_communication(self, method_cfg: dict) -> bool:
+        return method_cfg.get("communication", "asymhfl").lower() in {"cs_asymhfl", "fedsara_cs"}
+
     def _ccad_uses_asymhfl_route(self, method_cfg: dict) -> bool:
         if not self._use_ccad_communication(method_cfg):
             return False
@@ -216,12 +315,16 @@ class AsymHFLExperiment:
         method_cfg = self.config.get("method", {})
         use_cara = self._use_cara_communication(method_cfg)
         use_ccad = self._use_ccad_communication(method_cfg)
+        use_cs = self._use_cs_communication(method_cfg)
         use_class_residual = self._use_class_residual(method_cfg)
         class_residual_cfg = method_cfg.get("class_residual", {})
         class_residual_lambda = float(class_residual_cfg.get("lambda_residual", 0.0))
         ccad_cfg = method_cfg.get("ccad", {})
         ccad_base_asym_weight = float(ccad_cfg.get("base_asymhfl_weight", 0.0))
         ccad_lambda = float(ccad_cfg.get("lambda_ccad", 1.0))
+        cs_cfg = method_cfg.get("cs_asymhfl", {})
+        cs_base_asym_weight = float(cs_cfg.get("base_asymhfl_weight", 1.0))
+        cs_lambda = float(cs_cfg.get("lambda_cs", 0.2))
         num_batches = int(self.config["train"].get("public_batches_per_round", 1))
         for _ in range(num_batches):
             try:
@@ -231,7 +334,12 @@ class AsymHFLExperiment:
                 images, _ = next(public_iter)
             images = images.to(self.device, non_blocking=True)
 
-            if use_ccad:
+            if use_cs:
+                cs_views = self._cs_public_views(images, stats, cs_cfg)
+                cs_state = self._cs_collect_state(models, cs_views, cs_cfg)
+                target_probs = cs_state["target_probs"]
+                student_log_probs = cs_state["student_log_probs"]
+            elif use_ccad:
                 views = self._ccad_public_views(images, stats, ccad_cfg)
                 ccad_state = self._ccad_collect_state(models, views, ccad_cfg)
                 target_probs = ccad_state["target_probs"]
@@ -286,6 +394,20 @@ class AsymHFLExperiment:
                         )
                         if ccad_loss is not None:
                             learn_losses.append(ccad_lambda * ccad_loss)
+                    elif use_cs:
+                        if cs_base_asym_weight > 0 and accs[client_id] <= accs[other_id]:
+                            learn_losses.append(
+                                cs_base_asym_weight
+                                * criterion(student_log_probs[client_id], target_probs[other_id])
+                            )
+                        cs_loss = self._cs_pair_loss(
+                            student_id=client_id,
+                            teacher_id=other_id,
+                            cs_state=cs_state,
+                            cs_cfg=cs_cfg,
+                        )
+                        if cs_loss is not None:
+                            learn_losses.append(cs_lambda * cs_loss)
                     elif accs[client_id] <= accs[other_id]:
                         kd_loss = criterion(student_log_probs[client_id], target_probs[other_id])
                         if use_class_residual and class_residual_lambda > 0:
@@ -305,6 +427,147 @@ class AsymHFLExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    def _cs_public_views(self, images: torch.Tensor, stats, cs_cfg: dict) -> dict[str, torch.Tensor]:
+        probe_groups = list(cs_cfg.get("probe_groups", ["clean", "noise", "blur", "weather", "digital"]))
+        views = {}
+        for group in probe_groups:
+            group = str(group).lower()
+            if group == "clean":
+                view = images
+            elif group == "noise":
+                view = self._cs_noise(images, cs_cfg)
+            elif group == "blur":
+                view = self._cs_blur(images, cs_cfg)
+            elif group == "weather":
+                view = self._cs_weather(images, cs_cfg)
+            elif group == "digital":
+                view = self._cs_digital(images, cs_cfg)
+            else:
+                raise ValueError(f"Unknown CS public probe group: {group}")
+            views[group] = normalize_batch(view.clamp(0.0, 1.0), stats)
+        if "clean" not in views:
+            views["clean"] = normalize_batch(images, stats)
+        return views
+
+    def _cs_noise(self, images: torch.Tensor, cs_cfg: dict) -> torch.Tensor:
+        std = float(cs_cfg.get("noise_std", 0.08))
+        return images.detach() + torch.randn_like(images) * std
+
+    def _cs_blur(self, images: torch.Tensor, cs_cfg: dict) -> torch.Tensor:
+        kernel = int(cs_cfg.get("blur_kernel", 3))
+        if kernel % 2 == 0:
+            kernel += 1
+        padding = kernel // 2
+        return F.avg_pool2d(images.detach(), kernel_size=kernel, stride=1, padding=padding)
+
+    def _cs_weather(self, images: torch.Tensor, cs_cfg: dict) -> torch.Tensor:
+        x = images.detach()
+        strength = float(cs_cfg.get("weather_strength", 0.25))
+        haze = torch.empty_like(x).uniform_(0.70, 1.0)
+        return (1.0 - strength) * x + strength * haze
+
+    def _cs_digital(self, images: torch.Tensor, cs_cfg: dict) -> torch.Tensor:
+        x = images.detach()
+        size = int(cs_cfg.get("pixelate_size", 16))
+        small = F.interpolate(x, size=(size, size), mode="bilinear", align_corners=False)
+        pixelated = F.interpolate(small, size=x.shape[-2:], mode="nearest")
+        contrast = float(cs_cfg.get("digital_contrast", 0.7))
+        mean = pixelated.mean(dim=(2, 3), keepdim=True)
+        return (pixelated - mean) * contrast + mean
+
+    def _cs_collect_state(self, models, views: dict[str, torch.Tensor], cs_cfg: dict) -> dict[str, object]:
+        eps = float(cs_cfg.get("eps", 1e-8))
+        groups = [group for group in views if group != "clean"]
+        target_probs = {}
+        student_log_probs = {}
+        group_teacher_probs: dict[str, dict[int, torch.Tensor]] = {group: {} for group in groups}
+        group_student_log_probs: dict[str, dict[int, torch.Tensor]] = {group: {} for group in groups}
+        reliability: dict[str, dict[int, torch.Tensor]] = {group: {} for group in groups}
+        need: dict[str, dict[int, torch.Tensor]] = {group: {} for group in groups}
+
+        for client_id in sorted(models):
+            model = models[client_id]
+            model.eval()
+            with torch.no_grad():
+                clean_prob = F.softmax(forward_logits(model, views["clean"]), dim=1).detach()
+                target_probs[client_id] = clean_prob
+                for group in groups:
+                    group_prob = F.softmax(forward_logits(model, views[group]), dim=1).detach()
+                    group_teacher_probs[group][client_id] = group_prob
+                    jsd = self._pair_jsd(clean_prob, group_prob, eps=eps)
+                    entropy = self._ccad_entropy(group_prob)
+                    confidence = (1.0 - entropy).clamp(0.0, 1.0)
+                    consistency = torch.exp(-jsd / max(float(cs_cfg.get("consistency_tau", 0.05)), eps))
+                    reliability[group][client_id] = (confidence * consistency).detach()
+                    need[group][client_id] = (
+                        entropy
+                        + float(cs_cfg.get("need_instability_weight", 0.5))
+                        * (jsd / max(float(cs_cfg.get("consistency_tau", 0.05)), eps)).clamp(0.0, float(cs_cfg.get("max_instability", 4.0)))
+                    ).detach()
+
+            model.train()
+            student_log_probs[client_id] = F.log_softmax(forward_logits(model, views["clean"]), dim=1)
+            for group in groups:
+                group_student_log_probs[group][client_id] = F.log_softmax(forward_logits(model, views[group]), dim=1)
+
+        return {
+            "groups": groups,
+            "target_probs": target_probs,
+            "student_log_probs": student_log_probs,
+            "group_teacher_probs": group_teacher_probs,
+            "group_student_log_probs": group_student_log_probs,
+            "reliability": reliability,
+            "need": need,
+        }
+
+    def _pair_jsd(self, p: torch.Tensor, q: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+        p = p.clamp_min(eps)
+        q = q.clamp_min(eps)
+        m = ((p + q) * 0.5).clamp_min(eps)
+        return 0.5 * (p * (p.log() - m.log())).sum(dim=1) + 0.5 * (q * (q.log() - m.log())).sum(dim=1)
+
+    def _cs_pair_loss(
+        self,
+        student_id: int,
+        teacher_id: int,
+        cs_state: dict[str, object],
+        cs_cfg: dict,
+    ) -> torch.Tensor | None:
+        eps = float(cs_cfg.get("eps", 1e-8))
+        losses = []
+        weights_all = []
+        groups = cs_state["groups"]
+        for group in groups:
+            teacher_reliability = cs_state["reliability"][group][teacher_id]
+            student_reliability = cs_state["reliability"][group][student_id]
+            student_need = cs_state["need"][group][student_id]
+            weights = teacher_reliability.pow(float(cs_cfg.get("teacher_power", 1.0)))
+            weights = weights * student_need.clamp_min(0.0).pow(float(cs_cfg.get("need_power", 1.0)))
+            if bool(cs_cfg.get("better_only", True)):
+                margin = float(cs_cfg.get("reliability_margin", 0.0))
+                weights = weights * (teacher_reliability > student_reliability + margin).float()
+            max_weight = cs_cfg.get("max_pair_weight")
+            if max_weight is not None:
+                weights = weights.clamp_max(float(max_weight))
+            weights = torch.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
+            active = weights > float(cs_cfg.get("min_pair_weight", 1e-6))
+            if not bool(active.any()):
+                continue
+            if bool(cs_cfg.get("normalize_pair_weights", True)):
+                weights = weights / weights[active].mean().clamp_min(eps)
+
+            teacher_probs = cs_state["group_teacher_probs"][group][teacher_id].clamp_min(eps)
+            student_log_probs = cs_state["group_student_log_probs"][group][student_id]
+            per_sample_kl = (teacher_probs * (teacher_probs.log() - student_log_probs)).sum(dim=1)
+            losses.append(per_sample_kl)
+            weights_all.append(weights)
+
+        if not losses:
+            return None
+        loss_vec = torch.cat(losses, dim=0)
+        weight_vec = torch.cat(weights_all, dim=0)
+        return (loss_vec * weight_vec).sum() / weight_vec.sum().clamp_min(eps)
 
     def _ccad_public_views(self, images: torch.Tensor, stats, ccad_cfg: dict) -> list[torch.Tensor]:
         num_aug_views = int(ccad_cfg.get("num_aug_views", 2))
@@ -609,6 +872,45 @@ class AsymHFLExperiment:
                 losses.append(loss)
         return sum(losses) / max(len(losses), 1)
 
+    def _pretrain_phase(self, models, optimizers, private_loaders, pretrain_epochs: int, train_cfg: dict) -> None:
+        criterion = torch.nn.CrossEntropyLoss()
+        max_batches = train_cfg.get("max_pretrain_batches")
+        log_interval = train_cfg.get("pretrain_log_interval", train_cfg.get("local_log_interval", 50))
+        for epoch in range(pretrain_epochs):
+            for client_id, loader in enumerate(private_loaders):
+                model = models[client_id]
+                model.train()
+                running = []
+                for batch_idx, batch in enumerate(loader):
+                    images, labels, _ = self._unpack_batch(batch)
+                    if isinstance(images, (tuple, list)):
+                        images = images[0]
+                    images = images.to(self.device, non_blocking=True)
+                    labels = labels.to(self.device, non_blocking=True).long()
+                    loss = criterion(forward_logits(model, images), labels)
+                    optimizers[client_id].zero_grad(set_to_none=True)
+                    loss.backward()
+                    max_grad_norm = train_cfg.get("max_grad_norm")
+                    if max_grad_norm is not None:
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
+                    optimizers[client_id].step()
+                    running.append(float(loss.detach().cpu()))
+                    if log_interval and (batch_idx + 1) % int(log_interval) == 0:
+                        mean_loss = sum(running[-int(log_interval):]) / min(len(running), int(log_interval))
+                        print(
+                            f"[heartbeat] pretrain epoch={epoch:03d} client={client_id} "
+                            f"batch={batch_idx + 1} loss={mean_loss:.4f}",
+                            flush=True,
+                        )
+                    if max_batches is not None and batch_idx + 1 >= int(max_batches):
+                        break
+                if running:
+                    print(
+                        f"[heartbeat] pretrain epoch={epoch:03d} client={client_id} "
+                        f"done loss={sum(running) / len(running):.4f}",
+                        flush=True,
+                    )
+
     def _evaluate(self, models, test_loader) -> list[float]:
         accs = []
         for client_id in sorted(models):
@@ -617,7 +919,8 @@ class AsymHFLExperiment:
             correct = 0
             total = 0
             with torch.no_grad():
-                for images, labels in test_loader:
+                for batch in test_loader:
+                    images, labels, _ = self._unpack_batch(batch)
                     images = images.to(self.device, non_blocking=True)
                     labels = labels.to(self.device, non_blocking=True).long()
                     logits = forward_logits(model, images)
@@ -638,7 +941,8 @@ class AsymHFLExperiment:
             class_correct = torch.zeros(num_classes, dtype=torch.float64)
             class_total = torch.zeros(num_classes, dtype=torch.float64)
             with torch.no_grad():
-                for images, labels in test_loader:
+                for batch in test_loader:
+                    images, labels, _ = self._unpack_batch(batch)
                     images = images.to(self.device, non_blocking=True)
                     labels = labels.to(self.device, non_blocking=True).long()
                     logits = forward_logits(model, images)
@@ -654,6 +958,65 @@ class AsymHFLExperiment:
             accs.append(100.0 * correct / max(total, 1))
             class_accs[client_id] = (class_correct / class_total.clamp_min(1.0)).float()
         return accs, class_accs
+
+    def _evaluate_corruption_groups(self, models, test_loader, group_names: list[str]) -> dict[str, object]:
+        if not group_names:
+            return {}
+        num_groups = len(group_names)
+        client_results = {}
+        group_correct_total = torch.zeros(num_groups, dtype=torch.float64)
+        group_total_total = torch.zeros(num_groups, dtype=torch.float64)
+
+        for client_id in sorted(models):
+            model = models[client_id]
+            model.eval()
+            group_correct = torch.zeros(num_groups, dtype=torch.float64)
+            group_total = torch.zeros(num_groups, dtype=torch.float64)
+            with torch.no_grad():
+                for batch in test_loader:
+                    images, labels, corruption_ids = self._unpack_batch(batch)
+                    if corruption_ids is None:
+                        return {}
+                    images = images.to(self.device, non_blocking=True)
+                    labels = labels.to(self.device, non_blocking=True).long()
+                    corruption_ids = corruption_ids.long()
+                    pred = forward_logits(model, images).argmax(dim=1).cpu()
+                    correct = pred.eq(labels.cpu())
+                    for group_id in range(num_groups):
+                        mask = corruption_ids == group_id
+                        if mask.any():
+                            group_total[group_id] += mask.sum().item()
+                            group_correct[group_id] += correct[mask].sum().item()
+            acc = 100.0 * group_correct / group_total.clamp_min(1.0)
+            client_results[client_id] = {
+                group_names[group_id]: float(acc[group_id])
+                for group_id in range(num_groups)
+            }
+            group_correct_total += group_correct
+            group_total_total += group_total
+
+        group_acc = 100.0 * group_correct_total / group_total_total.clamp_min(1.0)
+        group_values = {
+            group_names[group_id]: float(group_acc[group_id])
+            for group_id in range(num_groups)
+        }
+        worst_client_group = min(
+            (value for values in client_results.values() for value in values.values()),
+            default=0.0,
+        )
+        return {
+            "groups": group_values,
+            "clients": client_results,
+            "worst_group_acc": min(group_values.values()) if group_values else 0.0,
+            "worst_client_group_acc": worst_client_group,
+        }
+
+    def _unpack_batch(self, batch):
+        if len(batch) == 3:
+            images, labels, corruption_ids = batch
+            return images, labels, corruption_ids
+        images, labels = batch
+        return images, labels, None
 
     def _save_models(self, models) -> None:
         ckpt_dir = self.output_dir / "checkpoints"

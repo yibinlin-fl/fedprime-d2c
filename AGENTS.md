@@ -34,6 +34,42 @@ Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older fil
 
 ## Current Mainline
 
+New immediate experiment direction:
+
+```text
+FedSARA-CS on corruption-skew protocol
+```
+
+Core idea:
+
+```text
+model heterogeneity + label-skew Non-IID + corruption-skew Non-IID
+```
+
+Key files:
+
+```text
+scripts/prepare_corruption_skew_data.py
+scripts/import_fedsara_cs_data.py
+scripts/run_openi_fedsara_cs.sh
+configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
+configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
+FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+```
+
+Prepared dataset:
+
+```text
+local_runs/fedsara_cs_prepared/fedsara_cs_prepared_alpha05_rho07_seed0.tar.gz
+```
+
+Both RAHFL-CS and FedSARA-CS formal configs use:
+
+```text
+pretrain_epochs: 40
+rounds: 40
+```
+
 Current active method:
 
 ```text

@@ -58,10 +58,10 @@ class AsymHFLExperiment:
         use_prime_dcl = use_prime and bool(method_cfg.get("use_dcl", True))
         scenario = str(data_cfg.get("scenario", "rahfl_cifar10c")).lower()
         pretrain_loaders = None
-        if scenario == "corruption_skew":
+        if scenario in {"corruption_skew", "cle_hfl"}:
             if use_prime:
-                raise ValueError("corruption_skew currently supports AugMix/SARA-style local training, not PRIME.")
-            print("[setup] building corruption-skew AugMix private loaders", flush=True)
+                raise ValueError(f"{scenario} currently supports AugMix/SARA-style local training, not PRIME.")
+            print(f"[setup] building {scenario} AugMix private loaders", flush=True)
             private_loaders, test_loader, _, _ = build_corruption_skew_augmix_loaders(
                 root=data_cfg["private_root"],
                 num_clients=num_clients,
@@ -100,7 +100,7 @@ class AsymHFLExperiment:
             self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
             self._corruption_group_names = []
 
-        if scenario != "corruption_skew" and use_prime:
+        if scenario not in {"corruption_skew", "cle_hfl"} and use_prime:
             print("[setup] building PRIME private loaders", flush=True)
             if use_prime_dcl:
                 private_loaders, test_loader = build_prime_dcl_private_loaders(
@@ -124,7 +124,7 @@ class AsymHFLExperiment:
                     raw_for_prime=True,
                 )
             prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device)
-        elif scenario != "corruption_skew":
+        elif scenario not in {"corruption_skew", "cle_hfl"}:
             print("[setup] building AugMix private loaders", flush=True)
             private_loaders, test_loader, _, _ = build_augmix_private_loaders(
                 cifar10c_root=data_cfg["private_root"],
@@ -170,8 +170,14 @@ class AsymHFLExperiment:
         group_names = getattr(self, "_corruption_group_names", [])
         group_metrics_path = self.output_dir / "corruption_group_acc.csv"
         client_group_metrics_path = self.output_dir / "client_group_acc.csv"
+        class_corruption_metrics_path = self.output_dir / "class_corruption_acc.csv"
         group_file = group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         client_group_file = client_group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
+        class_corruption_file = (
+            class_corruption_metrics_path.open("w", newline="", encoding="utf-8")
+            if group_names
+            else None
+        )
         with metrics_path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
@@ -181,6 +187,8 @@ class AsymHFLExperiment:
                     "worst_acc",
                     "worst_group_acc",
                     "worst_client_group_acc",
+                    "wcca",
+                    "cfg",
                     "local_loss",
                     "col_loss",
                 ],
@@ -188,6 +196,7 @@ class AsymHFLExperiment:
             writer.writeheader()
             group_writer = None
             client_group_writer = None
+            class_corruption_writer = None
             if group_file is not None:
                 group_writer = csv.DictWriter(
                     group_file,
@@ -200,6 +209,12 @@ class AsymHFLExperiment:
                     fieldnames=["round", "client", *group_names, "worst_client_group_acc"],
                 )
                 client_group_writer.writeheader()
+            if class_corruption_file is not None:
+                class_corruption_writer = csv.DictWriter(
+                    class_corruption_file,
+                    fieldnames=["round", "client", "class_id", "group", "acc", "total"],
+                )
+                class_corruption_writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
@@ -235,13 +250,15 @@ class AsymHFLExperiment:
                     num_classes=num_classes,
                 )
                 accs = self._evaluate(models, test_loader)
-                group_summary = self._evaluate_corruption_groups(models, test_loader, group_names)
+                group_summary = self._evaluate_corruption_groups(models, test_loader, group_names, num_classes)
                 row = {
                     "round": round_idx,
                     "avg_acc": sum(accs) / len(accs),
                     "worst_acc": min(accs),
                     "worst_group_acc": group_summary.get("worst_group_acc", ""),
                     "worst_client_group_acc": group_summary.get("worst_client_group_acc", ""),
+                    "wcca": group_summary.get("wcca", ""),
+                    "cfg": group_summary.get("cfg", ""),
                     "local_loss": local_loss,
                     "col_loss": col_loss,
                 }
@@ -259,6 +276,10 @@ class AsymHFLExperiment:
                             "worst_client_group_acc": min(values.values()) if values else "",
                         })
                     client_group_file.flush()
+                if class_corruption_writer is not None:
+                    for cc_row in group_summary.get("class_corruption_rows", []):
+                        class_corruption_writer.writerow({"round": round_idx, **cc_row})
+                    class_corruption_file.flush()
                 print(
                     f"[round {round_idx:03d}] "
                     f"avg_acc={row['avg_acc']:.2f} "
@@ -266,6 +287,8 @@ class AsymHFLExperiment:
                     + (
                         f"worst_group_acc={float(row['worst_group_acc']):.2f} "
                         f"worst_client_group_acc={float(row['worst_client_group_acc']):.2f} "
+                        f"wcca={float(row['wcca']):.2f} "
+                        f"cfg={float(row['cfg']):.2f} "
                         if row["worst_group_acc"] != "" else ""
                     )
                     +
@@ -278,6 +301,8 @@ class AsymHFLExperiment:
             group_file.close()
         if client_group_file is not None:
             client_group_file.close()
+        if class_corruption_file is not None:
+            class_corruption_file.close()
         self._save_models(models)
 
     def _build_optimizer(self, model):
@@ -959,19 +984,30 @@ class AsymHFLExperiment:
             class_accs[client_id] = (class_correct / class_total.clamp_min(1.0)).float()
         return accs, class_accs
 
-    def _evaluate_corruption_groups(self, models, test_loader, group_names: list[str]) -> dict[str, object]:
+    def _evaluate_corruption_groups(
+        self,
+        models,
+        test_loader,
+        group_names: list[str],
+        num_classes: int,
+    ) -> dict[str, object]:
         if not group_names:
             return {}
         num_groups = len(group_names)
         client_results = {}
+        class_corruption_rows = []
         group_correct_total = torch.zeros(num_groups, dtype=torch.float64)
         group_total_total = torch.zeros(num_groups, dtype=torch.float64)
+        class_group_correct_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
+        class_group_total_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
 
         for client_id in sorted(models):
             model = models[client_id]
             model.eval()
             group_correct = torch.zeros(num_groups, dtype=torch.float64)
             group_total = torch.zeros(num_groups, dtype=torch.float64)
+            class_group_correct = torch.zeros(num_classes, num_groups, dtype=torch.float64)
+            class_group_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
             with torch.no_grad():
                 for batch in test_loader:
                     images, labels, corruption_ids = self._unpack_batch(batch)
@@ -987,19 +1023,51 @@ class AsymHFLExperiment:
                         if mask.any():
                             group_total[group_id] += mask.sum().item()
                             group_correct[group_id] += correct[mask].sum().item()
+                    labels_cpu = labels.cpu()
+                    for class_id in range(num_classes):
+                        class_mask = labels_cpu == class_id
+                        if not class_mask.any():
+                            continue
+                        for group_id in range(num_groups):
+                            mask = class_mask & (corruption_ids == group_id)
+                            if mask.any():
+                                class_group_total[class_id, group_id] += mask.sum().item()
+                                class_group_correct[class_id, group_id] += correct[mask].sum().item()
             acc = 100.0 * group_correct / group_total.clamp_min(1.0)
             client_results[client_id] = {
                 group_names[group_id]: float(acc[group_id])
                 for group_id in range(num_groups)
             }
+            class_group_acc = 100.0 * class_group_correct / class_group_total.clamp_min(1.0)
+            for class_id in range(num_classes):
+                for group_id in range(num_groups):
+                    class_corruption_rows.append({
+                        "client": client_id,
+                        "class_id": class_id,
+                        "group": group_names[group_id],
+                        "acc": float(class_group_acc[class_id, group_id]),
+                        "total": int(class_group_total[class_id, group_id].item()),
+                    })
             group_correct_total += group_correct
             group_total_total += group_total
+            class_group_correct_total += class_group_correct
+            class_group_total_total += class_group_total
 
         group_acc = 100.0 * group_correct_total / group_total_total.clamp_min(1.0)
         group_values = {
             group_names[group_id]: float(group_acc[group_id])
             for group_id in range(num_groups)
         }
+        global_class_group_acc = 100.0 * class_group_correct_total / class_group_total_total.clamp_min(1.0)
+        valid = class_group_total_total > 0
+        wcca = float(global_class_group_acc[valid].min().item()) if bool(valid.any()) else 0.0
+        class_gaps = []
+        for class_id in range(num_classes):
+            class_valid = class_group_total_total[class_id] > 0
+            if bool(class_valid.any()):
+                values = global_class_group_acc[class_id][class_valid]
+                class_gaps.append(float((values.max() - values.min()).item()))
+        cfg = sum(class_gaps) / max(len(class_gaps), 1)
         worst_client_group = min(
             (value for values in client_results.values() for value in values.values()),
             default=0.0,
@@ -1009,6 +1077,9 @@ class AsymHFLExperiment:
             "clients": client_results,
             "worst_group_acc": min(group_values.values()) if group_values else 0.0,
             "worst_client_group_acc": worst_client_group,
+            "wcca": wcca,
+            "cfg": cfg,
+            "class_corruption_rows": class_corruption_rows,
         }
 
     def _unpack_batch(self, batch):

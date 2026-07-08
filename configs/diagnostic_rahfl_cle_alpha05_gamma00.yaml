@@ -1,0 +1,47 @@
+experiment_name: diag_rahfl_cle_alpha05_gamma00_seed0
+method_name: rahfl
+seed: 0
+device: auto
+num_workers: 2
+output_root: outputs
+
+data:
+  scenario: cle_hfl
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_cle/alpha05_gamma00_seed0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 5000
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 0
+  rounds: 40
+  local_epochs: 1
+  batch_size: 64
+  test_batch_size: 256
+  public_batch_size: 128
+  public_batches_per_round: 4
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 50
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: dcl
+  lambda_jsd: 12.0
+  communication: asymhfl
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

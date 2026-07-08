@@ -61,6 +61,8 @@ def summarize_experiment(exp_dir: Path) -> dict[str, object] | None:
         "final_worst_client_group_acc": f"{as_float(final, 'worst_client_group_acc'):.4f}",
         "best_worst_client_group_acc": f"{as_float(best_client_group, 'worst_client_group_acc'):.4f}",
         "best_worst_client_group_round": best_client_group.get("round", ""),
+        "final_wcca": f"{as_float(final, 'wcca'):.4f}",
+        "final_cfg": f"{as_float(final, 'cfg'):.4f}",
     }
 
 

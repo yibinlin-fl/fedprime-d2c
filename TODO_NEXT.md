@@ -1,5 +1,58 @@
 # TODO Next
 
+## 2026-07-08 Immediate Diagnostic: Validate CLE-HFL Failure Mode
+
+Do not implement full FedCLEAR yet.
+
+First validate whether CLE-HFL is a real failure mode for RAHFL:
+
+```text
+Question:
+  As gamma increases, does RAHFL show lower WCCA and higher CFG?
+```
+
+Prepared CLE-HFL datasets:
+
+```text
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma00_seed0.tar.gz
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma06_seed0.tar.gz
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma09_seed0.tar.gz
+```
+
+RAHFL-only diagnostic configs:
+
+```text
+configs/diagnostic_rahfl_cle_alpha05_gamma00.yaml
+configs/diagnostic_rahfl_cle_alpha05_gamma06.yaml
+configs/diagnostic_rahfl_cle_alpha05_gamma09.yaml
+```
+
+Launcher:
+
+```text
+scripts/run_openi_cle_rahfl_diagnostic.sh
+```
+
+Metrics to inspect:
+
+```text
+avg_acc
+worst_acc
+wcca
+cfg
+class_corruption_acc.csv
+```
+
+Decision rule:
+
+```text
+If gamma=0.9 causes RAHFL WCCA to drop and CFG to rise while avg_acc remains
+less obviously degraded, CLE-HFL is a promising paper direction.
+
+If RAHFL keeps high WCCA and low CFG even at gamma=0.9, AugMix/JSD/DCL already
+mitigates this shortcut and full FedCLEAR is not worth implementing.
+```
+
 ## 2026-07-08 Immediate Mainline: FedSARA-CS on Corruption-Skew
 
 New immediate direction:

@@ -2,6 +2,98 @@
 
 Updated: 2026-07-08
 
+## CLE-HFL Diagnostic Route - 2026-07-08
+
+New proposed paper direction:
+
+```text
+CLE-HFL = Corruption-Label Entanglement in Heterogeneous Federated Learning
+FedCLEAR = future method candidate, not implemented yet
+```
+
+Core idea:
+
+```text
+Existing robust HFL studies corrupted clients.
+CLE-HFL studies a finer failure mode: corruption-label shortcut.
+Some classes are systematically tied to specific corruptions inside clients,
+so models may learn "blur -> class A" or "clean -> class B" instead of semantics.
+```
+
+Important: do not implement the full FedCLEAR method before proving the failure
+mode. First run RAHFL diagnostics and check whether RAHFL has high
+Counterfactual Gap (CFG) and low Worst Class-Corruption Accuracy (WCCA) as
+gamma increases.
+
+Implemented for diagnostics:
+
+```text
+scripts/prepare_cle_data.py
+scripts/import_cle_data.py
+scripts/run_openi_cle_rahfl_diagnostic.sh
+configs/debug_rahfl_cle.yaml
+configs/diagnostic_rahfl_cle_alpha05_gamma00.yaml
+configs/diagnostic_rahfl_cle_alpha05_gamma06.yaml
+configs/diagnostic_rahfl_cle_alpha05_gamma09.yaml
+FEDCLEAR_CLE_HFL_PROPOSAL_ZH.md
+```
+
+Generated local CLE-HFL datasets:
+
+```text
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma00_seed0.tar.gz
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma06_seed0.tar.gz
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma09_seed0.tar.gz
+```
+
+Each archive is about 383 MB and contains:
+
+```text
+cifar_10_cle/<dataset_name>/
+  client_i/train_images.npy
+  client_i/train_labels.npy
+  client_i/train_corruption_ids.npy
+  client_i/train_corruption_method_ids.npy
+  test_balanced/test_images.npy
+  test_balanced/test_labels.npy
+  test_balanced/test_corruption_ids.npy
+  metadata.json
+  audit/client_label_counts.csv
+  audit/client_corruption_counts.csv
+  audit/client_class_corruption_counts.csv
+  audit/class_corruption_map.csv
+cifar_100/cifar-100-python.tar.gz
+```
+
+Diagnostic metric meanings:
+
+```text
+WCCA = min accuracy over all class-corruption groups. Higher is better.
+CFG  = average per-class gap between best and worst corruption context. Lower is better.
+```
+
+Local smoke test passed:
+
+```text
+python scripts/prepare_cle_data.py --output-root local_runs/cle_hfl_debug \
+  --dataset-name alpha05_gamma09_seed0 --alpha 0.5 --gamma 0.9 \
+  --seed 0 --num-clients 4 --samples-per-client 100 --max-test-images 200 \
+  --include-public --make-tar
+
+python scripts/import_cle_data.py \
+  --source local_runs/cle_hfl_debug/cle_hfl_prepared_alpha05_gamma09_seed0 \
+  --repo-root .
+
+python scripts/run_experiment.py --config configs/debug_rahfl_cle.yaml
+```
+
+The debug run completed one round and wrote:
+
+```text
+outputs/debug_rahfl_cle_alpha05_gamma09/metrics.csv
+outputs/debug_rahfl_cle_alpha05_gamma09/class_corruption_acc.csv
+```
+
 ## FedSARA-CS New Scenario - 2026-07-08
 
 New active scenario:

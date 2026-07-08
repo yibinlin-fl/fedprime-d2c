@@ -1,0 +1,80 @@
+from __future__ import annotations
+
+import argparse
+import shutil
+import tarfile
+from pathlib import Path
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Import a mounted CLE-HFL prepared dataset.")
+    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--destination", type=Path, default=Path("."))
+    parser.add_argument("--repo-root", dest="destination", type=Path)
+    return parser.parse_args()
+
+
+def maybe_extract_archive(source: Path, destination: Path) -> Path:
+    if source.is_file() and source.suffixes[-2:] == [".tar", ".gz"]:
+        extract_root = destination / "local_runs" / "imported_cle_hfl"
+        extract_root.mkdir(parents=True, exist_ok=True)
+        print(f"Extracting {source} -> {extract_root}")
+        with tarfile.open(source, "r:gz") as tar:
+            tar.extractall(extract_root)
+        return extract_root
+    return source
+
+
+def find_root(search_root: Path, marker: Path, root_parents: int) -> Path:
+    candidates = [search_root]
+    for candidate in candidates:
+        matches = list(candidate.rglob(str(marker))) if candidate.exists() else []
+        if matches:
+            root = matches[0]
+            for _ in range(root_parents):
+                root = root.parent
+            print(f"Located {marker}: {root}")
+            return root
+    raise FileNotFoundError(f"Could not find marker {marker} under {search_root}")
+
+
+def copy_dir(source: Path, destination: Path) -> None:
+    if not source.is_dir():
+        raise FileNotFoundError(f"Source directory not found: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, destination, dirs_exist_ok=True)
+    print(f"Copied {source} -> {destination}")
+
+
+def safe_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except PermissionError:
+        return False
+
+
+def main() -> None:
+    args = parse_args()
+    destination = args.destination.resolve()
+    source = maybe_extract_archive(args.source.resolve(), destination)
+    print(f"CLE-HFL data source: {source}")
+    print(f"Repository destination: {destination}")
+
+    cle = source / "cifar_10_cle"
+    if not cle.is_dir():
+        cle = find_root(source, Path("metadata.json"), root_parents=2)
+
+    copy_dir(cle, destination / "RAHFL-master/Dataset/cifar_10_cle")
+
+    cifar100 = source / "cifar_100"
+    if cifar100.is_dir():
+        copy_dir(cifar100, destination / "RAHFL-master/Dataset/cifar_100")
+
+    required = destination / "RAHFL-master/Dataset/cifar_10_cle"
+    if not safe_exists(required):
+        raise FileNotFoundError(f"Import incomplete: {required}")
+    print("CLE-HFL prepared-data import verified successfully.")
+
+
+if __name__ == "__main__":
+    main()

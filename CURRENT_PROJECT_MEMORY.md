@@ -31,12 +31,25 @@ Implemented for diagnostics:
 scripts/prepare_cle_data.py
 scripts/import_cle_data.py
 scripts/run_openi_cle_rahfl_diagnostic.sh
+scripts/openi_cle_rahfl_diagnostic_entry.py
 configs/debug_rahfl_cle.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma00.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma06.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma09.yaml
 FEDCLEAR_CLE_HFL_PROPOSAL_ZH.md
 ```
+
+OpenI training-task startup file:
+
+```text
+scripts/openi_cle_rahfl_diagnostic_entry.py
+```
+
+Use this Python entry when the OpenI UI requires a startup file. Runtime
+parameters can be left empty for the default full diagnostic. The entry calls
+`c2net.context.prepare()`, searches the mounted dataset path for the three
+`cle_hfl_prepared_alpha05_gamma*_seed0.tar.gz` archives, runs the RAHFL
+diagnostic configs, packages outputs, and uploads them through `upload_output()`.
 
 Generated local CLE-HFL datasets:
 

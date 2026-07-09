@@ -16,11 +16,17 @@ def parse_args() -> argparse.Namespace:
 
 def maybe_extract_archive(source: Path, destination: Path) -> Path:
     if source.is_file() and source.suffixes[-2:] == [".tar", ".gz"]:
-        extract_root = destination / "local_runs" / "imported_cle_hfl"
+        archive_name = source.name[:-7]
+        extract_root = destination / "local_runs" / "imported_cle_hfl" / archive_name
         extract_root.mkdir(parents=True, exist_ok=True)
         print(f"Extracting {source} -> {extract_root}")
         with tarfile.open(source, "r:gz") as tar:
             tar.extractall(extract_root)
+        nested_root = extract_root / archive_name
+        if (nested_root / "cifar_10_cle").is_dir():
+            return nested_root
+        if (extract_root / "cifar_10_cle").is_dir():
+            return extract_root
         return extract_root
     return source
 
@@ -36,6 +42,21 @@ def find_root(search_root: Path, marker: Path, root_parents: int) -> Path:
             print(f"Located {marker}: {root}")
             return root
     raise FileNotFoundError(f"Could not find marker {marker} under {search_root}")
+
+
+def find_package_root(search_root: Path) -> Path:
+    if (search_root / "cifar_10_cle").is_dir():
+        return search_root
+    matches = sorted(search_root.rglob("metadata.json")) if search_root.exists() else []
+    if not matches:
+        raise FileNotFoundError(f"Could not find metadata.json under {search_root}")
+    root = matches[0].parent
+    while root != search_root.parent:
+        if (root / "cifar_10_cle").is_dir():
+            print(f"Located CLE-HFL package root: {root}")
+            return root
+        root = root.parent
+    return find_root(search_root, Path("metadata.json"), root_parents=2).parent
 
 
 def copy_dir(source: Path, destination: Path) -> None:
@@ -59,14 +80,16 @@ def main() -> None:
     source = maybe_extract_archive(args.source.resolve(), destination)
     print(f"CLE-HFL data source: {source}")
     print(f"Repository destination: {destination}")
+    package_root = find_package_root(source)
+    print(f"CLE-HFL package root: {package_root}")
 
-    cle = source / "cifar_10_cle"
+    cle = package_root / "cifar_10_cle"
     if not cle.is_dir():
-        cle = find_root(source, Path("metadata.json"), root_parents=2)
+        cle = find_root(package_root, Path("metadata.json"), root_parents=2)
 
     copy_dir(cle, destination / "RAHFL-master/Dataset/cifar_10_cle")
 
-    cifar100 = source / "cifar_100"
+    cifar100 = package_root / "cifar_100"
     if cifar100.is_dir():
         copy_dir(cifar100, destination / "RAHFL-master/Dataset/cifar_100")
 

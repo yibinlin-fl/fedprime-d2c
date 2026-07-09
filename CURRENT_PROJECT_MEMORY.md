@@ -51,6 +51,18 @@ parameters can be left empty for the default full diagnostic. The entry calls
 `cle_hfl_prepared_alpha05_gamma*_seed0.tar.gz` archives, runs the RAHFL
 diagnostic configs, packages outputs, and uploads them through `upload_output()`.
 
+OpenI diagnostic import fix:
+
+```text
+scripts/import_cle_data.py now extracts each tar.gz into a separate folder and
+copies both cifar_10_cle and cifar_100 into RAHFL-master/Dataset.
+```
+
+This matters because OpenI mounts the uploaded data under paths such as
+`/tmp/dataset/<dataset_name>/`. A previous import version extracted all gamma
+archives into the same directory, which could accidentally match gamma00 when
+importing gamma06/gamma09 and could miss the CIFAR-100 public tar.
+
 Generated local CLE-HFL datasets:
 
 ```text

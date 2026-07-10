@@ -1,6 +1,135 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-08
+Updated: 2026-07-10
+
+## FedCLEAR Implementation Mainline - 2026-07-10
+
+Current active research mainline:
+
+```text
+CLE-HFL problem + FedCLEAR method
+FedCLEAR = CCRE local counterfactual risk learning + IRD invariant-residual distillation
+```
+
+The failure mode has already been validated on RAHFL. FedCLEAR v0.1 is now
+implemented and locally tested; it has not yet produced a formal OpenI result.
+
+Why the method targets CLE-HFL directly:
+
+```text
+CCRE:
+  Generate explicit label-independent counterfactual views from a configurable
+  operator bank. Compute classification risk for every present class and view,
+  take a differentiable smooth maximum over views, then correct each class by
+  its local batch-presence probability. Class counts stay local and are never
+  uploaded.
+  This targets the worst class-context risk instead of ordinary sample-average
+  risk, so it is designed to improve WCCA and reduce CFG under label skew.
+
+IRD:
+  On public images, every client evaluates the same counterfactual views.
+  Per-view logits are standardized across classes to remove heterogeneous model
+  scale, then averaged into an invariant anchor. The server builds a leave-one-out
+  coordinate-wise median teacher and each receiver minimizes its worst-view KL.
+  Public data is only a response probe; it is not used to estimate private priors.
+```
+
+Privacy/fairness boundaries:
+
+```text
+FedCLEAR does not read train_corruption_ids or train_corruption_method_ids.
+FedCLEAR does not upload private class counts.
+FedCLEAR does not use test labels or test accuracy for teacher routing.
+FedCLEAR does not aggregate model parameters or architecture-specific features.
+RAHFL remains unchanged as AugMix/JSD + DCL + AsymHFL.
+```
+
+Core implementation files:
+
+```text
+fedprime/augmentations/counterfactual.py
+fedprime/methods/ccre.py
+fedprime/methods/ird.py
+fedprime/methods/local_fedclear.py
+fedprime/methods/fedclear.py
+fedprime/methods/rahfl_asymhfl.py
+scripts/run_experiment.py
+```
+
+Configs and OpenI entry:
+
+```text
+configs/debug_fedclear_cle.yaml
+configs/openi_v100_fedclear_cle_gamma09_probe.yaml  # 12 rounds, first run
+configs/openi_v100_fedclear_cle_gamma09_full.yaml   # 40 rounds, only after positive probe
+scripts/openi_fedclear_entry.py
+scripts/analyze_fedclear_probe.py
+docs/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv
+```
+
+OpenI startup file:
+
+```text
+scripts/openi_fedclear_entry.py
+```
+
+Recommended runtime parameter:
+
+```text
+--mode probe
+```
+
+The entry searches the mounted dataset for:
+
+```text
+cle_hfl_prepared_alpha05_gamma09_seed0.tar.gz
+```
+
+It imports the prepared data, checks the environment, runs unbuffered training,
+summarizes outputs, packages them, copies them to `c2net_context.output_path`,
+and calls `upload_output()`.
+
+Local verification completed:
+
+```text
+13 unit/regression tests passed.
+Two-round RTX 3050 smoke test passed:
+  round 0: CCRE ran; IRD warmup correctly skipped communication
+  round 1: IRD ran with finite loss/gradients and saved four checkpoints
+
+round 1 diagnostic values:
+  ccre_loss=2.9865
+  ccre_worst_view_risk=2.4859
+  ird_loss=0.7492
+  ird_anchor_disagreement=0.9897
+  ird_worst_view_kl=0.2087
+
+RAHFL CLE debug regression also passed after the runner changes.
+```
+
+The debug run uses only two test batches, so its WCCA/CFG are not research
+results. The 12-round OpenI probe uses the full counterfactual test set.
+
+After probe training, the OpenI entry automatically compares FedCLEAR rounds
+9-11 with the archived RAHFL rounds 9-11 and writes:
+
+```text
+probe_comparison.json
+probe_comparison.md
+```
+
+RAHFL same-round reference:
+
+```text
+round 11: avg=37.4575, worst=30.6950, WCCA=8.1500, CFG=9.7250
+rounds 9-11 mean: avg=36.6488, worst=30.4125, WCCA=8.1833, CFG=10.6558
+```
+
+Method document:
+
+```text
+FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md
+```
 
 ## CLE-HFL Diagnostic Route - 2026-07-08
 
@@ -8,7 +137,7 @@ New proposed paper direction:
 
 ```text
 CLE-HFL = Corruption-Label Entanglement in Heterogeneous Federated Learning
-FedCLEAR = future method candidate, not implemented yet
+FedCLEAR = current implemented method candidate, awaiting OpenI probe results
 ```
 
 Core idea:
@@ -20,10 +149,8 @@ Some classes are systematically tied to specific corruptions inside clients,
 so models may learn "blur -> class A" or "clean -> class B" instead of semantics.
 ```
 
-Important: do not implement the full FedCLEAR method before proving the failure
-mode. First run RAHFL diagnostics and check whether RAHFL has high
-Counterfactual Gap (CFG) and low Worst Class-Corruption Accuracy (WCCA) as
-gamma increases.
+The prerequisite RAHFL diagnostic has completed and showed higher CFG and lower
+WCCA as gamma increased. This justified implementing the current FedCLEAR v0.1.
 
 Implemented for diagnostics:
 
@@ -95,6 +222,72 @@ Diagnostic metric meanings:
 ```text
 WCCA = min accuracy over all class-corruption groups. Higher is better.
 CFG  = average per-class gap between best and worst corruption context. Lower is better.
+```
+
+CLE-HFL RAHFL diagnostic result - 2026-07-10:
+
+```text
+Archive:
+  outputs/cle_rahfl_diagnostic_outputs.tar.gz
+
+Analysis directory:
+  outputs/cle_rahfl_diagnostic_analysis/
+
+Fixed conditions:
+  alpha = 0.5
+  seed = 0
+  clients = 4
+  samples_per_client = 10000
+  model heterogeneity = ResNet10 / ResNet12 / ShuffleNet / MobileNetV2
+  baseline = full RAHFL-style AugMix/JSD + DCL + AsymHFL
+
+Varied factor:
+  gamma = corruption-label entanglement strength
+```
+
+Main result:
+
+```text
+gamma=0.0:
+  final avg_acc   = 52.17
+  final worst_acc = 44.17
+  final WCCA      = 35.35
+  final CFG       = 2.54
+
+gamma=0.6:
+  final avg_acc   = 50.82
+  final worst_acc = 42.83
+  final WCCA      = 25.88
+  final CFG       = 5.91
+
+gamma=0.9:
+  final avg_acc   = 46.72
+  final worst_acc = 38.16
+  final WCCA      = 19.32
+  final CFG       = 10.91
+```
+
+Interpretation:
+
+```text
+As gamma increases from 0.0 to 0.9 while alpha and other settings are fixed:
+  avg_acc drops by 5.45 points
+  worst_acc drops by 6.02 points
+  WCCA drops by 16.02 points
+  CFG rises by 8.37 points
+
+This is a strong initial signal that CLE-HFL exposes a RAHFL blind spot:
+RAHFL may learn corruption-label shortcuts under entanglement, causing hidden
+counterfactual class-corruption failures. The CLE-HFL scenario is therefore
+initially supported as a benchmark/failure-mode direction.
+```
+
+Important caveat:
+
+```text
+This proves the problem/failure mode exists under seed0 alpha=0.5, not that our
+future method has solved it. Next work must test/implement a method that improves
+WCCA and reduces CFG under gamma=0.9, preferably without sacrificing avg_acc.
 ```
 
 Local smoke test passed:

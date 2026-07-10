@@ -1,56 +1,173 @@
 # TODO Next
 
-## 2026-07-08 Immediate Diagnostic: Validate CLE-HFL Failure Mode
+## 2026-07-10 Immediate Run: FedCLEAR 12-Round OpenI Probe
 
-Do not implement full FedCLEAR yet.
+FedCLEAR v0.1 is implemented and the local two-round smoke test passed.
 
-First validate whether CLE-HFL is a real failure mode for RAHFL:
-
-```text
-Question:
-  As gamma increases, does RAHFL show lower WCCA and higher CFG?
-```
-
-Prepared CLE-HFL datasets:
+Do not spend the remaining OpenI budget on a 40-round run first. Run:
 
 ```text
-local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma00_seed0.tar.gz
-local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma06_seed0.tar.gz
-local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma09_seed0.tar.gz
+startup file:
+  scripts/openi_fedclear_entry.py
+
+runtime parameter:
+  --mode probe
+
+config selected by the entry:
+  configs/openi_v100_fedclear_cle_gamma09_probe.yaml
 ```
 
-RAHFL-only diagnostic configs:
+The probe setting is:
 
 ```text
-configs/diagnostic_rahfl_cle_alpha05_gamma00.yaml
-configs/diagnostic_rahfl_cle_alpha05_gamma06.yaml
-configs/diagnostic_rahfl_cle_alpha05_gamma09.yaml
+alpha=0.5
+gamma=0.9
+seed=0
+rounds=12
+local_epochs=1
+batch_size=64
+public_batches_per_round=4
+warmup_rounds=3
+full counterfactual test evaluation
 ```
 
-Launcher:
+Use the already uploaded OpenI dataset containing:
 
 ```text
-scripts/run_openi_cle_rahfl_diagnostic.sh
+cle_hfl_prepared_alpha05_gamma09_seed0.tar.gz
 ```
 
-Metrics to inspect:
+Primary decision metrics:
 
 ```text
 avg_acc
 worst_acc
-wcca
-cfg
-class_corruption_acc.csv
+WCCA          # higher is better
+CFG           # lower is better
+ccre_loss
+ccre_worst_view_risk
+ird_loss
+ird_anchor_disagreement
+ird_worst_view_kl
 ```
 
-Decision rule:
+Decision after 12 rounds:
 
 ```text
-If gamma=0.9 causes RAHFL WCCA to drop and CFG to rise while avg_acc remains
-less obviously degraded, CLE-HFL is a promising paper direction.
+Positive mechanism signal:
+  FedCLEAR WCCA is clearly above the matching RAHFL round-11 value,
+  CFG is lower, avg/worst trends are not collapsing, and all diagnostics are finite.
 
-If RAHFL keeps high WCCA and low CFG even at gamma=0.9, AugMix/JSD/DCL already
-mitigates this shortcut and full FedCLEAR is not worth implementing.
+Then:
+  run --mode full for 40 rounds.
+
+Negative mechanism signal:
+  WCCA does not improve, CFG does not fall, or anchor disagreement stays high.
+
+Then:
+  do not burn points on the 40-round run; inspect CCRE/IRD diagnostics first.
+```
+
+Current RAHFL 40-round gamma=0.9 reference:
+
+```text
+avg_acc=46.72
+worst_acc=38.16
+WCCA=19.32
+CFG=10.91
+```
+
+The fair early-round comparison must use the archived RAHFL metrics at the same
+round, not compare FedCLEAR round 11 directly with RAHFL round 39.
+
+The OpenI entry performs this comparison automatically. Same-round reference:
+
+```text
+RAHFL round 11:
+  avg_acc=37.4575
+  worst_acc=30.6950
+  WCCA=8.1500
+  CFG=9.7250
+
+RAHFL rounds 9-11 mean:
+  avg_acc=36.6488
+  worst_acc=30.4125
+  WCCA=8.1833
+  CFG=10.6558
+```
+
+## 2026-07-10 CLE-HFL Status: Failure Mode Initially Validated
+
+The first RAHFL-only CLE-HFL diagnostic has finished.
+
+Result archive and analysis:
+
+```text
+outputs/cle_rahfl_diagnostic_outputs.tar.gz
+outputs/cle_rahfl_diagnostic_analysis/
+```
+
+Fixed setting:
+
+```text
+alpha=0.5
+seed=0
+clients=4
+samples_per_client=10000
+baseline=RAHFL / AugMix-JSD + DCL + AsymHFL
+```
+
+CLE-HFL signal:
+
+```text
+gamma=0.0:
+  avg_acc=52.17, worst_acc=44.17, WCCA=35.35, CFG=2.54
+
+gamma=0.6:
+  avg_acc=50.82, worst_acc=42.83, WCCA=25.88, CFG=5.91
+
+gamma=0.9:
+  avg_acc=46.72, worst_acc=38.16, WCCA=19.32, CFG=10.91
+```
+
+Interpretation:
+
+```text
+As corruption-label entanglement gets stronger, RAHFL gets worse:
+  avg_acc   -5.45
+  worst_acc -6.02
+  WCCA      -16.02
+  CFG       +8.37
+
+This initially validates CLE-HFL as a failure-mode benchmark: RAHFL has hidden
+counterfactual class-corruption weakness under corruption-label shortcut.
+```
+
+Immediate research step is now implemented and awaiting the probe result:
+
+```text
+Test FedCLEAR for gamma=0.9 and determine whether it:
+  1. improves WCCA,
+  2. reduces CFG,
+  3. keeps avg_acc/worst_acc competitive with or better than RAHFL.
+```
+
+Experiments after a positive probe:
+
+```text
+1. Run the 40-round FedCLEAR gamma=0.9 full config.
+2. Run SARA + AsymHFL under CLE-HFL gamma=0.9 as a method baseline.
+3. Add at least one matched validation seed after a positive full result.
+4. Later, rerun gamma=0.0 and gamma=0.9 for FedCLEAR to show the
+   method specifically addresses entanglement, not only generic robustness.
+```
+
+Implemented method:
+
+```text
+FedCLEAR:
+  CCRE class-conditional counterfactual worst-risk learning
+  IRD invariant-anchor / shortcut-residual heterogeneous distillation
 ```
 
 ## 2026-07-08 Immediate Mainline: FedSARA-CS on Corruption-Skew

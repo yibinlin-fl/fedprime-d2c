@@ -32,6 +32,43 @@ EXPERIMENT_GUIDE_ZH.md
 
 Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older files may contain historical notes.
 
+## Current Mainline Override - 2026-07-10
+
+The newest research mainline supersedes the older corruption-skew note below:
+
+```text
+CLE-HFL + FedCLEAR
+FedCLEAR = CCRE + IRD
+```
+
+Read first:
+
+```text
+FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md
+```
+
+Implementation:
+
+```text
+fedprime/augmentations/counterfactual.py
+fedprime/methods/ccre.py
+fedprime/methods/ird.py
+fedprime/methods/local_fedclear.py
+fedprime/methods/fedclear.py
+```
+
+Immediate OpenI run:
+
+```text
+startup: scripts/openi_fedclear_entry.py
+runtime: --mode probe
+config:  configs/openi_v100_fedclear_cle_gamma09_probe.yaml
+```
+
+Do not run the 40-round full config until the 12-round probe shows higher WCCA,
+lower CFG, and non-collapsing avg/worst accuracy against the same-round RAHFL
+reference.
+
 ## Current Mainline
 
 New immediate experiment direction:

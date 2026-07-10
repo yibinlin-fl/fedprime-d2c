@@ -13,6 +13,7 @@ from fedprime.data.loaders import (
     build_augmix_private_loaders,
     build_corruption_skew_augmix_loaders,
     build_corruption_skew_pretrain_loaders,
+    build_fedclear_private_loaders,
     build_prime_dcl_private_loaders,
     build_private_loaders,
     build_public_loader,
@@ -25,8 +26,16 @@ from fedprime.data.loaders import (
 )
 from fedprime.methods.local_prime import train_local_prime_epoch
 from fedprime.methods.local_prime import train_local_prime_dcl_epoch
+from fedprime.methods.local_fedclear import train_local_fedclear_epoch
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
 from fedprime.methods.nir_dcl import NIRDCLFeatureQueue
+from fedprime.methods.ird import (
+    anchor_disagreement,
+    invariant_anchor,
+    leave_one_out_median,
+    smooth_worst_view_distillation,
+)
+from fedprime.augmentations.counterfactual import build_counterfactual_views
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.utils.config import save_config
 from fedprime.utils.env import resolve_device, seed_everything
@@ -43,6 +52,8 @@ class AsymHFLExperiment:
         save_config(config, self.output_dir / "config.resolved.json")
         seed_everything(int(config.get("seed", 0)))
         self._nir_dcl_queues: dict[int, NIRDCLFeatureQueue] = {}
+        self._last_ccre_metrics: dict[str, float] = {}
+        self._last_ird_metrics: dict[str, float] = {}
 
     def run(self) -> None:
         data_cfg = self.config["data"]
@@ -61,15 +72,25 @@ class AsymHFLExperiment:
         if scenario in {"corruption_skew", "cle_hfl"}:
             if use_prime:
                 raise ValueError(f"{scenario} currently supports AugMix/SARA-style local training, not PRIME.")
-            print(f"[setup] building {scenario} AugMix private loaders", flush=True)
-            private_loaders, test_loader, _, _ = build_corruption_skew_augmix_loaders(
-                root=data_cfg["private_root"],
-                num_clients=num_clients,
-                train_batch_size=train_cfg["batch_size"],
-                test_batch_size=train_cfg.get("test_batch_size", 512),
-                num_workers=int(self.config.get("num_workers", 2)),
-                augmix_module=method_cfg.get("augmix_module", "jsd"),
-            )
+            if str(method_cfg.get("cl_module", "dcl")).lower() == "ccre":
+                print(f"[setup] building {scenario} FedCLEAR private loaders", flush=True)
+                private_loaders, test_loader, _, _ = build_fedclear_private_loaders(
+                    root=data_cfg["private_root"],
+                    num_clients=num_clients,
+                    train_batch_size=train_cfg["batch_size"],
+                    test_batch_size=train_cfg.get("test_batch_size", 512),
+                    num_workers=int(self.config.get("num_workers", 2)),
+                )
+            else:
+                print(f"[setup] building {scenario} AugMix private loaders", flush=True)
+                private_loaders, test_loader, _, _ = build_corruption_skew_augmix_loaders(
+                    root=data_cfg["private_root"],
+                    num_clients=num_clients,
+                    train_batch_size=train_cfg["batch_size"],
+                    test_batch_size=train_cfg.get("test_batch_size", 512),
+                    num_workers=int(self.config.get("num_workers", 2)),
+                    augmix_module=method_cfg.get("augmix_module", "jsd"),
+                )
             pretrain_loaders = build_corruption_skew_pretrain_loaders(
                 root=data_cfg["private_root"],
                 num_clients=num_clients,
@@ -191,6 +212,11 @@ class AsymHFLExperiment:
                     "cfg",
                     "local_loss",
                     "col_loss",
+                    "ccre_loss",
+                    "ccre_worst_view_risk",
+                    "ird_loss",
+                    "ird_anchor_disagreement",
+                    "ird_worst_view_kl",
                 ],
             )
             writer.writeheader()
@@ -220,6 +246,9 @@ class AsymHFLExperiment:
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
                 if self._use_cara_communication(method_cfg):
                     accs_before, class_accs_before = self._evaluate_detailed(models, test_loader, num_classes)
+                elif self._use_ird_communication(method_cfg):
+                    accs_before = [0.0 for _ in range(num_clients)]
+                    class_accs_before = None
                 elif self._use_ccad_communication(method_cfg) and not self._ccad_uses_asymhfl_route(method_cfg):
                     accs_before = [0.0 for _ in range(num_clients)]
                     class_accs_before = None
@@ -235,6 +264,7 @@ class AsymHFLExperiment:
                     accs=accs_before,
                     class_accs=class_accs_before,
                     stats=stats,
+                    round_idx=round_idx,
                 )
                 print(f"[heartbeat] round {round_idx:03d} local phase", flush=True)
                 local_loss = self._local_phase(
@@ -248,9 +278,16 @@ class AsymHFLExperiment:
                     method_cfg=method_cfg,
                     stats=stats,
                     num_classes=num_classes,
+                    round_idx=round_idx,
                 )
-                accs = self._evaluate(models, test_loader)
-                group_summary = self._evaluate_corruption_groups(models, test_loader, group_names, num_classes)
+                if group_names:
+                    group_summary = self._evaluate_corruption_groups(models, test_loader, group_names, num_classes)
+                    accs = group_summary.get("client_accs")
+                    if accs is None:
+                        accs = self._evaluate(models, test_loader)
+                else:
+                    accs = self._evaluate(models, test_loader)
+                    group_summary = {}
                 row = {
                     "round": round_idx,
                     "avg_acc": sum(accs) / len(accs),
@@ -261,6 +298,11 @@ class AsymHFLExperiment:
                     "cfg": group_summary.get("cfg", ""),
                     "local_loss": local_loss,
                     "col_loss": col_loss,
+                    "ccre_loss": self._last_ccre_metrics.get("ccre_loss", ""),
+                    "ccre_worst_view_risk": self._last_ccre_metrics.get("ccre_worst_view_risk", ""),
+                    "ird_loss": self._last_ird_metrics.get("ird_loss", ""),
+                    "ird_anchor_disagreement": self._last_ird_metrics.get("ird_anchor_disagreement", ""),
+                    "ird_worst_view_kl": self._last_ird_metrics.get("ird_worst_view_kl", ""),
                 }
                 writer.writerow(row)
                 f.flush()
@@ -280,6 +322,18 @@ class AsymHFLExperiment:
                     for cc_row in group_summary.get("class_corruption_rows", []):
                         class_corruption_writer.writerow({"round": round_idx, **cc_row})
                     class_corruption_file.flush()
+                method_metrics = ""
+                if row["ccre_loss"] != "":
+                    method_metrics += (
+                        f"ccre_loss={float(row['ccre_loss']):.4f} "
+                        f"ccre_worst={float(row['ccre_worst_view_risk']):.4f} "
+                    )
+                if row["ird_loss"] != "":
+                    method_metrics += (
+                        f"ird_loss={float(row['ird_loss']):.4f} "
+                        f"anchor_dis={float(row['ird_anchor_disagreement']):.4f} "
+                        f"ird_worst_kl={float(row['ird_worst_view_kl']):.4f} "
+                    )
                 print(
                     f"[round {round_idx:03d}] "
                     f"avg_acc={row['avg_acc']:.2f} "
@@ -293,7 +347,8 @@ class AsymHFLExperiment:
                     )
                     +
                     f"local_loss={local_loss:.4f} "
-                    f"col_loss={col_loss:.4f}",
+                    f"col_loss={col_loss:.4f} "
+                    f"{method_metrics}".rstrip(),
                     flush=True,
                 )
 
@@ -328,16 +383,38 @@ class AsymHFLExperiment:
     def _use_cs_communication(self, method_cfg: dict) -> bool:
         return method_cfg.get("communication", "asymhfl").lower() in {"cs_asymhfl", "fedsara_cs"}
 
+    def _use_ird_communication(self, method_cfg: dict) -> bool:
+        return method_cfg.get("communication", "asymhfl").lower() in {"ird", "fedclear"}
+
     def _ccad_uses_asymhfl_route(self, method_cfg: dict) -> bool:
         if not self._use_ccad_communication(method_cfg):
             return False
         ccad_cfg = method_cfg.get("ccad", {})
         return float(ccad_cfg.get("base_asymhfl_weight", 0.0)) > 0
 
-    def _collaborative_phase(self, models, optimizers, public_loader, public_iter, accs, class_accs, stats) -> float:
+    def _collaborative_phase(
+        self,
+        models,
+        optimizers,
+        public_loader,
+        public_iter,
+        accs,
+        class_accs,
+        stats,
+        round_idx: int = 0,
+    ) -> float:
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
         method_cfg = self.config.get("method", {})
+        if self._use_ird_communication(method_cfg):
+            return self._ird_collaborative_phase(
+                models=models,
+                optimizers=optimizers,
+                public_loader=public_loader,
+                public_iter=public_iter,
+                stats=stats,
+                round_idx=round_idx,
+            )
         use_cara = self._use_cara_communication(method_cfg)
         use_ccad = self._use_ccad_communication(method_cfg)
         use_cs = self._use_cs_communication(method_cfg)
@@ -452,6 +529,121 @@ class AsymHFLExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    def _ird_collaborative_phase(
+        self,
+        models,
+        optimizers,
+        public_loader,
+        public_iter,
+        stats,
+        round_idx: int,
+    ) -> float:
+        method_cfg = self.config.get("method", {})
+        train_cfg = self.config.get("train", {})
+        ird_cfg = method_cfg.get("ird", {})
+        warmup_rounds = int(ird_cfg.get("warmup_rounds", 3))
+        if round_idx < warmup_rounds:
+            self._last_ird_metrics = {
+                "ird_loss": 0.0,
+                "ird_anchor_disagreement": 0.0,
+                "ird_worst_view_kl": 0.0,
+            }
+            print(
+                f"[heartbeat] IRD warmup round={round_idx:03d}/{warmup_rounds:03d}; communication skipped",
+                flush=True,
+            )
+            return 0.0
+
+        losses = []
+        disagreements = []
+        worst_view_kls = []
+        num_batches = int(train_cfg.get("public_batches_per_round", 1))
+        distill_temperature = float(ird_cfg.get("temperature", 2.0))
+        smooth_temperature = float(ird_cfg.get("smooth_temperature", 0.5))
+        lambda_ird = float(ird_cfg.get("lambda_ird", 1.0))
+        skip_nonfinite = bool(train_cfg.get("skip_nonfinite", False))
+        max_grad_norm = ird_cfg.get("max_grad_norm", train_cfg.get("max_grad_norm"))
+        base_seed = int(self.config.get("seed", 0))
+
+        for batch_idx in range(num_batches):
+            try:
+                images, _ = next(public_iter)
+            except StopIteration:
+                public_iter = iter(public_loader)
+                images, _ = next(public_iter)
+            images = images.to(self.device, non_blocking=True)
+            view_seed = base_seed + round_idx * 1_000_003 + batch_idx
+            raw_views, operator_names = build_counterfactual_views(images, ird_cfg, view_seed)
+            views = [normalize_batch(view, stats) for view in raw_views]
+
+            anchors: dict[int, torch.Tensor] = {}
+            for client_id in sorted(models):
+                model = models[client_id]
+                model.eval()
+                with torch.no_grad():
+                    logits_views = [forward_logits(model, view) for view in views]
+                    anchors[client_id] = invariant_anchor(logits_views).detach()
+            disagreement = anchor_disagreement(anchors)
+            disagreements.append(float(disagreement.detach().cpu()))
+
+            for client_id in sorted(models):
+                teacher_anchor = leave_one_out_median(anchors, client_id).detach()
+                model = models[client_id]
+                model.train()
+                student_logits_views = [forward_logits(model, view) for view in views]
+                result = smooth_worst_view_distillation(
+                    student_logits_views,
+                    teacher_anchor,
+                    distill_temperature=distill_temperature,
+                    smooth_temperature=smooth_temperature,
+                )
+                loss = lambda_ird * result.loss
+                if not torch.isfinite(loss):
+                    message = (
+                        f"IRD communication, round={round_idx}, client={client_id}: "
+                        f"non-finite loss at public batch {batch_idx}"
+                    )
+                    if skip_nonfinite:
+                        print(f"[warning] {message}; skipping update", flush=True)
+                        continue
+                    raise FloatingPointError(message)
+
+                optimizers[client_id].zero_grad(set_to_none=True)
+                loss.backward()
+                grads_finite = all(
+                    param.grad is None or bool(torch.isfinite(param.grad).all())
+                    for param in model.parameters()
+                )
+                if not grads_finite:
+                    optimizers[client_id].zero_grad(set_to_none=True)
+                    message = (
+                        f"IRD communication, round={round_idx}, client={client_id}: "
+                        f"non-finite gradient at public batch {batch_idx}"
+                    )
+                    if skip_nonfinite:
+                        print(f"[warning] {message}; skipping update", flush=True)
+                        continue
+                    raise FloatingPointError(message)
+                if max_grad_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
+                optimizers[client_id].step()
+                losses.append(float(loss.detach().cpu()))
+                worst_view_kls.append(float(result.worst_view_kl.detach().cpu()))
+
+            print(
+                f"[heartbeat] IRD round={round_idx:03d} public_batch={batch_idx + 1}/{num_batches} "
+                f"operators={','.join(operator_names)} "
+                f"anchor_dis={disagreements[-1]:.4f}",
+                flush=True,
+            )
+
+        self._last_ird_metrics = {
+            "ird_loss": sum(losses) / max(len(losses), 1),
+            "ird_anchor_disagreement": sum(disagreements) / max(len(disagreements), 1),
+            "ird_worst_view_kl": sum(worst_view_kls) / max(len(worst_view_kls), 1),
+        }
+        return self._last_ird_metrics["ird_loss"]
 
     def _cs_public_views(self, images: torch.Tensor, stats, cs_cfg: dict) -> dict[str, torch.Tensor]:
         probe_groups = list(cs_cfg.get("probe_groups", ["clean", "noise", "blur", "weather", "digital"]))
@@ -846,11 +1038,47 @@ class AsymHFLExperiment:
             counts[int(client_id)] = torch.bincount(client_labels, minlength=num_classes).float()
         return counts
 
-    def _local_phase(self, models, optimizers, private_loaders, prime_aug, use_prime, use_prime_dcl, train_cfg, method_cfg, stats, num_classes: int) -> float:
+    def _local_phase(
+        self,
+        models,
+        optimizers,
+        private_loaders,
+        prime_aug,
+        use_prime,
+        use_prime_dcl,
+        train_cfg,
+        method_cfg,
+        stats,
+        num_classes: int,
+        round_idx: int = 0,
+    ) -> float:
         losses = []
+        ccre_diagnostics = []
         for client_id, loader in enumerate(private_loaders):
             for _ in range(int(train_cfg.get("local_epochs", 1))):
-                if use_prime:
+                if str(method_cfg.get("cl_module", "dcl")).lower() == "ccre":
+                    epoch_diagnostics: dict[str, float] = {}
+                    loss = train_local_fedclear_epoch(
+                        model=models[client_id],
+                        loader=loader,
+                        optimizer=optimizers[client_id],
+                        normalizer=lambda x: normalize_batch(x, stats),
+                        device=self.device,
+                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
+                        ccre_cfg=method_cfg.get("ccre", {}),
+                        view_cfg=method_cfg.get("counterfactual_views", {}),
+                        round_idx=round_idx,
+                        client_id=client_id,
+                        seed=int(self.config.get("seed", 0)),
+                        client_class_counts=getattr(self, "_client_class_counts", {}).get(client_id),
+                        max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=train_cfg.get("max_grad_norm"),
+                        skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
+                        log_interval=train_cfg.get("local_log_interval"),
+                        diagnostics=epoch_diagnostics,
+                    )
+                    ccre_diagnostics.append(epoch_diagnostics)
+                elif use_prime:
                     if use_prime_dcl:
                         loss = train_local_prime_dcl_epoch(
                             model=models[client_id],
@@ -895,6 +1123,13 @@ class AsymHFLExperiment:
                         log_interval=train_cfg.get("local_log_interval"),
                     )
                 losses.append(loss)
+        if ccre_diagnostics:
+            self._last_ccre_metrics = {
+                key: sum(item.get(key, 0.0) for item in ccre_diagnostics) / len(ccre_diagnostics)
+                for key in ("ccre_loss", "ccre_worst_view_risk")
+            }
+        else:
+            self._last_ccre_metrics = {}
         return sum(losses) / max(len(losses), 1)
 
     def _pretrain_phase(self, models, optimizers, private_loaders, pretrain_epochs: int, train_cfg: dict) -> None:
@@ -938,13 +1173,16 @@ class AsymHFLExperiment:
 
     def _evaluate(self, models, test_loader) -> list[float]:
         accs = []
+        max_test_batches = self.config.get("train", {}).get("max_test_batches")
         for client_id in sorted(models):
             model = models[client_id]
             model.eval()
             correct = 0
             total = 0
             with torch.no_grad():
-                for batch in test_loader:
+                for batch_idx, batch in enumerate(test_loader):
+                    if max_test_batches is not None and batch_idx >= int(max_test_batches):
+                        break
                     images, labels, _ = self._unpack_batch(batch)
                     images = images.to(self.device, non_blocking=True)
                     labels = labels.to(self.device, non_blocking=True).long()
@@ -958,6 +1196,7 @@ class AsymHFLExperiment:
     def _evaluate_detailed(self, models, test_loader, num_classes: int) -> tuple[list[float], dict[int, torch.Tensor]]:
         accs = []
         class_accs = {}
+        max_test_batches = self.config.get("train", {}).get("max_test_batches")
         for client_id in sorted(models):
             model = models[client_id]
             model.eval()
@@ -966,7 +1205,9 @@ class AsymHFLExperiment:
             class_correct = torch.zeros(num_classes, dtype=torch.float64)
             class_total = torch.zeros(num_classes, dtype=torch.float64)
             with torch.no_grad():
-                for batch in test_loader:
+                for batch_idx, batch in enumerate(test_loader):
+                    if max_test_batches is not None and batch_idx >= int(max_test_batches):
+                        break
                     images, labels, _ = self._unpack_batch(batch)
                     images = images.to(self.device, non_blocking=True)
                     labels = labels.to(self.device, non_blocking=True).long()
@@ -995,11 +1236,13 @@ class AsymHFLExperiment:
             return {}
         num_groups = len(group_names)
         client_results = {}
+        client_accs = []
         class_corruption_rows = []
         group_correct_total = torch.zeros(num_groups, dtype=torch.float64)
         group_total_total = torch.zeros(num_groups, dtype=torch.float64)
         class_group_correct_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
         class_group_total_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
+        max_test_batches = self.config.get("train", {}).get("max_test_batches")
 
         for client_id in sorted(models):
             model = models[client_id]
@@ -1009,7 +1252,9 @@ class AsymHFLExperiment:
             class_group_correct = torch.zeros(num_classes, num_groups, dtype=torch.float64)
             class_group_total = torch.zeros(num_classes, num_groups, dtype=torch.float64)
             with torch.no_grad():
-                for batch in test_loader:
+                for batch_idx, batch in enumerate(test_loader):
+                    if max_test_batches is not None and batch_idx >= int(max_test_batches):
+                        break
                     images, labels, corruption_ids = self._unpack_batch(batch)
                     if corruption_ids is None:
                         return {}
@@ -1038,6 +1283,9 @@ class AsymHFLExperiment:
                 group_names[group_id]: float(acc[group_id])
                 for group_id in range(num_groups)
             }
+            client_accs.append(
+                100.0 * float(group_correct.sum().item()) / max(float(group_total.sum().item()), 1.0)
+            )
             class_group_acc = 100.0 * class_group_correct / class_group_total.clamp_min(1.0)
             for class_id in range(num_classes):
                 for group_id in range(num_groups):
@@ -1075,6 +1323,7 @@ class AsymHFLExperiment:
         return {
             "groups": group_values,
             "clients": client_results,
+            "client_accs": client_accs,
             "worst_group_acc": min(group_values.values()) if group_values else 0.0,
             "worst_client_group_acc": worst_client_group,
             "wcca": wcca,

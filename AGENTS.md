@@ -40,6 +40,24 @@ The newest candidate is:
 CLE-HFL + FedEASE v2.1
 ```
 
+Latest corrective probe implementation - 2026-07-20:
+
+```text
+communication: ebst_v2
+pair-qualified sources + recipient LOO teacher + source-agreement gate
++ class-wise SCP + per-class communication norm cap
+```
+
+Run only:
+
+```text
+scripts/openi_fedease_entry.py --mode=ebst_v2_probe
+```
+
+Config: `configs/openi_v100_fedease_ebst_v2_probe.yaml`.
+Guide: `FEDEASE_EBST_V2_OPENI_RUN_ZH.md`.
+The old dataset `openi_cle_rahfl_diagnostic` is sufficient. Do not run full mode.
+
 Read first:
 
 ```text
@@ -72,8 +90,32 @@ fedprime/engine/cle_metrics.py
 
 Formal OpenI entry: `scripts/openi_fedease_entry.py`.
 Read `FEDEASE_OPENI_RUN_GUIDE_ZH.md` and run `--mode=oracle_probe` first.
-The complete code is not yet a positive research result. Do not run `--mode=full`
-unless Oracle BER+CDep, PEW, and Oracle EBST pass their staged gates.
+The complete code is not yet a positive research result. Do not run `--mode=full`:
+Oracle BER+CDep passed, but the Oracle EBST communication probe failed.
+
+EBST probe result - 2026-07-20:
+
+```text
+BER+CDep local final Avg/Worst/WCCA/CFG = 41.6206/35.5175/14.000/6.155
+BER+CDep+EBST+SCP final                 = 38.7038/34.7225/15.325/6.415
+delta                                  = -2.9169/-0.7950/+1.325/+0.260
+```
+
+Current EBST is an archived negative communication result. It was active, but
+caused severe class-specific regression on client 2. Do not tune its lambda or
+run full mode blindly. Redesign pairwise source eligibility and recipient/class
+specific safety before another communication experiment.
+
+Oracle probe result - 2026-07-20:
+
+```text
+control final Avg/Worst/WCCA/CFG = 37.5813/30.1100/13.70/10.855
+BER+CDep final                  = 41.6206/35.5175/14.00/6.155
+delta                           = +4.0394/+5.4075/+0.30/-4.70
+```
+
+The local mechanism gate passed. The subsequent `--mode=ebst_probe` failed as
+recorded above. Do not run full mode.
 
 ## Current Mainline Override - 2026-07-11
 

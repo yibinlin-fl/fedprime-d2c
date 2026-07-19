@@ -33,8 +33,8 @@ class FedEASEExperiment(AsymHFLExperiment):
         if environment_mode not in {"oracle", "learned"}:
             raise ValueError("FedEASE environment_mode must be oracle or learned.")
         communication = str(method_cfg.get("communication", "none")).lower()
-        if communication not in {"none", "local_only", "ebst"}:
-            raise ValueError("FedEASE communication must be none/local_only or ebst.")
+        if communication not in {"none", "local_only", "ebst", "ebst_v2"}:
+            raise ValueError("FedEASE communication must be none/local_only, ebst, or ebst_v2.")
         super().__init__(config)
 
     def run(self) -> None:

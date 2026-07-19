@@ -14,6 +14,7 @@ from fedprime.methods.environment_structural_transfer import (
 )
 from fedprime.methods.safe_communication_projection import (
     add_projected_gradients,
+    project_classifier_gradients_by_class,
     project_communication_gradients,
 )
 from fedprime.models.factory import forward_logits
@@ -204,7 +205,11 @@ def train_local_fedease_epoch(
         if use_ebst_update:
             valid_classes = global_relation_state["global_valid"].bool()
             if client_supported_classes is not None:
-                valid_classes = valid_classes & client_supported_classes.cpu().bool()
+                supported = client_supported_classes.cpu().bool()
+                if valid_classes.ndim == 1:
+                    valid_classes = valid_classes & supported
+                else:
+                    valid_classes = valid_classes & supported.unsqueeze(1)
             relation_logits = head(clean_feature.detach())
             ebst_loss, ebst_stats = ebst_alignment_loss(
                 relation_logits,
@@ -244,12 +249,24 @@ def train_local_fedease_epoch(
                 create_graph=False,
                 allow_unused=True,
             ))
-            projected_gradients, scp_stats = project_communication_gradients(
-                primary_gradients,
-                communication_gradients,
-                enabled=bool(scp_cfg.get("enabled", False)),
-                eps=float(scp_cfg.get("eps", 1.0e-12)),
-            )
+            scp_scope = str(scp_cfg.get("scope", "classifier_head")).lower()
+            if scp_scope in {"classifier_class", "class", "class_row", "per_class"}:
+                projected_gradients, scp_stats = project_classifier_gradients_by_class(
+                    primary_gradients,
+                    communication_gradients,
+                    enabled=bool(scp_cfg.get("enabled", False)),
+                    max_communication_norm_ratio=float(
+                        scp_cfg.get("max_communication_norm_ratio", 1.0)
+                    ),
+                    eps=float(scp_cfg.get("eps", 1.0e-12)),
+                )
+            else:
+                projected_gradients, scp_stats = project_communication_gradients(
+                    primary_gradients,
+                    communication_gradients,
+                    enabled=bool(scp_cfg.get("enabled", False)),
+                    eps=float(scp_cfg.get("eps", 1.0e-12)),
+                )
             add_projected_gradients(head_parameters, projected_gradients, scale=lambda_ebst)
         else:
             primary_loss.backward()

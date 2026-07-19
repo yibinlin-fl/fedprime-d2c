@@ -1,6 +1,139 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-19
+Updated: 2026-07-20
+
+## Latest Implementation: EBST-v2 Corrective Communication Probe - 2026-07-20
+
+The failed legacy EBST path remains available as `communication: ebst`. A new
+switchable corrective path is implemented as `communication: ebst_v2`:
+
+```text
+pair-source eligibility requiring support for both c and competing class j
++ recipient-specific leave-one-out relation teachers
++ cross-environment and cross-client agreement gate
++ class-wise classifier SCP with communication-gradient norm cap
++ three-round relation warmup
+```
+
+Formal OpenI files:
+
+```text
+config: configs/openi_v100_fedease_ebst_v2_probe.yaml
+entry:  scripts/openi_fedease_entry.py --mode=ebst_v2_probe
+guide:  FEDEASE_EBST_V2_OPENI_RUN_ZH.md
+```
+
+Verification:
+
+```text
+24 targeted FedEASE tests passed
+OpenI entry dry-run passed
+two-round four-model real-data smoke passed without NaN
+smoke EBST-v2 valid_pairs=0.770, mean_gate=0.698
+smoke class-wise SCP conflict fraction=0.538, projection norm ratio=0.611
+```
+
+The debug smoke uses deliberately relaxed source thresholds only to execute the
+path. The formal config requires at least two eligible leave-one-out sources and
+uses the same 12-round budget as the stored Oracle BER+CDep local baseline.
+Clients expose only thresholded support masks for source qualification; exact
+class counts are removed before server aggregation.
+This implementation is not yet a positive experimental result.
+
+## Latest Result: FedEASE Oracle EBST Probe Failed Its Communication Gate - 2026-07-20
+
+Archive:
+
+```text
+outputs/fedease_ebst_probe_outputs.tar.gz
+```
+
+Matching 12-round comparison on CLE-HFL `alpha=0.5, gamma=0.9, seed=0`:
+
+```text
+Oracle BER+CDep local:       Avg=41.6206, Worst=35.5175, WCCA=14.000, CFG=6.155
+Oracle BER+CDep+EBST+SCP:   Avg=38.7038, Worst=34.7225, WCCA=15.325, CFG=6.415
+Communication delta:        Avg=-2.9169, Worst=-0.7950, WCCA=+1.325, CFG=+0.260
+```
+
+The EBST path was active rather than silently skipped:
+
+```text
+mean EBST loss=0.1392
+mean gate=0.3905
+valid environment fraction=1.0
+mean SCP conflict rate=0.4531
+mean SCP projection norm ratio=0.9808
+```
+
+The main failure is concentrated in client 2, whose final accuracy falls from
+`45.2175` to `34.7225`. Its class 2/6/7/9 accuracies fall by roughly
+`29.60/35.17/22.40/32.20` points. Final worst corruption-group accuracy also
+falls from `40.4150` to `38.2700`.
+
+Interpretation:
+
+```text
+Oracle BER+CDep remains a positive local mechanism.
+Current EBST communication is a negative result and must not enter full mode.
+The environment-stability gate does not measure recipient-specific or
+cross-client relation conflict, and head-level SCP is too coarse to prevent
+class-specific negative transfer.
+Do not run PEW+EBST full training or tune lambda blindly.
+```
+
+Immediate research decision: freeze the current EBST implementation as a failed
+probe. Diagnose/redefine source eligibility and recipient-level communication
+safety before spending another full run; PEW can be tested independently only
+if its deployability question is worth the remaining compute budget.
+
+## Latest Result: FedEASE Oracle BER+CDep Probe Passed - 2026-07-20
+
+Archive:
+
+```text
+outputs/fedease_oracle_probe_outputs.tar.gz
+```
+
+Matching 12-round local-only A/B on CLE-HFL `alpha=0.5, gamma=0.9, seed=0`:
+
+```text
+Oracle control final:  Avg=37.5813, Worst=30.1100, WCCA=13.70, CFG=10.855
+Oracle BER+CDep final: Avg=41.6206, Worst=35.5175, WCCA=14.00, CFG= 6.155
+Delta:                 Avg=+4.0394, Worst=+5.4075, WCCA=+0.30, CFG=-4.70
+```
+
+The result is broad rather than client-specific:
+
+```text
+all four clients improve final accuracy
+worst corruption-group accuracy: 34.1575 -> 40.4150
+worst client-corruption accuracy: 25.30 -> 34.78
+last-5 WCCA mean: 8.91 -> 16.22
+last-5 CFG mean: 10.948 -> 5.4805
+```
+
+Same-round RAHFL+AsymHFL at round 11 was `37.4575/30.695/8.15/9.725`, so the
+Oracle local candidate is better at the same 12-round budget. This is not yet a
+claim against the 40-round RAHFL final `46.72/38.1575/19.325/10.91`.
+
+Interpretation boundary:
+
+```text
+BER+CDep jointly pass the mechanism Go/No-Go gate.
+The experiment does not identify whether BER or CDep contributes more.
+CDep is active on about three valid classes per minibatch, but its covariance
+surrogate does not clearly decline, so attribution still needs later ablation.
+```
+
+The next run recorded at that point was:
+
+```text
+scripts/openi_fedease_entry.py --mode=ebst_probe
+```
+
+That EBST probe is now complete and failed the communication gate as recorded above.
+Do not run `--mode=full`.
 
 ## Latest Override: FedEASE v2.1 Complete Candidate - 2026-07-19
 

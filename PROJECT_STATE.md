@@ -1,6 +1,70 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
+
+## FedEASE EBST-v2 Corrective Implementation - 2026-07-20
+
+Implemented a separate EBST-v2 route without changing the archived legacy EBST:
+
+```text
+communication: ebst_v2
+```
+
+The correction directly addresses the failed probe:
+
+```text
+source eligibility is now class-pair specific;
+each recipient receives a leave-one-out teacher;
+the gate includes cross-client relation disagreement;
+SCP projects and caps each classifier class row independently;
+formal communication starts after three warmup rounds.
+```
+
+The formal 12-round OpenI probe is configured in
+`configs/openi_v100_fedease_ebst_v2_probe.yaml`. Targeted tests report `24 passed`,
+and a two-round real-data smoke exercised LOO aggregation and class-wise SCP with
+finite losses and gradients. Research effectiveness is still unknown until the
+OpenI probe completes.
+
+## FedEASE Oracle EBST Communication Probe - Negative Result - 2026-07-20
+
+The 12-round Oracle EBST probe completed on the same CLE-HFL
+`alpha=0.5, gamma=0.9, seed=0` setting as the positive local probe.
+
+```text
+Oracle BER+CDep local:       Avg=41.6206, Worst=35.5175, WCCA=14.000, CFG=6.155
+Oracle BER+CDep+EBST+SCP:   Avg=38.7038, Worst=34.7225, WCCA=15.325, CFG=6.415
+EBST delta:                  Avg=-2.9169, Worst=-0.7950, WCCA=+1.325, CFG=+0.260
+```
+
+EBST executed normally (`mean loss=0.1392`, `mean gate=0.3905`, valid environment
+fraction `1.0`). SCP detected conflicts in about `45.31%` of batches, but retained
+about `98.08%` of the communication-gradient norm. Client 2 collapsed from
+`45.2175` to `34.7225`; this dominates the average-accuracy regression.
+
+Therefore the result rejects the current EBST communication design, not the
+Oracle BER+CDep local mechanism. Full FedEASE and PEW+EBST training are blocked
+until communication is redesigned. No claim should be made that the current
+stability gate or SCP prevents negative transfer.
+
+## FedEASE Oracle Local Formal Probe Result - 2026-07-20
+
+The first formal FedEASE mechanism probe completed successfully on OpenI using
+the existing gamma=0.9 CLE-HFL package. Both experiments are local-only and use
+the same data, seed, models, optimizer, round count, and batch budget.
+
+```text
+Oracle control:       Avg=37.5813, Worst=30.1100, WCCA=13.70, CFG=10.855
+Oracle BER+CDep:      Avg=41.6206, Worst=35.5175, WCCA=14.00, CFG= 6.155
+Delta:                Avg=+4.0394, Worst=+5.4075, WCCA=+0.30, CFG=-4.70
+```
+
+All clients and all corruption groups improve. The final worst corruption-group
+accuracy rises by `+6.2575`, and worst client-corruption accuracy rises by `+9.48`.
+The automatic Go/No-Go decision is `pass=true`.
+
+This validates the joint Oracle BER+CDep local mechanism, not PEW, and does not
+separate BER from CDep. The subsequent Oracle EBST probe failed as recorded above.
 
 ## FedEASE v2.1 Complete Candidate Implementation - 2026-07-19
 

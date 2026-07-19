@@ -37,7 +37,9 @@ from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
 from fedprime.methods.conditional_dependence import FrozenRandomProjector
 from fedprime.methods.environment_structural_transfer import (
     aggregate_environment_balanced_relations,
+    aggregate_leave_one_out_pair_relations,
     finalize_client_relations,
+    finalize_pair_qualified_client_relations,
     new_relation_accumulator,
 )
 from fedprime.engine.cle_metrics import evaluate_cle_split, write_cle_evaluation
@@ -80,6 +82,7 @@ class AsymHFLExperiment:
         self._fedease_projectors: dict[int, FrozenRandomProjector] = {}
         self._fedease_client_relations: dict[int, dict[str, torch.Tensor]] = {}
         self._fedease_global_relation: dict[str, torch.Tensor | float] | None = None
+        self._fedease_recipient_relations: dict[int, dict[str, torch.Tensor | float]] = {}
         self._fedease_evaluation_loaders = {}
 
     def run(self) -> None:
@@ -308,6 +311,8 @@ class AsymHFLExperiment:
                     "fedease_scp_conflict_rate",
                     "fedease_scp_projection_norm_ratio",
                     "fedease_ebst_valid_environment_fraction",
+                    "fedease_ebst_valid_pair_fraction",
+                    "fedease_ebst_mean_source_count",
                     "fedease_ebst_mean_gate",
                 ],
             )
@@ -432,6 +437,16 @@ class AsymHFLExperiment:
                         if self._fedease_global_relation is not None
                         else ""
                     ),
+                    "fedease_ebst_valid_pair_fraction": (
+                        self._fedease_global_relation.get("valid_pair_fraction", "")
+                        if self._fedease_global_relation is not None
+                        else ""
+                    ),
+                    "fedease_ebst_mean_source_count": (
+                        self._fedease_global_relation.get("mean_source_count", "")
+                        if self._fedease_global_relation is not None
+                        else ""
+                    ),
                     "fedease_ebst_mean_gate": (
                         self._fedease_global_relation.get("mean_gate", "")
                         if self._fedease_global_relation is not None
@@ -488,6 +503,12 @@ class AsymHFLExperiment:
                             f"ebst={float(row['fedease_ebst_loss']):.4f} "
                             f"scp_conflict={float(row['fedease_scp_conflict_rate']):.2f} "
                             f"gate={float(row['fedease_ebst_mean_gate']):.3f} "
+                            + (
+                                f"valid_pairs={float(row['fedease_ebst_valid_pair_fraction']):.3f} "
+                                f"sources={float(row['fedease_ebst_mean_source_count']):.2f} "
+                                if row["fedease_ebst_valid_pair_fraction"] != ""
+                                else ""
+                            )
                             if row["fedease_ebst_mean_gate"] != ""
                             else f"ebst={float(row['fedease_ebst_loss']):.4f} "
                         )
@@ -552,7 +573,16 @@ class AsymHFLExperiment:
         return method_cfg.get("communication", "asymhfl").lower() in {"pccd", "fedclear_pccd"}
 
     def _use_ebst_communication(self, method_cfg: dict) -> bool:
-        return method_cfg.get("communication", "asymhfl").lower() in {"ebst", "fedease"}
+        return method_cfg.get("communication", "asymhfl").lower() in {
+            "ebst",
+            "ebst_v2",
+            "fedease",
+        }
+
+    def _use_ebst_v2(self, method_cfg: dict) -> bool:
+        communication = method_cfg.get("communication", "asymhfl").lower()
+        ebst_cfg = method_cfg.get("fedease", {}).get("ebst", {})
+        return communication == "ebst_v2" or int(ebst_cfg.get("version", 1)) >= 2
 
     def _ccad_uses_asymhfl_route(self, method_cfg: dict) -> bool:
         if not self._use_ccad_communication(method_cfg):
@@ -713,17 +743,44 @@ class AsymHFLExperiment:
         return sum(losses) / max(len(losses), 1)
 
     def _ebst_collaborative_phase(self, round_idx: int) -> float:
-        fedease_cfg = self.config.get("method", {}).get("fedease", {})
+        method_cfg = self.config.get("method", {})
+        fedease_cfg = method_cfg.get("fedease", {})
         ebst_cfg = fedease_cfg.get("ebst", fedease_cfg.get("structural_transfer", {}))
         warmup_rounds = int(ebst_cfg.get("warmup_rounds", 1))
         if round_idx < warmup_rounds or not self._fedease_client_relations:
             self._fedease_global_relation = None
+            self._fedease_recipient_relations = {}
             print(
                 f"[heartbeat] EBST warmup round={round_idx:03d}/{warmup_rounds:03d}; "
                 "waiting for client relation statistics",
                 flush=True,
             )
             return 0.0
+        if self._use_ebst_v2(method_cfg):
+            result = aggregate_leave_one_out_pair_relations(
+                self._fedease_client_relations,
+                min_source_clients=int(ebst_cfg.get("min_source_clients", 2)),
+                use_stability_gate=bool(ebst_cfg.get("stability_gate", {}).get("enabled", False)),
+                variance_temperature=float(
+                    ebst_cfg.get("stability_gate", {}).get(
+                        "variance_temperature",
+                        ebst_cfg.get("variance_temperature", 0.5),
+                    )
+                ),
+                eps=float(ebst_cfg.get("eps", 1.0e-6)),
+            )
+            self._fedease_recipient_relations = result.pop("recipients")
+            self._fedease_global_relation = result
+            print(
+                f"[heartbeat] EBST-v2 LOO aggregated round={round_idx:03d} "
+                f"valid_env={result['valid_environment_fraction']:.3f} "
+                f"valid_pairs={result['valid_pair_fraction']:.3f} "
+                f"sources={result['mean_source_count']:.2f} "
+                f"mean_gate={result['mean_gate']:.3f}",
+                flush=True,
+            )
+            return 0.0
+        self._fedease_recipient_relations = {}
         self._fedease_global_relation = aggregate_environment_balanced_relations(
             self._fedease_client_relations,
             use_stability_gate=bool(ebst_cfg.get("stability_gate", {}).get("enabled", False)),
@@ -1451,7 +1508,11 @@ class AsymHFLExperiment:
                         context=f"FedEASE local phase, round={round_idx}, client={client_id}",
                         diagnostics=epoch_diagnostics,
                         relation_accumulator=relation_accumulator,
-                        global_relation_state=self._fedease_global_relation,
+                        global_relation_state=(
+                            self._fedease_recipient_relations.get(client_id)
+                            if self._use_ebst_v2(method_cfg)
+                            else self._fedease_global_relation
+                        ),
                         client_supported_classes=(
                             getattr(self, "_client_class_environment_counts", {})
                             .get(client_id, torch.empty(0))
@@ -1530,11 +1591,21 @@ class AsymHFLExperiment:
                     )
                 losses.append(loss)
             if relation_accumulator is not None:
-                round_relation_states[client_id] = finalize_client_relations(
-                    relation_accumulator,
-                    min_group_support=int(ebst_cfg.get("min_group_support", 4)),
-                    eps=float(ebst_cfg.get("eps", 1.0e-6)),
-                )
+                if self._use_ebst_v2(method_cfg):
+                    round_relation_states[client_id] = finalize_pair_qualified_client_relations(
+                        relation_accumulator,
+                        min_group_support=int(ebst_cfg.get("min_group_support", 4)),
+                        min_competing_class_support=int(
+                            ebst_cfg.get("min_pair_class_support", 16)
+                        ),
+                        eps=float(ebst_cfg.get("eps", 1.0e-6)),
+                    )
+                else:
+                    round_relation_states[client_id] = finalize_client_relations(
+                        relation_accumulator,
+                        min_group_support=int(ebst_cfg.get("min_group_support", 4)),
+                        eps=float(ebst_cfg.get("eps", 1.0e-6)),
+                    )
         if round_relation_states:
             self._fedease_client_relations = round_relation_states
         if ccre_diagnostics:

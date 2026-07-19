@@ -1,5 +1,87 @@
 # TODO Next
 
+## 2026-07-20 Immediate Run: EBST-v2 Corrective Probe
+
+Run one experiment on the existing OpenI CLE-HFL gamma=0.9 dataset:
+
+```text
+startup: scripts/openi_fedease_entry.py
+argument: --mode=ebst_v2_probe
+config: configs/openi_v100_fedease_ebst_v2_probe.yaml
+```
+
+Do not rerun the local baseline. Compare against the stored Oracle BER+CDep result:
+
+```text
+41.6206 / 35.5175 / WCCA 14.000 / CFG 6.155
+```
+
+Continue only if the v2 probe reaches approximately:
+
+```text
+Avg > 42.1, Worst > 36.0, WCCA >= 14.0, CFG <= 6.2
+```
+
+Do not run PEW/full while this communication gate is unresolved.
+
+## 2026-07-20 EBST Probe Decision: Stop Full FedEASE Expansion
+
+The Oracle EBST communication probe is complete:
+
+```text
+BER+CDep local:       41.6206 / 35.5175 / WCCA 14.000 / CFG 6.155
+BER+CDep+EBST+SCP:   38.7038 / 34.7225 / WCCA 15.325 / CFG 6.415
+delta:                -2.9169 / -0.7950 / +1.325 / +0.260
+```
+
+Decision:
+
+```text
+Do not run --mode=full.
+Do not promote current EBST as the communication contribution.
+Do not spend a run only tuning EBST lambda.
+Keep Oracle BER+CDep as the validated positive local mechanism.
+```
+
+Before another communication run, redesign and unit-test these two missing safeguards:
+
+```text
+1. relation source eligibility must require trustworthy support for both classes
+   in each pair, not only support for the true class;
+2. transfer safety must be recipient/class specific, because the current global
+   classifier-head SCP hides severe per-class conflicts.
+```
+
+The next compute run is intentionally undecided. A PEW-only local probe answers
+whether learned environments preserve the Oracle local gain, but it does not fix
+the communication failure. Run it only if that deployability evidence is currently
+more valuable than redesigning communication.
+
+## 2026-07-20 Next Run: Oracle EBST Communication Probe
+
+The Oracle local mechanism gate passed:
+
+```text
+control final:       37.5813 / 30.1100 / WCCA 13.70 / CFG 10.855
+BER+CDep final:      41.6206 / 35.5175 / WCCA 14.00 / CFG  6.155
+candidate delta:     +4.0394 / +5.4075 / +0.30 / -4.70
+```
+
+Run next on the existing `openi_cle_rahfl_diagnostic` dataset:
+
+```text
+startup: scripts/openi_fedease_entry.py
+argument: --mode=ebst_probe
+config:  configs/openi_v100_fedease_ebst_probe.yaml
+```
+
+This adds only `EBST + stability gate + SCP` to Oracle BER+CDep. It keeps PEW out
+of the experiment so communication can be judged without environment-estimation error.
+
+This experiment is complete and failed the gate: average and worst accuracy fell,
+and CFG increased slightly. The historical instructions above are retained only
+to document the decision process.
+
 ## 2026-07-19 Immediate Mainline: FedEASE v2.1 Formal Probe Sequence
 
 Current implementation scope:

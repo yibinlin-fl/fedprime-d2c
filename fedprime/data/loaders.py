@@ -697,15 +697,28 @@ def build_public_loader(
     num_workers: int,
     seed: int,
     download: bool,
+    public_dataset: str = "cifar100",
 ):
     transform = T.Compose([T.ToTensor()])
-    try:
-        ds = datasets.CIFAR100(str(cifar100_root), train=True, transform=transform, download=download)
-    except Exception as exc:
-        print(f"torchvision CIFAR-100 loader failed: {exc}")
-        print("Falling back to direct cifar-100-python.tar.gz reader.")
-        images, targets = _cifar100_train_from_tar(cifar100_root)
+    public_dataset = str(public_dataset).lower()
+    if public_dataset == "cifar10_npy":
+        root = Path(cifar100_root)
+        image_path = root / "public_images.npy"
+        if not image_path.is_file():
+            raise FileNotFoundError(f"Missing in-domain public images: {image_path}")
+        images = np.load(image_path)
+        targets = np.zeros(len(images), dtype=np.int64)
         ds = NumpyImageClassificationDataset(images, targets, transform=transform)
+    elif public_dataset == "cifar100":
+        try:
+            ds = datasets.CIFAR100(str(cifar100_root), train=True, transform=transform, download=download)
+        except Exception as exc:
+            print(f"torchvision CIFAR-100 loader failed: {exc}")
+            print("Falling back to direct cifar-100-python.tar.gz reader.")
+            images, targets = _cifar100_train_from_tar(cifar100_root)
+            ds = NumpyImageClassificationDataset(images, targets, transform=transform)
+    else:
+        raise ValueError(f"Unsupported public dataset: {public_dataset}")
     rng = np.random.default_rng(seed)
     indices = rng.choice(np.arange(len(ds)), size=min(public_size, len(ds)), replace=False)
     subset = data.Subset(ds, indices.tolist())

@@ -1,6 +1,175 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-10
+Updated: 2026-07-19
+
+## Latest Override: FedEASE v2.1 Complete Candidate - 2026-07-19
+
+Current research candidate:
+
+```text
+CLE-HFL + FedEASE v2.1
+```
+
+Read first:
+
+```text
+FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
+```
+
+The full planned method is:
+
+```text
+RAHFL robust local base
++ BER/CDep class-conditional environment invariance
++ EBST environment-balanced structural communication
++ optional SCP negative-transfer protection
+```
+
+The complete switchable candidate is now implemented:
+
+```text
+Oracle or learned PEW environments
++ BER replacing clean CE
++ fixed-random-projection CDep
++ AugMix/JSD/DCL preserved
++ EBST environment-balanced relation communication
++ stability gate and classifier-head SCP
++ clean/same/random/swapped/unseen evaluation
+```
+
+Core files:
+
+```text
+fedprime/data/fedease.py
+fedprime/methods/balanced_environment_risk.py
+fedprime/methods/conditional_dependence.py
+fedprime/methods/environment_witness.py
+fedprime/methods/environment_structural_transfer.py
+fedprime/methods/safe_communication_projection.py
+fedprime/methods/local_fedease.py
+fedprime/methods/fedease.py
+fedprime/engine/cle_metrics.py
+scripts/openi_fedease_entry.py
+```
+
+Formal configs:
+
+```text
+configs/openi_v100_fedease_oracle_control_probe.yaml
+configs/openi_v100_fedease_oracle_ber_cdep_probe.yaml
+configs/openi_v100_fedease_pew_probe.yaml
+configs/openi_v100_fedease_ebst_probe.yaml
+configs/openi_v100_fedease_full.yaml
+```
+
+Verification:
+
+```text
+compile check passed
+19 targeted FedEASE tests passed
+OpenI entry dry-run passed
+two-round four-model real-data EBST smoke completed with finite losses/gradients
+all five evaluation splits executed
+```
+
+The smoke result is interface validation only, not a research result. PEW/EBST/gate/SCP are
+implemented but have no formal effectiveness result yet. The whole legacy test directory was
+not completed because an unrelated Matplotlib/NumPy native crash occurs in
+`tests/test_analyze_priors.py`; targeted FedEASE tests are green.
+
+Prepared OpenI package and guide:
+
+```text
+local_runs/cle_hfl_prepared/fedease_cle_prepared_alpha05_gamma09_seed0.tar.gz
+size: about 623.29 MiB
+FEDEASE_OPENI_RUN_GUIDE_ZH.md
+entry: scripts/openi_fedease_entry.py
+first mode: --mode=oracle_probe
+```
+
+Immediate decision experiment:
+
+```text
+Oracle local control vs Oracle BER+CDep on the same gamma=0.9 data.
+Only run PEW/EBST formal probes if WCCA improves, CFG falls, and Avg/Worst do not collapse.
+Do not run the 40-round full mode first.
+```
+
+## Latest Override: FedCLEAR-PCCD - 2026-07-11
+
+FedCLEAR v0.1 (`CCRE + IRD`) has completed a 40-round `gamma=0.9` run and is a
+negative result:
+
+```text
+RAHFL:       avg=46.72, worst=38.16, WCCA=19.32, CFG=10.91
+FedCLEAR v0.1 avg=45.41, worst=36.42, WCCA=17.80, CFG=11.42
+```
+
+CCRE reduced its surrogate risk, but private counterfactual views retained the
+original corruption shortcut. IRD anchor disagreement remained high (last-10
+mean about 0.891), so the cross-domain median teacher was not reliable.
+
+The latest method is:
+
+```text
+FedCLEAR-PCCD
+  fixed local base: AugMix + CE + JSD + DCL
+  new communication: Paired Counterfactual Consensus Distillation
+```
+
+Read first:
+
+```text
+FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md
+```
+
+PCCD implementation:
+
+```text
+fedprime/methods/pccd.py
+fedprime/methods/fedclear_pccd.py
+fedprime/methods/rahfl_asymhfl.py
+scripts/prepare_cle_in_domain_public.py
+scripts/import_cle_public_data.py
+scripts/analyze_pccd_probe.py
+scripts/openi_fedclear_pccd_entry.py
+```
+
+Disjoint public split verified locally:
+
+```text
+private=40000 unique CIFAR-10 train indices
+public=5000 indices sampled only from the private complement
+reserved=5000 remaining indices
+package:
+local_runs/cle_hfl_indomain_public/cle_hfl_indomain_public_alpha05_gamma09_seed0.tar.gz
+```
+
+Matching probe configs differ only in method identity and communication:
+
+```text
+configs/openi_v100_rahfl_cle_indomain_probe.yaml
+configs/openi_v100_fedclear_pccd_probe.yaml
+```
+
+Verification completed:
+
+```text
+PCCD/FedCLEAR unit tests: 13 passed
+config fairness test: passed
+2-round four-model PCCD smoke: passed
+legacy RAHFL CLE regression smoke: passed
+OpenI entry dry-run and comparison analyzer: passed
+```
+
+Do not run PCCD for 40 rounds until its matching 12-round probe has:
+
+```text
+avg delta >= +1.5
+worst delta >= +1.0
+WCCA delta >= +4.0
+CFG delta <= -1.5
+```
 
 ## FedCLEAR Implementation Mainline - 2026-07-10
 

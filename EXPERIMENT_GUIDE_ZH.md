@@ -12,6 +12,23 @@ EXPERIMENT_GUIDE_ZH.md
 TODO_NEXT.md
 ```
 
+## 2026-07-19 FedEASE v2.1 正式实验覆盖
+
+当前 CLE-HFL 主线的最新运行说明位于：
+
+```text
+FEDEASE_OPENI_RUN_GUIDE_ZH.md
+```
+
+正式顺序是：
+
+```text
+oracle_probe -> pew_probe -> ebst_probe -> full
+```
+
+必须先完成 12+12 轮 Oracle control 与 Oracle BER+CDep 的匹配 A/B；在 WCCA、CFG、
+Avg/Worst 门槛通过前，不运行 40 轮完整版。旧的 D2C、PAIR、PRAC、SARA 配置均属于历史实验。
+
 ## 一、当前实验目标
 
 项目目标是在以下三个条件同时存在时，与 RAHFL 正面对比：

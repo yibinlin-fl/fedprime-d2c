@@ -12,6 +12,47 @@ TODO_NEXT.md
 
 When resuming work, read these three files first.
 
+## 2026-07-19 Architecture Override
+
+The current candidate is CLE-HFL + FedEASE v2.1. The detailed theory and exact
+implementation boundary are documented in:
+
+```text
+FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
+```
+
+Current code architecture:
+
+```text
+CLE Oracle or PEW environment loader
+  -> AugMix/JSD/DCL robust local path
+  -> BER replaces clean CE using client-local class-environment counts
+  -> fixed random projection or PEW environment embedding
+  -> class-conditional environment dependence penalty
+  -> local class x environment x class relation accumulation
+  -> server environment-balanced structural aggregation
+  -> cross-environment stability gate
+  -> classifier-head EBST alignment with SCP
+  -> clean/same/random/swapped/unseen evaluation
+```
+
+Formal entry and staged configs:
+
+```text
+scripts/openi_fedease_entry.py
+configs/openi_v100_fedease_oracle_control_probe.yaml
+configs/openi_v100_fedease_oracle_ber_cdep_probe.yaml
+configs/openi_v100_fedease_pew_probe.yaml
+configs/openi_v100_fedease_ebst_probe.yaml
+configs/openi_v100_fedease_full.yaml
+```
+
+This is a complete candidate implementation, not a validated positive result.
+The first formal run is `--mode=oracle_probe`.
+
+The older D2C, PRAC-HFL, SARA, FedCLEAR, and PCCD sections below are historical
+code maps and must not override the current FedEASE memory.
+
 ## Project Goal
 
 FedPRIME-D2C targets robust heterogeneous federated learning under:
@@ -837,6 +878,27 @@ evaluate noise / blur / weather / digital corruption groups
 
 ## Kaggle Commands
 
+Current FedPRIME-PAIR runs should be launched from a **Python streaming
+launcher cell** in Kaggle, not from a long `%%bash` cell. The streaming launcher
+should clone/pull the repo, verify `git log -1 --oneline` is `8a4ee15` or
+later, then call:
+
+```bash
+RUN_DEBUG=1 PYTHONUNBUFFERED=1 bash scripts/run_kaggle_pair.sh
+```
+
+Reason:
+
+```text
+Kaggle may buffer %%bash stdout until the command exits.
+The Python launcher streams subprocess output line by line and prints a driver
+heartbeat every 60 seconds.
+Do not call sys.stdout.reconfigure in Kaggle notebooks.
+```
+
+The older commands below are kept for the historical FedPRIME-D2C comparison
+route.
+
 Default urgent comparison:
 
 ```bash
@@ -883,6 +945,66 @@ bash scripts/run_kaggle.sh \
 ```
 
 ## Quick Result Judgment
+
+## 2026-06-29 Active Architecture: PRAC-HFL
+
+The active architecture is:
+
+```text
+PRAC-HFL = RAHFL local robust training + receiver-adaptive safe communication
+```
+
+RAHFL local robust training is reused as the strong base:
+
+```text
+AugMix multi-view loader
+CE classification loss
+JSD consistency loss
+DCLLoss from RAHFL-master/loss.py
+```
+
+PRAC-HFL changes only the communication phase. Instead of RAHFL AsymHFL selecting teachers by global performance, each receiver client privately tests whether a teacher helps its own route batch.
+
+Communication phase:
+
+```text
+public logits -> candidate teacher set -> head-only virtual KD -> private route CE risk delta
+-> classwise positive-effect weights -> mixed teacher -> accept-batch safety gate
+```
+
+Important implementation detail:
+
+```text
+PRAC-HFL currently updates only the classifier head during virtual teacher testing and accepted mixed-teacher KD.
+This is intentional for stability and speed, and targets the Non-IID classifier-boundary bias.
+```
+
+Main files:
+
+```text
+fedprime/methods/prac_hfl.py
+fedprime/methods/local_rahfl.py
+configs/kaggle_t4_prac_hfl.yaml
+scripts/run_kaggle_prac.sh
+```
+
+Historical modules:
+
+```text
+fedprime/methods/fedprime_d2c.py      # historical diagnostic, not active mainline
+fedprime/methods/fedprime_pair.py     # historical diagnostic, not active mainline
+fedprime/methods/cpad.py              # historical diagnostic, not active mainline
+```
+
+Current evidence:
+
+```text
+RAHFL unified runner final: avg_acc=56.41, worst_acc=44.72.
+First unstable PRAC-HFL run reached round 028:
+  PRAC avg_acc=53.86 vs same-round RAHFL avg_acc=53.21.
+  PRAC worst_acc=39.52 vs same-round RAHFL worst_acc=41.64.
+Round 029 produced NaN; safe PRAC-HFL config was introduced and must be rerun.
+```
 
 For the first short run, do not judge only by round-5 absolute accuracy.
 

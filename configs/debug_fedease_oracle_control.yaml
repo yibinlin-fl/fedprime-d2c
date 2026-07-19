@@ -1,0 +1,64 @@
+experiment_name: debug_fedease_oracle_control
+method_name: fedease
+seed: 0
+device: auto
+num_workers: 0
+output_root: outputs
+
+data:
+  scenario: cle_hfl
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_cle/alpha05_gamma09_seed0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 0
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 0
+  rounds: 1
+  local_epochs: 1
+  batch_size: 32
+  test_batch_size: 256
+  public_batch_size: 64
+  public_batches_per_round: 0
+  max_local_batches: 2
+  max_test_batches: 2
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 1
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: fedease
+  lambda_jsd: 12.0
+  communication: none
+  fedease:
+    environment_mode: oracle
+    num_environments: 4
+    preserve_dcl: true
+    ber:
+      enabled: false
+      support_gamma: 0.0
+      count_cap: 32
+      min_group_count: 1
+    cdep:
+      enabled: false
+      projection_dim: 64
+      min_class_count: 3
+      lambda: 0.05
+      eps: 1.0e-5
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true

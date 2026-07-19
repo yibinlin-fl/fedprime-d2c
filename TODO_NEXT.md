@@ -1,5 +1,132 @@
 # TODO Next
 
+## 2026-07-19 Immediate Mainline: FedEASE v2.1 Formal Probe Sequence
+
+Current implementation scope:
+
+```text
+Complete switchable candidate implemented:
+Oracle/PEW + BER + CDep + EBST + stability gate + SCP
++ clean/same/random/swapped/unseen evaluation
+```
+
+Implementation completion is not evidence of effectiveness. Do not run the 40-round full method first.
+
+First decision experiment:
+
+```text
+OpenI entry: scripts/openi_fedease_entry.py
+runtime parameter: --mode=oracle_probe
+A. configs/openi_v100_fedease_oracle_control_probe.yaml
+D. configs/openi_v100_fedease_oracle_ber_cdep_probe.yaml
+```
+
+The two formal configs already match on:
+
+```text
+alpha=0.5
+gamma=0.9
+seed=0
+models=ResNet10/ResNet12/ShuffleNet/MobileNetV2
+optimizer
+rounds
+batch budget
+test split
+```
+
+Decision metrics:
+
+```text
+Avg and Worst: must not collapse
+WCCA: higher is better
+CFG: lower is better
+CDep valid classes: must remain nonzero often enough
+CDep covariance: should decline over training without accuracy collapse
+```
+
+If the joint method is positive, run `--mode=pew_probe`, then `--mode=ebst_probe`.
+If it is negative, stop formal FedEASE expansion even though later modules are already coded.
+
+Current data can be reused directly:
+
+```text
+local_runs/cle_hfl_prepared/cle_hfl_prepared_alpha05_gamma09_seed0/
+```
+
+OpenI should upload the complete prepared package:
+
+```text
+local_runs/cle_hfl_prepared/fedease_cle_prepared_alpha05_gamma09_seed0.tar.gz
+```
+
+Implemented formal sequence:
+
+```text
+1. --mode=oracle_probe  # 12 + 12 rounds, control vs BER+CDep
+2. --mode=pew_probe     # 5-epoch PEW + 12-round learned BER+CDep
+3. --mode=ebst_probe    # 12-round Oracle BER+CDep+EBST+gate+SCP
+4. --mode=full          # 20-epoch PEW + 40-round complete method
+```
+
+Read `FEDEASE_OPENI_RUN_GUIDE_ZH.md` before creating the OpenI task.
+
+## 2026-07-11 Immediate Run: Matching RAHFL vs FedCLEAR-PCCD Probe
+
+FedCLEAR v0.1 (`CCRE + IRD`) is frozen as a negative result. Do not tune it or
+run more seeds.
+
+Latest method:
+
+```text
+FedCLEAR-PCCD = fixed AugMix/JSD/DCL local base + PCCD communication
+```
+
+First upload the new public package alongside the existing CLE gamma=0.9 private package:
+
+```text
+local_runs/cle_hfl_indomain_public/
+  cle_hfl_indomain_public_alpha05_gamma09_seed0.tar.gz
+```
+
+OpenI startup:
+
+```text
+scripts/openi_fedclear_pccd_entry.py
+```
+
+Run the two matching tasks, preferably separately so each output is recoverable:
+
+```text
+--method rahfl
+--method pccd
+```
+
+Configs:
+
+```text
+configs/openi_v100_rahfl_cle_indomain_probe.yaml
+configs/openi_v100_fedclear_pccd_probe.yaml
+```
+
+Both runs use the exact same private data, in-domain unlabeled public 5k,
+models, optimizer, local module, batch budgets, seed, and 12 rounds. The only
+method difference is AsymHFL vs PCCD.
+
+After both outputs are available, run or let the entry run:
+
+```text
+scripts/analyze_pccd_probe.py
+```
+
+Only run 40 rounds if all tail-mean gates pass:
+
+```text
+avg_acc delta   >= +1.5
+worst_acc delta >= +1.0
+WCCA delta      >= +4.0
+CFG delta       <= -1.5
+```
+
 ## 2026-07-10 Immediate Run: FedCLEAR 12-Round OpenI Probe
 
 FedCLEAR v0.1 is implemented and the local two-round smoke test passed.

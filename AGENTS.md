@@ -32,42 +32,91 @@ EXPERIMENT_GUIDE_ZH.md
 
 Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older files may contain historical notes.
 
-## Current Mainline Override - 2026-07-10
+## Current Mainline Override - 2026-07-19
 
-The newest research mainline supersedes the older corruption-skew note below:
+The newest candidate is:
 
 ```text
-CLE-HFL + FedCLEAR
-FedCLEAR = CCRE + IRD
+CLE-HFL + FedEASE v2.1
 ```
 
 Read first:
 
 ```text
-FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md
+FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
+```
+
+The complete switchable candidate is implemented:
+
+```text
+Oracle or learned PEW environment
++ BER + fixed-random-projection CDep
++ preserved AugMix/JSD/DCL
++ EBST + stability gate + classifier-head SCP
++ clean/same/random/swapped/unseen evaluation
+```
+
+Core files:
+
+```text
+fedprime/data/fedease.py
+fedprime/methods/balanced_environment_risk.py
+fedprime/methods/conditional_dependence.py
+fedprime/methods/environment_witness.py
+fedprime/methods/environment_structural_transfer.py
+fedprime/methods/safe_communication_projection.py
+fedprime/methods/local_fedease.py
+fedprime/methods/fedease.py
+fedprime/engine/cle_metrics.py
+```
+
+Formal OpenI entry: `scripts/openi_fedease_entry.py`.
+Read `FEDEASE_OPENI_RUN_GUIDE_ZH.md` and run `--mode=oracle_probe` first.
+The complete code is not yet a positive research result. Do not run `--mode=full`
+unless Oracle BER+CDep, PEW, and Oracle EBST pass their staged gates.
+
+## Current Mainline Override - 2026-07-11
+
+The newest research mainline supersedes the older FedCLEAR v0.1 and corruption-skew notes below:
+
+```text
+CLE-HFL + FedCLEAR-PCCD
+FedCLEAR-PCCD = fixed AugMix/JSD/DCL local base + paired counterfactual consensus distillation
+```
+
+Read first:
+
+```text
+FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md
 ```
 
 Implementation:
 
 ```text
-fedprime/augmentations/counterfactual.py
-fedprime/methods/ccre.py
-fedprime/methods/ird.py
-fedprime/methods/local_fedclear.py
-fedprime/methods/fedclear.py
+fedprime/methods/pccd.py
+fedprime/methods/fedclear_pccd.py
+fedprime/methods/rahfl_asymhfl.py
+scripts/prepare_cle_in_domain_public.py
+scripts/openi_fedclear_pccd_entry.py
 ```
 
-Immediate OpenI run:
+FedCLEAR v0.1 (`CCRE + IRD`) is a completed negative result:
 
 ```text
-startup: scripts/openi_fedclear_entry.py
-runtime: --mode probe
-config:  configs/openi_v100_fedclear_cle_gamma09_probe.yaml
+gamma=0.9 final: avg=45.41, worst=36.42, WCCA=17.80, CFG=11.42
+matching RAHFL:   avg=46.72, worst=38.16, WCCA=19.32, CFG=10.91
 ```
 
-Do not run the 40-round full config until the 12-round probe shows higher WCCA,
-lower CFG, and non-collapsing avg/worst accuracy against the same-round RAHFL
-reference.
+Immediate next experiment is a matching 12-round A/B probe with the same
+unlabeled in-domain CIFAR-10 public pool:
+
+```text
+RAHFL: configs/openi_v100_rahfl_cle_indomain_probe.yaml
+PCCD:  configs/openi_v100_fedclear_pccd_probe.yaml
+entry: scripts/openi_fedclear_pccd_entry.py --method rahfl|pccd|both
+```
+
+Do not run a 40-round PCCD experiment unless the probe passes all avg/worst/WCCA/CFG gates.
 
 ## Current Mainline
 

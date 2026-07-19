@@ -11,6 +11,8 @@ if str(ROOT) not in sys.path:
 from fedprime.methods.fedprime_d2c import FedPrimeD2CExperiment
 from fedprime.methods.fedprime_pair import FedPrimePairExperiment
 from fedprime.methods.fedclear import FedClearExperiment
+from fedprime.methods.fedclear_pccd import FedClearPCCDExperiment
+from fedprime.methods.fedease import FedEASEExperiment
 from fedprime.methods.prac_hfl import PRACHFLExperiment
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.utils.config import load_config
@@ -29,6 +31,10 @@ def main() -> None:
         FedPrimePairExperiment(config).run()
     elif method == "fedclear":
         FedClearExperiment(config).run()
+    elif method == "fedclear_pccd":
+        FedClearPCCDExperiment(config).run()
+    elif method == "fedease":
+        FedEASEExperiment(config).run()
     elif method == "prac_hfl":
         PRACHFLExperiment(config).run()
     elif method in {"rahfl", "rahfl_prime", "fedcara", "fedsara_cs"}:

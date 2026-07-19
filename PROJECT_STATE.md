@@ -1,6 +1,63 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-07-08
+Last updated: 2026-07-19
+
+## FedEASE v2.1 Complete Candidate Implementation - 2026-07-19
+
+The full switchable candidate is now implemented for CLE-HFL:
+
+```text
+PEW learned environment estimation
++ Oracle/learned BER and CDep
++ EBST environment-balanced structural communication
++ cross-environment stability gate
++ classifier-head SCP negative-transfer protection
++ clean/same/random/swapped/unseen evaluation
+```
+
+Formal OpenI files:
+
+```text
+scripts/openi_fedease_entry.py
+configs/openi_v100_fedease_oracle_control_probe.yaml
+configs/openi_v100_fedease_oracle_ber_cdep_probe.yaml
+configs/openi_v100_fedease_pew_probe.yaml
+configs/openi_v100_fedease_ebst_probe.yaml
+configs/openi_v100_fedease_full.yaml
+FEDEASE_OPENI_RUN_GUIDE_ZH.md
+```
+
+Prepared upload artifact:
+
+```text
+local_runs/cle_hfl_prepared/fedease_cle_prepared_alpha05_gamma09_seed0.tar.gz
+about 623.29 MiB
+```
+
+Verification completed:
+
+```text
+Python compile passed
+19 targeted FedEASE tests passed
+OpenI entry dry-run passed
+two-round four-model real-data EBST smoke passed
+all five evaluation splits executed
+```
+
+Smoke diagnostics at round 1:
+
+```text
+avg/worst=12.11/9.38 (not a research result)
+EBST loss=0.4411
+valid environment fraction=0.650
+mean gate=0.406
+SCP conflict rate=0.75
+no NaN/non-finite gradient
+```
+
+Research status remains unvalidated. The first formal task is `--mode=oracle_probe`.
+Do not infer that PEW or EBST is effective from smoke tests, and do not run the 40-round
+full candidate before the staged Oracle/PEW/EBST gates pass.
 
 ## FedSARA-CS Corruption-Skew Protocol - 2026-07-08
 

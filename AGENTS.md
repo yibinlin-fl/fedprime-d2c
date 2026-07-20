@@ -40,6 +40,35 @@ The newest candidate is:
 CLE-HFL + FedEASE v2.1
 ```
 
+Immediate executable probe - 2026-07-21:
+
+```text
+learned PEW + BER+CDep + EBST-v2 + class-wise SCP
+entry: scripts/openi_fedease_entry.py --mode=pew_ebst_v2_probe
+config: configs/openi_v100_fedease_pew_ebst_v2_probe.yaml
+```
+
+PEW now restores the best public-validation epoch and calibrates its unknown
+threshold on the synthetic public validation split. The old
+`openi_cle_rahfl_diagnostic` dataset remains sufficient. This is a 12-round
+Go/No-Go probe, not a full run. If it regresses against stored PEW local
+`40.3694/35.4225/WCCA 13.925/CFG 6.370`, stop the hard-taxonomy communication
+route and redesign PEW/BER/EBST around continuous environment embeddings.
+
+Latest learned PEW result - 2026-07-20:
+
+```text
+control final Avg/Worst/WCCA/CFG       = 37.5813/30.1100/13.700/10.855
+Oracle BER+CDep                        = 41.6206/35.5175/14.000/6.155
+learned PEW BER+CDep                   = 40.3694/35.4225/13.925/6.370
+PEW vs control                         = +2.7881/+5.3125/+0.225/-4.485
+```
+
+PEW passed the frozen Worst/WCCA/CFG gates and missed Avg by `0.1306`. Private
+exact group accuracy is only `38.83%`, but most Oracle tail/CFG gain remains.
+Validation-based PEW checkpoint selection and unknown-threshold calibration are
+now implemented. Run only the combination probe above. Do not run full mode yet.
+
 Latest corrective probe implementation - 2026-07-20:
 
 ```text
@@ -48,15 +77,19 @@ pair-qualified sources + recipient LOO teacher + source-agreement gate
 + class-wise SCP + per-class communication norm cap
 ```
 
-Run only:
+The corrective probe has completed:
 
 ```text
-scripts/openi_fedease_entry.py --mode=ebst_v2_probe
+BER+CDep local final Avg/Worst/WCCA/CFG = 41.6206/35.5175/14.000/6.155
+BER+CDep+EBST-v2 final                  = 41.9469/36.2275/14.700/5.190
+final delta                            = +0.3263/+0.7100/+0.700/-0.965
+last-five mean Avg delta               = -0.1648
 ```
 
 Config: `configs/openi_v100_fedease_ebst_v2_probe.yaml`.
 Guide: `FEDEASE_EBST_V2_OPENI_RUN_ZH.md`.
-The old dataset `openi_cle_rahfl_diagnostic` is sufficient. Do not run full mode.
+The old dataset `openi_cle_rahfl_diagnostic` is sufficient. The safety correction
+worked, but the average-accuracy gate failed. Do not run full mode.
 
 Read first:
 
@@ -116,6 +149,17 @@ delta                           = +4.0394/+5.4075/+0.30/-4.70
 
 The local mechanism gate passed. The subsequent `--mode=ebst_probe` failed as
 recorded above. Do not run full mode.
+
+EBST-v2 corrective result - 2026-07-20:
+
+```text
+pair-qualified LOO transfer removed the legacy client-2 collapse;
+final Worst/WCCA/CFG improved, but last-five Avg was 0.1648 below local-only;
+therefore EBST-v2 is safety-correct but not a validated positive communication gain.
+```
+
+Next communication work must add recipient-class acceptance/trust-region safety.
+Do not spend a run merely tuning `lambda`.
 
 ## Current Mainline Override - 2026-07-11
 

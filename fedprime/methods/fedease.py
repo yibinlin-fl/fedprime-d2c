@@ -10,6 +10,7 @@ from fedprime.methods.environment_witness import (
     PEW_ENVIRONMENT_NAMES,
     PublicEnvironmentWitness,
     build_public_environment_loaders,
+    calibrate_unknown_threshold,
     infer_environment_annotations,
     load_environment_witness,
     save_environment_witness,
@@ -56,12 +57,13 @@ class FedEASEExperiment(AsymHFLExperiment):
             )
 
         checkpoint = Path(pew_cfg.get("checkpoint", self.output_dir / "pew.pt"))
-        if checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True)):
-            print(f"[setup] loading PEW checkpoint: {checkpoint}", flush=True)
-            witness = load_environment_witness(checkpoint, self.device)
-            history = []
-        else:
-            print("[setup] training PEW from unlabeled CIFAR-100 corruptions", flush=True)
+        threshold_setting = pew_cfg.get("unknown_threshold", 0.55)
+        calibration_requested = str(threshold_setting).lower() == "auto"
+        train_loader = None
+        validation_loader = None
+        if calibration_requested or not (
+            checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True))
+        ):
             train_loader, validation_loader = build_public_environment_loaders(
                 data_cfg["public_root"],
                 public_size=int(pew_cfg.get("public_size", data_cfg.get("public_size", 5000))),
@@ -70,6 +72,13 @@ class FedEASEExperiment(AsymHFLExperiment):
                 seed=int(self.config.get("seed", 0)),
                 validation_fraction=float(pew_cfg.get("validation_fraction", 0.2)),
             )
+        if checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True)):
+            print(f"[setup] loading PEW checkpoint: {checkpoint}", flush=True)
+            witness = load_environment_witness(checkpoint, self.device)
+            history = []
+        else:
+            print("[setup] training PEW from unlabeled CIFAR-100 corruptions", flush=True)
+            assert train_loader is not None and validation_loader is not None
             witness = PublicEnvironmentWitness(
                 embedding_dim=int(pew_cfg.get("embedding_dim", 32)),
                 num_environments=len(PEW_ENVIRONMENT_NAMES),
@@ -87,6 +96,14 @@ class FedEASEExperiment(AsymHFLExperiment):
             )
             save_environment_witness(witness, checkpoint)
             print(f"[setup] saved PEW checkpoint: {checkpoint}", flush=True)
+
+        calibration = None
+        if calibration_requested:
+            assert validation_loader is not None
+            calibration = calibrate_unknown_threshold(witness, validation_loader, self.device)
+            unknown_threshold = float(calibration["threshold"])
+        else:
+            unknown_threshold = float(threshold_setting)
 
         if history:
             with (self.output_dir / "pew_training.csv").open("w", newline="", encoding="utf-8") as handle:
@@ -108,7 +125,7 @@ class FedEASEExperiment(AsymHFLExperiment):
                 images,
                 self.device,
                 batch_size=int(pew_cfg.get("inference_batch_size", 512)),
-                confidence_threshold=float(pew_cfg.get("unknown_threshold", 0.55)),
+                confidence_threshold=unknown_threshold,
             )
             oracle = np.load(client_root / "train_corruption_ids.npy").astype(np.int64) + 1
             private_correct += int((annotation["environment_ids"] == oracle).sum())
@@ -127,6 +144,8 @@ class FedEASEExperiment(AsymHFLExperiment):
             "private_group_accuracy": 100.0 * private_correct / max(private_total, 1),
             "private_samples": private_total,
             "checkpoint": str(checkpoint),
+            "unknown_threshold": unknown_threshold,
+            "calibration": calibration,
         }
         (self.output_dir / "pew_private_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"

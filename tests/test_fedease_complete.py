@@ -14,7 +14,7 @@ from fedprime.methods.environment_structural_transfer import (
     normalize_margin_rows,
     update_relation_accumulator,
 )
-from fedprime.methods.environment_witness import PublicEnvironmentWitness
+from fedprime.methods.environment_witness import PublicEnvironmentWitness, select_unknown_threshold
 from fedprime.methods.safe_communication_projection import (
     project_classifier_gradients_by_class,
     project_communication_gradients,
@@ -31,6 +31,25 @@ def test_public_environment_witness_outputs_environment_severity_and_embedding()
     assert environment.shape == (4, 6)
     assert severity.shape == (4, 5)
     assert embedding.shape == (4, 16)
+
+
+def test_unknown_threshold_calibration_prefers_public_validation_accuracy():
+    probabilities = torch.tensor(
+        [
+            [0.60, 0.10, 0.10, 0.10, 0.05, 0.05],
+            [0.24, 0.20, 0.16, 0.15, 0.13, 0.12],
+            [0.05, 0.05, 0.05, 0.05, 0.10, 0.70],
+        ]
+    )
+    targets = torch.tensor([0, 5, 5])
+    result = select_unknown_threshold(
+        probabilities,
+        targets,
+        unknown_id=5,
+        thresholds=torch.tensor([0.0, 0.3, 0.8]),
+    )
+    assert result["threshold"] == torch.tensor(0.3).item()
+    assert result["accuracy"] == 1.0
 
 
 def test_relation_rows_are_invariant_to_positive_logit_scale():
@@ -215,5 +234,17 @@ def test_ebst_v2_probe_matches_local_probe_training_budget():
     for key in ("data", "models", "train", "seed", "device"):
         assert local[key] == candidate[key]
     assert candidate["method"]["communication"] == "ebst_v2"
+    assert candidate["method"]["fedease"]["ebst"]["version"] == 2
+    assert candidate["method"]["fedease"]["scp"]["scope"] == "classifier_class"
+
+
+def test_pew_ebst_v2_probe_combines_only_validated_switches():
+    local = load_config(ROOT / "configs/openi_v100_fedease_pew_probe.yaml")
+    candidate = load_config(ROOT / "configs/openi_v100_fedease_pew_ebst_v2_probe.yaml")
+    for key in ("data", "models", "train", "seed", "device"):
+        assert local[key] == candidate[key]
+    assert candidate["method"]["communication"] == "ebst_v2"
+    assert candidate["method"]["fedease"]["environment_mode"] == "learned"
+    assert candidate["method"]["fedease"]["pew"]["unknown_threshold"] == "auto"
     assert candidate["method"]["fedease"]["ebst"]["version"] == 2
     assert candidate["method"]["fedease"]["scp"]["scope"] == "classifier_class"

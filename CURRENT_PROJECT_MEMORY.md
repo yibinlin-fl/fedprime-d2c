@@ -1,6 +1,149 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-20
+Updated: 2026-07-21
+
+## Immediate Run: Calibrated Learned PEW + EBST-v2 - 2026-07-21
+
+Implemented the final 12-round hard-environment-taxonomy combination probe:
+
+```text
+entry:  scripts/openi_fedease_entry.py --mode=pew_ebst_v2_probe
+config: configs/openi_v100_fedease_pew_ebst_v2_probe.yaml
+guide:  FEDEASE_PEW_EBST_V2_OPENI_RUN_ZH.md
+```
+
+The correction restores the PEW epoch with the highest synthetic public
+validation environment accuracy and selects the unknown-rejection threshold on
+that same public validation split. It never uses CIFAR-10 test labels for model
+selection. The candidate combines learned PEW + BER+CDep with the previously
+safety-corrected EBST-v2 and class-wise SCP; all previous configs remain intact.
+
+Verification:
+
+```text
+26 targeted tests passed;
+formal config dependency/path check passed;
+two-round four-model real-data smoke executed calibration, LOO aggregation,
+EBST loss, class-wise SCP, and extended evaluation without NaN.
+```
+
+The stored PEW local comparison point is:
+
+```text
+Avg=40.3694, Worst=35.4225, WCCA=13.925, CFG=6.370
+```
+
+This run is the final Go/No-Go test for the current hard six-way PEW route. If
+communication regresses against the stored PEW local result, do not run 40
+rounds or tune only lambda. Redesign the deployable method using continuous
+environment embeddings, soft anchors, Soft-BER, and Soft-EBST. The four CIFAR-C
+groups may remain an evaluation taxonomy, but should no longer be a hard method
+assumption.
+
+## Latest Result: Learned PEW Preserves Most Oracle Local Gain - Near Pass - 2026-07-20
+
+Archive:
+
+```text
+outputs/fedease_pew_probe_outputs.tar.gz
+```
+
+Matching 12-round CLE-HFL `alpha=0.5, gamma=0.9, seed=0` comparison:
+
+```text
+Oracle local control:  Avg=37.5813, Worst=30.1100, WCCA=13.700, CFG=10.855
+Oracle BER+CDep:       Avg=41.6206, Worst=35.5175, WCCA=14.000, CFG= 6.155
+Learned PEW BER+CDep: Avg=40.3694, Worst=35.4225, WCCA=13.925, CFG= 6.370
+```
+
+Learned PEW relative to control:
+
+```text
+Avg=+2.7881, Worst=+5.3125, WCCA=+0.225, CFG=-4.485
+```
+
+Learned PEW relative to Oracle BER+CDep:
+
+```text
+Avg=-1.2513, Worst=-0.0950, WCCA=-0.075, CFG=+0.215
+```
+
+The predeclared final gate was `40.5/34.0/WCCA 13/CFG 7`. PEW passed Worst,
+WCCA, and CFG, and missed Avg by only `0.1306`. Best Avg was `41.4194` at
+round 10. Last-five means remain clearly better than control:
+
+```text
+Avg=+2.4306, Worst=+4.1010, WCCA=+6.030, CFG=-3.4025
+```
+
+PEW diagnostic:
+
+```text
+public validation environment accuracy: best 57.4% at epoch 3, final 52.5%
+private exact group accuracy: 38.83%
+per-client unknown rate: approximately 49.8% to 57.7%
+```
+
+Interpretation:
+
+```text
+The learned environment path is viable and preserves almost all Oracle tail/CFG
+benefit despite imperfect exact group prediction. It is a near pass, not a strict
+pass, because final Avg missed the frozen gate and PEW saved the last epoch rather
+than the best validated checkpoint. Do not run 40-round full mode yet.
+```
+
+Before the next paid run, correct PEW model selection using public validation and
+calibrate the unknown threshold on that validation split. Then run one matching
+12-round deployable combination probe with PEW + BER+CDep + EBST-v2. Do not rerun
+RAHFL or the Oracle local baselines for that probe.
+
+## Latest Result: EBST-v2 Is Safe But Average-Neutral - 2026-07-20
+
+Archive:
+
+```text
+outputs/fedease_ebst_v2_probe_outputs.tar.gz
+```
+
+Matching 12-round comparison on CLE-HFL `alpha=0.5, gamma=0.9, seed=0`:
+
+```text
+Oracle BER+CDep local:          Avg=41.6206, Worst=35.5175, WCCA=14.000, CFG=6.155
+Oracle BER+CDep+EBST-v2+SCP:   Avg=41.9469, Worst=36.2275, WCCA=14.700, CFG=5.190
+Final-round delta:              Avg=+0.3263, Worst=+0.7100, WCCA=+0.700, CFG=-0.965
+Last-five-round mean delta:     Avg=-0.1648, Worst=+0.4400, WCCA=+0.765, CFG=0.000
+```
+
+The formal gate passed Worst, WCCA, and CFG, but missed the `Avg > 42.1` gate.
+Because the last-five average accuracy is slightly below the local baseline, the
+final-round average gain is not yet stable evidence of positive communication.
+
+EBST-v2 was active and selective:
+
+```text
+valid environment fraction=0.5463
+valid class-pair fraction=0.6775
+mean eligible sources=2.1635
+mean gate=0.2101
+mean SCP conflict rate=0.4759
+mean SCP projection norm ratio=0.5763
+```
+
+Unlike legacy EBST, v2 prevents client-level collapse. Final client deltas are
+`+0.7100/-0.1375/+0.5125/+0.2200`; the old client-2 failure is removed. However,
+individual class regressions remain, including client 3 class 3 (`-11.225`) and
+client 2 class 7 (`-7.675`) points averaged across corruption groups.
+
+Decision:
+
+```text
+EBST-v2 validates the safety correction and improves fairness-oriented metrics.
+It does not yet validate a positive average-accuracy communication contribution.
+Do not run full/PEW mode or claim EBST-v2 as the final communication method.
+The next redesign must add recipient-class acceptance/trust-region protection,
+not merely tune the communication lambda.
+```
 
 ## Latest Implementation: EBST-v2 Corrective Communication Probe - 2026-07-20
 
@@ -38,7 +181,8 @@ path. The formal config requires at least two eligible leave-one-out sources and
 uses the same 12-round budget as the stored Oracle BER+CDep local baseline.
 Clients expose only thresholded support masks for source qualification; exact
 class counts are removed before server aggregation.
-This implementation is not yet a positive experimental result.
+The formal result is recorded above: safety improved, but average-accuracy gain
+did not pass the predeclared gate.
 
 ## Latest Result: FedEASE Oracle EBST Probe Failed Its Communication Gate - 2026-07-20
 

@@ -1,6 +1,70 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-07-20
+Last updated: 2026-07-21
+
+## Calibrated PEW + EBST-v2 Combination Probe Ready - 2026-07-21
+
+The next OpenI experiment is implemented and locally verified:
+
+```text
+scripts/openi_fedease_entry.py --mode=pew_ebst_v2_probe
+configs/openi_v100_fedease_pew_ebst_v2_probe.yaml
+```
+
+Changes are intentionally isolated: best-validation PEW checkpoint restoration,
+validation-calibrated unknown threshold, and one new 12-round learned
+PEW+EBST-v2 config/entry. Historical Oracle, PEW local, legacy EBST, and Oracle
+EBST-v2 routes are unchanged. `26` targeted tests and a real-data smoke pass.
+
+The old OpenI dataset `openi_cle_rahfl_diagnostic` is sufficient. Full mode is
+still blocked pending this result.
+
+## FedEASE Learned PEW Probe Result - Near Pass - 2026-07-20
+
+The 12-round learned-environment local probe completed:
+
+```text
+control:           37.5813 / 30.1100 / WCCA 13.700 / CFG 10.855
+Oracle BER+CDep:   41.6206 / 35.5175 / WCCA 14.000 / CFG  6.155
+PEW BER+CDep:      40.3694 / 35.4225 / WCCA 13.925 / CFG  6.370
+```
+
+PEW retains `+2.7881` Avg, `+5.3125` Worst, and `-4.485` CFG relative to the
+local control. It is only `0.095` below Oracle on Worst and `0.075` below Oracle
+on WCCA, but is `1.2513` lower on Avg. The frozen gate passed three metrics and
+missed `Avg >= 40.5` by `0.1306`.
+
+Private exact environment-group accuracy is `38.83%`, with roughly half of the
+private samples assigned to `unknown`. Nevertheless downstream tail and CFG
+benefits are largely preserved, suggesting PEW embeddings/coarse partitions are
+useful even when exact taxonomy prediction is imperfect.
+
+The public validation environment accuracy peaked at `57.4%` on epoch 3, while
+the saved final epoch reports `52.5%`. PEW checkpoint selection and unknown-
+threshold calibration should be corrected before one deployable PEW+EBST-v2
+combination probe. Full 40-round mode remains blocked.
+
+## FedEASE EBST-v2 Corrective Probe Result - Mixed/Insufficient - 2026-07-20
+
+The 12-round OpenI probe completed on CLE-HFL `alpha=0.5, gamma=0.9, seed=0`:
+
+```text
+Oracle BER+CDep local:          41.6206 / 35.5175 / WCCA 14.000 / CFG 6.155
+Oracle BER+CDep+EBST-v2+SCP:   41.9469 / 36.2275 / WCCA 14.700 / CFG 5.190
+final delta:                   +0.3263 / +0.7100 / +0.700 / -0.965
+last-five mean delta:          -0.1648 / +0.4400 / +0.765 /  0.000
+```
+
+This is a major safety improvement over legacy EBST: no client collapses, and
+client 2 changes by `+0.5125` rather than `-10.4950`. Communication is active
+with mean valid-pair fraction `0.6775`, source count `2.1635`, and gate `0.2101`.
+Class-wise SCP detects conflicts in `47.59%` of updates and retains `57.63%` of
+the communication-gradient norm.
+
+The predeclared average gate (`Avg > 42.1`) was not met. The last-five average is
+also slightly worse than local-only, so this is not a stable positive average-
+accuracy result. EBST-v2 is classified as safety-correct but average-neutral;
+full mode remains blocked.
 
 ## FedEASE EBST-v2 Corrective Implementation - 2026-07-20
 
@@ -23,8 +87,7 @@ formal communication starts after three warmup rounds.
 The formal 12-round OpenI probe is configured in
 `configs/openi_v100_fedease_ebst_v2_probe.yaml`. Targeted tests report `24 passed`,
 and a two-round real-data smoke exercised LOO aggregation and class-wise SCP with
-finite losses and gradients. Research effectiveness is still unknown until the
-OpenI probe completes.
+finite losses and gradients. The completed result is recorded above.
 
 ## FedEASE Oracle EBST Communication Probe - Negative Result - 2026-07-20
 

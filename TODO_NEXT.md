@@ -1,28 +1,84 @@
 # TODO Next
 
-## 2026-07-20 Immediate Run: EBST-v2 Corrective Probe
+## 2026-07-21 Run Tonight: Calibrated PEW + EBST-v2
 
-Run one experiment on the existing OpenI CLE-HFL gamma=0.9 dataset:
+Implementation and local verification are complete. Run exactly:
 
 ```text
 startup: scripts/openi_fedease_entry.py
-argument: --mode=ebst_v2_probe
-config: configs/openi_v100_fedease_ebst_v2_probe.yaml
+argument: --mode=pew_ebst_v2_probe
+dataset: openi_cle_rahfl_diagnostic
 ```
 
-Do not rerun the local baseline. Compare against the stored Oracle BER+CDep result:
+Compare the result to stored learned PEW local:
 
 ```text
-41.6206 / 35.5175 / WCCA 14.000 / CFG 6.155
+Avg=40.3694, Worst=35.4225, WCCA=13.925, CFG=6.370
 ```
 
-Continue only if the v2 probe reaches approximately:
+Decision rule:
 
 ```text
-Avg > 42.1, Worst > 36.0, WCCA >= 14.0, CFG <= 6.2
+Go only if final and last-five Avg do not regress, Worst/WCCA improve, and CFG
+does not increase. Otherwise stop the hard-taxonomy PEW+EBST route and implement
+continuous environment embeddings + Soft-BER + Soft-EBST. Do not run 40 rounds.
 ```
 
-Do not run PEW/full while this communication gate is unresolved.
+## 2026-07-20 Next Action: Calibrated PEW + EBST-v2 Combination Probe
+
+The learned PEW local probe is complete:
+
+```text
+PEW BER+CDep final = 40.3694 / 35.4225 / WCCA 13.925 / CFG 6.370
+gate               = 40.5    / 34.0    / WCCA 13.0   / CFG 7.0
+```
+
+It passed three gates and missed final Avg by `0.1306`. It retains most Oracle
+Worst/WCCA/CFG performance, so do not discard the learned environment route.
+
+Before another OpenI run:
+
+```text
+1. save/select the PEW checkpoint using public validation rather than last epoch;
+2. calibrate the unknown threshold on the public validation split;
+3. add a 12-round PEW + BER+CDep + EBST-v2 combination probe;
+4. preserve the current local and communication budgets and all frozen settings;
+5. do not rerun RAHFL, Oracle local, or run 40-round full mode yet.
+```
+
+Combination Go/No-Go should require the deployable candidate to exceed the
+matching 12-round RAHFL trajectory broadly and avoid regression relative to the
+stored PEW local result, especially on Avg and Worst.
+
+## 2026-07-20 EBST-v2 Decision: Safety Fixed, Full Run Still Blocked
+
+The corrective probe is complete:
+
+```text
+BER+CDep local:       41.6206 / 35.5175 / WCCA 14.000 / CFG 6.155
+BER+CDep+EBST-v2:    41.9469 / 36.2275 / WCCA 14.700 / CFG 5.190
+final delta:          +0.3263 / +0.7100 / +0.700 / -0.965
+last-five avg delta:  -0.1648
+```
+
+Decision:
+
+```text
+Do not run --mode=full or PEW+EBST-v2 yet.
+Do not count the final-round +0.326 avg as a stable communication gain.
+Keep EBST-v2 as evidence that pair-qualified LOO transfer and class-wise SCP
+remove the catastrophic client-2 regression seen in legacy EBST.
+```
+
+Before another paid experiment:
+
+```text
+1. design recipient-class acceptance using a local calibration/trust-region test;
+2. require that a class-row communication update does not increase its local
+   class-conditional risk beyond a small tolerance;
+3. keep pair-qualified LOO teachers and class-wise SCP unchanged;
+4. unit-test the acceptance path and run only one matching 12-round probe.
+```
 
 ## 2026-07-20 EBST Probe Decision: Stop Full FedEASE Expansion
 

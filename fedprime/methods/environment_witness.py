@@ -205,6 +205,9 @@ def train_environment_witness(
 ) -> list[dict[str, float]]:
     optimizer = torch.optim.Adam(model.parameters(), lr=float(learning_rate))
     history = []
+    best_state = None
+    best_epoch = -1
+    best_environment_accuracy = float("-inf")
     model.to(device)
     for epoch in range(int(epochs)):
         model.train()
@@ -233,16 +236,101 @@ def train_environment_witness(
         report = evaluate_environment_witness(model, validation_loader, device)
         row = {"epoch": float(epoch), "loss": sum(losses) / max(len(losses), 1), **report.as_dict()}
         history.append(row)
+        if report.environment_accuracy > best_environment_accuracy:
+            best_environment_accuracy = float(report.environment_accuracy)
+            best_epoch = int(epoch)
+            best_state = {
+                name: value.detach().cpu().clone()
+                for name, value in model.state_dict().items()
+            }
         print(
             f"[heartbeat] PEW epoch={epoch:03d} loss={row['loss']:.4f} "
             f"env_acc={row['environment_accuracy']:.2f} severity_acc={row['severity_accuracy']:.2f} "
             f"unknown_acc={row['unknown_accuracy']:.2f}",
             flush=True,
         )
+    if best_state is not None:
+        model.load_state_dict(best_state)
+        for index, row in enumerate(history):
+            row["is_best"] = float(index == best_epoch)
+        print(
+            f"[setup] restored best PEW checkpoint from epoch={best_epoch:03d} "
+            f"env_acc={best_environment_accuracy:.2f}",
+            flush=True,
+        )
     for parameter in model.parameters():
         parameter.requires_grad_(False)
     model.eval()
     return history
+
+
+def select_unknown_threshold(
+    probabilities: torch.Tensor,
+    targets: torch.Tensor,
+    *,
+    unknown_id: int,
+    thresholds: torch.Tensor | None = None,
+) -> dict[str, float]:
+    """Choose a rejection threshold using only synthetic public validation labels."""
+
+    if probabilities.ndim != 2:
+        raise ValueError("probabilities must have shape [sample, environment]")
+    if targets.ndim != 1 or targets.shape[0] != probabilities.shape[0]:
+        raise ValueError("targets must have shape [sample]")
+    if thresholds is None:
+        thresholds = torch.linspace(0.0, 0.95, 96)
+
+    confidence, native_prediction = probabilities.max(dim=1)
+    best = None
+    for raw_threshold in thresholds:
+        threshold = float(raw_threshold.item())
+        prediction = torch.where(
+            confidence >= threshold,
+            native_prediction,
+            torch.full_like(native_prediction, int(unknown_id)),
+        )
+        accuracy = float(prediction.eq(targets).float().mean().item())
+        unknown_rate = float(prediction.eq(int(unknown_id)).float().mean().item())
+        candidate = {
+            "threshold": threshold,
+            "accuracy": accuracy,
+            "unknown_rate": unknown_rate,
+        }
+        # Prefer the less aggressive rejection threshold when accuracy ties.
+        if best is None or (accuracy, -threshold) > (best["accuracy"], -best["threshold"]):
+            best = candidate
+    assert best is not None
+    best["native_accuracy"] = float(native_prediction.eq(targets).float().mean().item())
+    return best
+
+
+def calibrate_unknown_threshold(
+    model: PublicEnvironmentWitness,
+    loader: data.DataLoader,
+    device: torch.device,
+) -> dict[str, float]:
+    model.eval()
+    probabilities = []
+    targets = []
+    with torch.no_grad():
+        for images, environments, _ in loader:
+            logits, _, _ = model(images.to(device, non_blocking=True))
+            probabilities.append(logits.softmax(dim=1).cpu())
+            targets.append(environments.long().cpu())
+    if not probabilities:
+        raise ValueError("cannot calibrate PEW unknown threshold on an empty loader")
+    result = select_unknown_threshold(
+        torch.cat(probabilities),
+        torch.cat(targets),
+        unknown_id=len(PEW_ENVIRONMENT_NAMES) - 1,
+    )
+    print(
+        f"[setup] calibrated PEW unknown threshold={result['threshold']:.2f} "
+        f"validation_acc={100.0 * result['accuracy']:.2f} "
+        f"unknown_rate={result['unknown_rate']:.3f}",
+        flush=True,
+    )
+    return result
 
 
 def infer_environment_annotations(

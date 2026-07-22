@@ -2,6 +2,30 @@
 
 Last updated: 2026-07-21
 
+## Calibrated PEW + EBST-v2 Probe Result - Positive but Attribution Unresolved - 2026-07-21
+
+The 12-round combination probe completed:
+
+```text
+final Avg/Worst/WCCA/CFG = 42.6331/35.2975/20.675/7.290
+last-five mean           = 40.4526/35.9870/17.400/6.666
+```
+
+Relative to old learned-PEW local, final Avg is `+2.2638` and final WCCA is
+`+6.75`; last-five Avg/Worst/WCCA improve and CFG drops by `0.8795`. PEW private
+group accuracy rises from `38.83%` to `63.59%` after best-epoch restoration and
+automatic threshold calibration.
+
+The experiment is confounded for communication attribution: rounds 0-2 already
+improve before EBST-v2 starts. Therefore the complete candidate has a positive
+signal, but EBST-v2 itself is not yet validated. A matching calibrated learned
+PEW local-only probe is required before any 40-round run.
+
+The matching control is implemented in
+`configs/openi_v100_fedease_pew_calibrated_local_probe.yaml` and exposed as
+`scripts/openi_fedease_entry.py --mode=pew_calibrated_local_probe`. Fifteen
+targeted tests and the formal dependency/path check pass.
+
 ## Calibrated PEW + EBST-v2 Combination Probe Ready - 2026-07-21
 
 The next OpenI experiment is implemented and locally verified:

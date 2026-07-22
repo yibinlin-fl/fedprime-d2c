@@ -2,6 +2,82 @@
 
 Updated: 2026-07-21
 
+## Latest Result: Calibrated PEW + EBST-v2 Is Positive as a Whole but Confounded - 2026-07-21
+
+Archive:
+
+```text
+outputs/fedease_pew_ebst_v2_probe_outputs.tar.gz
+```
+
+Final and last-five results on CLE-HFL `alpha=0.5, gamma=0.9, seed=0`:
+
+```text
+                                   final                         last-five mean
+old PEW local         40.3694/35.4225/13.925/6.370   38.9004/35.0515/14.940/7.5455
+calibrated PEW+EBSTv2 42.6331/35.2975/20.675/7.290   40.4526/35.9870/17.400/6.6660
+delta                 +2.2638/-0.1250/+6.750/+0.920  +1.5523/+0.9355/+2.460/-0.8795
+```
+
+Metric order is `Avg/Worst/WCCA/CFG`; lower CFG is better. The last-five comparison
+improves all four metrics. Final Worst is nearly tied, while final CFG is worse
+because the final-round metric is volatile.
+
+The PEW correction worked strongly:
+
+```text
+selected checkpoint: epoch 3, public validation environment accuracy 57.4%
+automatic unknown threshold: 0.0
+private exact environment accuracy: 38.83% -> 63.59%
+private unknown rate: about 49.8%-57.7% -> 3.7%-10.6%
+```
+
+All corruption groups improve at the final round relative to old PEW local:
+
+```text
+noise +1.32, blur +2.02, weather +2.18, digital +3.54,
+worst corruption group +1.32 points.
+```
+
+EBST-v2 was active in rounds 3-11:
+
+```text
+mean EBST loss=0.2528, valid environment fraction=0.5725,
+valid pair fraction=0.6650, eligible sources=2.1711, mean gate=0.1877,
+SCP conflict fraction=0.4697, retained communication-gradient norm=0.5805.
+```
+
+Interpretation boundary:
+
+```text
+The deployable combination is a positive 12-round candidate trajectory and is
+well above same-round RAHFL. It does not yet prove that EBST-v2 adds value,
+because PEW calibration and communication changed together. Rounds 0-2 already
+gain +1.07 to +2.16 Avg before communication starts. Large class-specific gains
+and regressions also remain. Run a matching calibrated PEW local-only control;
+do not run 40 rounds yet.
+```
+
+Analysis artifacts:
+
+```text
+deliverables/fedease_pew_ebst_v2_analysis_20260721/summary.csv
+deliverables/fedease_pew_ebst_v2_analysis_20260721/class_deltas.csv
+deliverables/fedease_pew_ebst_v2_analysis_20260721/analysis.json
+```
+
+The required calibrated local-only attribution control is ready:
+
+```text
+entry:  scripts/openi_fedease_entry.py --mode=pew_calibrated_local_probe
+config: configs/openi_v100_fedease_pew_calibrated_local_probe.yaml
+guide:  FEDEASE_CALIBRATED_PEW_LOCAL_OPENI_RUN_ZH.md
+```
+
+It preserves calibrated PEW, BER, CDep, AugMix/JSD/DCL, models, data, seed,
+optimizer, and the 12-round budget, while disabling communication, EBST-v2, and
+SCP. Targeted tests and the formal environment/path check pass.
+
 ## Immediate Run: Calibrated Learned PEW + EBST-v2 - 2026-07-21
 
 Implemented the final 12-round hard-environment-taxonomy combination probe:

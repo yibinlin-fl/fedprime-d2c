@@ -20,6 +20,9 @@ CONFIGS_BY_MODE = {
     "pew_probe": ["configs/openi_v100_fedease_pew_probe.yaml"],
     "ebst_probe": ["configs/openi_v100_fedease_ebst_probe.yaml"],
     "ebst_v2_probe": ["configs/openi_v100_fedease_ebst_v2_probe.yaml"],
+    "pew_calibrated_local_probe": [
+        "configs/openi_v100_fedease_pew_calibrated_local_probe.yaml"
+    ],
     "pew_ebst_v2_probe": ["configs/openi_v100_fedease_pew_ebst_v2_probe.yaml"],
     "full": ["configs/openi_v100_fedease_full.yaml"],
 }
@@ -31,6 +34,9 @@ EXPERIMENTS_BY_MODE = {
     "pew_probe": ["probe_fedease_pew_ber_cdep_alpha05_gamma09_seed0"],
     "ebst_probe": ["probe_fedease_oracle_ebst_alpha05_gamma09_seed0"],
     "ebst_v2_probe": ["probe_fedease_oracle_ebst_v2_alpha05_gamma09_seed0"],
+    "pew_calibrated_local_probe": [
+        "probe_fedease_pew_calibrated_local_alpha05_gamma09_seed0"
+    ],
     "pew_ebst_v2_probe": ["probe_fedease_pew_ebst_v2_alpha05_gamma09_seed0"],
     "full": ["fedease_full_alpha05_gamma09_seed0"],
 }

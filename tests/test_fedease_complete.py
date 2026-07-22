@@ -248,3 +248,17 @@ def test_pew_ebst_v2_probe_combines_only_validated_switches():
     assert candidate["method"]["fedease"]["pew"]["unknown_threshold"] == "auto"
     assert candidate["method"]["fedease"]["ebst"]["version"] == 2
     assert candidate["method"]["fedease"]["scp"]["scope"] == "classifier_class"
+
+
+def test_calibrated_pew_local_control_differs_only_by_communication_switches():
+    local = load_config(ROOT / "configs/openi_v100_fedease_pew_calibrated_local_probe.yaml")
+    candidate = load_config(ROOT / "configs/openi_v100_fedease_pew_ebst_v2_probe.yaml")
+    for key in ("data", "models", "train", "seed", "device"):
+        assert local[key] == candidate[key]
+    for key in ("use_prime", "augmix_module", "cl_module", "lambda_jsd"):
+        assert local["method"][key] == candidate["method"][key]
+    for key in ("environment_mode", "num_environments", "preserve_dcl", "pew", "ber", "cdep", "evaluation"):
+        assert local["method"]["fedease"][key] == candidate["method"]["fedease"][key]
+    assert local["method"]["communication"] == "none"
+    assert local["method"]["fedease"]["ebst"]["enabled"] is False
+    assert local["method"]["fedease"]["scp"]["enabled"] is False

@@ -1,5 +1,35 @@
 # TODO Next
 
+## 2026-07-21 Next Required Control: Calibrated PEW Local-only
+
+The calibrated PEW + EBST-v2 combination reached:
+
+```text
+final:    42.6331/35.2975/WCCA 20.675/CFG 7.290
+last-five 40.4526/35.9870/WCCA 17.400/CFG 6.666
+```
+
+Do not run 40 rounds yet. The next experiment must use the same new PEW best
+checkpoint selection and automatic threshold, but set communication to `none`.
+It should match the combination config in all other data/model/train settings.
+
+Implementation is complete. Run:
+
+```text
+startup: scripts/openi_fedease_entry.py
+argument: --mode=pew_calibrated_local_probe
+dataset: openi_cle_rahfl_diagnostic
+```
+
+Decision rule:
+
+```text
+EBST-v2 survives only if the combination improves last-five Avg by a meaningful
+margin (target >= +0.5) without reducing Worst/WCCA or increasing CFG versus the
+new calibrated local-only control. If not, attribute the current gain to PEW
+calibration and stop the hard-taxonomy EBST communication route.
+```
+
 ## 2026-07-21 Run Tonight: Calibrated PEW + EBST-v2
 
 Implementation and local verification are complete. Run exactly:

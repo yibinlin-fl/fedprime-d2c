@@ -55,6 +55,31 @@ Go/No-Go probe, not a full run. If it regresses against stored PEW local
 `40.3694/35.4225/WCCA 13.925/CFG 6.370`, stop the hard-taxonomy communication
 route and redesign PEW/BER/EBST around continuous environment embeddings.
 
+The combination probe has now completed:
+
+```text
+calibrated PEW + BER+CDep + EBST-v2 final = 42.6331/35.2975/WCCA 20.675/CFG 7.290
+last-five mean                            = 40.4526/35.9870/WCCA 17.400/CFG 6.666
+```
+
+Relative to the old uncalibrated PEW local run, final Avg/WCCA improve strongly,
+and all last-five metrics improve. However, the experiment changed both PEW
+selection/calibration and communication. Before communication starts, rounds
+0-2 already gain about `+1.07` to `+2.16` Avg, so this result does not isolate an
+EBST-v2 contribution. The next and only required probe is a matching 12-round
+calibrated PEW + BER+CDep local-only control. Do not run 40 rounds yet.
+
+That control is now implemented and verified:
+
+```text
+entry: scripts/openi_fedease_entry.py --mode=pew_calibrated_local_probe
+config: configs/openi_v100_fedease_pew_calibrated_local_probe.yaml
+guide: FEDEASE_CALIBRATED_PEW_LOCAL_OPENI_RUN_ZH.md
+```
+
+It differs from the completed combination only by disabling communication,
+EBST-v2, and SCP. Run it next using the same OpenI dataset.
+
 Latest learned PEW result - 2026-07-20:
 
 ```text

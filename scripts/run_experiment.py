@@ -13,6 +13,7 @@ from fedprime.methods.fedprime_pair import FedPrimePairExperiment
 from fedprime.methods.fedclear import FedClearExperiment
 from fedprime.methods.fedclear_pccd import FedClearPCCDExperiment
 from fedprime.methods.fedease import FedEASEExperiment
+from fedprime.methods.fedfalsify_experiment import FedFalsifyExperiment
 from fedprime.methods.prac_hfl import PRACHFLExperiment
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.utils.config import load_config
@@ -35,6 +36,8 @@ def main() -> None:
         FedClearPCCDExperiment(config).run()
     elif method == "fedease":
         FedEASEExperiment(config).run()
+    elif method == "fedfalsify":
+        FedFalsifyExperiment(config).run()
     elif method == "prac_hfl":
         PRACHFLExperiment(config).run()
     elif method in {"rahfl", "rahfl_prime", "fedcara", "fedsara_cs"}:

@@ -30,6 +30,7 @@ def train_local_augmix_dcl_epoch(
     skip_nonfinite: bool = False,
     log_interval: int | None = None,
     context: str = "RAHFL local phase",
+    communication_loss_fn=None,
 ) -> float:
     add_vendor_paths()
     from loss import DCLLoss, SupConLoss
@@ -145,6 +146,13 @@ def train_local_augmix_dcl_epoch(
             else:
                 if cl_module not in (None, "none"):
                     raise ValueError(f"Unknown contrastive module: {cl_module}")
+
+            if communication_loss_fn is not None:
+                loss = loss + communication_loss_fn(
+                    receiver_logits=logits_clean,
+                    clean_images=images[0],
+                    labels=labels,
+                )
 
         if not torch.isfinite(loss):
             message = f"{context}: non-finite loss at batch {batch_idx}: {float(loss.detach().cpu())}"

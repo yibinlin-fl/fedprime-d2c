@@ -32,12 +32,128 @@ EXPERIMENT_GUIDE_ZH.md
 
 Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older files may contain historical notes.
 
-## Current Mainline Override - 2026-07-19
+## Newest Offline Research Decision - 2026-07-23
+
+The newest candidate investigated is `FedFalsify v0.1`, but it has not replaced
+the deployable training mainline. Its mandatory offline audit is complete.
+
+```text
+foreign survival gap gamma 0.0/0.6/0.9 = 0.0016/0.0692/0.1559
+projected sample activation             = 11.56%/8.23%/4.50%
+direct KD increment over CE             = -0.0421/-0.0489/-0.0724
+CMT increment over CE                   = +0.0019/+0.0019/+0.0017
+```
+
+Decision:
+
+```text
+Do not run FedFalsify v0.1 for 40 rounds.
+The failure mode and direct-KD risk are validated, but FRA is too sparse.
+The next candidate is TAU-first top-1 source selection with FRA used only as a
+soft ranking prior or tie-breaker.
+
+TAU top-1 one-step ranking result:
+  coverage gamma 0.0/0.6/0.9 = 100%/100%/100%
+  positive precision         = 91.4%/94.3%/85.7%
+  mean CMT-over-CE increment = .00354/.00367/.00320
+
+Before implementing a 12-round runner, validate a lower-cost head-only or
+last-block TAU against full-model TAU.
+```
+
+Read:
+
+```text
+FEDFALSIFY_AUDIT_GUIDE_ZH.md
+deliverables/fedfalsify_offline_audit/FEDFALSIFY_OFFLINE_AUDIT_ZH.md
+```
+
+## Current Mainline Override - 2026-07-23
+
+The current executable candidate is:
+
+```text
+FedFalsify v0.2 strict probe
+= fixed D_fit/D_audit split
++ frozen peer model snapshots
++ receiver-side class-conditional head-TAU Top-1 routing
++ conservative margin transfer (CMT)
++ AugMix/JSD/DCL local base
+```
+
+The final test set is never used for routing. The legacy v0.1 hard
+`FRA AND TAU` gate remains rejected because its activation coverage collapses as
+CLE entanglement grows. FRA is logged only; its default routing weight is zero.
+
+Implementation:
+
+```text
+fedprime/data/fedfalsify.py
+fedprime/methods/fedfalsify/router.py
+fedprime/methods/fedfalsify_experiment.py
+scripts/openi_fedfalsify_entry.py
+```
+
+Formal next experiment is one OpenI strict A/B probe:
+
+```text
+control:   configs/openi_v100_fedfalsify_fit_control_probe.yaml
+candidate: configs/openi_v100_fedfalsify_probe.yaml
+entry:     scripts/openi_fedfalsify_entry.py
+guide:     FEDFALSIFY_OPENI_RUN_GUIDE_ZH.md
+```
+
+Both experiments run 12 rounds and use the same persisted fit/audit split.
+FedFalsify uses 3 warmup rounds. Do not run 40 rounds until all frozen
+last-five gates pass: Avg positive, Worst/WCCA nonnegative, CFG nonpositive.
+
+Local end-to-end debug passed twice on the RTX 3050:
+
+```text
+round 0: routes=0, cmt_loss=0
+round 1: routes=11/40, mean_tau=0.9473, cmt_loss=1.2705
+unit tests: 14 passed
+```
+
+The two-batch debug accuracy is not a research result.
+
+## Previous Mainline Override - 2026-07-19
 
 The newest candidate is:
 
 ```text
 CLE-HFL + FedEASE v2.1
+```
+
+Latest attribution result - 2026-07-22:
+
+```text
+calibrated PEW + BER+CDep local final = 42.8469/36.2300/WCCA 19.775/CFG 6.5725
+calibrated PEW + EBST-v2 final        = 42.6331/35.2975/WCCA 20.675/CFG 7.2900
+EBST-v2 minus local final             = -0.2138/-0.9325/+0.900/+0.7175
+
+local last-five mean                  = 40.4278/36.2890/WCCA 17.965/CFG 6.427
+EBST-v2 last-five mean                = 40.4526/35.9870/WCCA 17.400/CFG 6.666
+EBST-v2 minus local last-five         = +0.0249/-0.3020/-0.565/+0.239
+```
+
+Metric order is `Avg/Worst/WCCA/CFG`; lower CFG is better. The attribution is
+clean: PEW best epoch, threshold, inferred environments, data, models, seed,
+optimizer, and rounds match exactly; only EBST-v2/SCP communication differs.
+EBST-v2 fails the frozen gate. It provides no meaningful average gain, harms
+Worst and CFG, and helps only client 2 while hurting clients 0, 1, and 3. Do not
+run the hard-taxonomy EBST-v2 route for 40 rounds or tune only its lambda. The
+validated positive component is calibrated PEW + BER+CDep local learning; the
+communication component remains unresolved and must be redesigned before the
+next paid experiment.
+
+Analysis artifacts:
+
+```text
+deliverables/fedease_ebst_attribution_20260722/summary.csv
+deliverables/fedease_ebst_attribution_20260722/client_deltas.csv
+deliverables/fedease_ebst_attribution_20260722/group_deltas.csv
+deliverables/fedease_ebst_attribution_20260722/class_deltas.csv
 ```
 
 Immediate executable probe - 2026-07-21:

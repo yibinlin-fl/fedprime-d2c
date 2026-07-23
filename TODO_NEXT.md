@@ -1,5 +1,70 @@
 # TODO Next
 
+## Immediate - FedFalsify Strict Gate
+
+1. On OpenI, keep using dataset `openi_cle_rahfl_diagnostic`.
+2. Start `scripts/openi_fedfalsify_entry.py` with no arguments.
+3. Download `fedfalsify_probe_outputs.tar.gz` after completion.
+4. Compare candidate versus strict fit-only control using last-five means:
+   Avg must improve, Worst/WCCA must not decline, CFG must not increase.
+5. Only if all four gates pass, implement matching 40-round runs and repeat
+   seeds. Otherwise archive this communication path instead of tuning only
+   `lambda_cmt`.
+
+## 2026-07-23 Decision: Revise FedFalsify Before Training
+
+FedFalsify v0.1 offline audit is complete. Do not launch its original hard
+`FRA AND TAU` gate for 40 rounds.
+
+Next steps, in order:
+
+1. Define FedFalsify v0.2 as receiver-side TAU-first top-1 source selection.
+2. Keep FRA as a soft ranking prior/tie-breaker, not a mandatory positive gate.
+3. Source-ranking audit is complete: TAU top-1 has 100% receiver-class coverage
+   and 85.7%-94.3% positive one-step precision across the three gammas.
+4. Add a compute-efficient head-only or last-block TAU option and measure its
+   agreement with full-model TAU.
+5. Only if the low-cost TAU preserves the signal, implement a 12-round probe
+   with a real pre-training `fit/audit` split.
+6. Use identical `fit` data for RAHFL and FedFalsify controls; never route using
+   final test labels.
+
+Completed artifacts:
+
+```text
+FEDFALSIFY_AUDIT_GUIDE_ZH.md
+deliverables/fedfalsify_offline_audit/
+outputs/fedfalsify_audit/
+```
+
+## 2026-07-22 Decision: Stop EBST-v2 and Redesign Communication
+
+The calibrated local-only attribution control is complete:
+
+```text
+local final:       42.8469/36.2300/WCCA 19.775/CFG 6.5725
+EBST-v2 final:     42.6331/35.2975/WCCA 20.675/CFG 7.2900
+
+local last-five:   40.4278/36.2890/WCCA 17.965/CFG 6.427
+EBST-v2 last-five: 40.4526/35.9870/WCCA 17.400/CFG 6.666
+```
+
+EBST-v2 fails the frozen survival rule. Do not run 40 rounds, do not rerun the
+same probe, and do not spend a run on lambda-only tuning.
+
+Next work, in order:
+
+```text
+1. Freeze calibrated PEW + BER+CDep as the validated local mechanism.
+2. Archive EBST-v2 as a negative communication result.
+3. Define a taxonomy-free communication redesign using continuous environment
+   embeddings or another recipient/class-specific trust mechanism.
+4. Prove on stored logits/diagnostics that the proposed teacher signal has
+   positive recipient-class utility before implementing another paid run.
+5. Only after a 12-round matched probe passes Avg/Worst/WCCA/CFG gates, schedule
+   a 40-round comparison against RAHFL.
+```
+
 ## 2026-07-21 Next Required Control: Calibrated PEW Local-only
 
 The calibrated PEW + EBST-v2 combination reached:

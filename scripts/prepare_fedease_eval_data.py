@@ -36,6 +36,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--severity-min", type=int, default=1)
     parser.add_argument("--severity-max", type=int, default=5)
     parser.add_argument("--max-test-images", type=int, default=0)
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=("clean", "same", "swapped", "unseen"),
+        default=("clean", "same", "swapped", "unseen"),
+        help="Evaluation splits to generate. Use '--splits same' for the FedFalsify audit.",
+    )
     parser.add_argument("--make-tar", action="store_true")
     return parser.parse_args()
 
@@ -121,56 +128,67 @@ def main() -> None:
         test_images = test_images[selected]
         test_labels = test_labels[selected]
 
-    print("[setup] writing clean evaluation split", flush=True)
-    write_split(
-        cle_root / "test_clean",
-        test_images,
-        test_labels,
-        np.full(len(test_labels), -1, dtype=np.int16),
-    )
-    groups = list(CORRUPTION_GROUPS)
-    for client_id in range(args.num_clients):
-        same_mapping = class_map[client_id]
-        swapped_mapping = {
-            class_id: groups[(groups.index(group) + 1) % len(groups)]
-            for class_id, group in same_mapping.items()
-        }
-        same_images, same_ids = corrupt_by_mapping(
+    requested_splits = set(args.splits)
+    if "clean" in requested_splits:
+        print("[setup] writing clean evaluation split", flush=True)
+        write_split(
+            cle_root / "test_clean",
             test_images,
             test_labels,
-            same_mapping,
-            np.random.default_rng(args.seed + client_id * 10_007 + 1),
-            args.severity_min,
-            args.severity_max,
+            np.full(len(test_labels), -1, dtype=np.int16),
         )
-        write_split(cle_root / "test_same" / f"client_{client_id}", same_images, test_labels, same_ids)
-        swapped_images, swapped_ids = corrupt_by_mapping(
+    groups = list(CORRUPTION_GROUPS)
+    if "same" in requested_splits or "swapped" in requested_splits:
+        for client_id in range(args.num_clients):
+            same_mapping = class_map[client_id]
+            if "same" in requested_splits:
+                same_images, same_ids = corrupt_by_mapping(
+                    test_images,
+                    test_labels,
+                    same_mapping,
+                    np.random.default_rng(args.seed + client_id * 10_007 + 1),
+                    args.severity_min,
+                    args.severity_max,
+                )
+                write_split(
+                    cle_root / "test_same" / f"client_{client_id}",
+                    same_images,
+                    test_labels,
+                    same_ids,
+                )
+            if "swapped" in requested_splits:
+                swapped_mapping = {
+                    class_id: groups[(groups.index(group) + 1) % len(groups)]
+                    for class_id, group in same_mapping.items()
+                }
+                swapped_images, swapped_ids = corrupt_by_mapping(
+                    test_images,
+                    test_labels,
+                    swapped_mapping,
+                    np.random.default_rng(args.seed + client_id * 10_007 + 2),
+                    args.severity_min,
+                    args.severity_max,
+                )
+                write_split(
+                    cle_root / "test_swapped" / f"client_{client_id}",
+                    swapped_images,
+                    test_labels,
+                    swapped_ids,
+                )
+
+    if "unseen" in requested_splits:
+        unseen_images = corrupt_unseen_compositions(
             test_images,
-            test_labels,
-            swapped_mapping,
-            np.random.default_rng(args.seed + client_id * 10_007 + 2),
+            np.random.default_rng(args.seed + 97_003),
             args.severity_min,
             args.severity_max,
         )
         write_split(
-            cle_root / "test_swapped" / f"client_{client_id}",
-            swapped_images,
+            cle_root / "test_unseen",
+            unseen_images,
             test_labels,
-            swapped_ids,
+            np.full(len(test_labels), -1, dtype=np.int16),
         )
-
-    unseen_images = corrupt_unseen_compositions(
-        test_images,
-        np.random.default_rng(args.seed + 97_003),
-        args.severity_min,
-        args.severity_max,
-    )
-    write_split(
-        cle_root / "test_unseen",
-        unseen_images,
-        test_labels,
-        np.full(len(test_labels), -1, dtype=np.int16),
-    )
 
     files = sorted(
         path for split in ("test_clean", "test_same", "test_balanced", "test_swapped", "test_unseen")
@@ -180,7 +198,12 @@ def main() -> None:
     audit = {
         "protocol": "FedEASE CLE-HFL evaluation v1",
         "seed": args.seed,
-        "splits": ["clean", "same", "random", "swapped", "unseen"],
+        "generated_splits": sorted(requested_splits),
+        "available_splits": [
+            name
+            for name in ("clean", "same", "random", "swapped", "unseen")
+            if (cle_root / f"test_{name if name != 'random' else 'balanced'}").exists()
+        ],
         "ers_definition": "same_avg_acc - swapped_avg_acc",
         "unseen_definition": "composition of two corruption groups; training uses one group per sample",
         "sha256": {str(path.relative_to(cle_root)): sha256(path) for path in files},

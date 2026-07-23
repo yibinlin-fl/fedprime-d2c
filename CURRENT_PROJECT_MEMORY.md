@@ -1,6 +1,180 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-21
+Updated: 2026-07-23
+
+## Latest Executable Candidate: FedFalsify v0.2 - 2026-07-23
+
+The offline audit has now been converted into an executable, leakage-free
+12-round A/B probe.
+
+Current method:
+
+```text
+AugMix/JSD/DCL local base
++ fixed class-stratified D_fit/D_audit split
++ frozen peer model snapshots
++ receiver-side class-conditional head-TAU Top-1 source selection
++ conservative margin transfer (CMT)
+```
+
+Important restrictions:
+
+```text
+final test labels are evaluation-only;
+FRA is not a hard gate and has default weight 0;
+source selection uses only receiver-private D_fit and D_audit;
+peer snapshots are frozen for each local round;
+no public data or public logits are used.
+```
+
+Formal A/B:
+
+```text
+scripts/openi_fedfalsify_entry.py
+configs/openi_v100_fedfalsify_fit_control_probe.yaml
+configs/openi_v100_fedfalsify_probe.yaml
+FEDFALSIFY_OPENI_RUN_GUIDE_ZH.md
+```
+
+The control and candidate both use the persisted split:
+
+```text
+outputs/partitions/fedfalsify_v1_cle_alpha05_gamma09_seed0.npz
+```
+
+Local 3050 end-to-end debug passed twice. Round 0 correctly disabled
+communication; round 1 selected 11/40 class routes with mean head-TAU 0.9473
+and a finite CMT loss. Unit tests: 14 passed. Debug accuracy is not evidence.
+
+Next action: run the strict OpenI A/B probe and judge last-five
+Avg/Worst/WCCA/CFG. Do not run 40 rounds before the frozen gate passes.
+
+## Latest Result: FedFalsify v0.1 Offline Audit - 2026-07-23
+
+FedFalsify was not sent directly into another paid federated run. Its required
+offline Go/No-Go audits were implemented and executed first on the stored RAHFL
+CLE-HFL checkpoints for `alpha=0.5, seed=0, gamma={0.0,0.6,0.9}`.
+
+Core implementation:
+
+```text
+fedprime/methods/fedfalsify/evidence.py
+fedprime/methods/fedfalsify/transfer.py
+fedprime/methods/fedfalsify/audit_runtime.py
+scripts/audit_fedfalsify_foreign_tensor.py
+scripts/audit_fedfalsify_gate_coverage.py
+scripts/audit_fedfalsify_one_step.py
+scripts/summarize_fedfalsify_audit.py
+```
+
+Key results:
+
+```text
+gamma                              0.0       0.6       0.9
+foreign survival gap             0.0016    0.0692    0.1559
+projected sample activation       11.56%     8.23%     4.50%
+FRA+TAU triplet activation        23.81%    19.05%    14.29%
+direct KD increment over CE      -0.0421   -0.0489   -0.0724
+CMT increment over CE            +0.0019   +0.0019   +0.0017
+TAU precision / recall            .903/1    .904/1    .857/1
+```
+
+Interpretation:
+
+```text
+1. The failure mode is measurable: as gamma grows, a model's knowledge
+   survives much better in its own corruption-label environment than abroad.
+2. Direct peer KD is unsafe and becomes more harmful under stronger
+   entanglement.
+3. CMT is directionally safer but its incremental one-step effect is small.
+4. TAU predicts positive CMT increments reasonably well.
+5. FRA is the bottleneck: it adds little precision while sharply reducing
+   coverage, especially at gamma=0.9.
+```
+
+Frozen decision:
+
+```text
+Do not run FedFalsify v0.1 for 40 rounds.
+Do not count CE improvement as communication improvement.
+Do not use independent test_same labels in a formal training router.
+```
+
+Promising v0.2 revision:
+
+```text
+Make TAU the safety gate. For each receiver/class, choose the top-1
+TAU-positive source; use FRA only as a ranking prior or tie-breaker rather than
+as a hard prerequisite.
+
+gamma                              0.0       0.6       0.9
+TAU top-1 coverage                100%      100%      100%
+positive increment precision      91.4%     94.3%     85.7%
+mean CMT-over-CE increment        .00354    .00367    .00320
+
+At gamma=0.9 this covers all 35 auditable receiver-class groups and gives
+positive CMT-over-CE increment on 30/35. It is close to the offline oracle
+ranking, but this remains a one-step result rather than a federated-run proof.
+```
+
+Artifacts:
+
+```text
+FEDFALSIFY_AUDIT_GUIDE_ZH.md
+deliverables/fedfalsify_offline_audit/FEDFALSIFY_OFFLINE_AUDIT_ZH.md
+deliverables/fedfalsify_offline_audit/fedfalsify_offline_audit_summary.csv
+outputs/fedfalsify_audit/
+outputs/fedfalsify_audit/source_ranking/
+```
+
+## Latest Result: EBST-v2 Fails Clean Attribution - 2026-07-22
+
+Archive:
+
+```text
+outputs/fedease_pew_calibrated_local_probe_outputs.tar.gz
+```
+
+The matching calibrated PEW local-only control completed on CLE-HFL
+`alpha=0.5, gamma=0.9, seed=0`. It uses the same PEW checkpoint (epoch 3),
+automatic threshold (`0.0`), inferred environments (`63.59%` private group
+accuracy), data, models, seed, optimizer, and 12-round budget as the completed
+EBST-v2 combination. Only communication, EBST-v2, and SCP are disabled.
+
+```text
+                                   final                         last-five mean
+calibrated PEW local   42.8469/36.2300/19.775/6.5725  40.4278/36.2890/17.965/6.427
+calibrated PEW+EBSTv2  42.6331/35.2975/20.675/7.2900  40.4526/35.9870/17.400/6.666
+EBST-v2 minus local    -0.2138/-0.9325/+0.900/+0.7175 +0.0249/-0.3020/-0.565/+0.239
+```
+
+Metric order is `Avg/Worst/WCCA/CFG`; lower CFG is better. EBST-v2 fails the
+pre-registered gate (`last-five Avg >= +0.5`, no Worst/WCCA regression, no CFG
+increase). Its final per-client deltas are `[-0.9325, -0.6050, +1.0825,
+-0.4000]`: three clients regress and only client 2 improves. All four corruption
+groups regress slightly. Large class-level transfers in both directions cancel
+in the mean, confirming residual negative transfer rather than useful global
+knowledge transfer.
+
+Decision:
+
+```text
+The gain previously attributed to the complete combination comes primarily
+from calibrated PEW + BER+CDep local learning, not EBST-v2 communication.
+Archive EBST-v2 as a negative communication result. Do not run 40 rounds and do
+not spend another run on lambda-only tuning. Redesign communication before the
+next paid experiment, preferably without hard environment taxonomy.
+```
+
+Analysis artifacts:
+
+```text
+deliverables/fedease_ebst_attribution_20260722/summary.csv
+deliverables/fedease_ebst_attribution_20260722/client_deltas.csv
+deliverables/fedease_ebst_attribution_20260722/group_deltas.csv
+deliverables/fedease_ebst_attribution_20260722/class_deltas.csv
+deliverables/fedease_ebst_attribution_20260722/analysis.json
+```
 
 ## Latest Result: Calibrated PEW + EBST-v2 Is Positive as a Whole but Confounded - 2026-07-21
 

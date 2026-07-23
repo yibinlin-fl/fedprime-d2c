@@ -1,6 +1,76 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-07-21
+Last updated: 2026-07-23
+
+## FedFalsify v0.2 Strict Probe Ready - 2026-07-23
+
+- Implemented deterministic class-stratified `D_fit/D_audit` persistence.
+- Rare classes remain in fit when a valid audit-and-fit split is impossible.
+- Implemented per-round frozen peer snapshots.
+- Implemented receiver-private head-TAU Top-1 class routing.
+- Implemented CMT as an optional local AugMix/JSD/DCL loss.
+- Added a strict fit-only control using the identical split.
+- Added OpenI A/B entry, automatic comparison, packaging, and c2net upload.
+- Confirmed no final test metric participates in routing.
+- Passed 14 focused tests and two local 3050 end-to-end debug runs.
+
+Current status: ready for the 12-round OpenI Go/No-Go probe, not ready for a
+40-round claim.
+
+## FedFalsify v0.1 Offline Gate Completed - 2026-07-23
+
+The project now has a tested offline audit implementation for:
+
+```text
+Foreign Transfer Tensor
+FRA paired advantage and projected gate coverage
+CMT / fixed-margin / direct-KD controls
+TAU gradient agreement
+exact frozen-BN one-step parameter update
+```
+
+Tests: `tests/test_fedfalsify_audit.py` -> `10 passed`.
+
+The three-gamma real-checkpoint audit says that direct KD is increasingly
+harmful and that CMT is mildly positive, but the original FRA hard gate is too
+sparse. FedFalsify v0.1 is therefore a No-Go for a 40-round run. The next
+candidate is TAU-first top-1 source selection with FRA demoted to a ranking
+prior. See `FEDFALSIFY_AUDIT_GUIDE_ZH.md` and the latest section of
+`CURRENT_PROJECT_MEMORY.md`.
+
+The follow-up source-ranking audit supports that revision:
+
+```text
+gamma                         0.0      0.6      0.9
+TAU top-1 coverage            100%     100%     100%
+positive precision            91.4%    94.3%    85.7%
+mean increment over CE        .00354   .00367   .00320
+```
+
+Before a 12-round runner, validate a cheaper head-only or last-block TAU against
+the current full-model TAU.
+
+## Calibrated PEW Local Attribution Result - EBST-v2 Rejected - 2026-07-22
+
+The required 12-round calibrated PEW local-only control completed:
+
+```text
+local final Avg/Worst/WCCA/CFG     = 42.8469/36.2300/19.775/6.5725
+EBST-v2 final                      = 42.6331/35.2975/20.675/7.2900
+EBST-v2 minus local                = -0.2138/-0.9325/+0.900/+0.7175
+
+local last-five mean               = 40.4278/36.2890/17.965/6.427
+EBST-v2 last-five mean             = 40.4526/35.9870/17.400/6.666
+EBST-v2 minus local last-five      = +0.0249/-0.3020/-0.565/+0.239
+```
+
+The two runs match in PEW checkpoint/threshold, inferred environments, data,
+models, seed, optimizer, and training budget. The only experimental difference
+is EBST-v2/SCP communication, so attribution is valid. EBST-v2 fails the frozen
+gate: average gain is effectively zero, Worst and CFG regress, and three of four
+clients lose accuracy. The calibrated PEW + BER+CDep local mechanism is the
+validated positive component. Hard-taxonomy EBST-v2 is now a negative archived
+route; a 40-round run is blocked pending communication redesign.
 
 ## Calibrated PEW + EBST-v2 Probe Result - Positive but Attribution Unresolved - 2026-07-21
 

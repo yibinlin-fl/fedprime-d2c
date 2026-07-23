@@ -32,6 +32,44 @@ EXPERIMENT_GUIDE_ZH.md
 
 Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older files may contain historical notes.
 
+## Current Mainline Override - 2026-07-23
+
+The next executable candidate is:
+
+```text
+FedFalsify v0.3
+= v0.2 head-TAU Top-1 + paired-correctness non-inferiority veto
+```
+
+For each receiver/class/source, v0.3 computes paired correctness advantage,
+its standard error, and the one-sided upper bound:
+
+```text
+UCB = paired_advantage + kappa * SE
+eligible iff UCB >= 0
+```
+
+TAU still ranks the surviving sources. The veto only removes sources that are
+statistically supported as worse than the receiver; it does not restore the
+sparse positive-FRA gate from v0.1.
+
+Implementation and launch:
+
+```text
+fedprime/methods/fedfalsify/evidence.py
+fedprime/methods/fedfalsify/router.py
+configs/openi_v100_fedfalsify_v03_probe.yaml
+scripts/openi_fedfalsify_v03_entry.py
+```
+
+Local RTX 3050 smoke test passed. Round 0 was warmup; round 1 evaluated 99
+candidates, rejected 15 statistically inferior candidates, retained 11 routes,
+and produced finite `cmt_loss=1.2705`. Focused tests: `15 passed`.
+
+Run only the 12-round candidate-only v0.3 probe next. Reuse the stored strict
+v0.2 fit-only control offline. Do not run 40 rounds unless last-five Avg improves
+by at least 1 point, Worst/WCCA do not decline, and CFG does not increase.
+
 ## Newest Offline Research Decision - 2026-07-23
 
 The newest candidate investigated is `FedFalsify v0.1`, but it has not replaced
@@ -68,7 +106,7 @@ FEDFALSIFY_AUDIT_GUIDE_ZH.md
 deliverables/fedfalsify_offline_audit/FEDFALSIFY_OFFLINE_AUDIT_ZH.md
 ```
 
-## Current Mainline Override - 2026-07-23
+## Previous Mainline Override - 2026-07-23
 
 The current executable candidate is:
 
@@ -116,6 +154,44 @@ unit tests: 14 passed
 ```
 
 The two-batch debug accuracy is not a research result.
+
+The formal 12-round strict A/B probe has now completed:
+
+```text
+strict fit-only final Avg/Worst/WCCA/CFG = 37.7788/31.8025/9.550/9.4625
+FedFalsify final                         = 38.5175/31.5400/9.525/9.7175
+final delta                             = +0.7387/-0.2625/-0.025/+0.255
+
+strict fit-only last-five               = 35.2646/29.5320/6.480/10.744
+FedFalsify last-five                    = 35.8096/29.8130/6.790/11.190
+last-five delta                         = +0.5450/+0.2810/+0.310/+0.446
+```
+
+Lower CFG is better, so the frozen gate failed. Do not run v0.2 for 40 rounds.
+The communication signal is nevertheless nonzero: Avg improves over strict
+local control in all 9 post-warmup rounds.
+
+Online route diagnosis:
+
+```text
+active routes per round: 31-33/40
+mean selected head-TAU: 0.8725
+selected routes with paired FRA advantage <= 0: 54.17%
+selected routes with FRA strength = 0: 61.11%
+adjacent-round source churn: 21.03%
+```
+
+Interpretation: head-TAU measures gradient compatibility, not source expertise.
+The only justified next revision is a non-inferiority evidence veto: reject a
+source only when the upper confidence bound of paired correctness advantage is
+below zero, then apply TAU Top-1 among surviving sources. Do not restore the
+coverage-collapsing v0.1 hard positive-FRA gate.
+
+Analysis:
+
+```text
+deliverables/fedfalsify_probe_analysis_20260723/FEDFALSIFY_PROBE_ANALYSIS_ZH.md
+```
 
 ## Previous Mainline Override - 2026-07-19
 

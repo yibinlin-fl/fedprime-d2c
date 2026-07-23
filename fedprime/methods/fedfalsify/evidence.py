@@ -15,7 +15,9 @@ class PairedAdvantage:
     receiver_accuracy: float
     paired_advantage: float
     paired_variance: float
+    paired_standard_error: float
     conservative_advantage: float
+    noninferiority_upper_bound: float
     shrinkage: float
     advantage_strength: float
     is_auditable: bool
@@ -70,7 +72,9 @@ def compute_paired_advantage(
             receiver_accuracy=float("nan"),
             paired_advantage=float("nan"),
             paired_variance=float("nan"),
+            paired_standard_error=float("nan"),
             conservative_advantage=float("nan"),
+            noninferiority_upper_bound=float("nan"),
             shrinkage=0.0,
             advantage_strength=0.0,
             is_auditable=False,
@@ -83,7 +87,9 @@ def compute_paired_advantage(
     paired = source_correct - receiver_correct
     advantage = float(paired.mean())
     variance = float(paired.var(ddof=1)) if count > 1 else 0.0
-    conservative = advantage - float(kappa) * np.sqrt((variance + eps) / count)
+    standard_error = float(np.sqrt((variance + eps) / count))
+    conservative = advantage - float(kappa) * standard_error
+    noninferiority_upper_bound = advantage + float(kappa) * standard_error
     shrinkage = count / (count + float(shrinkage_nu))
     auditable = count >= int(min_count)
     strength = shrinkage * max(conservative, 0.0) if auditable else 0.0
@@ -95,7 +101,9 @@ def compute_paired_advantage(
         receiver_accuracy=float(receiver_correct.mean()),
         paired_advantage=advantage,
         paired_variance=variance,
+        paired_standard_error=standard_error,
         conservative_advantage=float(conservative),
+        noninferiority_upper_bound=float(noninferiority_upper_bound),
         shrinkage=float(shrinkage),
         advantage_strength=float(strength),
         is_auditable=auditable,

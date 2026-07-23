@@ -104,6 +104,12 @@ class FedFalsifyExperiment(AsymHFLExperiment):
             fra_weight=float(router_cfg.get("fra_weight", 0.0)),
             fra_kappa=float(router_cfg.get("fra_kappa", 1.0)),
             fra_shrinkage_nu=float(router_cfg.get("fra_shrinkage_nu", 10.0)),
+            noninferiority_veto=bool(
+                router_cfg.get("noninferiority_veto", False)
+            ),
+            noninferiority_margin=float(
+                router_cfg.get("noninferiority_margin", 0.0)
+            ),
             margin_clip=float(transfer_cfg.get("margin_clip", 2.0)),
             source_correct_only=bool(transfer_cfg.get("source_correct_only", True)),
         )
@@ -126,6 +132,9 @@ class FedFalsifyExperiment(AsymHFLExperiment):
             "route_coverage",
             "mean_selected_tau",
             "mean_selected_fra",
+            "mean_selected_fra_upper_bound",
+            "noninferiority_eligible_count",
+            "statistically_inferior_count",
             "route_seconds",
             "round_seconds",
         ]
@@ -137,6 +146,10 @@ class FedFalsifyExperiment(AsymHFLExperiment):
             "tau",
             "fra_strength",
             "fra_advantage",
+            "fra_standard_error",
+            "fra_upper_bound",
+            "noninferiority_eligible",
+            "rejection_reason",
             "score",
             "selected",
         ]
@@ -203,9 +216,19 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                         if selected
                         else 0.0
                     )
+                    eligible_count = sum(
+                        int(candidate.noninferiority_eligible)
+                        for candidate in candidates
+                    )
+                    inferior_count = sum(
+                        int(candidate.rejection_reason == "statistically_inferior")
+                        for candidate in candidates
+                    )
                     print(
                         f"[heartbeat] FedFalsify routes={len(selected)}/"
                         f"{num_clients * num_classes} mean_tau={mean_tau:.4f} "
+                        f"eligible={eligible_count}/{len(candidates)} "
+                        f"inferior_rejected={inferior_count} "
                         f"elapsed={route_seconds:.1f}s",
                         flush=True,
                     )
@@ -310,6 +333,18 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                         sum(route.fra_strength for route in selected_routes)
                         / max(len(selected_routes), 1)
                     ),
+                    "mean_selected_fra_upper_bound": (
+                        sum(route.fra_upper_bound for route in selected_routes)
+                        / max(len(selected_routes), 1)
+                    ),
+                    "noninferiority_eligible_count": sum(
+                        int(candidate.noninferiority_eligible)
+                        for candidate in candidates
+                    ),
+                    "statistically_inferior_count": sum(
+                        int(candidate.rejection_reason == "statistically_inferior")
+                        for candidate in candidates
+                    ),
                     "route_seconds": route_seconds,
                     "round_seconds": time.perf_counter() - round_start,
                 }
@@ -323,6 +358,7 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                     f"cmt_loss={row['cmt_loss']:.4f} "
                     f"routes={row['active_route_count']} "
                     f"tau={row['mean_selected_tau']:.4f} "
+                    f"fra_ucb={row['mean_selected_fra_upper_bound']:.4f} "
                     f"elapsed={row['round_seconds']:.1f}s",
                     flush=True,
                 )

@@ -2,6 +2,31 @@
 
 Last updated: 2026-07-23
 
+## FedFalsify v0.3 Implemented And Smoke-Tested - 2026-07-23
+
+- Added paired standard error and one-sided non-inferiority UCB.
+- Added a switchable `noninferiority_veto` before TAU Top-1.
+- Added candidate-level UCB, eligibility, and rejection-reason logs.
+- Added route-level eligible/rejected counts and selected mean UCB metrics.
+- Preserved v0.2 behavior when the new switch is disabled.
+- Added independent local-debug and OpenI candidate-only configurations.
+- Focused tests passed: `15 passed`.
+- RTX 3050 two-round smoke passed through warmup and active CMT communication.
+
+Smoke communication round:
+
+```text
+candidates=99
+eligible=84
+statistically inferior rejected=15
+active routes=11/40
+cmt_loss=1.2705
+```
+
+The method is executable but not yet a positive research result. Run one
+12-round candidate-only probe next and compare it with the stored strict
+fit-only control.
+
 ## FedFalsify v0.2 Strict Probe Ready - 2026-07-23
 
 - Implemented deterministic class-stratified `D_fit/D_audit` persistence.
@@ -16,6 +41,21 @@ Last updated: 2026-07-23
 
 Current status: ready for the 12-round OpenI Go/No-Go probe, not ready for a
 40-round claim.
+
+### Probe completed
+
+The strict probe has completed. Last-five FedFalsify minus control is:
+
+```text
+Avg +0.5450, Worst +0.2810, WCCA +0.310, CFG +0.446
+```
+
+Because lower CFG is better, the gate failed. Post-warmup Avg improves in all
+9/9 rounds, but 54.17% of selected teachers have nonpositive paired accuracy
+advantage. v0.2 is archived as a weak positive communication result and must
+not be run for 40 rounds unchanged.
+
+Next candidate: TAU Top-1 preceded by a statistical non-inferiority veto.
 
 ## FedFalsify v0.1 Offline Gate Completed - 2026-07-23
 

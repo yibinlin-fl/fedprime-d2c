@@ -2,7 +2,52 @@
 
 Updated: 2026-07-23
 
-## Latest Executable Candidate: FedFalsify v0.2 - 2026-07-23
+## Latest Executable Candidate: FedFalsify v0.3 - 2026-07-23
+
+FedFalsify v0.2 produced a real but weak communication signal and failed the
+strict gate on CFG. Route attribution found that 54.17% of selected teachers
+had nonpositive paired correctness advantage. v0.3 makes exactly one change:
+
+```text
+paired SE  = sqrt(paired_variance / n)
+paired UCB = paired_advantage + kappa * paired SE
+eligible   = paired UCB >= 0
+```
+
+Head-TAU Top-1 selection then runs only among eligible sources. This is a
+non-inferiority veto: uncertain sources may survive, but sources statistically
+supported as worse than the receiver are removed. CMT, fit/audit split, warmup,
+models, optimizer, data, and all local learning remain frozen.
+
+Core files:
+
+```text
+fedprime/methods/fedfalsify/evidence.py
+fedprime/methods/fedfalsify/router.py
+fedprime/methods/fedfalsify_experiment.py
+configs/debug_fedfalsify_v03_cle.yaml
+configs/openi_v100_fedfalsify_v03_probe.yaml
+scripts/openi_fedfalsify_v03_entry.py
+```
+
+Verification:
+
+```text
+focused tests: 15 passed
+RTX 3050 smoke: 2 rounds completed in 22.2 seconds
+round 0: warmup, routes=0, cmt_loss=0
+round 1: candidates=99, eligible=84, statistically inferior rejected=15
+         routes=11, mean TAU=0.9473, finite cmt_loss=1.2705
+```
+
+The full repository test command timed out in the pre-existing Matplotlib
+`test_analyze_priors.py` plotting path; no FedFalsify test failed.
+
+Next action: run only `scripts/openi_fedfalsify_v03_entry.py`. It packages
+`fedfalsify_v03_probe_outputs.tar.gz` and reuses the stored strict control
+offline. Do not run 40 rounds before the stricter frozen gate passes.
+
+## Previous Executable Candidate: FedFalsify v0.2 - 2026-07-23
 
 The offline audit has now been converted into an executable, leakage-free
 12-round A/B probe.
@@ -48,6 +93,39 @@ and a finite CMT loss. Unit tests: 14 passed. Debug accuracy is not evidence.
 
 Next action: run the strict OpenI A/B probe and judge last-five
 Avg/Worst/WCCA/CFG. Do not run 40 rounds before the frozen gate passes.
+
+### Strict A/B result
+
+The 12-round OpenI probe is complete:
+
+```text
+strict control final  = 37.7788/31.8025/WCCA 9.550/CFG 9.4625
+FedFalsify final      = 38.5175/31.5400/WCCA 9.525/CFG 9.7175
+
+strict control last5  = 35.2646/29.5320/WCCA 6.480/CFG 10.744
+FedFalsify last5      = 35.8096/29.8130/WCCA 6.790/CFG 11.190
+```
+
+Metric order is Avg/Worst/WCCA/CFG and lower CFG is better. The last-five
+delta is `+0.5450/+0.2810/+0.310/+0.446`, so the frozen gate failed only on
+CFG. Avg is higher than strict control in all 9 communication rounds, which is
+a real but small positive communication signal.
+
+Route diagnosis shows why the gain is limited: 54.17% of selected sources have
+nonpositive paired accuracy advantage and 61.11% have zero FRA strength, even
+though mean head-TAU is 0.8725. TAU verifies gradient compatibility but not
+teacher expertise.
+
+Decision: do not run v0.2 for 40 rounds. The next candidate should add a paired
+correctness non-inferiority veto (`Delta + kappa*SE >= 0`) before TAU Top-1.
+This rejects statistically worse sources without restoring the sparse v0.1
+hard positive-FRA gate.
+
+Full report:
+
+```text
+deliverables/fedfalsify_probe_analysis_20260723/FEDFALSIFY_PROBE_ANALYSIS_ZH.md
+```
 
 ## Latest Result: FedFalsify v0.1 Offline Audit - 2026-07-23
 

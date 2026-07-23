@@ -43,6 +43,8 @@ def test_paired_advantage_rewards_corrections_and_penalizes_regressions() -> Non
     assert evidence.source_accuracy == pytest.approx(0.75)
     assert evidence.receiver_accuracy == pytest.approx(0.50)
     assert evidence.paired_advantage == pytest.approx(0.25)
+    assert evidence.paired_standard_error > 0.0
+    assert evidence.noninferiority_upper_bound == pytest.approx(0.25)
     assert evidence.advantage_strength == pytest.approx(0.25)
     assert evidence.is_active
 
@@ -60,6 +62,27 @@ def test_paired_advantage_disables_unsupported_class() -> None:
     assert not evidence.is_auditable
     assert not evidence.is_active
     assert np.isnan(evidence.paired_advantage)
+    assert np.isnan(evidence.noninferiority_upper_bound)
+
+
+def test_noninferiority_upper_bound_rejects_only_supported_harm() -> None:
+    labels = np.zeros(16, dtype=np.int64)
+    receiver = np.asarray([0] * 12 + [1] * 4)
+    source = np.asarray([0] * 4 + [1] * 12)
+
+    evidence = compute_paired_advantage(
+        source,
+        receiver,
+        labels,
+        class_id=0,
+        kappa=1.0,
+        shrinkage_nu=0.0,
+        min_count=5,
+    )
+
+    assert evidence.paired_advantage < 0.0
+    assert evidence.noninferiority_upper_bound < 0.0
+    assert evidence.is_auditable
 
 
 def test_classwise_accuracy_tensor_uses_receiver_specific_labels() -> None:
@@ -270,6 +293,8 @@ def test_transfer_plan_applies_only_to_routed_classes() -> None:
         tau=0.5,
         fra_strength=0.0,
         fra_advantage=0.0,
+        fra_standard_error=0.0,
+        fra_upper_bound=0.0,
         fit_count=8,
         audit_count=5,
     )

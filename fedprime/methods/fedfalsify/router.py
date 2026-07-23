@@ -32,6 +32,8 @@ class ClassRoute:
     tau: float
     fra_strength: float
     fra_advantage: float
+    fra_standard_error: float
+    fra_upper_bound: float
     fit_count: int
     audit_count: int
 
@@ -47,10 +49,14 @@ class CandidateAudit:
     tau: float
     fra_strength: float
     fra_advantage: float
+    fra_standard_error: float
+    fra_upper_bound: float
+    noninferiority_eligible: bool
+    rejection_reason: str
     score: float
     selected: bool
 
-    def to_dict(self) -> dict[str, int | float | bool]:
+    def to_dict(self) -> dict[str, int | float | bool | str]:
         return asdict(self)
 
 
@@ -178,6 +184,8 @@ class FedFalsifyRouter:
         fra_weight: float = 0.0,
         fra_kappa: float = 1.0,
         fra_shrinkage_nu: float = 10.0,
+        noninferiority_veto: bool = False,
+        noninferiority_margin: float = 0.0,
         margin_clip: float = 2.0,
         source_correct_only: bool = True,
     ):
@@ -190,6 +198,8 @@ class FedFalsifyRouter:
         self.fra_weight = float(fra_weight)
         self.fra_kappa = float(fra_kappa)
         self.fra_shrinkage_nu = float(fra_shrinkage_nu)
+        self.noninferiority_veto = bool(noninferiority_veto)
+        self.noninferiority_margin = float(noninferiority_margin)
         self.margin_clip = float(margin_clip)
         self.source_correct_only = bool(source_correct_only)
 
@@ -233,7 +243,9 @@ class FedFalsifyRouter:
                 )
 
                 receiver_audit_predictions = None
-                scored: list[tuple[float, int, float, float, float]] = []
+                scored: list[
+                    tuple[float, int, float, float, float, float, float, bool, str]
+                ] = []
                 for source_id, source in snapshots.items():
                     if int(source_id) == int(receiver_id):
                         continue
@@ -273,6 +285,26 @@ class FedFalsifyRouter:
                         min_count=self.min_audit_count,
                     )
                     score = float(tau) + self.fra_weight * float(fra.advantage_strength)
+                    noninferiority_eligible = (
+                        not self.noninferiority_veto
+                        or (
+                            fra.is_auditable
+                            and fra.noninferiority_upper_bound
+                            >= self.noninferiority_margin
+                        )
+                    )
+                    if not fra.is_auditable:
+                        rejection_reason = "insufficient_audit_support"
+                    elif (
+                        self.noninferiority_veto
+                        and fra.noninferiority_upper_bound
+                        < self.noninferiority_margin
+                    ):
+                        rejection_reason = "statistically_inferior"
+                    elif float(tau) <= self.min_tau:
+                        rejection_reason = "tau_below_threshold"
+                    else:
+                        rejection_reason = ""
                     scored.append(
                         (
                             score,
@@ -280,12 +312,20 @@ class FedFalsifyRouter:
                             float(tau),
                             float(fra.advantage_strength),
                             float(fra.paired_advantage),
+                            float(fra.paired_standard_error),
+                            float(fra.noninferiority_upper_bound),
+                            bool(noninferiority_eligible),
+                            rejection_reason,
                         )
                     )
 
                 selected_source = None
-                if scored:
-                    best = max(scored, key=lambda item: (item[0], item[2], -item[1]))
+                eligible_scored = [item for item in scored if item[7]]
+                if eligible_scored:
+                    best = max(
+                        eligible_scored,
+                        key=lambda item: (item[0], item[2], -item[1]),
+                    )
                     if best[2] > self.min_tau:
                         selected_source = best[1]
                         routes[int(receiver_id)][class_id] = ClassRoute(
@@ -295,10 +335,22 @@ class FedFalsifyRouter:
                             tau=best[2],
                             fra_strength=best[3],
                             fra_advantage=best[4],
+                            fra_standard_error=best[5],
+                            fra_upper_bound=best[6],
                             fit_count=int(fit_indices.size),
                             audit_count=int(audit_indices.size),
                         )
-                for score, source_id, tau, fra_strength, fra_advantage in scored:
+                for (
+                    score,
+                    source_id,
+                    tau,
+                    fra_strength,
+                    fra_advantage,
+                    fra_standard_error,
+                    fra_upper_bound,
+                    noninferiority_eligible,
+                    rejection_reason,
+                ) in scored:
                     candidates.append(CandidateAudit(
                         receiver_id=int(receiver_id),
                         class_id=class_id,
@@ -306,6 +358,10 @@ class FedFalsifyRouter:
                         tau=tau,
                         fra_strength=fra_strength,
                         fra_advantage=fra_advantage,
+                        fra_standard_error=fra_standard_error,
+                        fra_upper_bound=fra_upper_bound,
+                        noninferiority_eligible=noninferiority_eligible,
+                        rejection_reason=rejection_reason,
                         score=score,
                         selected=source_id == selected_source,
                     ))
@@ -334,6 +390,18 @@ def summarize_routes(
         ),
         "mean_selected_fra": (
             float(np.mean([route.fra_strength for route in selected])) if selected else 0.0
+        ),
+        "mean_selected_fra_upper_bound": (
+            float(np.mean([route.fra_upper_bound for route in selected]))
+            if selected
+            else 0.0
+        ),
+        "noninferiority_eligible_count": sum(
+            int(candidate.noninferiority_eligible) for candidate in candidates
+        ),
+        "statistically_inferior_count": sum(
+            int(candidate.rejection_reason == "statistically_inferior")
+            for candidate in candidates
         ),
         "candidate_count": len(candidates),
     }

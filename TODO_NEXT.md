@@ -1,6 +1,22 @@
 # TODO Next
 
-## Immediate - FedFalsify Strict Gate
+## Immediate - FedFalsify v0.3 Candidate-Only Gate
+
+Implementation and RTX 3050 smoke are complete.
+
+Next:
+
+1. Push the v0.3 implementation when requested.
+2. On OpenI, use the existing gamma=0.9 CLE-HFL dataset.
+3. Start `scripts/openi_fedfalsify_v03_entry.py` with no arguments.
+4. Download `fedfalsify_v03_probe_outputs.tar.gz`.
+5. Compare offline against the stored strict fit-only control.
+6. Require last-five `Avg >= control + 1.0`, nonnegative Worst/WCCA deltas, and
+   nonpositive CFG delta.
+7. If the gate fails, archive FedFalsify communication instead of tuning only
+   thresholds or `lambda_cmt`. If it passes, prepare a matching 40-round run.
+
+## Completed - FedFalsify v0.2 Strict Gate
 
 1. On OpenI, keep using dataset `openi_cle_rahfl_diagnostic`.
 2. Start `scripts/openi_fedfalsify_entry.py` with no arguments.
@@ -10,6 +26,17 @@
 5. Only if all four gates pass, implement matching 40-round runs and repeat
    seeds. Otherwise archive this communication path instead of tuning only
    `lambda_cmt`.
+
+Status: completed. The gate failed on CFG.
+
+Next implementation:
+
+1. Add paired correctness UCB to each receiver/class/source audit.
+2. Reject only sources with `paired_advantage + kappa * SE < 0`.
+3. Run TAU Top-1 among surviving sources; abstain when none survive.
+4. Keep the same split, warmup, CMT, data, models, and optimizer.
+5. Run a candidate-only 12-round v0.3 probe and compare offline with the stored
+   strict control. Do not run 40 rounds yet.
 
 ## 2026-07-23 Decision: Revise FedFalsify Before Training
 

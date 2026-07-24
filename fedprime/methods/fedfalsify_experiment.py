@@ -9,6 +9,11 @@ import torch
 
 from fedprime.data.fedfalsify import build_fedfalsify_loaders
 from fedprime.data.loaders import corruption_group_names_from_test_loader
+from fedprime.engine.operator_metrics import (
+    load_operator_metadata,
+    operator_rows_for_round,
+    summarize_operator_splits,
+)
 from fedprime.methods.fedfalsify.router import (
     CandidateAudit,
     FedFalsifyRouter,
@@ -32,7 +37,7 @@ class FedFalsifyExperiment(AsymHFLExperiment):
         transfer_cfg = falsify_cfg.get("transfer", {})
         model_cfg = self.config["models"]
 
-        if str(data_cfg.get("scenario", "")).lower() != "cle_hfl":
+        if str(data_cfg.get("scenario", "")).lower() not in {"cle_hfl", "cle_hfl_v2"}:
             raise ValueError("FedFalsify currently requires the CLE-HFL prepared dataset")
         num_clients = len(model_cfg["names"])
         num_classes = int(data_cfg.get("num_classes", 10))
@@ -58,6 +63,15 @@ class FedFalsifyExperiment(AsymHFLExperiment):
         )
         self._client_class_counts = class_counts
         group_names = corruption_group_names_from_test_loader(test_loader)
+        operator_metadata = load_operator_metadata(data_cfg["private_root"])
+        if operator_metadata:
+            print(
+                "[setup] CLE-HFL v2 operator evaluation enabled: "
+                f"seen={len(operator_metadata.get('seen_operators', []))} "
+                f"unseen={len(operator_metadata.get('unseen_operators', []))}; "
+                "operator metadata is evaluation-only",
+                flush=True,
+            )
 
         print("[setup] building heterogeneous FedFalsify client models", flush=True)
         models = {
@@ -125,6 +139,14 @@ class FedFalsifyExperiment(AsymHFLExperiment):
             "worst_client_group_acc",
             "wcca",
             "cfg",
+            "seen_avg_acc",
+            "seen_worst_acc",
+            "seen_wcca",
+            "seen_cfg",
+            "unseen_avg_acc",
+            "unseen_worst_acc",
+            "unseen_wcca",
+            "unseen_cfg",
             "local_loss",
             "cmt_loss",
             "cmt_active_samples",
@@ -155,16 +177,54 @@ class FedFalsifyExperiment(AsymHFLExperiment):
         ]
         metrics_path = self.output_dir / "metrics.csv"
         route_path = self.output_dir / "route_candidates.csv"
+        operator_metrics_path = self.output_dir / "operator_split_metrics.csv"
+        client_operator_path = self.output_dir / "client_operator_accuracy.csv"
+        class_operator_path = self.output_dir / "client_class_operator_accuracy.csv"
         current_plan: FedFalsifyTransferPlan | None = None
 
         with (
             metrics_path.open("w", newline="", encoding="utf-8") as metrics_file,
             route_path.open("w", newline="", encoding="utf-8") as route_file,
+            operator_metrics_path.open("w", newline="", encoding="utf-8") as operator_file,
+            client_operator_path.open("w", newline="", encoding="utf-8") as client_operator_file,
+            class_operator_path.open("w", newline="", encoding="utf-8") as class_operator_file,
         ):
             metrics_writer = csv.DictWriter(metrics_file, fieldnames=metrics_fields)
             route_writer = csv.DictWriter(route_file, fieldnames=route_fields)
+            operator_writer = csv.DictWriter(
+                operator_file,
+                fieldnames=[
+                    "round",
+                    "split",
+                    "avg_acc",
+                    "worst_acc",
+                    "worst_operator_acc",
+                    "worst_client_operator_acc",
+                    "wcca",
+                    "cfg",
+                ],
+            )
+            client_operator_writer = csv.DictWriter(
+                client_operator_file,
+                fieldnames=["round", "client", "operator", "split", "accuracy"],
+            )
+            class_operator_writer = csv.DictWriter(
+                class_operator_file,
+                fieldnames=[
+                    "round",
+                    "client",
+                    "class_id",
+                    "operator",
+                    "split",
+                    "accuracy",
+                    "total",
+                ],
+            )
             metrics_writer.writeheader()
             route_writer.writeheader()
+            operator_writer.writeheader()
+            client_operator_writer.writeheader()
+            class_operator_writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
                 round_start = time.perf_counter()
@@ -290,6 +350,30 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                     group_names,
                     num_classes,
                 )
+                split_summaries = (
+                    summarize_operator_splits(group_summary, operator_metadata)
+                    if operator_metadata
+                    else {}
+                )
+                if split_summaries:
+                    for split_name, split_values in split_summaries.items():
+                        operator_writer.writerow(
+                            {
+                                "round": round_idx,
+                                "split": split_name,
+                                **split_values,
+                            }
+                        )
+                    client_rows, class_rows = operator_rows_for_round(
+                        round_idx=round_idx,
+                        group_summary=group_summary,
+                        metadata=operator_metadata,
+                    )
+                    client_operator_writer.writerows(client_rows)
+                    class_operator_writer.writerows(class_rows)
+                    operator_file.flush()
+                    client_operator_file.flush()
+                    class_operator_file.flush()
                 accs = group_summary.get("client_accs") or self._evaluate(models, test_loader)
                 transfer_metrics = (
                     current_plan.diagnostics()
@@ -319,6 +403,14 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                     ),
                     "wcca": group_summary.get("wcca", ""),
                     "cfg": group_summary.get("cfg", ""),
+                    "seen_avg_acc": split_summaries.get("seen", {}).get("avg_acc", ""),
+                    "seen_worst_acc": split_summaries.get("seen", {}).get("worst_acc", ""),
+                    "seen_wcca": split_summaries.get("seen", {}).get("wcca", ""),
+                    "seen_cfg": split_summaries.get("seen", {}).get("cfg", ""),
+                    "unseen_avg_acc": split_summaries.get("unseen", {}).get("avg_acc", ""),
+                    "unseen_worst_acc": split_summaries.get("unseen", {}).get("worst_acc", ""),
+                    "unseen_wcca": split_summaries.get("unseen", {}).get("wcca", ""),
+                    "unseen_cfg": split_summaries.get("unseen", {}).get("cfg", ""),
                     "local_loss": sum(local_losses) / max(len(local_losses), 1),
                     "cmt_loss": transfer_metrics["cmt_loss"],
                     "cmt_active_samples": transfer_metrics["cmt_active_samples"],
@@ -362,6 +454,17 @@ class FedFalsifyExperiment(AsymHFLExperiment):
                     f"elapsed={row['round_seconds']:.1f}s",
                     flush=True,
                 )
+                if split_summaries:
+                    seen = split_summaries["seen"]
+                    unseen = split_summaries["unseen"]
+                    print(
+                        f"[operator-eval {round_idx:03d}] "
+                        f"seen={seen['avg_acc']:.2f}/{seen['wcca']:.2f}/"
+                        f"CFG {seen['cfg']:.2f} "
+                        f"unseen={unseen['avg_acc']:.2f}/{unseen['wcca']:.2f}/"
+                        f"CFG {unseen['cfg']:.2f}",
+                        flush=True,
+                    )
 
                 if current_plan is not None and route_interval == 1:
                     del current_plan

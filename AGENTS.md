@@ -32,6 +32,45 @@ EXPERIMENT_GUIDE_ZH.md
 
 Use `CURRENT_PROJECT_MEMORY.md` as the cleanest current-state summary. Older files may contain historical notes.
 
+## New Protocol Override - 2026-07-24
+
+The current method remains FedFalsify v0.3. Its next formal benchmark is
+operator-level CLE-HFL v2:
+
+```text
+11 seen concrete corruption operators
+4 unseen concrete corruption operators
+no unseen operator in client training
+operator-level WCCA/CFG and client/class/operator matrices
+```
+
+FedFalsify must remain taxonomy-free: never pass operator IDs, names, families,
+split status, or severity into routing or local losses.
+
+Read first:
+
+```text
+CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md
+CLE_HFL_V2_OPENI_RUN_GUIDE_ZH.md
+```
+
+Formal data:
+
+```text
+local_runs/cle_hfl_v2_prepared/
+  cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz
+```
+
+Next OpenI command:
+
+```text
+startup: scripts/openi_cle_v2_entry.py
+argument: --method=both
+```
+
+This runs the strict fit-only control and FedFalsify v0.3 for 12 rounds. Do not
+run 40 rounds before all/seen/unseen Avg/Worst/WCCA improve and CFG does not.
+
 ## Current Mainline Override - 2026-07-23
 
 The next executable candidate is:
@@ -69,6 +108,29 @@ and produced finite `cmt_loss=1.2705`. Focused tests: `15 passed`.
 Run only the 12-round candidate-only v0.3 probe next. Reuse the stored strict
 v0.2 fit-only control offline. Do not run 40 rounds unless last-five Avg improves
 by at least 1 point, Worst/WCCA do not decline, and CFG does not increase.
+
+### v0.3 probe result - 2026-07-24
+
+```text
+v0.3 final     = 39.0631/32.1475/WCCA 12.750/CFG 9.1125
+v0.3 last-five = 36.6493/30.6515/WCCA 7.955/CFG 11.3825
+
+v0.3 minus strict control final     = +1.2844/+0.3450/+3.200/-0.3500
+v0.3 minus strict control last-five = +1.3846/+1.1195/+1.475/+0.6385
+```
+
+Lower CFG is better. The frozen gate passed Avg, Worst, and WCCA, but failed
+CFG. Post-warmup Avg and Worst beat strict control in all 9/9 rounds. The veto
+reduced selected nonpositive-advantage teachers from 54.17% to 27.98%, so the
+mechanism is effective, but shortcut suppression remains unstable. Do not run
+40 rounds yet. First persist per-round client/class/corruption matrices and
+attribute the CFG spikes without tuning training hyperparameters.
+
+Analysis:
+
+```text
+deliverables/fedfalsify_v03_probe_analysis_20260724/FEDFALSIFY_V03_PROBE_ANALYSIS_ZH.md
+```
 
 ## Newest Offline Research Decision - 2026-07-23
 

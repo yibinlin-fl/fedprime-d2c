@@ -1,5 +1,28 @@
 # TODO Next
 
+## Immediate - CLE-HFL v2 Strict A/B Probe
+
+Implementation, formal data generation, audit, focused tests, and RTX 3050
+smoke are complete.
+
+Next:
+
+1. Upload
+   `local_runs/cle_hfl_v2_prepared/cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz`
+   as an OpenI dataset.
+2. Use startup file `scripts/openi_cle_v2_entry.py`.
+3. Set runtime argument `--method=both`.
+4. Download `cle_hfl_v2_probe_outputs.tar.gz`.
+5. Compare strict fit-only control and FedFalsify v0.3 on all/seen/unseen:
+   Avg, Worst, WCCA, and CFG.
+6. Require positive Avg/Worst/WCCA and nonpositive CFG deltas, especially on
+   unseen operators, before any 40-round run.
+7. If the gate passes, run RAHFL with `--method=rahfl`, then prepare 40-round
+   multi-seed configs. If it fails, attribute the failure from the persisted
+   client/class/operator matrices before changing the method.
+
+Do not tune thresholds or `lambda_cmt` before this frozen A/B result.
+
 ## Immediate - FedFalsify v0.3 Candidate-Only Gate
 
 Implementation and RTX 3050 smoke are complete.
@@ -15,6 +38,19 @@ Next:
    nonpositive CFG delta.
 7. If the gate fails, archive FedFalsify communication instead of tuning only
    thresholds or `lambda_cmt`. If it passes, prepare a matching 40-round run.
+
+Status: completed. Avg/Worst/WCCA passed; CFG failed.
+
+Immediate diagnostic work:
+
+1. Do not run v0.3 for 40 rounds yet.
+2. Extend CLE evaluation output to persist per-round
+   `client x class x corruption` correct/total/accuracy matrices.
+3. Keep training behavior and all v0.3 hyperparameters frozen.
+4. Use the richer diagnostics to identify which class-corruption cells create
+   the round-7 CFG spike and whether they coincide with zero-UCB route churn.
+5. Decide whether a temporal route-consistency mechanism is theoretically
+   justified. Do not implement one based only on the aggregate CFG curve.
 
 ## Completed - FedFalsify v0.2 Strict Gate
 

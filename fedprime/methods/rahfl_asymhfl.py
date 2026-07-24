@@ -43,6 +43,10 @@ from fedprime.methods.environment_structural_transfer import (
     new_relation_accumulator,
 )
 from fedprime.engine.cle_metrics import evaluate_cle_split, write_cle_evaluation
+from fedprime.engine.operator_metrics import (
+    load_operator_metadata,
+    summarize_operator_splits,
+)
 from fedprime.methods.nir_dcl import NIRDCLFeatureQueue
 from fedprime.methods.ird import (
     anchor_disagreement,
@@ -98,8 +102,13 @@ class AsymHFLExperiment:
         use_prime = bool(method_cfg.get("use_prime", False))
         use_prime_dcl = use_prime and bool(method_cfg.get("use_dcl", True))
         scenario = str(data_cfg.get("scenario", "rahfl_cifar10c")).lower()
+        prepared_corruption_scenarios = {
+            "corruption_skew",
+            "cle_hfl",
+            "cle_hfl_v2",
+        }
         pretrain_loaders = None
-        if scenario in {"corruption_skew", "cle_hfl"}:
+        if scenario in prepared_corruption_scenarios:
             if use_prime:
                 raise ValueError(f"{scenario} currently supports AugMix/SARA-style local training, not PRIME.")
             cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
@@ -187,7 +196,7 @@ class AsymHFLExperiment:
             self._client_class_counts = self._build_client_class_counts(labels, dataidx_map, num_classes)
             self._corruption_group_names = []
 
-        if scenario not in {"corruption_skew", "cle_hfl"} and use_prime:
+        if scenario not in prepared_corruption_scenarios and use_prime:
             print("[setup] building PRIME private loaders", flush=True)
             if use_prime_dcl:
                 private_loaders, test_loader = build_prime_dcl_private_loaders(
@@ -211,7 +220,7 @@ class AsymHFLExperiment:
                     raw_for_prime=True,
                 )
             prime_aug = build_prime_module(stats, method_cfg.get("prime", {})).to(self.device)
-        elif scenario not in {"corruption_skew", "cle_hfl"}:
+        elif scenario not in prepared_corruption_scenarios:
             print("[setup] building AugMix private loaders", flush=True)
             private_loaders, test_loader, _, _ = build_augmix_private_loaders(
                 cifar10c_root=data_cfg["private_root"],
@@ -261,14 +270,29 @@ class AsymHFLExperiment:
 
         metrics_path = self.output_dir / "metrics.csv"
         group_names = getattr(self, "_corruption_group_names", [])
+        operator_metadata = load_operator_metadata(data_cfg["private_root"])
+        if operator_metadata:
+            print(
+                "[setup] CLE-HFL v2 operator evaluation enabled: "
+                f"seen={len(operator_metadata.get('seen_operators', []))} "
+                f"unseen={len(operator_metadata.get('unseen_operators', []))}; "
+                "metadata is not visible to training",
+                flush=True,
+            )
         group_metrics_path = self.output_dir / "corruption_group_acc.csv"
         client_group_metrics_path = self.output_dir / "client_group_acc.csv"
         class_corruption_metrics_path = self.output_dir / "class_corruption_acc.csv"
+        operator_split_metrics_path = self.output_dir / "operator_split_metrics.csv"
         group_file = group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         client_group_file = client_group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         class_corruption_file = (
             class_corruption_metrics_path.open("w", newline="", encoding="utf-8")
             if group_names
+            else None
+        )
+        operator_split_file = (
+            operator_split_metrics_path.open("w", newline="", encoding="utf-8")
+            if operator_metadata
             else None
         )
         with metrics_path.open("w", newline="", encoding="utf-8") as f:
@@ -282,6 +306,14 @@ class AsymHFLExperiment:
                     "worst_client_group_acc",
                     "wcca",
                     "cfg",
+                    "seen_avg_acc",
+                    "seen_worst_acc",
+                    "seen_wcca",
+                    "seen_cfg",
+                    "unseen_avg_acc",
+                    "unseen_worst_acc",
+                    "unseen_wcca",
+                    "unseen_cfg",
                     "local_loss",
                     "col_loss",
                     "ccre_loss",
@@ -320,6 +352,7 @@ class AsymHFLExperiment:
             group_writer = None
             client_group_writer = None
             class_corruption_writer = None
+            operator_split_writer = None
             if group_file is not None:
                 group_writer = csv.DictWriter(
                     group_file,
@@ -338,6 +371,21 @@ class AsymHFLExperiment:
                     fieldnames=["round", "client", "class_id", "group", "acc", "total"],
                 )
                 class_corruption_writer.writeheader()
+            if operator_split_file is not None:
+                operator_split_writer = csv.DictWriter(
+                    operator_split_file,
+                    fieldnames=[
+                        "round",
+                        "split",
+                        "avg_acc",
+                        "worst_acc",
+                        "worst_operator_acc",
+                        "worst_client_operator_acc",
+                        "wcca",
+                        "cfg",
+                    ],
+                )
+                operator_split_writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
@@ -394,6 +442,11 @@ class AsymHFLExperiment:
                 else:
                     accs = self._evaluate(models, test_loader)
                     group_summary = {}
+                split_summaries = (
+                    summarize_operator_splits(group_summary, operator_metadata)
+                    if operator_metadata
+                    else {}
+                )
                 row = {
                     "round": round_idx,
                     "avg_acc": sum(accs) / len(accs),
@@ -402,6 +455,14 @@ class AsymHFLExperiment:
                     "worst_client_group_acc": group_summary.get("worst_client_group_acc", ""),
                     "wcca": group_summary.get("wcca", ""),
                     "cfg": group_summary.get("cfg", ""),
+                    "seen_avg_acc": split_summaries.get("seen", {}).get("avg_acc", ""),
+                    "seen_worst_acc": split_summaries.get("seen", {}).get("worst_acc", ""),
+                    "seen_wcca": split_summaries.get("seen", {}).get("wcca", ""),
+                    "seen_cfg": split_summaries.get("seen", {}).get("cfg", ""),
+                    "unseen_avg_acc": split_summaries.get("unseen", {}).get("avg_acc", ""),
+                    "unseen_worst_acc": split_summaries.get("unseen", {}).get("worst_acc", ""),
+                    "unseen_wcca": split_summaries.get("unseen", {}).get("wcca", ""),
+                    "unseen_cfg": split_summaries.get("unseen", {}).get("cfg", ""),
                     "local_loss": local_loss,
                     "col_loss": col_loss,
                     "ccre_loss": self._last_ccre_metrics.get("ccre_loss", ""),
@@ -471,6 +532,12 @@ class AsymHFLExperiment:
                     for cc_row in group_summary.get("class_corruption_rows", []):
                         class_corruption_writer.writerow({"round": round_idx, **cc_row})
                     class_corruption_file.flush()
+                if operator_split_writer is not None:
+                    for split_name, values in split_summaries.items():
+                        operator_split_writer.writerow(
+                            {"round": round_idx, "split": split_name, **values}
+                        )
+                    operator_split_file.flush()
                 method_metrics = ""
                 if row["ccre_loss"] != "":
                     method_metrics += (
@@ -529,6 +596,17 @@ class AsymHFLExperiment:
                     f"{method_metrics}".rstrip(),
                     flush=True,
                 )
+                if split_summaries:
+                    seen = split_summaries["seen"]
+                    unseen = split_summaries["unseen"]
+                    print(
+                        f"[operator-eval {round_idx:03d}] "
+                        f"seen={seen['avg_acc']:.2f}/{seen['wcca']:.2f}/"
+                        f"CFG {seen['cfg']:.2f} "
+                        f"unseen={unseen['avg_acc']:.2f}/{unseen['wcca']:.2f}/"
+                        f"CFG {unseen['cfg']:.2f}",
+                        flush=True,
+                    )
 
         if group_file is not None:
             group_file.close()
@@ -536,6 +614,8 @@ class AsymHFLExperiment:
             client_group_file.close()
         if class_corruption_file is not None:
             class_corruption_file.close()
+        if operator_split_file is not None:
+            operator_split_file.close()
         if self._fedease_evaluation_loaders:
             self._run_fedease_extended_evaluation(models, num_classes)
         self._save_models(models)

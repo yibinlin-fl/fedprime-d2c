@@ -1,6 +1,27 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-07-23
+Last updated: 2026-07-24
+
+## CLE-HFL v2 Operator Protocol Implemented - 2026-07-24
+
+- Replaced the next benchmark protocol's four broad corruption groups with 15
+  concrete CIFAR-C-style operators.
+- Added a deterministic 11-seen/4-unseen operator split.
+- Added randomized client/class dominant-operator assignment.
+- Added class-balanced clean/seen/unseen/all evaluation data.
+- Kept operator IDs strictly outside all FedFalsify training and routing paths.
+- Added operator-level Avg/Worst/WCCA/CFG and full per-round
+  client/class/operator CSV output.
+- Added RAHFL, strict fit-only control, and FedFalsify v0.3 12-round configs.
+- Added one OpenI entry with automatic import, heartbeat logging, packaging,
+  and c2net upload.
+- Formal data and protocol audit completed.
+- Focused tests: `22 passed`.
+- RTX 3050 two-round active-communication smoke passed.
+- RTX 3050 one-round RAHFL/AsymHFL v2 smoke passed.
+
+Status: implementation-ready and platform-ready, but no formal CLE-HFL v2
+research result exists yet.
 
 ## FedFalsify v0.3 Implemented And Smoke-Tested - 2026-07-23
 
@@ -26,6 +47,21 @@ cmt_loss=1.2705
 The method is executable but not yet a positive research result. Run one
 12-round candidate-only probe next and compare it with the stored strict
 fit-only control.
+
+### v0.3 probe completed - 2026-07-24
+
+```text
+final delta vs strict control:
+  Avg +1.2844, Worst +0.3450, WCCA +3.200, CFG -0.3500
+
+last-five delta vs strict control:
+  Avg +1.3846, Worst +1.1195, WCCA +1.475, CFG +0.6385
+```
+
+The frozen gate passed three of four metrics and failed CFG. The veto cut
+selected nonpositive-advantage teachers from 54.17% to 27.98%, and Avg/Worst
+improved in all 9 communication rounds. Current status: positive partial
+communication result, not approved for a 40-round run.
 
 ## FedFalsify v0.2 Strict Probe Ready - 2026-07-23
 

@@ -1078,3 +1078,19 @@ The local repository is configured to push over SSH.
 5. LogitAvg+PRIME is important to prove D2C is better than plain public-logit averaging.
 6. Official CIFAR-10-C is still needed for detailed per-corruption group analysis.
 7. Use fixed partition files for fair method comparisons.
+# Current Architecture Override: CLE-HFL v2 + FedFalsify v0.3
+
+As of 2026-07-24, the next formal protocol is operator-level CLE-HFL v2.
+The method is:
+
+```text
+fixed private fit/audit split
++ receiver/class/source paired-correctness non-inferiority UCB
++ classifier-head TAU Top-1 routing
++ conservative margin transfer
++ AugMix/JSD/DCL local robust learning
+```
+
+The protocol uses concrete seen/unseen corruption operators, but operator
+metadata is evaluation-only and never enters training. Read
+`CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md` for formulas and the exact data flow.

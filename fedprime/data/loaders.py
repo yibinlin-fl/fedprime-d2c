@@ -60,12 +60,25 @@ class CorruptionSkewClientDataset(data.Dataset):
         train: bool = True,
         transform=None,
         return_corruption: bool = False,
+        evaluation_split: str = "test_balanced",
     ):
         self.root = Path(root)
         self.client_id = client_id
         self.train = train
         self.transform = transform
         self.return_corruption = return_corruption
+        self.evaluation_split = str(evaluation_split)
+        metadata_path = self.root / "metadata.json"
+        self.metadata = (
+            json.loads(metadata_path.read_text(encoding="utf-8"))
+            if metadata_path.is_file()
+            else {}
+        )
+        self.corruption_names = self._load_corruption_names()
+        self.corruption_splits = {
+            str(name): str(split)
+            for name, split in self.metadata.get("operator_splits", {}).items()
+        }
         if train:
             if client_id is None:
                 raise ValueError("client_id is required for corruption-skew training data.")
@@ -74,10 +87,19 @@ class CorruptionSkewClientDataset(data.Dataset):
             self.targets = np.load(data_dir / "train_labels.npy")
             self.corruption_ids = np.load(data_dir / "train_corruption_ids.npy")
         else:
-            data_dir = self.root / "test_balanced"
+            data_dir = self.root / self.evaluation_split
             self.data = np.load(data_dir / "test_images.npy")
             self.targets = np.load(data_dir / "test_labels.npy")
             self.corruption_ids = np.load(data_dir / "test_corruption_ids.npy")
+
+    def _load_corruption_names(self) -> dict[int, str]:
+        raw = self.metadata.get("operator_to_id")
+        if isinstance(raw, dict):
+            return {int(value): str(name) for name, value in raw.items()}
+        raw = self.metadata.get("group_to_id")
+        if isinstance(raw, dict):
+            return {int(value): str(name) for name, value in raw.items()}
+        return {int(idx): str(name) for idx, name in ID_TO_GROUP.items()}
 
     def __len__(self) -> int:
         return int(self.targets.shape[0])
@@ -660,7 +682,7 @@ def corruption_group_names_from_test_loader(test_loader) -> list[str]:
     dataset = getattr(test_loader, "dataset", None)
     if isinstance(dataset, CorruptionSkewClientDataset):
         ids = sorted(int(idx) for idx in np.unique(dataset.corruption_ids))
-        return [ID_TO_GROUP.get(idx, f"group_{idx}") for idx in ids]
+        return [dataset.corruption_names.get(idx, f"group_{idx}") for idx in ids]
     return []
 
 

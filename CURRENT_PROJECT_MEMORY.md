@@ -1,6 +1,76 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-23
+Updated: 2026-07-24
+
+## Current Protocol Mainline: CLE-HFL v2 - 2026-07-24
+
+The current method remains FedFalsify v0.3, but its next evaluation protocol is
+now operator-level CLE-HFL v2 rather than the legacy four-group taxonomy.
+
+```text
+CLE-HFL v2:
+  label skew: Dirichlet alpha=0.5
+  shortcut: client/class -> concrete seen corruption operator, gamma=0.9
+  seen operators: 11
+  unseen operators: 4, absent from every client training set
+  evaluation: clean + seen + unseen + all 15 operators
+```
+
+Corruption family labels are audit metadata only. FedFalsify receives images,
+labels, predictions, and classifier-head gradients; it never receives operator
+IDs, names, families, seen/unseen flags, or severities.
+
+Implementation:
+
+```text
+fedprime/data/corruptions.py
+scripts/prepare_cle_v2_data.py
+scripts/audit_cle_v2_data.py
+fedprime/data/loaders.py
+fedprime/engine/operator_metrics.py
+scripts/openi_cle_v2_entry.py
+configs/openi_v100_rahfl_cle_v2_probe.yaml
+configs/openi_v100_fedfalsify_v03_cle_v2_control_probe.yaml
+configs/openi_v100_fedfalsify_v03_cle_v2_probe.yaml
+```
+
+Formal prepared data:
+
+```text
+local_runs/cle_hfl_v2_prepared/
+  cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz
+size: 363,169,221 bytes, about 346 MiB
+```
+
+Protocol audit passed:
+
+```text
+samples/client: 10,000
+expected dominant-operator rate: 0.90909
+realized rate: 0.91015
+unseen samples in client training: 0
+test seen/unseen/all/clean: 11,000/4,000/15,000/1,000
+```
+
+Verification:
+
+```text
+focused tests: 22 passed
+RTX 3050 end-to-end v2 smoke: passed
+round 0 warmup
+round 1: 66 candidates, 12 inferior rejected, 4 routes, CMT=1.0123
+RAHFL v2 one-round smoke: passed, finite AsymHFL/local losses
+```
+
+Read:
+
+```text
+CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md
+CLE_HFL_V2_OPENI_RUN_GUIDE_ZH.md
+```
+
+Next formal run is a 12-round strict control versus FedFalsify v0.3 A/B using
+`scripts/openi_cle_v2_entry.py --method=both`. Do not run 40 rounds yet.
 
 ## Latest Executable Candidate: FedFalsify v0.3 - 2026-07-23
 
@@ -46,6 +116,50 @@ The full repository test command timed out in the pre-existing Matplotlib
 Next action: run only `scripts/openi_fedfalsify_v03_entry.py`. It packages
 `fedfalsify_v03_probe_outputs.tar.gz` and reuses the stored strict control
 offline. Do not run 40 rounds before the stricter frozen gate passes.
+
+### FedFalsify v0.3 OpenI result - 2026-07-24
+
+The 12-round candidate-only probe completed:
+
+```text
+strict control final  = 37.7788/31.8025/WCCA 9.550/CFG 9.4625
+FedFalsify v0.3 final = 39.0631/32.1475/WCCA 12.750/CFG 9.1125
+final delta           = +1.2844/+0.3450/+3.200/-0.3500
+
+strict control last5  = 35.2646/29.5320/WCCA 6.480/CFG 10.7440
+FedFalsify v0.3 last5 = 36.6493/30.6515/WCCA 7.955/CFG 11.3825
+last-five delta       = +1.3846/+1.1195/+1.475/+0.6385
+```
+
+Lower CFG is better. The frozen four-metric gate passed Avg, Worst, and WCCA,
+but failed CFG. Communication is nevertheless real: v0.3 beats strict control
+on Avg and Worst in all 9 post-warmup rounds. Relative to v0.2, final
+Avg/Worst/WCCA/CFG all improve.
+
+Route attribution:
+
+```text
+mean active routes:                       32.00 -> 21.44
+selected nonpositive-advantage teachers: 54.17% -> 27.98%
+common-route source churn:                21.03% -> 16.89%
+active-route-set adjacent Jaccard:        96.90% -> 75.97%
+```
+
+The non-inferiority veto successfully improves teacher quality. The remaining
+problem is unstable class-corruption disparity, plausibly associated with
+routes entering and leaving around the zero-UCB boundary. This association is
+not yet a causal result because the run did not persist full per-round
+client/class/corruption matrices.
+
+Decision: preserve v0.3 as a positive partial result, but do not run 40 rounds
+or tune `kappa/lambda_cmt` blindly. Add evaluation-only matrix persistence and
+attribute CFG spikes first.
+
+Full report:
+
+```text
+deliverables/fedfalsify_v03_probe_analysis_20260724/FEDFALSIFY_V03_PROBE_ANALYSIS_ZH.md
+```
 
 ## Previous Executable Candidate: FedFalsify v0.2 - 2026-07-23
 

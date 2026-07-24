@@ -23,9 +23,15 @@ def maybe_extract_archive(source: Path, destination: Path) -> Path:
         with tarfile.open(source, "r:gz") as tar:
             tar.extractall(extract_root)
         nested_root = extract_root / archive_name
-        if (nested_root / "cifar_10_cle").is_dir():
+        if (
+            (nested_root / "cifar_10_cle").is_dir()
+            or (nested_root / "cifar_10_cle_v2").is_dir()
+        ):
             return nested_root
-        if (extract_root / "cifar_10_cle").is_dir():
+        if (
+            (extract_root / "cifar_10_cle").is_dir()
+            or (extract_root / "cifar_10_cle_v2").is_dir()
+        ):
             return extract_root
         return extract_root
     return source
@@ -45,14 +51,20 @@ def find_root(search_root: Path, marker: Path, root_parents: int) -> Path:
 
 
 def find_package_root(search_root: Path) -> Path:
-    if (search_root / "cifar_10_cle").is_dir():
+    if (
+        (search_root / "cifar_10_cle").is_dir()
+        or (search_root / "cifar_10_cle_v2").is_dir()
+    ):
         return search_root
     matches = sorted(search_root.rglob("metadata.json")) if search_root.exists() else []
     if not matches:
         raise FileNotFoundError(f"Could not find metadata.json under {search_root}")
     root = matches[0].parent
     while root != search_root.parent:
-        if (root / "cifar_10_cle").is_dir():
+        if (
+            (root / "cifar_10_cle").is_dir()
+            or (root / "cifar_10_cle_v2").is_dir()
+        ):
             print(f"Located CLE-HFL package root: {root}")
             return root
         root = root.parent
@@ -83,19 +95,25 @@ def main() -> None:
     package_root = find_package_root(source)
     print(f"CLE-HFL package root: {package_root}")
 
-    cle = package_root / "cifar_10_cle"
-    if not cle.is_dir():
-        cle = find_root(package_root, Path("metadata.json"), root_parents=2)
-
-    copy_dir(cle, destination / "RAHFL-master/Dataset/cifar_10_cle")
+    copied_private_roots = []
+    for directory_name in ("cifar_10_cle", "cifar_10_cle_v2"):
+        cle = package_root / directory_name
+        if cle.is_dir():
+            target = destination / "RAHFL-master/Dataset" / directory_name
+            copy_dir(cle, target)
+            copied_private_roots.append(target)
+    if not copied_private_roots:
+        raise FileNotFoundError(
+            f"No cifar_10_cle or cifar_10_cle_v2 directory under {package_root}"
+        )
 
     cifar100 = package_root / "cifar_100"
     if cifar100.is_dir():
         copy_dir(cifar100, destination / "RAHFL-master/Dataset/cifar_100")
 
-    required = destination / "RAHFL-master/Dataset/cifar_10_cle"
-    if not safe_exists(required):
-        raise FileNotFoundError(f"Import incomplete: {required}")
+    for required in copied_private_roots:
+        if not safe_exists(required):
+            raise FileNotFoundError(f"Import incomplete: {required}")
     print("CLE-HFL prepared-data import verified successfully.")
 
 

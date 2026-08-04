@@ -6,6 +6,7 @@ outputs/
 logs/
 runs/
 local_runs/
+local_test_outputs/
 wandb/
 
 *.pt

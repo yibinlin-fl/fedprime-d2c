@@ -10,9 +10,9 @@ benchmark is four-client CLE-HFL v2 (`alpha=0.5`, `gamma=0.9`, seed 0), with 11
 seen and 4 unseen concrete corruption operators. Operator metadata is available
 to evaluation only.
 
-## Experiment Running Now
+## Latest Formal Result
 
-OpenI is running one strict 12-round A/B attribution probe:
+OpenI completed one strict 12-round A/B attribution probe on 2026-08-04:
 
 ```text
 control:
@@ -24,6 +24,21 @@ candidate:
   + BER + CDep
   + the same strict AsymHFL-val
 ```
+
+The returned archive was validated and independently reanalyzed locally. Both
+arms contain rounds 0-11 with no missing core metrics, and the recomputed
+comparison exactly matches the archived comparison.
+
+Candidate-minus-control:
+
+```text
+scope       Avg       Worst     WCCA      CFG
+final       +5.1267   +2.9533   +8.7500   -7.7250
+last-five   +3.9377   +3.9040   +5.0500   -6.3200
+```
+
+All four frozen last-five gates passed. Verdict: `GO` for the seed-0
+attribution probe. This does not yet justify a multi-seed or final-paper claim.
 
 Fairness contract:
 
@@ -82,12 +97,13 @@ candidate BER and CDep were nonzero
 
 Smoke accuracy is not a research result.
 
-## Decision After Result Arrives
+## Decision And Next Step
 
-Place the returned archive under `outputs/`, then analyze the generated:
+Validated result locations:
 
 ```text
-outputs/strict_pew_asymhfl_val_comparison.json
+outputs/strict_pew_asymhfl_val_probe_outputs.tar.gz
+outputs/strict_pew_asymhfl_val_probe_20260804/
 ```
 
 Candidate-minus-control must pass all last-five gates:
@@ -99,8 +115,27 @@ WCCA  >=  0.0
 CFG   <= -1.0
 ```
 
-If all pass, repeat seeds before any 40-round claim. If any fail, archive this
-combination and do not rescue it with blind lambda/threshold sweeps.
+The gates passed for seed 0. The next scientific step is matched 12-round seed
+repetition. Do not start 40 rounds or present a final method claim until the
+positive effect survives those repeats. Do not start new paid runs unless the
+user explicitly requests them.
+
+Prepared repeat infrastructure:
+
+```text
+seed 1: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=1
+seed 2: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=2
+guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
+aggregate: scripts/analyze_strict_pew_asymhfl_multiseed.py
+```
+
+The repeat keeps the CLE scenario and persisted fit/audit split fixed at
+`seed0_split0`; only the top-level training seed changes. The aggregate gates
+are pre-registered in the guide and analyzer. Verification completed with 9
+focused tests, CLI help checks, a synthetic three-seed CLI dry-run, and
+dependency checks for all four new configs. The local private CLE path is
+absent until the prepared archive is imported, as expected. No paid repeat
+task has been started.
 
 ## Research Memory In One Screen
 
@@ -132,3 +167,6 @@ The strict A/B implementation and recent audit documents are currently local
 worktree changes unless committed after this handoff. Do not revert unrelated
 dirty files. Large outputs, datasets, checkpoints, and `local_test_outputs/`
 must remain untracked.
+
+Documentation was reorganized on 2026-08-04. The repository root now keeps
+only `README.md` and `AGENTS.md`; use `docs/README_ZH.md` as the document map.

@@ -5,12 +5,120 @@ This document is the long-term code map for the FedPRIME-D2C project.
 Use it together with:
 
 ```text
-PROJECT_STATE.md
-EXPERIMENT_GUIDE_ZH.md
-TODO_NEXT.md
+docs/project/PROJECT_STATE.md
+docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md
+docs/project/TODO_NEXT.md
 ```
 
 When resuming work, read these three files first.
+
+## 2026-08-04 Strict Attribution Runner
+
+The current executable probe reuses the unified `AsymHFLExperiment` with an
+optional `method.strict_fit_audit` switch:
+
+```text
+private client train data
+  -> persisted class-stratified fit/audit split
+  -> fit-only AugMix/JSD/DCL or fit-only PEW/BER+CDep local update
+  -> audit-only per-client accuracy for AsymHFL teacher ordering
+  -> identical CIFAR-100 public-logit communication in both arms
+  -> final CLE-HFL v2 test used only for metrics
+```
+
+Core additions:
+
+```text
+fedprime/data/fedfalsify.py        audit DataLoader construction
+fedprime/data/fedease.py           fit-only environment-annotated loaders/counts
+fedprime/methods/rahfl_asymhfl.py  strict split setup and audit-only routing
+fedprime/methods/fedease.py        CLE-HFL v2 + AsymHFL-val support
+scripts/openi_strict_pew_asymhfl_entry.py
+```
+
+This is a controlled experiment around the strongest previously validated
+local signal. It is not yet the final paper method and does not make PEW
+taxonomy-free.
+
+## 2026-08-03 Continuous Witness Audit Override - NO-GO
+
+The post-FedCIS candidate used no discrete environment taxonomy:
+
+```text
+normalized image
+  -> 22D continuous color/spatial/frequency witness
+  -> class-conditional continuous robust risk
+  -> class-conditional decision/witness covariance penalty
+  -> matched base/true/shuffled/moment-random one-step audit
+```
+
+Implementation:
+
+```text
+fedprime/methods/continuous_nuisance.py
+scripts/audit_continuous_nuisance.py
+tests/test_continuous_nuisance.py
+```
+
+The true witness reduced CFG but failed Worst, audit loss, and the 60% target
+gate. This version has no runner and must not be connected to AsymHFL.
+
+## 2026-08-03 Architecture Override - FedCIS-v0 Audited NO-GO
+
+The current candidate is FedCIS-v0 under four-client CLE-HFL v2. It is a
+completed standalone audit implementation, not a federated training method or
+positive result.
+
+```text
+existing heterogeneous client model
+  -> frozen AugMix/JSD/DCL local robust base
+  -> two independent AugMix views per supported class
+  -> normalized input-margin gradients
+  -> fixed multiscale DCT projection
+  -> PSD view-mean A and view-difference N statistics
+  -> fixed-shape class-conditional upload
+  -> server generalized-eigen subspace U_c
+  -> low-rank U_c broadcast
+  -> detached margin-descent perturbation in the orthogonal complement
+  -> counterfactual CE/JSD local update
+```
+
+FedCIS does not use public data/logits, prototypes, model averaging, or CLE
+operator metadata. It cannot repair fully missing classes and does not yet
+establish that a shared sensitivity subspace is semantic. Full specification
+and audit gates:
+
+```text
+docs/archive/methods/FEDCIS_FRAMEWORK_AND_OFFLINE_AUDIT_ZH.md
+```
+
+Implemented audit architecture:
+
+```text
+fedprime/analysis/fedcis.py
+  deterministic multiscale DCT basis
+  class-margin input gradients
+  PSD class sensitivity moments
+  generalized-eigen class subspaces
+  shuffled/random controls
+  detached orthogonal counterfactuals
+
+scripts/audit_fedcis_sensitivity.py
+  persisted fit/audit split
+  four heterogeneous checkpoint loading
+  three-seed extraction
+  geometry and projected-attack gates
+  CSV/JSON/Markdown report output
+
+tests/test_fedcis_audit.py
+  eight focused tests
+```
+
+The formal Audit A/B failed: true and class-shuffled cross-seed similarities
+were `0.1673/0.1669`, matched-class cross-client similarity was below the
+mismatched control, and only `30.30%` of attack targets beat both controls.
+No FedCIS config, runner, or OpenI entry should be implemented. Older
+FedEASE/FedFalsify/FedCFSA sections below remain historical.
 
 ## 2026-07-19 Architecture Override
 
@@ -18,7 +126,7 @@ The current candidate is CLE-HFL + FedEASE v2.1. The detailed theory and exact
 implementation boundary are documented in:
 
 ```text
-FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
+docs/archive/methods/FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
 ```
 
 Current code architecture:
@@ -95,9 +203,9 @@ FedPRIME-D2C/
   RAHFL-master/
   outputs/
   README.md
-  PROJECT_STATE.md
-  TODO_NEXT.md
-  ARCHITECTURE.md
+  docs/project/PROJECT_STATE.md
+  docs/project/TODO_NEXT.md
+  docs/project/ARCHITECTURE.md
   requirements.txt
 ```
 
@@ -1093,4 +1201,4 @@ fixed private fit/audit split
 
 The protocol uses concrete seen/unseen corruption operators, but operator
 metadata is evaluation-only and never enters training. Read
-`CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md` for formulas and the exact data flow.
+`docs/archive/methods/CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md` for formulas and the exact data flow.

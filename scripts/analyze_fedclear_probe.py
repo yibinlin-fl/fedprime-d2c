@@ -16,7 +16,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--reference",
         type=Path,
-        default=Path("docs/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv"),
+        default=Path("deliverables/baselines/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv"),
     )
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--tail-rounds", type=int, default=3)

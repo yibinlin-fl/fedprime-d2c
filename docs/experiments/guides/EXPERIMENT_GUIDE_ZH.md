@@ -6,10 +6,10 @@
 恢复项目时建议依次阅读：
 
 ```text
-ARCHITECTURE.md
-PROJECT_STATE.md
-EXPERIMENT_GUIDE_ZH.md
-TODO_NEXT.md
+docs/project/ARCHITECTURE.md
+docs/project/PROJECT_STATE.md
+docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md
+docs/project/TODO_NEXT.md
 ```
 
 ## 2026-07-19 FedEASE v2.1 正式实验覆盖
@@ -17,7 +17,7 @@ TODO_NEXT.md
 当前 CLE-HFL 主线的最新运行说明位于：
 
 ```text
-FEDEASE_OPENI_RUN_GUIDE_ZH.md
+docs/experiments/archive/FEDEASE_OPENI_RUN_GUIDE_ZH.md
 ```
 
 正式顺序是：

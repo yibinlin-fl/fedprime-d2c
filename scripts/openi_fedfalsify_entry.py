@@ -104,8 +104,8 @@ def package_outputs() -> Path:
         for relative in (
             "outputs/fedfalsify_probe_comparison.json",
             "outputs/partitions/fedfalsify_v1_cle_alpha05_gamma09_seed0.npz",
-            "FEDFALSIFY_AUDIT_GUIDE_ZH.md",
-            "CURRENT_PROJECT_MEMORY.md",
+            "docs/experiments/archive/FEDFALSIFY_AUDIT_GUIDE_ZH.md",
+            "docs/project/CURRENT_PROJECT_MEMORY.md",
         ):
             source = ROOT / relative
             if source.exists():

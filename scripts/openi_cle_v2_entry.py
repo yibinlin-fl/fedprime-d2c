@@ -131,7 +131,7 @@ def package_outputs(methods: list[str]) -> Path:
         )
         if metadata.exists():
             archive.add(metadata, arcname="cle_hfl_v2_metadata.json")
-        for relative in ("CURRENT_PROJECT_MEMORY.md", "CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md"):
+        for relative in ("docs/project/CURRENT_PROJECT_MEMORY.md", "docs/archive/methods/CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md"):
             source = ROOT / relative
             if source.exists():
                 archive.add(source, arcname=relative)

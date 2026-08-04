@@ -99,7 +99,7 @@ def package_outputs() -> Path:
         for relative in (
             "outputs/partitions/fedfalsify_v1_cle_alpha05_gamma09_seed0.npz",
             CONFIG,
-            "CURRENT_PROJECT_MEMORY.md",
+            "docs/project/CURRENT_PROJECT_MEMORY.md",
         ):
             source = ROOT / relative
             if source.exists():

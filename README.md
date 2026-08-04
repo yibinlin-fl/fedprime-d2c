@@ -2,13 +2,27 @@
 
 Distribution-Decoupled Communication for PRIME-based Robust Heterogeneous Federated Learning.
 
+## Current Research Status
+
+The repository name records the project's starting point, but D2C and its
+rank/threshold variants are now frozen negative results. The current question
+is robust heterogeneous federated learning under simultaneous model
+heterogeneity, label-skew Non-IID, and corruption-label entanglement. The
+active formal benchmark and latest seed-0 GO result are summarized in
+`docs/handoffs/latest.md`; use `docs/README_ZH.md` to locate current and
+archived research documents.
+
 This repository currently contains:
 
 - `PRIME-augmentations-main/`: original PRIME implementation.
 - `RAHFL-master/`: original RAHFL implementation.
 - `fedprime/`: configuration-driven FedPRIME-D2C MVP code.
 - `configs/`: experiment configs for Kaggle/server execution.
-- `docs/experiment_plan.md`: full experiment plan.
+- `docs/README_ZH.md`: current documentation map, research status entry points,
+  and archived-method evidence.
+
+The original D2C experiment plan is retained only as historical context under
+`docs/archive/legacy/experiment_plan.md`; it is not the current research plan.
 
 ## Install
 

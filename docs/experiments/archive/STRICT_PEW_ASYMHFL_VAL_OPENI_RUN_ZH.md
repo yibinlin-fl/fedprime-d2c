@@ -53,3 +53,18 @@ CFG   <= -1.0
 ```
 
 四项全部通过才进入 40 轮；否则停止该组合，不靠盲调损失权重挽救。
+
+## 2026-08-04 正式结果
+
+seed-0 strict 12-round A/B 已完成。candidate-minus-control last-five 为：
+
+```text
+Avg +3.9377, Worst +3.9040, WCCA +5.0500, CFG -6.3200
+```
+
+四项冻结门槛全部通过，归因判定为 `GO`。该结论仍需匹配的多 seed 复验，
+不能直接升级为 40 轮或最终论文方法主张。详细报告见：
+
+```text
+deliverables/strict_pew_asymhfl_val_probe_20260804/RESULT_SUMMARY_ZH.md
+```

@@ -14,14 +14,45 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATASET_ARCHIVE = "cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz"
 CONFIGS = {
-    "control": "configs/openi_v100_rahfl_val_cle_v2_probe.yaml",
-    "candidate": "configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_probe.yaml",
+    0: {
+        "control": "configs/openi_v100_rahfl_val_cle_v2_probe.yaml",
+        "candidate": "configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_probe.yaml",
+    },
+    1: {
+        "control": "configs/openi_v100_rahfl_val_cle_v2_trainseed1_probe.yaml",
+        "candidate": "configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_trainseed1_probe.yaml",
+    },
+    2: {
+        "control": "configs/openi_v100_rahfl_val_cle_v2_trainseed2_probe.yaml",
+        "candidate": "configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_trainseed2_probe.yaml",
+    },
 }
 EXPERIMENTS = {
-    "control": "probe_rahfl_val_cle_v2_alpha05_gamma09_seed0_split0",
-    "candidate": "probe_fedease_pew_asymhfl_val_cle_v2_alpha05_gamma09_seed0_split0",
+    0: {
+        "control": "probe_rahfl_val_cle_v2_alpha05_gamma09_seed0_split0",
+        "candidate": "probe_fedease_pew_asymhfl_val_cle_v2_alpha05_gamma09_seed0_split0",
+    },
+    1: {
+        "control": "probe_rahfl_val_cle_v2_alpha05_gamma09_seed0_split0_trainseed1",
+        "candidate": "probe_fedease_pew_asymhfl_val_cle_v2_alpha05_gamma09_seed0_split0_trainseed1",
+    },
+    2: {
+        "control": "probe_rahfl_val_cle_v2_alpha05_gamma09_seed0_split0_trainseed2",
+        "candidate": "probe_fedease_pew_asymhfl_val_cle_v2_alpha05_gamma09_seed0_split0_trainseed2",
+    },
 }
-COMPARISON = "outputs/strict_pew_asymhfl_val_comparison.json"
+
+
+def comparison_path(train_seed: int) -> str:
+    if train_seed == 0:
+        return "outputs/strict_pew_asymhfl_val_comparison.json"
+    return f"outputs/strict_pew_asymhfl_val_trainseed{train_seed}_comparison.json"
+
+
+def archive_name(train_seed: int) -> str:
+    if train_seed == 0:
+        return "strict_pew_asymhfl_val_probe_outputs.tar.gz"
+    return f"strict_pew_asymhfl_val_trainseed{train_seed}_probe_outputs.tar.gz"
 
 
 def log(message: str) -> None:
@@ -49,6 +80,13 @@ def prepare_c2net():
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="OpenI strict PEW + AsymHFL-val A/B probe.")
     parser.add_argument("--mode", choices=["control", "candidate", "both"], default="both")
+    parser.add_argument(
+        "--train_seed",
+        type=int,
+        choices=sorted(CONFIGS),
+        default=0,
+        help="Training/init seed. The CLE scenario and persisted fit/audit split remain seed0/split0.",
+    )
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", action="store_true")
     parser.add_argument("--skip_import", action="store_true")
@@ -91,19 +129,26 @@ def find_dataset(roots: list[Path]) -> Path:
     )
 
 
-def package_outputs(methods: list[str]) -> Path:
-    archive = ROOT / "strict_pew_asymhfl_val_probe_outputs.tar.gz"
+def package_outputs(methods: list[str], train_seed: int) -> Path:
+    configs = CONFIGS[train_seed]
+    experiments = EXPERIMENTS[train_seed]
+    comparison = comparison_path(train_seed)
+    archive = ROOT / archive_name(train_seed)
     with tarfile.open(archive, "w:gz") as handle:
         for method in methods:
-            directory = ROOT / "outputs" / EXPERIMENTS[method]
+            directory = ROOT / "outputs" / experiments[method]
             if directory.exists():
-                handle.add(directory, arcname=f"outputs/{EXPERIMENTS[method]}")
-            handle.add(ROOT / CONFIGS[method], arcname=CONFIGS[method])
+                handle.add(directory, arcname=f"outputs/{experiments[method]}")
+            handle.add(ROOT / configs[method], arcname=configs[method])
         for relative in (
-            COMPARISON,
+            comparison,
             "outputs/partitions/strict_cle_v2_alpha05_gamma09_seed0_split0.npz",
-            "STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md",
-            "CURRENT_PROJECT_MEMORY.md",
+            (
+                "docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md"
+                if train_seed == 0
+                else "docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md"
+            ),
+            "docs/project/CURRENT_PROJECT_MEMORY.md",
         ):
             source = ROOT / relative
             if source.exists():
@@ -112,7 +157,7 @@ def package_outputs(methods: list[str]) -> Path:
     return archive
 
 
-def upload_outputs(context, archive: Path) -> None:
+def upload_outputs(context, archive: Path, comparison: str) -> None:
     if context is None:
         log("[warning] c2net context unavailable; skip upload")
         return
@@ -123,7 +168,7 @@ def upload_outputs(context, archive: Path) -> None:
         return
     output_path = Path(context.output_path)
     output_path.mkdir(parents=True, exist_ok=True)
-    for source in (archive, ROOT / COMPARISON):
+    for source in (archive, ROOT / comparison):
         if source.exists():
             destination = output_path / source.name
             shutil.copy2(source, destination)
@@ -137,9 +182,14 @@ def main() -> None:
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
     methods = ["control", "candidate"] if args.mode == "both" else [args.mode]
+    configs = CONFIGS[args.train_seed]
+    experiments = EXPERIMENTS[args.train_seed]
+    comparison = comparison_path(args.train_seed)
     log("===== Strict PEW + AsymHFL-val A/B probe =====")
     log(f"Repository: {ROOT}")
     log(f"Methods: {methods}")
+    log(f"Training seed: {args.train_seed}")
+    log("CLE scenario/split: seed0/split0 (fixed)")
     context = prepare_c2net()
 
     if not args.skip_install:
@@ -158,7 +208,7 @@ def main() -> None:
         )
 
     for method in methods:
-        config = CONFIGS[method]
+        config = configs[method]
         log(f"===== Environment check: {method} =====")
         run([sys.executable, "scripts/check_environment.py", "--config", config], environment)
         if not args.skip_train:
@@ -170,9 +220,9 @@ def main() -> None:
             [
                 sys.executable,
                 "scripts/analyze_strict_pew_asymhfl_probe.py",
-                "--control", str(ROOT / "outputs" / EXPERIMENTS["control"]),
-                "--candidate", str(ROOT / "outputs" / EXPERIMENTS["candidate"]),
-                "--output", str(ROOT / COMPARISON),
+                "--control", str(ROOT / "outputs" / experiments["control"]),
+                "--candidate", str(ROOT / "outputs" / experiments["candidate"]),
+                "--output", str(ROOT / comparison),
             ],
             environment,
         )
@@ -181,10 +231,10 @@ def main() -> None:
         log("===== Summarizing outputs =====")
         run([sys.executable, "scripts/summarize_results.py", "--outputs", "outputs"], environment)
 
-    archive = package_outputs(methods)
+    archive = package_outputs(methods, args.train_seed)
     if not args.no_upload:
         log("===== Uploading outputs through c2net =====")
-        upload_outputs(context, archive)
+        upload_outputs(context, archive, comparison)
     log("===== Strict PEW + AsymHFL-val probe complete =====")
 
 

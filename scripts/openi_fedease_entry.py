@@ -132,7 +132,7 @@ def package_outputs(mode: str) -> Path:
         comparison = ROOT / "outputs" / "fedease_oracle_probe_comparison.json"
         if mode == "oracle_probe" and comparison.exists():
             archive.add(comparison, arcname="outputs/fedease_oracle_probe_comparison.json")
-        for document in ("FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md", "CURRENT_PROJECT_MEMORY.md"):
+        for document in ("docs/archive/methods/FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md", "docs/project/CURRENT_PROJECT_MEMORY.md"):
             source = ROOT / document
             if source.exists():
                 archive.add(source, arcname=document)

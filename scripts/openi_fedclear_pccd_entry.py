@@ -114,7 +114,7 @@ def package_outputs(methods: list[str]) -> Path:
             for path in comparison.iterdir():
                 if path.is_file():
                     tar.add(path, arcname=f"outputs/pccd_probe_comparison/{path.name}")
-        document = ROOT / "FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md"
+        document = ROOT / "docs/archive/methods/FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md"
         if document.exists():
             tar.add(document, arcname=document.name)
     log(f"Wrote metrics-only package: {tar_path}")

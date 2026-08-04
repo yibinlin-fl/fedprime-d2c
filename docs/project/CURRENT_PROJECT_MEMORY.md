@@ -1,6 +1,520 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-07-24
+Updated: 2026-08-04
+
+## Strict PEW + AsymHFL-val Formal Seed-0 Result - 2026-08-04
+
+After FedCIS-v0 and the handcrafted continuous witness both failed their
+offline gates, a strict attribution experiment compared:
+
+```text
+control   = AugMix/JSD/DCL + strict AsymHFL-val
+candidate = AugMix/JSD/DCL + calibrated PEW/BER+CDep + strict AsymHFL-val
+```
+
+Both arms use CLE-HFL v2, the same four heterogeneous models, the same
+persisted class-stratified 85/15 fit/audit split, four public CIFAR-100 batches
+per round, and 12 rounds. Local gradients see only `fit`; AsymHFL teacher
+ordering sees only each client's private `audit`; the final CLE test labels
+are reporting-only. This removes the original RAHFL test-routing leakage.
+
+Formal status:
+
+```text
+strict data/routing implementation: complete
+OpenI A/B configs and entry: complete
+local RTX 3050 one-round smoke: both arms passed
+focused tests: 46 passed
+formal 12-round seed-0 result: complete
+independent recomputation: exact match
+verdict: GO for seed-0 attribution; multi-seed confirmation required
+```
+
+The smoke verified identical persisted splits and identical round-0 audit
+accuracies in both arms, nonzero AsymHFL communication, and nonzero BER/CDep in
+the candidate. The PEW operator-to-family mapping is used only for diagnostic
+accuracy reporting; operator metadata never enters training or routing.
+
+Run:
+
+```text
+entry: scripts/openi_strict_pew_asymhfl_entry.py
+argument: --mode=both
+data: cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz
+guide: docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md
+```
+
+Result archive and integrity:
+
+```text
+archive: outputs/strict_pew_asymhfl_val_probe_outputs.tar.gz
+sha256: 77109f7a382b1271317a3afd89a30ae27170e8003977225a3ace5dd7ace9f3d9
+extracted: outputs/strict_pew_asymhfl_val_probe_20260804/
+members: 30
+unsafe paths: none
+symbolic/hard links: none
+```
+
+Candidate-minus-control:
+
+```text
+scope       Avg       Worst     WCCA      CFG
+final       +5.1267   +2.9533   +8.7500   -7.7250
+last-five   +3.9377   +3.9040   +5.0500   -6.3200
+```
+
+Extended last-five mean deltas were `worst_group_acc +6.00`,
+`worst_client_group_acc +6.46`, seen Avg/Worst `+3.79/+3.95`, and unseen
+Avg/Worst `+4.34/+3.78`. Candidate improved all four gated metrics in every
+one of rounds 7-11. Round-0 `col_loss` was identical in both arms
+(`0.2274829049905141`). The two resolved configs differed only in experiment
+identity and the intended FedEASE/PEW/BER+CDep method fields.
+
+All frozen last-five gates passed. This is evidence that calibrated PEW +
+BER+CDep improves the matched strict AsymHFL-val pipeline on seed 0. It is not
+yet evidence for a stable multi-seed final paper method. Repeat matched
+12-round seeds before any 40-round claim; do not rescue future failures with
+blind lambda, threshold, or rank sweeps.
+
+### Training-seed repeat infrastructure
+
+The seed 1/2 repeat infrastructure was implemented without starting a paid
+task. Both repeats keep `alpha05_gamma09_seed0_split0`, the persisted strict
+fit/audit split, method parameters, models, and 12-round budget fixed. Only the
+top-level training seed and output identity change.
+
+```text
+seed 1: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=1
+seed 2: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=2
+aggregate: scripts/analyze_strict_pew_asymhfl_multiseed.py
+guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
+```
+
+The multi-seed analyzer pre-registers mean gates, requires positive direction
+on every seed, and requires at least two of three seeds to pass the original
+full gate. Verification: 9 focused tests passed, both CLIs parsed correctly,
+the aggregate CLI dry-run passed, and all four new configs passed dependency
+checks. Local CLE private data remains absent until the prepared OpenI archive
+is imported. No seed 1/2 formal result exists yet.
+
+Frozen last-five gate before any 40-round run:
+
+```text
+Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
+```
+
+## Continuous Taxonomy-Free Witness Audit - 2026-08-03
+
+After FedCIS-v0 failed, a separate taxonomy-free continuous nuisance witness
+was implemented and audited. It uses a 22-dimensional deterministic descriptor
+of channel moments, spatial derivatives, Laplacian response, saturation, and
+radial spectrum. It never reads operator IDs/names/families/severity during
+training logic.
+
+The matched one-step branches were base, true witness, classwise shuffled
+witness, and classwise moment/covariance-matched random witness.
+
+```text
+branch      Avg       Worst     WCCA    CFG       audit loss
+base        87.8277   83.4000   0.0     88.0423   0.400166
+true        87.8277   83.3333   0.0     86.7923   0.401964
+shuffled    87.8444   83.6667   0.0     88.0423   0.401336
+random      87.7111   83.0000   0.0     88.0423   0.402281
+```
+
+True witness improved CFG by `1.25`, but failed Worst, audit-loss, and target
+coverage gates. It beat all controls on only `33.33%` of 33 auditable
+client-class targets; the frozen requirement was 60%. Decision: NO-GO. Do not
+implement a 12-round local probe or attach this version to AsymHFL.
+
+Read: `docs/archive/methods/CONTINUOUS_WITNESS_OFFLINE_AUDIT_ZH.md`.
+
+## FedCIS Offline Audit Result - 2026-08-03
+
+FedCIS-v0 Audit A/B is implemented and completed locally on the RTX 3050
+using all four CLE-HFL v2 RAHFL checkpoints, three independent AugMix seeds,
+at most 16 fit samples per client/class, a 32-dimensional multiscale DCT
+projection, and rank-4 class subspaces.
+
+```text
+valid classes per seed                         = 10/10
+true class cross-seed subspace similarity      = 0.1673
+class-shuffled cross-seed similarity           = 0.1669
+equal-rank random similarity                   = 0.1197
+cross-client matched-class similarity          = 0.1269
+cross-client mismatched-class similarity       = 0.1318
+auditable client x class attack targets        = 33
+true orthogonal attack beats both controls     = 30.30%
+frozen requirement                             = >=60%
+verdict                                        = NO-GO
+```
+
+The true class-conditioned subspace is effectively indistinguishable from the
+class-shuffled control, and matched classes are not more similar across clients
+than mismatched classes. Therefore the central FedCIS identifiability
+assumption is not supported by this audit. Do not implement Audit C, a FedCIS
+runner, or 12/40-round FedCIS training. Do not tune only rank, epsilon, or loss
+weights to bypass the frozen decision.
+
+Implementation and artifacts:
+
+```text
+fedprime/analysis/fedcis.py
+scripts/audit_fedcis_sensitivity.py
+tests/test_fedcis_audit.py                 (8 passed)
+local_test_outputs/fedcis_audit_20260803/
+```
+
+This is a negative mechanism result, not evidence that input sensitivity is
+useless in general. It rejects this specific low-rank DCT, two-AugMix-view,
+generalized-eigen FedCIS-v0 formulation under the current checkpoints and
+four-client CLE-HFL v2 protocol.
+
+## Current Candidate: FedCIS-v0 - 2026-08-03
+
+The current formal problem remains the four-client CLE-HFL v2 protocol. The
+new candidate is:
+
+```text
+FedCIS-v0
+= AugMix/JSD/DCL robust local base
++ class-conditional input-sensitivity PSD statistics
++ model-agnostic server subspace recovery
++ detached orthogonal projected counterfactual training
+```
+
+FedCIS replaces AsymHFL as the candidate collaboration module. It does not use
+public images, public logits, prototypes, model-parameter aggregation, or
+corruption taxonomy metadata. All heterogeneous models share only the input
+space and class space.
+
+Important status:
+
+```text
+framework definition: corrected candidate exists
+implementation: standalone Audit A/B complete
+offline audit: NO-GO
+12/40-round training: blocked
+positive result: none
+```
+
+Corrections frozen on 2026-08-03:
+
+```text
+1. use PSD view-mean/view-difference second moments instead of E[s1 s2^T];
+2. use outer-product client dispersion instead of an ambiguous matrix square;
+3. generate counterfactuals along margin descent, not margin ascent;
+4. detach the projected perturbation and remove full second-order L_sens from v0;
+5. use fixed-shape support masks rather than exact class counts by default;
+6. do not claim zero privacy, arbitrary unseen-corruption guarantees, or
+   missing-class semantic completion.
+```
+
+The central identifiability assumption is unverified: cross-client matched-class
+input sensitivity may reflect shared semantics, but it may also reflect common
+texture, architecture, or preprocessing bias. Before any runner is implemented,
+the RTX 3050 offline audit must compare:
+
+```text
+true class-matched global subspace
+class-shuffled global subspace
+equal-rank random orthogonal subspace
+matched base-only update
+```
+
+Only true FedCIS may proceed if it separates from both controls, improves
+matched audit loss, keeps audit Avg/Worst/WCCA/seen/unseen nonnegative, and does
+not increase audit CFG. Operator metadata is evaluation-only and cannot enter
+subspace construction or selection.
+
+Read the authoritative specification first:
+
+```text
+docs/archive/methods/FEDCIS_FRAMEWORK_AND_OFFLINE_AUDIT_ZH.md
+```
+
+Previous FedCFSA K=8 feasibility work is archived as historical evidence. The
+user has rejected changing the formal client count to K=8; it is not the next
+task.
+
+## Historical: FedCFSA Multi-Client Redundancy Audit - 2026-07-27
+
+The four-client formal checkpoint audit remains NO-GO for strong
+cross-falsification (`0/7` stable routes have two independent stable
+validators). A separate CPU-only feasibility sweep tested whether this is a
+four-client artifact.
+
+Frozen sweep:
+
+```text
+standard full-CIFAR-10 Dirichlet partition (50,000 labels, variable client size)
+alpha=0.5, gamma=0.9, seeds=0/1/2
+K=4/8/10/20
+source support: fit>=16 and audit>=5
+strong coverage: >=3 source clients from >=3 distinct dominant environments
+```
+
+Mean strong coverage over auditable receiver-class targets, with worst seed:
+
+```text
+K=4:  56.29%, worst seed 43.75% -> NO-GO
+K=8:  94.61%, worst seed 88.52% -> GO
+K=10: 96.73%, worst seed 93.06% -> GO
+K=20: 100.0%, worst seed 100.0% -> GO
+```
+
+Decision:
+
+```text
+FedCFSA source redundancy is conditionally feasible from K=8 onward.
+This is not evidence that frontier routing or synthetic anchors work.
+```
+
+The sweep covers only receiver classes with enough fit/audit support. It does
+not solve fully missing classes. The proposed next stage at that time was a
+K=8 checkpoint-level reliability audit:
+
+```text
+1. build one K=8 CLE-HFL v2 seed-0 dataset with repeated heterogeneous models;
+2. train only the strict local robust base for a short checkpoint probe;
+3. recompute stable robust-frontier sources across augmentation seeds;
+4. require >=3 reliable sources for enough auditable receiver-class targets;
+5. only then implement the matched synthetic-anchor one-step audit.
+```
+
+Implementation/report:
+
+```text
+fedprime/analysis/fedcfsa_coverage.py
+scripts/audit_fedcfsa_source_redundancy.py
+tests/test_fedcfsa_coverage.py
+deliverables/fedcfsa_source_redundancy_audit_20260727/AUDIT_REPORT_ZH.md
+```
+
+Verification: `18 passed`. No GPU training was run.
+
+This K=8 proposal is paused and superseded by the 2026-08-03 FedCIS K=4
+offline-audit candidate.
+
+## Historical: FedCFSA Coverage Audit - 2026-07-27
+
+The proposed semantic-payload candidate was:
+
+```text
+FedCFSA
+= RAHFL local robust base
++ taxonomy-free robust-frontier gate
++ cross-falsified synthetic semantic anchors
++ receiver-side safe assimilation
+```
+
+Before implementing image condensation, the mandatory source-redundancy audit
+was run on the seven routes stable across all three frontier augmentation
+seeds.
+
+Result:
+
+```text
+stable routes: 7, covering 6 receiver-class targets
+targets with two stable sources: 1/6
+routes with another stable source after excluding the generator: 2/7
+routes with at least two ordinary support-qualified validators: 1/7
+routes with two independent stable validators: 0/7
+```
+
+The written FedCFSA formula averages validators in
+`S[receiver,class] \ {generator}`. For five of seven routes this set is empty;
+for the remaining two routes it contains only one validator. The simultaneous
+claims "at most two sources" and "multiple independent cross-falsifiers" are
+therefore inconsistent under the current four-client severe-label-skew
+protocol.
+
+Decision for the existing four-client formal checkpoints:
+
+```text
+FedCFSA as currently written on four-client CLE-HFL v2: NO-GO
+```
+
+This rejects the four-client cross-falsification coverage assumption, not all
+synthetic semantic payloads. The later multi-client CPU sweep shows that source
+support is feasible from K=8, but checkpoint-level reliable-source coverage is
+still unverified. Do not implement anchor condensation or run a 5/12/40-round
+FedCFSA experiment yet.
+
+```text
+1. increase the formal protocol to enough clients for >=3 sources per class;
+2. accept one-validator peer filtering and weaken the scientific claim;
+3. introduce an external semantic verifier and explicitly change assumptions.
+```
+
+Audit:
+
+```text
+deliverables/fedcfsa_coverage_audit_20260727/FEDCFSA_COVERAGE_AUDIT_ZH.md
+```
+
+External discussion brief updated after the robust-frontier one-step audit:
+
+```text
+docs/research/status/CURRENT_RESEARCH_STATUS_RAHFL_AND_COMMUNICATION_REVIEW_20260727_ZH.md
+```
+
+It summarizes RAHFL, CLE-HFL/CLE-HFL v2, all major positive and negative
+results, the public-logit bottleneck, and the unresolved semantic-payload
+question. Use this file for the next external AI discussion.
+
+## Newest Offline Decision: Robust Frontier Audit - 2026-07-26
+
+Before implementing another communication runner, a taxonomy-free robust
+frontier audit was completed on the stored CLE-HFL v2 RAHFL checkpoints.
+
+Definition:
+
+```text
+per-sample logits are z-score normalized across classes
+q[k,c,j] = lower-0.2 quantile of the worst-view normalized margin z_c-z_j
+primary views = clean + two AugMix draws
+diagnostic views also include the weak DCL view
+```
+
+No operator ID, name, family, split, or severity enters `q`. Operator metadata
+is used only after inference to evaluate whether the score predicts final
+client/class seen and unseen operator performance.
+
+Formal seed-0 result:
+
+```text
+local frontier vs seen-worst Spearman        = 0.434
+local frontier vs unseen-worst Spearman      = 0.559
+source advantage vs seen advantage Spearman  = 0.319
+source advantage vs unseen advantage         = 0.548
+
+unfiltered positive-source precision:
+  seen   = 52.94%
+  unseen = 52.94%
+```
+
+All four correlation gates pass, but direct teacher routing fails the frozen
+precision gate. The original global-median/full-coverage FedRIFT concept is
+therefore **NO-GO** and must not be run for 40 rounds.
+
+Exploratory abstention signal, repeated over augmentation seeds 0/1/2:
+
+```text
+top-quartile all-view routes: 9 routes per seed
+seen precision:   77.78% / 88.89% / 88.89%
+unseen precision: 88.89% / 100.00% / 88.89%
+pairwise route-set Jaccard: 0.80
+routes common to all three seeds: 7
+```
+
+This supports only one narrower next candidate:
+
+```text
+multi-view robust frontier + high-confidence abstention
+```
+
+Do not implement a full runner yet. First perform a fit/audit one-step
+classifier-head update audit on the stable routes, with no final-test routing.
+
+Implementation and report:
+
+```text
+fedprime/analysis/robust_frontier.py
+scripts/audit_robust_frontier.py
+tests/test_robust_frontier_audit.py
+deliverables/robust_frontier_audit_20260726/ROBUST_FRONTIER_AUDIT_ZH.md
+outputs/robust_frontier_audit_20260726/
+```
+
+Verification: `7 passed`; RTX 3050 formal audit completed three times.
+
+### One-step transfer audit - 2026-07-27
+
+The seven routes stable across all augmentation seeds were tested with a
+matched causal control:
+
+```text
+control   = one classifier-head CE step on the identical fit batch
+candidate = identical CE step + lower-tail robust-frontier margin loss
+```
+
+Each route restores the original checkpoint afterward. Candidate-minus-control:
+
+```text
+mean target-class audit accuracy = 0.0000
+target-class audit loss          = slightly better on 7/7 routes
+mean seen accuracy               = 0.0000
+mean unseen accuracy             = +0.0357
+mean all-audit accuracy          = -0.0095
+```
+
+The loss has a finite gradient, but produces no meaningful accuracy transfer.
+Therefore a `C x C` robust frontier is a useful reliability diagnostic but an
+insufficient knowledge payload. Direct frontier regularization remains NO-GO.
+
+If retained, the frontier may only serve as a high-confidence abstention gate
+around a separately justified semantic knowledge channel. Do not start a
+12/40-round run until that payload passes its own matched one-step audit.
+
+Implementation/output:
+
+```text
+scripts/audit_robust_frontier_one_step.py
+outputs/robust_frontier_one_step_audit_20260727/
+```
+
+Verification is now `8 passed`.
+
+## CLE-HFL v2 Formal Probe Result - 2026-07-24
+
+The three 12-round runs in `outputs/cle_hfl_v2_probe_outputs.tar.gz` completed:
+
+```text
+metric order: Avg / Worst / WCCA / CFG; lower CFG is better
+
+RAHFL final          = 33.8267 / 27.0400 / 0.250 / 30.050
+Strict control final = 30.7550 / 24.9800 / 0.250 / 30.225
+FedFalsify v0.3      = 31.0733 / 24.5733 / 0.500 / 31.825
+
+FedFalsify - control final:
+  +0.3183 / -0.4067 / +0.250 / +1.600
+
+FedFalsify - control last-five:
+  +0.1180 / -0.4373 / +0.850 / +2.185
+```
+
+FedFalsify communication is active but fails the frozen gate: it gives a small
+Avg/WCCA gain while harming Worst and CFG. Do not run it for 40 rounds or tune
+only `kappa`/`lambda_cmt`.
+
+Important fairness limitation: the RAHFL run used all 10,000 local samples per
+client and routes with final-test accuracy. Strict control/FedFalsify train on
+about 8,500 fit samples and reserve about 1,500 audit samples; they never route
+with final test labels. Therefore only `FedFalsify vs strict control` is a
+strict causal comparison. RAHFL's numerical lead is diagnostic, not yet a fair
+paper result.
+
+Next required run: one 12-round strict RAHFL-val using the same persisted
+fit/audit split, fit-only local training, audit-only AsymHFL routing, and final
+test only for evaluation. Existing control/FedFalsify runs do not need reruns.
+
+Analysis:
+
+```text
+deliverables/cle_hfl_v2_probe_analysis_20260724/
+```
+
+Research decision after review: do not spend the next compute budget on
+strict RAHFL-val yet. The fair causal comparison already shows that FedFalsify
+v0.3 gives only a tiny Avg gain while harming Worst and CFG. Pause training and
+seek an external theoretical review before another communication design.
+
+External discussion brief:
+
+```text
+docs/archive/methods/FEDFALSIFY_LATEST_EXTERNAL_AI_DISCUSSION_BRIEF_ZH.md
+```
 
 ## Current Protocol Mainline: CLE-HFL v2 - 2026-07-24
 
@@ -65,12 +579,12 @@ RAHFL v2 one-round smoke: passed, finite AsymHFL/local losses
 Read:
 
 ```text
-CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md
-CLE_HFL_V2_OPENI_RUN_GUIDE_ZH.md
+docs/archive/methods/CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md
+docs/experiments/guides/CLE_HFL_V2_OPENI_RUN_GUIDE_ZH.md
 ```
 
-Next formal run is a 12-round strict control versus FedFalsify v0.3 A/B using
-`scripts/openi_cle_v2_entry.py --method=both`. Do not run 40 rounds yet.
+The formal three-way 12-round probe is complete. FedFalsify failed the
+Worst/CFG gate. The next run is strict RAHFL-val only; do not run 40 rounds.
 
 ## Latest Executable Candidate: FedFalsify v0.3 - 2026-07-23
 
@@ -192,7 +706,7 @@ Formal A/B:
 scripts/openi_fedfalsify_entry.py
 configs/openi_v100_fedfalsify_fit_control_probe.yaml
 configs/openi_v100_fedfalsify_probe.yaml
-FEDFALSIFY_OPENI_RUN_GUIDE_ZH.md
+docs/experiments/archive/FEDFALSIFY_OPENI_RUN_GUIDE_ZH.md
 ```
 
 The control and candidate both use the persisted split:
@@ -312,7 +826,7 @@ ranking, but this remains a one-step result rather than a federated-run proof.
 Artifacts:
 
 ```text
-FEDFALSIFY_AUDIT_GUIDE_ZH.md
+docs/experiments/archive/FEDFALSIFY_AUDIT_GUIDE_ZH.md
 deliverables/fedfalsify_offline_audit/FEDFALSIFY_OFFLINE_AUDIT_ZH.md
 deliverables/fedfalsify_offline_audit/fedfalsify_offline_audit_summary.csv
 outputs/fedfalsify_audit/
@@ -437,7 +951,7 @@ The required calibrated local-only attribution control is ready:
 ```text
 entry:  scripts/openi_fedease_entry.py --mode=pew_calibrated_local_probe
 config: configs/openi_v100_fedease_pew_calibrated_local_probe.yaml
-guide:  FEDEASE_CALIBRATED_PEW_LOCAL_OPENI_RUN_ZH.md
+guide:  docs/experiments/archive/FEDEASE_CALIBRATED_PEW_LOCAL_OPENI_RUN_ZH.md
 ```
 
 It preserves calibrated PEW, BER, CDep, AugMix/JSD/DCL, models, data, seed,
@@ -451,7 +965,7 @@ Implemented the final 12-round hard-environment-taxonomy combination probe:
 ```text
 entry:  scripts/openi_fedease_entry.py --mode=pew_ebst_v2_probe
 config: configs/openi_v100_fedease_pew_ebst_v2_probe.yaml
-guide:  FEDEASE_PEW_EBST_V2_OPENI_RUN_ZH.md
+guide:  docs/experiments/archive/FEDEASE_PEW_EBST_V2_OPENI_RUN_ZH.md
 ```
 
 The correction restores the PEW epoch with the highest synthetic public
@@ -605,7 +1119,7 @@ Formal OpenI files:
 ```text
 config: configs/openi_v100_fedease_ebst_v2_probe.yaml
 entry:  scripts/openi_fedease_entry.py --mode=ebst_v2_probe
-guide:  FEDEASE_EBST_V2_OPENI_RUN_ZH.md
+guide:  docs/experiments/archive/FEDEASE_EBST_V2_OPENI_RUN_ZH.md
 ```
 
 Verification:
@@ -732,7 +1246,7 @@ CLE-HFL + FedEASE v2.1
 Read first:
 
 ```text
-FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
+docs/archive/methods/FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
 ```
 
 The full planned method is:
@@ -801,7 +1315,7 @@ Prepared OpenI package and guide:
 ```text
 local_runs/cle_hfl_prepared/fedease_cle_prepared_alpha05_gamma09_seed0.tar.gz
 size: about 623.29 MiB
-FEDEASE_OPENI_RUN_GUIDE_ZH.md
+docs/experiments/archive/FEDEASE_OPENI_RUN_GUIDE_ZH.md
 entry: scripts/openi_fedease_entry.py
 first mode: --mode=oracle_probe
 ```
@@ -839,7 +1353,7 @@ FedCLEAR-PCCD
 Read first:
 
 ```text
-FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md
+docs/archive/methods/FEDCLEAR_LATEST_THEORY_FRAMEWORK_ZH.md
 ```
 
 PCCD implementation:
@@ -952,7 +1466,7 @@ configs/openi_v100_fedclear_cle_gamma09_probe.yaml  # 12 rounds, first run
 configs/openi_v100_fedclear_cle_gamma09_full.yaml   # 40 rounds, only after positive probe
 scripts/openi_fedclear_entry.py
 scripts/analyze_fedclear_probe.py
-docs/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv
+deliverables/baselines/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv
 ```
 
 OpenI startup file:
@@ -1016,7 +1530,7 @@ rounds 9-11 mean: avg=36.6488, worst=30.4125, WCCA=8.1833, CFG=10.6558
 Method document:
 
 ```text
-FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md
+docs/archive/methods/FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md
 ```
 
 ## CLE-HFL Diagnostic Route - 2026-07-08
@@ -1051,7 +1565,7 @@ configs/debug_rahfl_cle.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma00.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma06.yaml
 configs/diagnostic_rahfl_cle_alpha05_gamma09.yaml
-FEDCLEAR_CLE_HFL_PROPOSAL_ZH.md
+docs/archive/methods/FEDCLEAR_CLE_HFL_PROPOSAL_ZH.md
 ```
 
 OpenI training-task startup file:
@@ -1247,7 +1761,7 @@ configs/openi_v100_rahfl_cs_alpha05_rho07.yaml
 configs/openi_v100_fedsara_cs_alpha05_rho07.yaml
 configs/debug_rahfl_cs.yaml
 configs/debug_fedsara_cs.yaml
-FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+docs/experiments/archive/FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
 ```
 
 Both formal configs use:

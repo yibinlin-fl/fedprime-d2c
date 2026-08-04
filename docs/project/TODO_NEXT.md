@@ -1,27 +1,275 @@
 # TODO Next
 
-## Immediate - CLE-HFL v2 Strict A/B Probe
+## Immediate - Run One Strict 12-Round A/B Probe - 2026-08-04
 
-Implementation, formal data generation, audit, focused tests, and RTX 3050
-smoke are complete.
+The only authorized paid experiment is:
 
-Next:
+```text
+control   = AugMix/JSD/DCL + strict AsymHFL-val
+candidate = calibrated PEW/BER+CDep + the same strict AsymHFL-val
+```
 
-1. Upload
-   `local_runs/cle_hfl_v2_prepared/cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz`
-   as an OpenI dataset.
-2. Use startup file `scripts/openi_cle_v2_entry.py`.
-3. Set runtime argument `--method=both`.
-4. Download `cle_hfl_v2_probe_outputs.tar.gz`.
-5. Compare strict fit-only control and FedFalsify v0.3 on all/seen/unseen:
-   Avg, Worst, WCCA, and CFG.
-6. Require positive Avg/Worst/WCCA and nonpositive CFG deltas, especially on
-   unseen operators, before any 40-round run.
-7. If the gate passes, run RAHFL with `--method=rahfl`, then prepare 40-round
-   multi-seed configs. If it fails, attribute the failure from the persisted
-   client/class/operator matrices before changing the method.
+Run `scripts/openi_strict_pew_asymhfl_entry.py --mode=both` with the existing
+CLE-HFL v2 archive. Do not run 40 rounds, multiple seeds, or loss-weight sweeps
+first. Inspect `outputs/strict_pew_asymhfl_val_comparison.json`.
 
-Do not tune thresholds or `lambda_cmt` before this frozen A/B result.
+Proceed only if the candidate-minus-control last-five result satisfies all:
+
+```text
+Avg >= +1.5
+Worst >= +1.0
+WCCA >= 0.0
+CFG <= -1.0
+```
+
+If the gate fails, archive this combined route. Do not attribute old PEW local
+gains to communication and do not tune only lambda/threshold values.
+
+## Immediate Decision After Continuous-Witness Audit - 2026-08-03
+
+The taxonomy-free continuous witness captured a CFG signal but failed the
+pre-registered overall gate. Cancel the following work for this formulation:
+
+```text
+12-round continuous-witness local-only training
+continuous-witness + strict AsymHFL
+40-round OpenI/Kaggle runs
+single-parameter rho/lambda tuning
+```
+
+Do not confuse the isolated CFG reduction with a validated method. Any next
+candidate must explain why it should preserve worst-client performance and
+must pass a new cheap matched audit before platform training.
+
+## Immediate Decision After FedCIS Audit - 2026-08-03
+
+FedCIS-v0 failed its frozen identifiability gate. The following tasks are
+cancelled:
+
+```text
+matched one-step FedCIS Audit C
+FedCIS 12-round runner
+FedCIS 40-round OpenI/Kaggle experiment
+rank/epsilon/loss-weight-only tuning
+```
+
+Before proposing another paid experiment, the next research task must change
+the knowledge signal or the local objective, not merely retune this sensitivity
+subspace. Preserve the audit implementation as a reusable negative-result and
+falsification tool.
+
+Recommended next decision session:
+
+1. Freeze and summarize all validated positive components and failed
+   communication payloads.
+2. Choose exactly one new hypothesis with a distinct payload and a cheap
+   matched offline causal test.
+3. Define its failure gate before implementation.
+4. Do not start another 12/40-round run until that offline test passes.
+
+## Immediate - FedCIS-v0 Offline Identifiability Audit - 2026-08-03
+
+The current candidate is FedCIS-v0 under the existing K=4 CLE-HFL v2
+protocol. Previous FedCFSA K=8 work is historical and is not the next task.
+
+Do not implement a 12/40-round runner. Work only in this order:
+
+1. Implement a standalone audit extractor for normalized class-margin input
+   gradients projected onto a fixed multiscale DCT basis.
+2. Compute PSD view-mean `A` and view-difference `N` statistics on the existing
+   persisted fit split.
+3. Recover class subspaces with a numerically guarded generalized eigensolver.
+4. Repeat over three independent AugMix seeds.
+5. Compare true class-matched, class-shuffled, and equal-rank random subspaces.
+6. Verify projected counterfactuals use margin descent and detach the direction.
+7. Run matched one-step `base/random/shuffled/true` updates from identical
+   checkpoints and optimizer states.
+8. Evaluate only on `D_audit`; final-test labels must not select any subspace,
+   threshold, hyperparameter, or update.
+
+Frozen gate before a 12-round runner:
+
+```text
+true subspace separates from random and class-shuffled controls
+>=60% auditable client x class targets satisfy directional checks
+mean class-conditional audit loss improves over all controls
+audit Avg/Worst/WCCA/seen/unseen deltas are nonnegative
+audit CFG delta is nonpositive
+no nonfinite values or concentrated client collapse
+```
+
+If the true subspace is indistinguishable from controls, archive FedCIS rather
+than tuning only rank, epsilon, or loss weights.
+
+Read: `docs/archive/methods/FEDCIS_FRAMEWORK_AND_OFFLINE_AUDIT_ZH.md`.
+
+## Historical - Paused K=8 Checkpoint-Level Reliability Audit
+
+The CPU-only FedCFSA source-redundancy sweep is complete:
+
+```text
+strong coverage = >=3 supported sources from >=3 distinct dominant environments
+
+K=4:  mean 56.29%, worst seed 43.75% -> NO-GO
+K=8:  mean 94.61%, worst seed 88.52% -> GO
+K=10: mean 96.73%, worst seed 93.06% -> GO
+K=20: mean/worst 100.0%             -> GO
+```
+
+This establishes only data-level source availability among auditable target
+classes. It does not establish model reliability or semantic-anchor utility.
+
+Historical proposed work, currently superseded by FedCIS-v0:
+
+1. Extend CLE-HFL v2 preparation to a standard K=8 full-data Dirichlet
+   protocol; do not reuse the K=4 `10,000 samples/client` capacity constraint.
+2. Cycle the four architectures twice across eight clients.
+3. Persist an 85/15 fit/audit split.
+4. Train only a short strict local robust-base checkpoint probe; no
+   communication and no final-test routing.
+5. Re-run robust-frontier estimation over three augmentation seeds.
+6. Require at least three stable reliable sources for a substantial fraction
+   of auditable receiver-class targets.
+7. Only if this passes, implement synthetic-anchor A/B/C/D/E one-step audits.
+
+Do not run RAHFL, FedCFSA anchors, or a 40-round experiment yet.
+
+Read:
+
+```text
+deliverables/fedcfsa_source_redundancy_audit_20260727/AUDIT_REPORT_ZH.md
+```
+
+## Historical - Paused FedCFSA Source-Redundancy Route
+
+The FedCFSA coverage audit completed before image condensation was implemented.
+
+```text
+7 stable routes / 6 receiver-class targets
+only 1 target has two stable sources
+5/7 routes have no other stable source to validate the generator
+2/7 routes have only one stable validator
+0/7 routes have two independent stable validators
+```
+
+Therefore the current four-client cross-falsification formulation is NO-GO.
+The later CPU sweep shows conditional data-level feasibility from K=8, but
+checkpoint-level reliability remains unverified. Do not generate anchors and
+do not run FedCFSA training yet.
+
+The next research decision is one of:
+
+1. Expand CLE-HFL v2 to 8--10 clients and require at least three independent
+   source candidates for a communicated class.
+2. Keep four clients but downgrade cross-falsification to one-peer validation,
+   accepting a weaker mechanism and novelty claim.
+3. Introduce an external semantic verifier, explicitly accepting the new
+   pretrained-model assumption.
+4. Archive FedCFSA and design a semantic payload that does not require
+   source redundancy.
+
+Read:
+
+```text
+deliverables/fedcfsa_coverage_audit_20260727/FEDCFSA_COVERAGE_AUDIT_ZH.md
+```
+
+## Immediate - High-Confidence Frontier One-Step Audit
+
+The taxonomy-free robust-frontier audit is complete.
+
+```text
+direct positive-source precision: seen 52.94%, unseen 52.94% -> NO-GO
+top-quartile all-view precision across augmentation seeds:
+  seen   77.78% / 88.89% / 88.89%
+  unseen 88.89% / 100.00% / 88.89%
+stable routes common to all three seeds: 7
+```
+
+Do not implement the original full-coverage/global-median FedRIFT and do not
+run 40 rounds.
+
+Next work, in order:
+
+1. Reuse the persisted CLE-HFL v2 fit/audit split.
+2. Freeze source and receiver backbones; update only the receiver classifier
+   head.
+3. Use only the seven routes stable across all three augmentation seeds.
+4. Apply a class-pair margin lower-bound loss on receiver fit samples.
+5. Evaluate CE, class accuracy, and negative transfer on receiver audit data.
+6. Never use final-test labels for source selection, thresholds, or acceptance.
+7. Proceed to a 12-round method only if most stable routes are nonnegative and
+   aggregate Worst/CFG proxies do not regress.
+
+Read:
+
+```text
+deliverables/robust_frontier_audit_20260726/ROBUST_FRONTIER_AUDIT_ZH.md
+```
+
+Status: completed on 2026-07-27 with a matched CE-only control.
+
+```text
+7/7 routes slightly improve target-class audit loss,
+but mean seen/unseen accuracy increment is 0.0000/+0.0357,
+and mean all-audit accuracy increment is -0.0095.
+```
+
+Direct boundary transfer is rejected. Do not run it for 12 or 40 rounds.
+
+Next theoretical decision:
+
+1. Keep the robust frontier only as a taxonomy-free, high-confidence
+   reliability/abstention gate.
+2. Define a separate sample-level semantic payload that is implementable under
+   heterogeneous FL and does not expose private receiver images.
+3. Before a runner exists, test that payload with the same matched one-step
+   candidate-versus-control audit.
+4. If no such payload can be justified, archive the frontier route rather than
+   returning to threshold tuning.
+
+## Immediate - Strict RAHFL-val Fairness Repair
+
+The CLE-HFL v2 three-way 12-round probe is complete. FedFalsify v0.3 failed the
+frozen gate against its strict fit-only control:
+
+```text
+final delta:     Avg +0.3183, Worst -0.4067, WCCA +0.250, CFG +1.600
+last-five delta: Avg +0.1180, Worst -0.4373, WCCA +0.850, CFG +2.185
+```
+
+Do not run FedFalsify for 40 rounds and do not tune only `kappa` or
+`lambda_cmt`.
+
+The next required work is:
+
+1. Add a strict RAHFL-val mode that loads the same persisted FedFalsify
+   fit/audit split.
+2. Train every RAHFL client only on `D_fit`.
+3. Compute AsymHFL route accuracy only on `D_audit`.
+4. Keep final test labels out of all routing and training decisions.
+5. Run only this strict RAHFL-val for 12 rounds under the frozen CLE-HFL v2
+   setup.
+6. Reuse the completed strict control and FedFalsify results offline.
+7. Only after the fair comparison, decide whether to redesign or archive the
+   FedFalsify communication route.
+
+Reason: the completed RAHFL run used 100% local data and final-test accuracy
+routing, while control/FedFalsify used about 85% fit data and held out 15% for
+audit. Its current numerical lead is not a formal fair baseline.
+
+User decision: pause this run because it does not answer the more important
+method-design question. Do not implement or launch strict RAHFL-val until the
+external theoretical review is complete.
+
+Immediate non-compute task:
+
+1. Review `docs/archive/methods/FEDFALSIFY_LATEST_EXTERNAL_AI_DISCUSSION_BRIEF_ZH.md`.
+2. Discuss whether CLE-HFL v2 should remain the paper problem.
+3. Decide whether to retain only the fit/audit falsification principle or
+   archive FedFalsify entirely.
+4. Freeze all training runs until a new method has a clearly stated information
+   source, mechanism, and one-probe Go/No-Go criterion.
 
 ## Immediate - FedFalsify v0.3 Candidate-Only Gate
 
@@ -95,7 +343,7 @@ Next steps, in order:
 Completed artifacts:
 
 ```text
-FEDFALSIFY_AUDIT_GUIDE_ZH.md
+docs/experiments/archive/FEDFALSIFY_AUDIT_GUIDE_ZH.md
 deliverables/fedfalsify_offline_audit/
 outputs/fedfalsify_audit/
 ```
@@ -364,7 +612,7 @@ Implemented formal sequence:
 4. --mode=full          # 20-epoch PEW + 40-round complete method
 ```
 
-Read `FEDEASE_OPENI_RUN_GUIDE_ZH.md` before creating the OpenI task.
+Read `docs/experiments/archive/FEDEASE_OPENI_RUN_GUIDE_ZH.md` before creating the OpenI task.
 
 ## 2026-07-11 Immediate Run: Matching RAHFL vs FedCLEAR-PCCD Probe
 
@@ -651,7 +899,7 @@ scripts/run_openi_fedsara_cs.sh
 Detailed run guide:
 
 ```text
-FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
+docs/experiments/archive/FEDSARA_CS_SCENARIO_OPENI_GUIDE_ZH.md
 ```
 
 Primary metrics to inspect:
@@ -1660,7 +1908,7 @@ FedPRIME-D2C+DCL = PRIME + DCL + D2C
 Full experiment descriptions and configuration paths:
 
 ```text
-EXPERIMENT_GUIDE_ZH.md
+docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md
 ```
 
 ### Kaggle execution rule
@@ -1674,7 +1922,7 @@ an active background run.
 ### Resume prompt
 
 ```text
-读取 ARCHITECTURE.md、PROJECT_STATE.md、EXPERIMENT_GUIDE_ZH.md 和 TODO_NEXT.md，
+读取 docs/project/ARCHITECTURE.md、docs/project/PROJECT_STATE.md、docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md 和 docs/project/TODO_NEXT.md，
 继续推进 FedPRIME-D2C。先检查当前 Kaggle 核心对比是否完成，并分析 summary.csv
 以及两个 metrics.csv。
 ```
@@ -1931,5 +2179,5 @@ If safe PRAC-HFL still underperforms:
 Tell Codex:
 
 ```text
-读取 PROJECT_STATE.md 和 TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。先检查 git 状态，然后准备数据和跑一个 debug smoke training。
+读取 docs/project/PROJECT_STATE.md 和 docs/project/TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。先检查 git 状态，然后准备数据和跑一个 debug smoke training。
 ```

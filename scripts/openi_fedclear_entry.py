@@ -116,7 +116,7 @@ def package_outputs(mode: str) -> Path:
             summary = ROOT / "outputs" / summary_name
             if summary.exists():
                 tar.add(summary, arcname=f"outputs/{summary.name}")
-        method_doc = ROOT / "FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md"
+        method_doc = ROOT / "docs/archive/methods/FEDCLEAR_METHOD_DESIGN_REVIEW_ZH.md"
         if method_doc.exists():
             tar.add(method_doc, arcname=method_doc.name)
     log(f"Wrote {tar_path}")

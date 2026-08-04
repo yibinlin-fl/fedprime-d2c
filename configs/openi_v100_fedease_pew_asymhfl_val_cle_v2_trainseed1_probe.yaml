@@ -1,0 +1,87 @@
+experiment_name: probe_fedease_pew_asymhfl_val_cle_v2_alpha05_gamma09_seed0_split0_trainseed1
+method_name: fedease
+seed: 1
+device: auto
+num_workers: 2
+output_root: outputs
+
+data:
+  scenario: cle_hfl_v2
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_cle_v2/alpha05_gamma09_seed0_split0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 5000
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 0
+  rounds: 12
+  local_epochs: 1
+  batch_size: 64
+  test_batch_size: 512
+  public_batch_size: 128
+  public_batches_per_round: 4
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 50
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: fedease
+  lambda_jsd: 12.0
+  communication: asymhfl_val
+  strict_fit_audit:
+    enabled: true
+    split_path: outputs/partitions/strict_cle_v2_alpha05_gamma09_seed0_split0.npz
+    audit_ratio: 0.15
+    min_audit_per_class: 5
+    min_fit_per_class: 2
+    audit_batch_size: 256
+    seed: 0
+  fedease:
+    environment_mode: learned
+    num_environments: 6
+    preserve_dcl: true
+    pew:
+      embedding_dim: 32
+      severity_levels: 5
+      unknown_threshold: auto
+      epochs: 5
+      learning_rate: 0.001
+      severity_weight: 0.25
+      public_size: 5000
+      batch_size: 128
+      inference_batch_size: 512
+      validation_fraction: 0.2
+      reuse_checkpoint: true
+    ber:
+      enabled: true
+      support_gamma: 0.5
+      count_cap: 32
+      min_group_count: 2
+    cdep:
+      enabled: true
+      projection_dim: 64
+      min_class_count: 3
+      lambda: 0.05
+      eps: 1.0e-5
+    ebst:
+      enabled: false
+    scp:
+      enabled: false
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true
+  save_final: false

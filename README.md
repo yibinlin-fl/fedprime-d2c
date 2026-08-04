@@ -8,7 +8,7 @@ The repository name records the project's starting point, but D2C and its
 rank/threshold variants are now frozen negative results. The current question
 is robust heterogeneous federated learning under simultaneous model
 heterogeneity, label-skew Non-IID, and corruption-label entanglement. The
-active formal benchmark and latest seed-0 GO result are summarized in
+active formal benchmark and latest three-training-seed GO result are summarized in
 `docs/handoffs/latest.md`; use `docs/README_ZH.md` to locate current and
 archived research documents.
 

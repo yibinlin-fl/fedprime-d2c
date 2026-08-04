@@ -33,49 +33,62 @@ not authoritative.
 
 ## Current Formal Result
 
-The 12-round strict CLE-HFL v2 A/B probe completed on 2026-08-04:
+The strict 12-round CLE-HFL v2 A/B completed for matched training seeds 0/1/2
+on 2026-08-04:
 
 ```text
 control   = AugMix/JSD/DCL + strict AsymHFL-val
 candidate = AugMix/JSD/DCL + calibrated PEW/BER+CDep + strict AsymHFL-val
 ```
 
-Both arms used the same persisted fit/audit split. Local gradients used `fit`,
-AsymHFL routing used client-private `audit`, and final-test labels were
-reporting-only. The independently recomputed candidate-minus-control last-five
-result was:
+All seeds kept the CLE scenario and persisted fit/audit split fixed at
+`seed0_split0`; only matched training randomness changed. Local gradients used
+`fit`, AsymHFL routing used client-private `audit`, and final-test labels were
+reporting-only. Independently recomputed last-five deltas were:
 
 ```text
-Avg +3.9377, Worst +3.9040, WCCA +5.0500, CFG -6.3200
-verdict: GO
+seed   Avg       Worst     WCCA      CFG
+0      +3.9377   +3.9040   +5.0500   -6.3200
+1      +4.7977   +3.8893   +4.3500   -8.3000
+2      +5.0287   +4.8573   +7.2500   -5.5250
+mean   +4.5880   +4.2169   +5.5500   -6.7150
 ```
 
-This is a positive seed-0 attribution result, not yet a multi-seed or final
-paper claim. Never treat smoke accuracy as evidence.
+All three seeds passed the original full gate, and all pre-registered
+multi-seed gates passed. Verdict: `GO` for training-seed stability on the fixed
+CLE scenario. This is not yet a cross-scenario or 40-round final-paper claim.
+Never treat smoke accuracy as evidence.
 
 Entry and guide:
 
 ```text
 scripts/openi_strict_pew_asymhfl_entry.py --mode=both
 docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md
+docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
 ```
 
-The seed-0 result passed all frozen gates:
+All three seeds passed the frozen single-seed gates:
 
 ```text
 Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
 ```
 
-Repeat matched 12-round seeds before any 40-round or final-method claim. Do not
-start those runs unless the user explicitly requests them.
+The result is eligible for a separately designed 40-round durability probe.
+Do not start it, scenario-seed expansion, or any other paid run unless the user
+explicitly requests it. Freeze PEW/BER/CDep parameters; do not tune against
+these three results.
 
-Current repeat entry points:
+The user has requested preparation of the seed-0 40-round durability probe.
+After its implementation is verified and pushed, the only formal entry is:
 
 ```text
-scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=1
-scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=2
-docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
+scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both
+docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
 ```
+
+Its pre-registered decision uses the original thresholds on last-10 means plus
+positive-direction last-5 anti-collapse gates. Do not change these windows or
+gates after the result arrives.
 
 ## Frozen Negative Results
 

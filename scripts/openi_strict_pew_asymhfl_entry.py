@@ -146,7 +146,7 @@ def package_outputs(methods: list[str], train_seed: int) -> Path:
             (
                 "docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md"
                 if train_seed == 0
-                else "docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md"
+                else "docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md"
             ),
             "docs/project/CURRENT_PROJECT_MEMORY.md",
         ):

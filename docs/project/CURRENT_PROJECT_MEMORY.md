@@ -2,7 +2,7 @@
 
 Updated: 2026-08-04
 
-## Strict PEW + AsymHFL-val Formal Seed-0 Result - 2026-08-04
+## Strict PEW + AsymHFL-val Formal Training-Seed Result - 2026-08-04
 
 After FedCIS-v0 and the handcrafted continuous witness both failed their
 offline gates, a strict attribution experiment compared:
@@ -27,7 +27,9 @@ local RTX 3050 one-round smoke: both arms passed
 focused tests: 46 passed
 formal 12-round seed-0 result: complete
 independent recomputation: exact match
-verdict: GO for seed-0 attribution; multi-seed confirmation required
+formal 12-round training seeds 1/2: complete
+independent recomputation: exact match for seeds 0/1/2
+verdict: GO for fixed-scenario training-seed stability
 ```
 
 The smoke verified identical persisted splits and identical round-0 audit
@@ -71,37 +73,87 @@ one of rounds 7-11. Round-0 `col_loss` was identical in both arms
 identity and the intended FedEASE/PEW/BER+CDep method fields.
 
 All frozen last-five gates passed. This is evidence that calibrated PEW +
-BER+CDep improves the matched strict AsymHFL-val pipeline on seed 0. It is not
-yet evidence for a stable multi-seed final paper method. Repeat matched
-12-round seeds before any 40-round claim; do not rescue future failures with
-blind lambda, threshold, or rank sweeps.
+BER+CDep improves the matched strict AsymHFL-val pipeline on seed 0. This
+seed-0 result triggered the pre-registered training-seed repeats documented
+below; those repeats also passed. Do not rescue future failures with blind
+lambda, threshold, or rank sweeps.
 
-### Training-seed repeat infrastructure
+### Training-seed repeat result
 
-The seed 1/2 repeat infrastructure was implemented without starting a paid
-task. Both repeats keep `alpha05_gamma09_seed0_split0`, the persisted strict
-fit/audit split, method parameters, models, and 12-round budget fixed. Only the
-top-level training seed and output identity change.
+The seed 1/2 repeats completed. Both kept `alpha05_gamma09_seed0_split0`, the
+persisted strict fit/audit split, method parameters, models, and 12-round budget
+fixed. Only the matched top-level training seed and output identity changed.
 
 ```text
 seed 1: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=1
 seed 2: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=2
 aggregate: scripts/analyze_strict_pew_asymhfl_multiseed.py
-guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
+guide: docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
 ```
 
-The multi-seed analyzer pre-registers mean gates, requires positive direction
-on every seed, and requires at least two of three seeds to pass the original
-full gate. Verification: 9 focused tests passed, both CLIs parsed correctly,
-the aggregate CLI dry-run passed, and all four new configs passed dependency
-checks. Local CLE private data remains absent until the prepared OpenI archive
-is imported. No seed 1/2 formal result exists yet.
+Archive integrity:
 
-Frozen last-five gate before any 40-round run:
+```text
+seed1 sha256: 7f4889fe20a11b7c446355b1b643fce1974f13a57f38e320c74a96a817cbd32e
+seed2 sha256: 10d78afce660776cfcd95bcf0c12b420dac545c46b3810b00bfba44afd001eab
+members per archive: 30
+unsafe paths or links: none
+partition sha256 (all three): 75c6bd9dc4b7714f505eea2c047f1b882582da311d00d099b6caac1b5ba4d2ec
+```
+
+Independently recomputed candidate-minus-control last-five deltas:
+
+```text
+seed   Avg       Worst     WCCA      CFG       full gate
+0      +3.9377   +3.9040   +5.0500   -6.3200   PASS
+1      +4.7977   +3.8893   +4.3500   -8.3000   PASS
+2      +5.0287   +4.8573   +7.2500   -5.5250   PASS
+mean   +4.5880   +4.2169   +5.5500   -6.7150
+std     0.5749    0.5547    1.5133    1.4290
+```
+
+All three seeds passed the original full gate, and all nine pre-registered
+multi-seed gates passed. Across every one of the 15 last-five seed-rounds,
+candidate improved Avg, Worst, and WCCA while reducing CFG. Three-seed mean
+extended deltas were `worst_group_acc +7.31`,
+`worst_client_group_acc +7.20`, seen Avg/Worst `+4.48/+4.28`, and unseen
+Avg/Worst `+4.90/+4.06`. Even the weakest seed direction remained positive;
+the least favorable CFG delta was `-5.525`.
+
+Decision: `GO` for training-seed stability on the fixed CLE scenario. This
+passes the prerequisite for separately designing a 40-round durability probe.
+It does not establish cross-scenario generalization because class partitions,
+operator maps, and the fit/audit split remained fixed. Freeze current method
+parameters and do not start a new paid run without an explicit user request.
+
+### Prepared seed-0 40-round durability probe
+
+After the training-seed repeat passed, the user requested preparation of the
+fixed-scenario seed-0 40-round probe. It changes only `train.rounds` from 12 to
+40 and experiment/output identity; it runs from scratch and does not load or
+resume the 12-round checkpoints.
+
+```text
+entry: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both
+control: configs/openi_v100_rahfl_val_cle_v2_40round_probe.yaml
+candidate: configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_40round_probe.yaml
+analyzer: scripts/analyze_strict_pew_asymhfl_40round.py
+guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
+expected archive: strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz
+```
+
+Pre-registered primary last-10 gates:
 
 ```text
 Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
 ```
+
+Pre-registered last-5 anti-collapse gates require strictly positive Avg/Worst,
+nonnegative WCCA, and negative CFG deltas. All eight gates must pass. The
+implementation passed 14 focused tests, both CLI help checks, config dependency
+checks, and a synthetic 40-row analyzer dry-run with all eight gates producing
+`GO`. It must be pushed before the user starts the OpenI task; no 40-round
+result exists yet.
 
 ## Continuous Taxonomy-Free Witness Audit - 2026-08-03
 

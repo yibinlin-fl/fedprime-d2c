@@ -132,3 +132,23 @@ python scripts/analyze_strict_pew_asymhfl_multiseed.py \
 本轮只做 training-seed 稳定性，不改变 CLE 的类别划分、算子映射或
 fit/audit split。若 training seeds 0/1/2 通过，再单独设计场景 seed 泛化和
 40 轮正式实验；不要把两类随机性混入当前归因复验。
+
+## 2026-08-04 正式结果
+
+training seeds 0/1/2 均完成，独立重算结果为：
+
+```text
+seed   Avg       Worst     WCCA      CFG       full gate
+0      +3.9377   +3.9040   +5.0500   -6.3200   PASS
+1      +4.7977   +3.8893   +4.3500   -8.3000   PASS
+2      +5.0287   +4.8573   +7.2500   -5.5250   PASS
+mean   +4.5880   +4.2169   +5.5500   -6.7150
+```
+
+三 seed 全部通过原完整门槛，九项预注册多 seed 判据全部通过，最终判定
+为 `GO`。该结论证明固定 CLE 场景下的训练随机种子稳定性，但不等价于
+跨场景泛化或 40 轮最终结果。详细报告：
+
+```text
+deliverables/strict_pew_asymhfl_val_multiseed_20260804/RESULT_SUMMARY_ZH.md
+```

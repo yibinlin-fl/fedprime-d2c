@@ -12,7 +12,8 @@ to evaluation only.
 
 ## Latest Formal Result
 
-OpenI completed one strict 12-round A/B attribution probe on 2026-08-04:
+OpenI completed the strict 12-round A/B for matched training seeds 0/1/2 on
+2026-08-04:
 
 ```text
 control:
@@ -25,20 +26,25 @@ candidate:
   + the same strict AsymHFL-val
 ```
 
-The returned archive was validated and independently reanalyzed locally. Both
-arms contain rounds 0-11 with no missing core metrics, and the recomputed
-comparison exactly matches the archived comparison.
+All three returned archives were validated and independently reanalyzed
+locally. Every arm contains rounds 0-11 with no missing core metrics, and all
+recomputed comparisons exactly match the archived comparisons. The persisted
+fit/audit partition hash is identical across seeds 0/1/2.
 
 Candidate-minus-control:
 
 ```text
-scope       Avg       Worst     WCCA      CFG
-final       +5.1267   +2.9533   +8.7500   -7.7250
-last-five   +3.9377   +3.9040   +5.0500   -6.3200
+seed   Avg       Worst     WCCA      CFG
+0      +3.9377   +3.9040   +5.0500   -6.3200
+1      +4.7977   +3.8893   +4.3500   -8.3000
+2      +5.0287   +4.8573   +7.2500   -5.5250
+mean   +4.5880   +4.2169   +5.5500   -6.7150
 ```
 
-All four frozen last-five gates passed. Verdict: `GO` for the seed-0
-attribution probe. This does not yet justify a multi-seed or final-paper claim.
+All three seeds passed the original full gate (3/3), and all nine
+pre-registered multi-seed gates passed. Verdict: `GO` for training-seed
+stability on fixed CLE `seed0_split0`. This does not yet establish
+cross-scenario generalization or a 40-round final-paper result.
 
 Fairness contract:
 
@@ -57,8 +63,10 @@ OpenI assets:
 ```text
 dataset: cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz
 entry: scripts/openi_strict_pew_asymhfl_entry.py
-argument: --mode=both
-expected archive: strict_pew_asymhfl_val_probe_outputs.tar.gz
+arguments: --mode=both --train_seed=0/1/2
+seed0 archive: strict_pew_asymhfl_val_probe_outputs.tar.gz
+seed1 archive: strict_pew_asymhfl_val_trainseed1_probe_outputs.tar.gz
+seed2 archive: strict_pew_asymhfl_val_trainseed2_probe_outputs.tar.gz
 ```
 
 Formal configs:
@@ -66,6 +74,10 @@ Formal configs:
 ```text
 configs/openi_v100_rahfl_val_cle_v2_probe.yaml
 configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_probe.yaml
+configs/openi_v100_rahfl_val_cle_v2_trainseed1_probe.yaml
+configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_trainseed1_probe.yaml
+configs/openi_v100_rahfl_val_cle_v2_trainseed2_probe.yaml
+configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_trainseed2_probe.yaml
 ```
 
 ## Implementation Status
@@ -80,6 +92,7 @@ CLE-HFL v2 FedEASE support
 PEW post-training RNG reset for matched initialization
 operator-to-family mapping for diagnostic reporting only
 automatic final/last-five comparison and frozen GO/NO-GO gates
+pre-registered three-seed aggregate analyzer and gates
 OpenI packaging and c2net upload
 checkpoints.save_final=false enforcement
 ```
@@ -93,6 +106,9 @@ candidate one-round RTX 3050 smoke passed
 both arms had identical round-0 audit routing accuracies
 both arms had nonzero and matched AsymHFL col_loss
 candidate BER and CDep were nonzero
+all six formal arms had complete rounds 0-11 and no missing core metrics
+all three archived comparisons exactly matched independent recomputation
+all three persisted partition files were byte-identical
 ```
 
 Smoke accuracy is not a research result.
@@ -104,6 +120,11 @@ Validated result locations:
 ```text
 outputs/strict_pew_asymhfl_val_probe_outputs.tar.gz
 outputs/strict_pew_asymhfl_val_probe_20260804/
+outputs/strict_pew_asymhfl_val_trainseed1_probe_outputs.tar.gz
+outputs/strict_pew_asymhfl_val_trainseed1_20260804/
+outputs/strict_pew_asymhfl_val_trainseed2_probe_outputs.tar.gz
+outputs/strict_pew_asymhfl_val_trainseed2_20260804/
+outputs/strict_pew_asymhfl_val_multiseed_comparison.json
 ```
 
 Candidate-minus-control must pass all last-five gates:
@@ -115,39 +136,38 @@ WCCA  >=  0.0
 CFG   <= -1.0
 ```
 
-The gates passed for seed 0. The next scientific step is matched 12-round seed
-repetition. Do not start 40 rounds or present a final method claim until the
-positive effect survives those repeats. Do not start new paid runs unless the
-user explicitly requests them.
+The matched training-seed repeat passed. The method is eligible for a
+separately pre-registered 40-round durability experiment. The user requested
+preparation of that task. The seed-0 entry, matched configs, analyzer, frozen
+last-10/last-5 gates, tests, and guide are locally verified and ready to push;
+no paid task has been started. Verification covered 14 focused tests, both CLI
+help paths, config dependency checks, and a complete synthetic 40-row analyzer
+run whose eight gates produced `GO`. A distinct later question is generalization across CLE scenario
+seeds (class partitions/operator maps); do not mix that variable into the
+durability attribution. Freeze current PEW/BER/CDep parameters.
 
-Prepared repeat infrastructure:
+Prepared 40-round entry points:
 
 ```text
-seed 1: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=1
-seed 2: scripts/openi_strict_pew_asymhfl_entry.py --mode=both --train_seed=2
-guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md
-aggregate: scripts/analyze_strict_pew_asymhfl_multiseed.py
+entry: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both
+control: configs/openi_v100_rahfl_val_cle_v2_40round_probe.yaml
+candidate: configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_40round_probe.yaml
+analyzer: scripts/analyze_strict_pew_asymhfl_40round.py
+guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
+expected archive: strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz
 ```
-
-The repeat keeps the CLE scenario and persisted fit/audit split fixed at
-`seed0_split0`; only the top-level training seed changes. The aggregate gates
-are pre-registered in the guide and analyzer. Verification completed with 9
-focused tests, CLI help checks, a synthetic three-seed CLI dry-run, and
-dependency checks for all four new configs. The local private CLE path is
-absent until the prepared archive is imported, as expected. No paid repeat
-task has been started.
 
 ## Research Memory In One Screen
 
 Validated positive historical signal:
 
 ```text
-calibrated PEW + BER+CDep local learning improved Avg/Worst/CFG on CLE-HFL v1
+calibrated PEW + BER+CDep passed strict CLE-HFL v2 training seeds 0/1/2
 SARA + original AsymHFL reached 57.83/46.59 on the older alpha=0.5 setting
 ```
 
-Important caveat: neither is yet a clean final paper method under strict
-CLE-HFL v2 evaluation.
+Important caveat: the strict positive result is still fixed to one CLE
+scenario and 12 rounds; it is not yet a final paper result.
 
 Frozen negative routes include D2C, Oracle D2C, FedPRIME-PAIR, PRAC-HFL,
 FedCARA v1 communication, FedCLEAR/PCCD, EBST/EBST-v2, FedFalsify v0.2/v0.3,
@@ -156,17 +176,16 @@ before reopening any of them.
 
 ## Repository State
 
-Latest committed head observed before this handoff:
+Parent committed head before the current result/preparation commit:
 
 ```text
-05236e6 实现CLE-HFL v2算子协议与FedFalsify三方实验入口
+587d0b8 整理项目文档并准备PEW多种子复验
 branch: main
 ```
 
-The strict A/B implementation and recent audit documents are currently local
-worktree changes unless committed after this handoff. Do not revert unrelated
-dirty files. Large outputs, datasets, checkpoints, and `local_test_outputs/`
-must remain untracked.
+The three-seed result record and 40-round preparation are the intended scope of
+the next commit. Do not revert or stage unrelated dirty files. Large outputs,
+datasets, checkpoints, and `local_test_outputs/` must remain untracked.
 
 Documentation was reorganized on 2026-08-04. The repository root now keeps
 only `README.md` and `AGENTS.md`; use `docs/README_ZH.md` as the document map.

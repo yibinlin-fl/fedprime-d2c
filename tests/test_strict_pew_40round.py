@@ -8,10 +8,10 @@ import pytest
 from fedprime.utils.config import load_config
 from scripts.analyze_strict_pew_asymhfl_40round import build_payload, summarize
 from scripts.openi_strict_pew_asymhfl_40round_entry import (
-    ARCHIVE_NAME,
-    COMPARISON,
     CONFIGS,
     EXPERIMENTS,
+    archive_name,
+    comparison_path,
 )
 
 
@@ -22,36 +22,52 @@ def _without_identity_and_rounds(config: dict) -> dict:
     return cloned
 
 
-def test_40round_configs_preserve_seed0_protocol() -> None:
-    control = load_config(CONFIGS["control"])
-    candidate = load_config(CONFIGS["candidate"])
-    base_control = load_config("configs/openi_v100_rahfl_val_cle_v2_probe.yaml")
-    base_candidate = load_config(
-        "configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_probe.yaml"
-    )
+def test_40round_configs_preserve_matched_protocol() -> None:
+    assert sorted(CONFIGS) == [0, 1, 2]
+    assert sorted(EXPERIMENTS) == [0, 1, 2]
 
-    assert control["seed"] == candidate["seed"] == 0
-    assert control["train"]["rounds"] == candidate["train"]["rounds"] == 40
-    assert control["data"] == candidate["data"]
-    assert control["models"] == candidate["models"]
-    assert control["checkpoints"] == candidate["checkpoints"]
-    assert control["method"]["strict_fit_audit"] == candidate["method"]["strict_fit_audit"]
-    assert control["method"]["strict_fit_audit"]["seed"] == 0
-    assert control["method"]["communication"] == candidate["method"]["communication"]
-    assert control["method"]["cl_module"] == "dcl"
-    assert candidate["method"]["cl_module"] == "fedease"
-    assert candidate["method"]["fedease"]["preserve_dcl"] is True
-    assert candidate["method"]["fedease"]["ber"]["enabled"] is True
-    assert candidate["method"]["fedease"]["cdep"]["enabled"] is True
-    assert _without_identity_and_rounds(control) == _without_identity_and_rounds(base_control)
-    assert _without_identity_and_rounds(candidate) == _without_identity_and_rounds(base_candidate)
+    for train_seed in (0, 1, 2):
+        control = load_config(CONFIGS[train_seed]["control"])
+        candidate = load_config(CONFIGS[train_seed]["candidate"])
+        suffix = "" if train_seed == 0 else f"_trainseed{train_seed}"
+        base_control = load_config(
+            f"configs/openi_v100_rahfl_val_cle_v2{suffix}_probe.yaml"
+        )
+        base_candidate = load_config(
+            f"configs/openi_v100_fedease_pew_asymhfl_val_cle_v2{suffix}_probe.yaml"
+        )
+
+        assert control["seed"] == candidate["seed"] == train_seed
+        assert control["train"]["rounds"] == candidate["train"]["rounds"] == 40
+        assert control["data"] == candidate["data"]
+        assert control["models"] == candidate["models"]
+        assert control["train"] == candidate["train"]
+        assert control["checkpoints"] == candidate["checkpoints"]
+        assert control["method"]["strict_fit_audit"] == candidate["method"]["strict_fit_audit"]
+        assert control["method"]["strict_fit_audit"]["seed"] == 0
+        assert control["method"]["strict_fit_audit"]["split_path"].endswith(
+            "strict_cle_v2_alpha05_gamma09_seed0_split0.npz"
+        )
+        assert control["method"]["communication"] == candidate["method"]["communication"]
+        assert control["method"]["cl_module"] == "dcl"
+        assert candidate["method"]["cl_module"] == "fedease"
+        assert candidate["method"]["fedease"]["preserve_dcl"] is True
+        assert candidate["method"]["fedease"]["ber"]["enabled"] is True
+        assert candidate["method"]["fedease"]["cdep"]["enabled"] is True
+        assert _without_identity_and_rounds(control) == _without_identity_and_rounds(base_control)
+        assert _without_identity_and_rounds(candidate) == _without_identity_and_rounds(base_candidate)
 
 
 def test_40round_output_names_are_isolated() -> None:
-    assert EXPERIMENTS["control"].startswith("durability40_")
-    assert EXPERIMENTS["candidate"].startswith("durability40_")
-    assert COMPARISON.endswith("40round_seed0_comparison.json")
-    assert ARCHIVE_NAME == "strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz"
+    for train_seed in (0, 1, 2):
+        assert EXPERIMENTS[train_seed]["control"].startswith("durability40_")
+        assert EXPERIMENTS[train_seed]["candidate"].startswith("durability40_")
+    assert comparison_path(0).endswith("40round_seed0_comparison.json")
+    assert comparison_path(1).endswith("40round_trainseed1_comparison.json")
+    assert comparison_path(2).endswith("40round_trainseed2_comparison.json")
+    assert archive_name(0) == "strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz"
+    assert archive_name(1) == "strict_pew_asymhfl_val_40round_trainseed1_outputs.tar.gz"
+    assert archive_name(2) == "strict_pew_asymhfl_val_40round_trainseed2_outputs.tar.gz"
 
 
 def test_durability_gate_go() -> None:

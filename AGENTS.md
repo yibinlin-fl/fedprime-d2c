@@ -56,7 +56,7 @@ mean   +4.5880   +4.2169   +5.5500   -6.7150
 
 All three seeds passed the original full gate, and all pre-registered
 multi-seed gates passed. Verdict: `GO` for training-seed stability on the fixed
-CLE scenario. This is not yet a cross-scenario or 40-round final-paper claim.
+CLE scenario. This is not yet a cross-scenario claim.
 Never treat smoke accuracy as evidence.
 
 Entry and guide:
@@ -73,16 +73,19 @@ All three seeds passed the frozen single-seed gates:
 Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
 ```
 
-The result is eligible for a separately designed 40-round durability probe.
-Do not start it, scenario-seed expansion, or any other paid run unless the user
-explicitly requests it. Freeze PEW/BER/CDep parameters; do not tune against
-these three results.
-
-The user has requested preparation of the seed-0 40-round durability probe.
-After its implementation is verified and pushed, the only formal entry is:
+The 40-round training-seed 0 durability result also passed all eight frozen
+last-10/last-5 gates. Its last-10 delta was:
 
 ```text
-scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both
+Avg +4.9292, Worst +3.2987, WCCA +9.8750, CFG -5.4700
+```
+
+The user has explicitly requested matched 40-round repeats for training seeds
+1/2. Freeze PEW/BER/CDep parameters and the CLE `seed0_split0` scenario. The
+only formal entry is:
+
+```text
+scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=1/2
 docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
 ```
 

@@ -1,6 +1,6 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-08-04
+Updated: 2026-08-05
 
 ## Strict PEW + AsymHFL-val Formal Training-Seed Result - 2026-08-04
 
@@ -152,8 +152,28 @@ Pre-registered last-5 anti-collapse gates require strictly positive Avg/Worst,
 nonnegative WCCA, and negative CFG deltas. All eight gates must pass. The
 implementation passed 14 focused tests, both CLI help checks, config dependency
 checks, and a synthetic 40-row analyzer dry-run with all eight gates producing
-`GO`. It must be pushed before the user starts the OpenI task; no 40-round
-result exists yet.
+`GO`.
+
+### 40-round seed-0 result and matched seed1/2 preparation
+
+The returned seed-0 archive was safety-checked and independently reanalyzed on
+2026-08-05. Both arms contain exact rounds 0-39, no core NaNs, and byte-matched
+formal configs. The persisted split hash remains
+`75C6BD9DC4B7714F505EEA2C047F1B882582DA311D00D099B6CAAC1B5BA4D2EC`.
+The first 12 rounds exactly reproduce the earlier seed-0 formal run.
+
+```text
+last-10 candidate-minus-control:
+Avg +4.9292, Worst +3.2987, WCCA +9.8750, CFG -5.4700
+last-5 candidate-minus-control:
+Avg +4.7140, Worst +3.1747, WCCA +9.7000, CFG -5.0800
+verdict: GO (8/8 gates)
+```
+
+The user then explicitly requested 40-round training-seed repeats 1/2. The
+same entry now selects them with `--train_seed=1/2`; scenario data and
+`strict_fit_audit.seed=0` remain fixed. Do not tune method parameters or mix in
+scenario-seed changes.
 
 ## Continuous Taxonomy-Free Witness Audit - 2026-08-03
 

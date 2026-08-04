@@ -1,6 +1,6 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-04
+Updated: 2026-08-05
 
 ## Current Objective
 
@@ -136,25 +136,31 @@ WCCA  >=  0.0
 CFG   <= -1.0
 ```
 
-The matched training-seed repeat passed. The method is eligible for a
-separately pre-registered 40-round durability experiment. The user requested
-preparation of that task. The seed-0 entry, matched configs, analyzer, frozen
-last-10/last-5 gates, tests, and guide are locally verified and ready to push;
-no paid task has been started. Verification covered 14 focused tests, both CLI
-help paths, config dependency checks, and a complete synthetic 40-row analyzer
-run whose eight gates produced `GO`. A distinct later question is generalization across CLE scenario
-seeds (class partitions/operator maps); do not mix that variable into the
-durability attribution. Freeze current PEW/BER/CDep parameters.
+The 40-round training-seed 0 durability task completed and was independently
+reanalyzed. Both arms contain exact rounds 0-39 with no missing core metrics;
+the returned configs match the committed configs, the fixed partition hash is
+unchanged, and the first 12 rounds exactly reproduce the prior formal seed-0
+run. Candidate-minus-control last-ten was:
+
+```text
+Avg +4.9292, Worst +3.2987, WCCA +9.8750, CFG -5.4700
+verdict: GO (8/8 gates)
+```
+
+The user explicitly requested matched 40-round repeats for training seeds 1/2.
+Keep the CLE scenario, persisted fit/audit split, and all PEW/BER/CDep settings
+fixed. A distinct later question is generalization across CLE scenario seeds;
+do not mix it into this durability attribution.
 
 Prepared 40-round entry points:
 
 ```text
-entry: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both
-control: configs/openi_v100_rahfl_val_cle_v2_40round_probe.yaml
-candidate: configs/openi_v100_fedease_pew_asymhfl_val_cle_v2_40round_probe.yaml
+entry seed1: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=1
+entry seed2: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=2
 analyzer: scripts/analyze_strict_pew_asymhfl_40round.py
 guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
-expected archive: strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz
+expected seed1 archive: strict_pew_asymhfl_val_40round_trainseed1_outputs.tar.gz
+expected seed2 archive: strict_pew_asymhfl_val_40round_trainseed2_outputs.tar.gz
 ```
 
 ## Research Memory In One Screen
@@ -166,8 +172,9 @@ calibrated PEW + BER+CDep passed strict CLE-HFL v2 training seeds 0/1/2
 SARA + original AsymHFL reached 57.83/46.59 on the older alpha=0.5 setting
 ```
 
-Important caveat: the strict positive result is still fixed to one CLE
-scenario and 12 rounds; it is not yet a final paper result.
+Important caveat: 40-round durability is currently established for training
+seed 0 only and remains fixed to one CLE scenario; it is not yet a final-paper
+cross-seed or cross-scenario result.
 
 Frozen negative routes include D2C, Oracle D2C, FedPRIME-PAIR, PRAC-HFL,
 FedCARA v1 communication, FedCLEAR/PCCD, EBST/EBST-v2, FedFalsify v0.2/v0.3,
@@ -176,16 +183,16 @@ before reopening any of them.
 
 ## Repository State
 
-Parent committed head before the current result/preparation commit:
+Latest pushed head before the current seed1/2 preparation:
 
 ```text
-587d0b8 整理项目文档并准备PEW多种子复验
+1eb5ba6 记录三种子结果并准备40轮耐久性实验
 branch: main
 ```
 
-The three-seed result record and 40-round preparation are the intended scope of
-the next commit. Do not revert or stage unrelated dirty files. Large outputs,
-datasets, checkpoints, and `local_test_outputs/` must remain untracked.
+The seed-0 40-round result record and seed1/2 preparation are the intended scope
+of the next commit. Do not revert or stage unrelated dirty files. Large
+outputs, datasets, checkpoints, and `local_test_outputs/` must remain untracked.
 
 Documentation was reorganized on 2026-08-04. The repository root now keeps
 only `README.md` and `AGENTS.md`; use `docs/README_ZH.md` as the document map.

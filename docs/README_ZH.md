@@ -1,6 +1,6 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-04
+Updated: 2026-08-05
 
 ## 新会话最小读取顺序
 
@@ -27,7 +27,7 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 ```text
 docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md  已完成的 seed-0 strict A/B 说明（GO）
 docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md  已完成的 training-seed 0/1/2 复验（GO）
-docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md  当前 seed-0 40 轮 durability 说明
+docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md  当前 40 轮 training-seed 1/2 复验说明
 docs/experiments/guides/CLE_HFL_V2_OPENI_RUN_GUIDE_ZH.md        CLE-HFL v2 通用平台说明
 ```
 
@@ -120,6 +120,7 @@ local_runs/    本地数据和临时运行，默认不提交 Git
 deliverables/baselines/rahfl_cle_alpha05_gamma09_seed0_round00_11.csv
 deliverables/strict_pew_asymhfl_val_probe_20260804/RESULT_SUMMARY_ZH.md
 deliverables/strict_pew_asymhfl_val_multiseed_20260804/RESULT_SUMMARY_ZH.md
+deliverables/strict_pew_asymhfl_val_40round_seed0_20260805/RESULT_SUMMARY_ZH.md
 ```
 
 ## 文档目录职责

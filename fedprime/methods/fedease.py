@@ -17,6 +17,7 @@ from fedprime.methods.environment_witness import (
     train_environment_witness,
 )
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
+from fedprime.utils.env import seed_everything
 
 
 class FedEASEExperiment(AsymHFLExperiment):
@@ -26,16 +27,26 @@ class FedEASEExperiment(AsymHFLExperiment):
         data_cfg = config.get("data", {})
         method_cfg = config.get("method", {})
         fedease_cfg = method_cfg.get("fedease", {})
-        if str(data_cfg.get("scenario", "")).lower() != "cle_hfl":
-            raise ValueError("FedEASE requires data.scenario=cle_hfl.")
+        if str(data_cfg.get("scenario", "")).lower() not in {"cle_hfl", "cle_hfl_v2"}:
+            raise ValueError("FedEASE requires data.scenario=cle_hfl or cle_hfl_v2.")
         if str(method_cfg.get("cl_module", "")).lower() != "fedease":
             raise ValueError("FedEASE requires method.cl_module=fedease.")
         environment_mode = str(fedease_cfg.get("environment_mode", "oracle")).lower()
         if environment_mode not in {"oracle", "learned"}:
             raise ValueError("FedEASE environment_mode must be oracle or learned.")
         communication = str(method_cfg.get("communication", "none")).lower()
-        if communication not in {"none", "local_only", "ebst", "ebst_v2"}:
-            raise ValueError("FedEASE communication must be none/local_only, ebst, or ebst_v2.")
+        if communication not in {
+            "none",
+            "local_only",
+            "asymhfl",
+            "asymhfl_val",
+            "ebst",
+            "ebst_v2",
+        }:
+            raise ValueError(
+                "FedEASE communication must be none/local_only, asymhfl/asymhfl_val, "
+                "ebst, or ebst_v2."
+            )
         super().__init__(config)
 
     def run(self) -> None:
@@ -43,6 +54,11 @@ class FedEASEExperiment(AsymHFLExperiment):
         self._fedease_environment_annotations = None
         if str(fedease_cfg.get("environment_mode", "oracle")).lower() == "learned":
             self._prepare_learned_environment_annotations()
+            seed_everything(int(self.config.get("seed", 0)))
+            print(
+                "[setup] reset experiment RNG after PEW preparation for matched model initialization",
+                flush=True,
+            )
         super().run()
 
     def _prepare_learned_environment_annotations(self) -> None:
@@ -127,7 +143,10 @@ class FedEASEExperiment(AsymHFLExperiment):
                 batch_size=int(pew_cfg.get("inference_batch_size", 512)),
                 confidence_threshold=unknown_threshold,
             )
-            oracle = np.load(client_root / "train_corruption_ids.npy").astype(np.int64) + 1
+            oracle = self._diagnostic_environment_ids(
+                np.load(client_root / "train_corruption_ids.npy").astype(np.int64),
+                root,
+            )
             private_correct += int((annotation["environment_ids"] == oracle).sum())
             private_total += int(oracle.size)
             annotations[client_id] = annotation
@@ -150,3 +169,28 @@ class FedEASEExperiment(AsymHFLExperiment):
         (self.output_dir / "pew_private_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
         )
+
+    def _diagnostic_environment_ids(
+        self,
+        corruption_ids: np.ndarray,
+        root: Path,
+    ) -> np.ndarray:
+        """Map v2 operator IDs to PEW families for reporting, never for training."""
+
+        if str(self.config["data"].get("scenario", "")).lower() != "cle_hfl_v2":
+            return np.asarray(corruption_ids, dtype=np.int64) + 1
+
+        metadata_path = root / "metadata.json"
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        operator_to_id = metadata["operator_to_id"]
+        operator_families = metadata["operator_families"]
+        family_to_pew = {"noise": 1, "blur": 2, "weather": 3, "digital": 4}
+        id_to_family = {
+            int(operator_id): family_to_pew[operator_families[operator_name]]
+            for operator_name, operator_id in operator_to_id.items()
+        }
+        mapped = np.asarray(
+            [id_to_family[int(operator_id)] for operator_id in corruption_ids],
+            dtype=np.int64,
+        )
+        return mapped

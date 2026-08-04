@@ -11,8 +11,13 @@ import torch.optim as optim
 from fedprime.augmentations.prime_adapter import build_prime_module
 from fedprime.data.fedease import (
     build_fedease_evaluation_loaders,
+    build_fedease_fit_augmix_loaders,
     build_fedease_oracle_augmix_loaders,
     load_client_class_environment_counts,
+)
+from fedprime.data.fedfalsify import (
+    build_client_audit_loaders,
+    build_fedfalsify_loaders,
 )
 from fedprime.data.loaders import (
     build_augmix_private_loaders,
@@ -107,12 +112,67 @@ class AsymHFLExperiment:
             "cle_hfl",
             "cle_hfl_v2",
         }
+        strict_cfg = method_cfg.get("strict_fit_audit", {})
+        strict_fit_audit = bool(strict_cfg.get("enabled", False))
+        self._routing_audit_loaders = {}
         pretrain_loaders = None
         if scenario in prepared_corruption_scenarios:
             if use_prime:
                 raise ValueError(f"{scenario} currently supports AugMix/SARA-style local training, not PRIME.")
             cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
-            if cl_module == "fedease":
+            client_splits = None
+            if strict_fit_audit:
+                if cl_module == "ccre":
+                    raise ValueError("strict_fit_audit currently supports DCL or FedEASE local training")
+                split_path = strict_cfg.get(
+                    "split_path",
+                    self.output_dir / "strict_fit_audit_split.npz",
+                )
+                print(
+                    f"[setup] building strict fit/audit loaders; split={split_path}",
+                    flush=True,
+                )
+                private_loaders, test_loader, client_splits, self._client_class_counts = (
+                    build_fedfalsify_loaders(
+                        root=data_cfg["private_root"],
+                        num_clients=num_clients,
+                        train_batch_size=train_cfg["batch_size"],
+                        test_batch_size=train_cfg.get("test_batch_size", 512),
+                        num_workers=int(self.config.get("num_workers", 2)),
+                        split_path=split_path,
+                        audit_ratio=float(strict_cfg.get("audit_ratio", 0.15)),
+                        min_audit_per_class=int(strict_cfg.get("min_audit_per_class", 5)),
+                        min_fit_per_class=int(strict_cfg.get("min_fit_per_class", 2)),
+                        seed=int(strict_cfg.get("seed", self.config.get("seed", 0))),
+                        num_classes=num_classes,
+                        augmix_module=method_cfg.get("augmix_module", "jsd"),
+                    )
+                )
+                self._routing_audit_loaders = build_client_audit_loaders(
+                    client_splits,
+                    batch_size=int(strict_cfg.get("audit_batch_size", 256)),
+                    num_workers=int(self.config.get("num_workers", 2)),
+                )
+                if cl_module == "fedease":
+                    private_loaders = build_fedease_fit_augmix_loaders(
+                        root=data_cfg["private_root"],
+                        client_splits=client_splits,
+                        train_batch_size=train_cfg["batch_size"],
+                        num_workers=int(self.config.get("num_workers", 2)),
+                        augmix_module=method_cfg.get("augmix_module", "jsd"),
+                        environment_annotations=getattr(
+                            self,
+                            "_fedease_environment_annotations",
+                            None,
+                        ),
+                    )
+                pretrain_loaders = private_loaders
+                print(
+                    "[setup] strict routing enabled: fit-only gradients, "
+                    "audit-only AsymHFL routing, final test for reporting only",
+                    flush=True,
+                )
+            elif cl_module == "fedease":
                 print(f"[setup] building {scenario} FedEASE oracle-environment loaders", flush=True)
                 private_loaders, test_loader, _, _ = build_fedease_oracle_augmix_loaders(
                     root=data_cfg["private_root"],
@@ -142,17 +202,21 @@ class AsymHFLExperiment:
                     num_workers=int(self.config.get("num_workers", 2)),
                     augmix_module=method_cfg.get("augmix_module", "jsd"),
                 )
-            pretrain_loaders = build_corruption_skew_pretrain_loaders(
-                root=data_cfg["private_root"],
-                num_clients=num_clients,
-                train_batch_size=train_cfg["batch_size"],
-                num_workers=int(self.config.get("num_workers", 2)),
-            )
-            client_labels = load_corruption_skew_client_labels(data_cfg["private_root"], num_clients)
-            self._client_class_counts = {
-                client_id: torch.bincount(torch.as_tensor(labels, dtype=torch.long), minlength=num_classes).float()
-                for client_id, labels in client_labels.items()
-            }
+            if not strict_fit_audit:
+                pretrain_loaders = build_corruption_skew_pretrain_loaders(
+                    root=data_cfg["private_root"],
+                    num_clients=num_clients,
+                    train_batch_size=train_cfg["batch_size"],
+                    num_workers=int(self.config.get("num_workers", 2)),
+                )
+                client_labels = load_corruption_skew_client_labels(data_cfg["private_root"], num_clients)
+                self._client_class_counts = {
+                    client_id: torch.bincount(
+                        torch.as_tensor(labels, dtype=torch.long),
+                        minlength=num_classes,
+                    ).float()
+                    for client_id, labels in client_labels.items()
+                }
             if cl_module == "fedease":
                 num_environments = int(method_cfg.get("fedease", {}).get("num_environments", 4))
                 self._client_class_environment_counts = load_client_class_environment_counts(
@@ -161,6 +225,14 @@ class AsymHFLExperiment:
                     num_classes=num_classes,
                     num_environments=num_environments,
                     environment_annotations=getattr(self, "_fedease_environment_annotations", None),
+                    fit_indices=(
+                        {
+                            client_id: split.fit_indices
+                            for client_id, split in client_splits.items()
+                        }
+                        if client_splits is not None
+                        else None
+                    ),
                 )
                 self._fedease_evaluation_loaders = build_fedease_evaluation_loaders(
                     root=data_cfg["private_root"],
@@ -405,7 +477,16 @@ class AsymHFLExperiment:
                     accs_before = [0.0 for _ in range(num_clients)]
                     class_accs_before = None
                 else:
-                    accs_before = self._evaluate(models, test_loader)
+                    routing_loaders = getattr(self, "_routing_audit_loaders", {})
+                    if routing_loaders:
+                        accs_before = self._evaluate_private_loaders(models, routing_loaders)
+                        print(
+                            "[routing] audit accuracies="
+                            + ",".join(f"c{idx}:{acc:.2f}" for idx, acc in enumerate(accs_before)),
+                            flush=True,
+                        )
+                    else:
+                        accs_before = self._evaluate(models, test_loader)
                     class_accs_before = None
                 print(f"[heartbeat] round {round_idx:03d} collaborative phase", flush=True)
                 col_loss = self._collaborative_phase(
@@ -618,7 +699,10 @@ class AsymHFLExperiment:
             operator_split_file.close()
         if self._fedease_evaluation_loaders:
             self._run_fedease_extended_evaluation(models, num_classes)
-        self._save_models(models)
+        if bool(self.config.get("checkpoints", {}).get("save_final", True)):
+            self._save_models(models)
+        else:
+            print("[checkpoint] final model saving disabled by checkpoints.save_final=false", flush=True)
 
     def _build_optimizer(self, model):
         opt_cfg = self.config["train"].get("optimizer", {})
@@ -1764,6 +1848,36 @@ class AsymHFLExperiment:
                     total += labels.numel()
                     correct += (pred == labels).sum().item()
             accs.append(100.0 * correct / max(total, 1))
+        return accs
+
+    def _evaluate_private_loaders(self, models, loaders) -> list[float]:
+        """Evaluate each client only on its own held-out routing audit split."""
+
+        accs = []
+        max_audit_batches = self.config.get("method", {}).get(
+            "strict_fit_audit",
+            {},
+        ).get("max_audit_batches")
+        for client_id in sorted(models):
+            if client_id not in loaders:
+                raise KeyError(f"Missing strict routing audit loader for client {client_id}")
+            model = models[client_id]
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for batch_idx, batch in enumerate(loaders[client_id]):
+                    if max_audit_batches is not None and batch_idx >= int(max_audit_batches):
+                        break
+                    images, labels, _ = self._unpack_batch(batch)
+                    images = images.to(self.device, non_blocking=True)
+                    labels = labels.to(self.device, non_blocking=True).long()
+                    predictions = forward_logits(model, images).argmax(dim=1)
+                    total += int(labels.numel())
+                    correct += int((predictions == labels).sum().item())
+            if total == 0:
+                raise ValueError(f"Client {client_id} strict routing audit loader is empty")
+            accs.append(100.0 * correct / total)
         return accs
 
     def _evaluate_detailed(self, models, test_loader, num_classes: int) -> tuple[list[float], dict[int, torch.Tensor]]:

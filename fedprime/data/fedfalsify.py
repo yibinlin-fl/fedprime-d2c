@@ -301,3 +301,27 @@ def build_fedfalsify_loaders(
         pin_memory=torch.cuda.is_available(),
     )
     return fit_loaders, test_loader, client_splits, class_counts
+
+
+def build_client_audit_loaders(
+    client_splits: dict[int, FedFalsifyClientSplit],
+    *,
+    batch_size: int,
+    num_workers: int,
+) -> dict[int, data.DataLoader]:
+    """Build deterministic client-private audit loaders for routing only."""
+
+    loaders: dict[int, data.DataLoader] = {}
+    for client_id, split in sorted(client_splits.items()):
+        if split.audit_indices.size == 0:
+            raise ValueError(f"Client {client_id} has no audit samples for strict routing")
+        dataset = data.Subset(split.probe_dataset, split.audit_indices.tolist())
+        loaders[int(client_id)] = data.DataLoader(
+            dataset,
+            batch_size=int(batch_size),
+            shuffle=False,
+            drop_last=False,
+            num_workers=int(num_workers),
+            pin_memory=torch.cuda.is_available(),
+        )
+    return loaders

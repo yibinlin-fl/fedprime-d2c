@@ -1,0 +1,72 @@
+experiment_name: debug_fedease_pew_asymhfl_val_cle_v2
+method_name: fedease
+seed: 0
+device: auto
+num_workers: 0
+output_root: local_test_outputs
+
+data:
+  scenario: cle_hfl_v2
+  private_dataset: cifar10
+  private_root: local_runs/cle_hfl_v2_smoke/cle_hfl_v2_prepared_debug_alpha05_gamma09_seed0_split0/cifar_10_cle_v2/debug_alpha05_gamma09_seed0_split0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 128
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 0
+  rounds: 1
+  local_epochs: 1
+  batch_size: 16
+  test_batch_size: 128
+  public_batch_size: 32
+  public_batches_per_round: 1
+  max_local_batches: 1
+  max_test_batches: 1
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 1
+  optimizer: {name: adam, lr: 0.001, weight_decay: 0.0}
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: fedease
+  lambda_jsd: 12.0
+  communication: asymhfl_val
+  strict_fit_audit:
+    enabled: true
+    split_path: local_test_outputs/partitions/debug_strict_cle_v2.npz
+    audit_ratio: 0.15
+    min_audit_per_class: 2
+    min_fit_per_class: 2
+    audit_batch_size: 64
+    max_audit_batches: 1
+    seed: 0
+  fedease:
+    environment_mode: learned
+    num_environments: 6
+    preserve_dcl: true
+    pew:
+      embedding_dim: 16
+      severity_levels: 5
+      unknown_threshold: auto
+      epochs: 1
+      learning_rate: 0.001
+      severity_weight: 0.25
+      public_size: 128
+      batch_size: 32
+      inference_batch_size: 128
+      validation_fraction: 0.2
+      max_batches: 1
+      reuse_checkpoint: false
+    ber: {enabled: true, support_gamma: 0.5, count_cap: 32, min_group_count: 2}
+    cdep: {enabled: true, projection_dim: 16, min_class_count: 3, lambda: 0.05, eps: 1.0e-5}
+    ebst: {enabled: false}
+    scp: {enabled: false}
+
+checkpoints: {save_final: false}

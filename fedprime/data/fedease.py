@@ -115,12 +115,58 @@ def build_fedease_oracle_augmix_loaders(
     return train_loaders, test_loader, train_datasets, test_dataset
 
 
+def build_fedease_fit_augmix_loaders(
+    root: str | Path,
+    *,
+    client_splits,
+    train_batch_size: int,
+    num_workers: int,
+    augmix_module: str = "jsd",
+    environment_annotations: dict[int, dict[str, np.ndarray]] | None = None,
+) -> list[data.DataLoader]:
+    """Build FedEASE loaders restricted to a persisted client-local fit split."""
+
+    add_vendor_paths()
+    from Dataset.dataaug import AugMixDataset
+
+    root = Path(root)
+    base, weak, preprocess = _rahfl_augmix_view_transforms()
+    loaders: list[data.DataLoader] = []
+    for client_id, split in sorted(client_splits.items()):
+        base_dataset = CorruptionSkewClientDataset(
+            root=root,
+            client_id=int(client_id),
+            train=True,
+            transform=TwoViewTransform(base, weak),
+            return_corruption=False,
+        )
+        augmix_dataset = AugMixDataset(base_dataset, preprocess, jsd_or_nojsd=augmix_module)
+        annotation = (environment_annotations or {}).get(int(client_id))
+        annotated = EnvironmentAnnotatedDataset(
+            augmix_dataset,
+            base_dataset.corruption_ids if annotation is None else annotation["environment_ids"],
+            environment_features=None if annotation is None else annotation.get("embedding"),
+            confidence=None if annotation is None else annotation.get("confidence"),
+        )
+        fit_dataset = data.Subset(annotated, split.fit_indices.tolist())
+        loaders.append(data.DataLoader(
+            fit_dataset,
+            batch_size=int(train_batch_size),
+            shuffle=True,
+            drop_last=True,
+            num_workers=int(num_workers),
+            pin_memory=torch.cuda.is_available(),
+        ))
+    return loaders
+
+
 def load_client_class_environment_counts(
     root: str | Path,
     num_clients: int,
     num_classes: int,
     num_environments: int,
     environment_annotations: dict[int, dict[str, np.ndarray]] | None = None,
+    fit_indices: dict[int, np.ndarray] | None = None,
 ) -> dict[int, torch.Tensor]:
     """Load exact client-local group counts without exposing them to the server."""
 
@@ -135,6 +181,10 @@ def load_client_class_environment_counts(
             if annotation is None
             else np.asarray(annotation["environment_ids"], dtype=np.int64)
         )
+        selected = None if fit_indices is None else np.asarray(fit_indices[client_id], dtype=np.int64)
+        if selected is not None:
+            labels = labels[selected]
+            environment_ids = environment_ids[selected]
         if labels.shape != environment_ids.shape:
             raise ValueError(f"client {client_id} labels/environment IDs have different shapes")
         if ((environment_ids < 0) | (environment_ids >= num_environments)).any():

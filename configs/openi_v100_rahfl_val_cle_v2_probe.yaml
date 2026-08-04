@@ -1,0 +1,56 @@
+experiment_name: probe_rahfl_val_cle_v2_alpha05_gamma09_seed0_split0
+method_name: rahfl
+seed: 0
+device: auto
+num_workers: 2
+output_root: outputs
+
+data:
+  scenario: cle_hfl_v2
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_cle_v2/alpha05_gamma09_seed0_split0
+  public_root: RAHFL-master/Dataset/cifar_100
+  num_classes: 10
+  public_size: 5000
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 0
+  rounds: 12
+  local_epochs: 1
+  batch_size: 64
+  test_batch_size: 512
+  public_batch_size: 128
+  public_batches_per_round: 4
+  max_grad_norm: 5.0
+  skip_nonfinite: true
+  local_log_interval: 50
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: dcl
+  lambda_jsd: 12.0
+  communication: asymhfl_val
+  strict_fit_audit:
+    enabled: true
+    split_path: outputs/partitions/strict_cle_v2_alpha05_gamma09_seed0_split0.npz
+    audit_ratio: 0.15
+    min_audit_per_class: 5
+    min_fit_per_class: 2
+    audit_batch_size: 256
+    seed: 0
+
+checkpoints:
+  load_dir:
+  resume: false
+  resume_dir:
+  strict: true
+  save_final: false

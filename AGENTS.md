@@ -86,8 +86,13 @@ only formal entry is:
 
 ```text
 scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=1/2
+scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=all
 docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
 ```
+
+`train_seed=all` means pending seeds `[1, 2]` only. It packages and uploads
+seed1 before starting seed2 so a later failure does not discard the completed
+seed1 artifact.
 
 Its pre-registered decision uses the original thresholds on last-10 means plus
 positive-direction last-5 anti-collapse gates. Do not change these windows or

@@ -49,21 +49,37 @@ cle_hfl_v2_prepared_alpha05_gamma09_seed0_split0.tar.gz
 scripts/openi_strict_pew_asymhfl_40round_entry.py
 ```
 
-seed 1 运行参数：
+单任务过夜运行 seed1→seed2（当前推荐）：
+
+```text
+--mode=both --train_seed=all
+```
+
+执行顺序固定为：
+
+```text
+seed1 control -> seed1 candidate -> seed1 分析/打包/上传
+-> seed2 control -> seed2 candidate -> seed2 分析/打包/上传
+```
+
+seed1 会在 seed2 开始前先完成上传，因此即使后半段异常，已完成的 seed1
+结果仍可下载。按照 seed0 实际耗时估算，全任务约需 4.5 小时；平台单任务
+时限应至少覆盖该时长，建议预留 6 小时以上。
+
+如需拆成两个任务，seed 1 参数：
 
 ```text
 --mode=both --train_seed=1
 ```
 
-seed 2 运行参数：
+seed 2 参数：
 
 ```text
 --mode=both --train_seed=2
 ```
 
-如果平台使用独立参数框，分别填写 `mode=both, train_seed=1` 和
-`mode=both, train_seed=2`。必须让同一 seed 的 control 和 candidate 在同一
-任务中顺序运行，不得拆开，也不得在一个任务里同时跑两个 training seed。
+如果平台使用独立参数框，过夜模式填写 `mode=both, train_seed=all`。必须
+让同一 seed 的 control 和 candidate 保持顺序运行，不得拆开。
 
 ## 正式配置
 
@@ -88,7 +104,7 @@ strict_pew_asymhfl_val_40round_trainseed2_outputs.tar.gz
 
 ```text
 Methods: ['control', 'candidate']
-Training seed: 1  # 或 2，与当前任务一致
+Training seeds: [1, 2]  # 过夜模式
 Rounds: 40
 CLE scenario/split: seed0/split0 (fixed)
 ```

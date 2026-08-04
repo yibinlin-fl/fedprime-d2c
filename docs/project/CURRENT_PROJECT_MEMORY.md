@@ -175,6 +175,10 @@ same entry now selects them with `--train_seed=1/2`; scenario data and
 `strict_fit_audit.seed=0` remain fixed. Do not tune method parameters or mix in
 scenario-seed changes.
 
+For a one-task overnight run, `--train_seed=all` executes pending seeds `[1,2]`
+in order. Each seed is analyzed, packaged, and uploaded before the next begins,
+so a seed2 failure does not lose a completed seed1 archive.
+
 ## Continuous Taxonomy-Free Witness Audit - 2026-08-03
 
 After FedCIS-v0 failed, a separate taxonomy-free continuous nuisance witness

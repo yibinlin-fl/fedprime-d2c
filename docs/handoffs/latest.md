@@ -157,11 +157,16 @@ Prepared 40-round entry points:
 ```text
 entry seed1: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=1
 entry seed2: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=2
+overnight: scripts/openi_strict_pew_asymhfl_40round_entry.py --mode=both --train_seed=all
 analyzer: scripts/analyze_strict_pew_asymhfl_40round.py
 guide: docs/experiments/current/STRICT_PEW_ASYMHFL_VAL_40ROUND_OPENI_RUN_ZH.md
 expected seed1 archive: strict_pew_asymhfl_val_40round_trainseed1_outputs.tar.gz
 expected seed2 archive: strict_pew_asymhfl_val_40round_trainseed2_outputs.tar.gz
 ```
+
+The overnight mode runs pending seeds `[1, 2]` sequentially and uploads seed1
+before starting seed2. Based on the completed seed0 task, expected total runtime
+is roughly 4.5 hours; the OpenI job time limit must allow adequate margin.
 
 ## Research Memory In One Screen
 

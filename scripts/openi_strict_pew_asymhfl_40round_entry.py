@@ -72,6 +72,12 @@ def archive_name(train_seed: int) -> str:
     return f"strict_pew_asymhfl_val_40round_trainseed{train_seed}_outputs.tar.gz"
 
 
+def selected_train_seeds(value: str) -> list[int]:
+    if value == "all":
+        return [1, 2]
+    return [int(value)]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="OpenI strict PEW + AsymHFL-val 40-round durability probe."
@@ -79,10 +85,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", choices=["control", "candidate", "both"], default="both")
     parser.add_argument(
         "--train_seed",
-        type=int,
-        choices=sorted(CONFIGS),
-        default=0,
-        help="Training/init seed. CLE scenario and strict fit/audit split remain seed0/split0.",
+        choices=["0", "1", "2", "all"],
+        default="0",
+        help=(
+            "Training/init seed. Use 'all' to run seeds 1 then 2 in one task. "
+            "CLE scenario and strict fit/audit split remain seed0/split0."
+        ),
     )
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", action="store_true")
@@ -142,13 +150,11 @@ def main() -> None:
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
     methods = ["control", "candidate"] if args.mode == "both" else [args.mode]
-    configs = CONFIGS[args.train_seed]
-    experiments = EXPERIMENTS[args.train_seed]
-    comparison = comparison_path(args.train_seed)
+    train_seeds = selected_train_seeds(args.train_seed)
     log("===== Strict PEW + AsymHFL-val 40-round durability probe =====")
     log(f"Repository: {ROOT}")
     log(f"Methods: {methods}")
-    log(f"Training seed: {args.train_seed}")
+    log(f"Training seeds: {train_seeds}")
     log("Rounds: 40")
     log("CLE scenario/split: seed0/split0 (fixed)")
     context = prepare_c2net()
@@ -175,37 +181,47 @@ def main() -> None:
             environment,
         )
 
-    for method in methods:
-        config = configs[method]
-        log(f"===== Environment check: {method} =====")
-        run([sys.executable, "scripts/check_environment.py", "--config", config], environment)
-        if not args.skip_train:
-            log(f"===== Running {method} =====")
-            run([sys.executable, "-u", "scripts/run_experiment.py", "--config", config], environment)
+    for train_seed in train_seeds:
+        configs = CONFIGS[train_seed]
+        experiments = EXPERIMENTS[train_seed]
+        comparison = comparison_path(train_seed)
+        log(f"===== Training seed {train_seed} =====")
 
-    if args.mode == "both" and not args.skip_train:
-        run(
-            [
-                sys.executable,
-                "scripts/analyze_strict_pew_asymhfl_40round.py",
-                "--control",
-                str(ROOT / "outputs" / experiments["control"]),
-                "--candidate",
-                str(ROOT / "outputs" / experiments["candidate"]),
-                "--output",
-                str(ROOT / comparison),
-            ],
-            environment,
-        )
+        for method in methods:
+            config = configs[method]
+            log(f"===== Environment check: seed {train_seed} {method} =====")
+            run([sys.executable, "scripts/check_environment.py", "--config", config], environment)
+            if not args.skip_train:
+                log(f"===== Running seed {train_seed} {method} =====")
+                run(
+                    [sys.executable, "-u", "scripts/run_experiment.py", "--config", config],
+                    environment,
+                )
+
+        if args.mode == "both" and not args.skip_train:
+            run(
+                [
+                    sys.executable,
+                    "scripts/analyze_strict_pew_asymhfl_40round.py",
+                    "--control",
+                    str(ROOT / "outputs" / experiments["control"]),
+                    "--candidate",
+                    str(ROOT / "outputs" / experiments["candidate"]),
+                    "--output",
+                    str(ROOT / comparison),
+                ],
+                environment,
+            )
+
+        archive = package_outputs(methods, train_seed)
+        if not args.no_upload:
+            log(f"===== Uploading seed {train_seed} outputs through c2net =====")
+            upload_outputs(context, archive, comparison)
 
     if not args.skip_summary:
         log("===== Summarizing outputs =====")
         run([sys.executable, "scripts/summarize_results.py", "--outputs", "outputs"], environment)
 
-    archive = package_outputs(methods, args.train_seed)
-    if not args.no_upload:
-        log("===== Uploading outputs through c2net =====")
-        upload_outputs(context, archive, comparison)
     log("===== Strict PEW + AsymHFL-val 40-round durability probe complete =====")
 
 

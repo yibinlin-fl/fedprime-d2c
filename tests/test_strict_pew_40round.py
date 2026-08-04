@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
 from fedprime.utils.config import load_config
+import scripts.openi_strict_pew_asymhfl_40round_entry as entry
 from scripts.analyze_strict_pew_asymhfl_40round import build_payload, summarize
 from scripts.openi_strict_pew_asymhfl_40round_entry import (
     CONFIGS,
     EXPERIMENTS,
     archive_name,
     comparison_path,
+    selected_train_seeds,
 )
 
 
@@ -68,6 +72,63 @@ def test_40round_output_names_are_isolated() -> None:
     assert archive_name(0) == "strict_pew_asymhfl_val_40round_seed0_outputs.tar.gz"
     assert archive_name(1) == "strict_pew_asymhfl_val_40round_trainseed1_outputs.tar.gz"
     assert archive_name(2) == "strict_pew_asymhfl_val_40round_trainseed2_outputs.tar.gz"
+
+
+def test_overnight_mode_runs_only_pending_training_seeds_in_order() -> None:
+    assert selected_train_seeds("all") == [1, 2]
+    assert selected_train_seeds("0") == [0]
+    assert selected_train_seeds("1") == [1]
+    assert selected_train_seeds("2") == [2]
+
+
+def test_overnight_main_packages_and_uploads_each_seed_before_next(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    commands: list[list[str]] = []
+    packaged: list[int] = []
+    uploaded: list[str] = []
+    args = SimpleNamespace(
+        mode="both",
+        train_seed="all",
+        data_source="",
+        skip_install=True,
+        skip_import=True,
+        skip_train=False,
+        skip_summary=True,
+        no_upload=False,
+    )
+    monkeypatch.setattr(entry, "parse_args", lambda: args)
+    monkeypatch.setattr(entry, "prepare_c2net", lambda: object())
+    monkeypatch.setattr(entry, "run", lambda command, environment: commands.append(command))
+
+    def fake_package(methods: list[str], train_seed: int) -> Path:
+        assert methods == ["control", "candidate"]
+        packaged.append(train_seed)
+        return Path(f"seed{train_seed}.tar.gz")
+
+    def fake_upload(context: object, archive: Path, comparison: str) -> None:
+        uploaded.append(f"{archive.name}:{comparison}")
+
+    monkeypatch.setattr(entry, "package_outputs", fake_package)
+    monkeypatch.setattr(entry, "upload_outputs", fake_upload)
+    entry.main()
+
+    run_configs = [
+        command[-1]
+        for command in commands
+        if "scripts/run_experiment.py" in command
+    ]
+    assert run_configs == [
+        CONFIGS[1]["control"],
+        CONFIGS[1]["candidate"],
+        CONFIGS[2]["control"],
+        CONFIGS[2]["candidate"],
+    ]
+    assert packaged == [1, 2]
+    assert uploaded == [
+        f"seed1.tar.gz:{comparison_path(1)}",
+        f"seed2.tar.gz:{comparison_path(2)}",
+    ]
 
 
 def test_durability_gate_go() -> None:

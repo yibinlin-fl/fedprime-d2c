@@ -11,11 +11,14 @@ import sys
 import tarfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from fedprime.utils.config import load_config
 from scripts.openi_strict_pew_asymhfl_entry import candidate_roots, log, prepare_c2net, run
 
 
-ROOT = Path(__file__).resolve().parents[1]
 GENERATED_ROOT = ROOT / "local_runs/generated_configs/cle_stress_grid"
 GRID = {
     "a01_g05": (0.1, 0.5, "alpha01_gamma05_seed0_split0"),

@@ -11,6 +11,7 @@ from fedprime.data.loaders import (
     CorruptionSkewClientDataset,
     TwoViewTransform,
     _private_test_transform,
+    _prepared_private_dataset_name,
     _rahfl_augmix_view_transforms,
 )
 from fedprime.utils.env import add_vendor_paths
@@ -222,7 +223,8 @@ def build_fedfalsify_loaders(
         )
         print(f"[setup] wrote fixed FedFalsify split: {split_path}", flush=True)
 
-    base, weak, preprocess = _rahfl_augmix_view_transforms()
+    dataset_name = _prepared_private_dataset_name(root)
+    base, weak, preprocess = _rahfl_augmix_view_transforms(dataset_name)
     fit_loaders: list[data.DataLoader] = []
     client_splits: dict[int, FedFalsifyClientSplit] = {}
     class_counts: dict[int, torch.Tensor] = {}
@@ -260,7 +262,7 @@ def build_fedfalsify_loaders(
             root=root,
             client_id=client_id,
             train=True,
-            transform=_private_test_transform(),
+            transform=_private_test_transform(dataset_name),
             return_corruption=False,
         )
         client_splits[client_id] = FedFalsifyClientSplit(
@@ -289,7 +291,7 @@ def build_fedfalsify_loaders(
     test_dataset = CorruptionSkewClientDataset(
         root=root,
         train=False,
-        transform=_private_test_transform(),
+        transform=_private_test_transform(dataset_name),
         return_corruption=True,
     )
     test_loader = data.DataLoader(

@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.utils import data
 
 from fedprime.data.corruptions import CORRUPTION_GROUPS, apply_corruption, sample_corruption_from_group
-from fedprime.data.loaders import _cifar100_train_from_tar
+from fedprime.data.loaders import _cifar10_train_from_tar, _cifar100_train_from_tar
 
 
 PEW_ENVIRONMENT_NAMES = ("clean", *CORRUPTION_GROUPS.keys(), "unknown")
@@ -105,27 +105,54 @@ class WitnessReport:
     clean_accuracy: float
     unknown_accuracy: float
     mean_confidence: float
+    expected_calibration_error: float
+    negative_log_likelihood: float
+    unknown_auroc: float
+    confusion_matrix: list[list[int]]
 
-    def as_dict(self) -> dict[str, float]:
+    def as_dict(self) -> dict[str, object]:
         return {
             "environment_accuracy": self.environment_accuracy,
             "severity_accuracy": self.severity_accuracy,
             "clean_accuracy": self.clean_accuracy,
             "unknown_accuracy": self.unknown_accuracy,
             "mean_confidence": self.mean_confidence,
+            "expected_calibration_error": self.expected_calibration_error,
+            "negative_log_likelihood": self.negative_log_likelihood,
+            "unknown_auroc": self.unknown_auroc,
+            "confusion_matrix": self.confusion_matrix,
         }
 
 
+def _binary_auroc(scores: torch.Tensor, targets: torch.Tensor) -> float:
+    positives = int(targets.sum().item())
+    negatives = int(targets.numel() - positives)
+    if positives == 0 or negatives == 0:
+        return 0.0
+    order = torch.argsort(scores)
+    ranks = torch.empty_like(order, dtype=torch.float64)
+    ranks[order] = torch.arange(1, scores.numel() + 1, dtype=torch.float64)
+    positive_rank_sum = ranks[targets.bool()].sum().item()
+    return float((positive_rank_sum - positives * (positives + 1) / 2) / (positives * negatives))
+
+
 def build_public_environment_loaders(
-    cifar100_root: str | Path,
+    public_root: str | Path,
     *,
     public_size: int,
     batch_size: int,
     num_workers: int,
     seed: int,
     validation_fraction: float = 0.2,
+    public_dataset: str = "cifar100",
 ) -> tuple[data.DataLoader, data.DataLoader]:
-    images, _ = _cifar100_train_from_tar(cifar100_root)
+    dataset_name = str(public_dataset).lower()
+    if dataset_name == "cifar100":
+        images, _ = _cifar100_train_from_tar(public_root)
+    elif dataset_name == "cifar10":
+        images, _ = _cifar10_train_from_tar(public_root)
+    else:
+        raise ValueError(f"Unsupported PEW public dataset: {public_dataset}")
     rng = np.random.default_rng(seed)
     selected = rng.choice(len(images), size=min(int(public_size), len(images)), replace=False)
     split = max(1, min(len(selected) - 1, int(round(len(selected) * (1.0 - validation_fraction)))))
@@ -157,6 +184,8 @@ def evaluate_environment_witness(
     unknown_correct = 0
     unknown_total = 0
     confidences = []
+    all_probabilities = []
+    all_targets = []
     unknown_id = len(PEW_ENVIRONMENT_NAMES) - 1
     with torch.no_grad():
         for images, environments, severities in loader:
@@ -169,6 +198,8 @@ def evaluate_environment_witness(
             environment_correct += int(predictions.eq(environments).sum().item())
             environment_total += int(environments.numel())
             confidences.append(probabilities.max(dim=1).values.detach().cpu())
+            all_probabilities.append(probabilities.detach().cpu())
+            all_targets.append(environments.detach().cpu())
 
             severity_mask = severities > 0
             if bool(severity_mask.any()):
@@ -183,12 +214,36 @@ def evaluate_environment_witness(
             unknown_total += int(unknown_mask.sum().item())
 
     confidence = torch.cat(confidences).mean().item() if confidences else 0.0
+    probabilities = torch.cat(all_probabilities) if all_probabilities else torch.empty(0, len(PEW_ENVIRONMENT_NAMES))
+    targets = torch.cat(all_targets) if all_targets else torch.empty(0, dtype=torch.long)
+    predictions = probabilities.argmax(dim=1) if targets.numel() else targets
+    confusion = torch.zeros(len(PEW_ENVIRONMENT_NAMES), len(PEW_ENVIRONMENT_NAMES), dtype=torch.int64)
+    for target, prediction in zip(targets.tolist(), predictions.tolist()):
+        confusion[int(target), int(prediction)] += 1
+    ece = 0.0
+    if targets.numel():
+        max_probabilities = probabilities.max(dim=1).values
+        correctness = predictions.eq(targets).float()
+        for lower in torch.linspace(0.0, 0.9, 10):
+            upper = lower + 0.1
+            mask = (max_probabilities > lower) & (max_probabilities <= upper)
+            if bool(mask.any()):
+                ece += float(mask.float().mean() * (correctness[mask].mean() - max_probabilities[mask].mean()).abs())
+        nll = float(nn.functional.nll_loss(probabilities.clamp_min(1e-12).log(), targets).item())
+        unknown_auroc = _binary_auroc(probabilities[:, unknown_id], targets.eq(unknown_id))
+    else:
+        nll = 0.0
+        unknown_auroc = 0.0
     return WitnessReport(
         environment_accuracy=100.0 * environment_correct / max(environment_total, 1),
         severity_accuracy=100.0 * severity_correct / max(severity_total, 1),
         clean_accuracy=100.0 * clean_correct / max(clean_total, 1),
         unknown_accuracy=100.0 * unknown_correct / max(unknown_total, 1),
         mean_confidence=float(confidence),
+        expected_calibration_error=ece,
+        negative_log_likelihood=nll,
+        unknown_auroc=unknown_auroc,
+        confusion_matrix=confusion.tolist(),
     )
 
 

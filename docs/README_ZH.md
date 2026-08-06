@@ -24,6 +24,12 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前论文证据补全总入口：
+
+```text
+docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
+```
+
 ```text
 docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_OPENI_RUN_ZH.md  已完成的 seed-0 strict A/B 说明（GO）
 docs/experiments/archive/STRICT_PEW_ASYMHFL_VAL_MULTISEED_OPENI_RUN_ZH.md  已完成的 training-seed 0/1/2 复验（GO）

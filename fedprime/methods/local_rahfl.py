@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from fedprime.methods.nir_dcl import NIRDCLFeatureQueue, NIRDCLLoss
 from fedprime.methods.sara import SARALoss
 from fedprime.models.factory import forward_logits
+from fedprime.communication.baselines import symmetric_cross_entropy
 from fedprime.utils.env import add_vendor_paths
 
 
@@ -50,14 +51,22 @@ def train_local_augmix_dcl_epoch(
         if not isinstance(images, (tuple, list)):
             images = images.to(device, non_blocking=True)
             logits = forward_logits(model, images)
-            loss = criterion(logits, labels)
+            loss = (
+                symmetric_cross_entropy(logits, labels, num_classes=num_classes)
+                if cl_module == "rhfl_sce"
+                else criterion(logits, labels)
+            )
         else:
             images = [img.to(device, non_blocking=True) for img in images]
             images_all = torch.cat([images[0], images[1], images[2]], dim=0)
             logits_all = forward_logits(model, images_all)
             logits_clean, logits_aug1, logits_aug2 = torch.split(logits_all, images[0].size(0))
 
-            loss = criterion(logits_clean, labels)
+            loss = (
+                symmetric_cross_entropy(logits_clean, labels, num_classes=num_classes)
+                if cl_module == "rhfl_sce"
+                else criterion(logits_clean, labels)
+            )
             p_clean = F.softmax(logits_clean, dim=1)
             p_aug1 = F.softmax(logits_aug1, dim=1)
             p_aug2 = F.softmax(logits_aug2, dim=1)
@@ -144,7 +153,7 @@ def train_local_augmix_dcl_epoch(
                 )
                 loss = loss + float(sara_cfg.get("lambda_sara", 1.0)) * sara_loss
             else:
-                if cl_module not in (None, "none"):
+                if cl_module not in (None, "none", "rhfl_sce"):
                     raise ValueError(f"Unknown contrastive module: {cl_module}")
 
             if communication_loss_fn is not None:

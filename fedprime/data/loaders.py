@@ -133,6 +133,28 @@ class NumpyImageClassificationDataset(data.Dataset):
         return image, int(self.labels[index])
 
 
+class PublicAugMixDataset(data.Dataset):
+    """Pickle-safe public clean/AugMix view wrapper used by AugHFL."""
+
+    def __init__(self, dataset) -> None:
+        self.dataset = dataset
+        self.preprocess = T.ToTensor()
+
+    def __len__(self) -> int:
+        return len(self.dataset)
+
+    def __getitem__(self, index: int):
+        add_vendor_paths()
+        from Dataset.dataaug import aug
+
+        image, label = self.dataset[index]
+        return (
+            self.preprocess(image),
+            aug(image, self.preprocess),
+            aug(image, self.preprocess),
+        ), label
+
+
 def dataset_stats(name: str) -> DatasetStats:
     if name.lower() == "cifar10":
         return DatasetStats(CIFAR10_MEAN, CIFAR10_STD)
@@ -210,7 +232,8 @@ def _prime_dcl_train_transform():
     return TwoViewTransform(base, weak)
 
 
-def _rahfl_augmix_view_transforms():
+def _rahfl_augmix_view_transforms(dataset_name: str = "cifar10"):
+    stats = dataset_stats(dataset_name)
     base = T.Compose([
         T.ToTensor(),
         T.Lambda(lambda x: F.pad(
@@ -239,16 +262,28 @@ def _rahfl_augmix_view_transforms():
     ])
     preprocess = T.Compose([
         T.ToTensor(),
-        T.Normalize(CIFAR10_MEAN, CIFAR10_STD),
+        T.Normalize(stats.mean, stats.std),
     ])
     return base, weak, preprocess
 
 
-def _private_test_transform():
+def _private_test_transform(dataset_name: str = "cifar10"):
+    stats = dataset_stats(dataset_name)
     return T.Compose([
         T.ToTensor(),
-        T.Normalize(CIFAR10_MEAN, CIFAR10_STD),
+        T.Normalize(stats.mean, stats.std),
     ])
+
+
+def _prepared_private_dataset_name(root: str | Path) -> str:
+    metadata_path = Path(root) / "metadata.json"
+    if not metadata_path.is_file():
+        return "cifar10"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    explicit = metadata.get("private_dataset")
+    if explicit:
+        return str(explicit).lower()
+    return "cifar100" if "cifar100" in str(metadata.get("dataset", "")).lower() else "cifar10"
 
 
 def load_private_labels(cifar10c_root: str | Path, corrupt_rate: float | int) -> np.ndarray:
@@ -566,7 +601,8 @@ def build_corruption_skew_augmix_loaders(
     add_vendor_paths()
     from Dataset.dataaug import AugMixDataset
 
-    base, weak, preprocess = _rahfl_augmix_view_transforms()
+    dataset_name = _prepared_private_dataset_name(root)
+    base, weak, preprocess = _rahfl_augmix_view_transforms(dataset_name)
     train_loaders = []
     train_datasets = []
     for client_id in range(num_clients):
@@ -591,7 +627,7 @@ def build_corruption_skew_augmix_loaders(
     test_ds = CorruptionSkewClientDataset(
         root=root,
         train=False,
-        transform=_private_test_transform(),
+        transform=_private_test_transform(dataset_name),
         return_corruption=True,
     )
     test_loader = data.DataLoader(
@@ -712,6 +748,26 @@ def _cifar100_train_from_tar(cifar100_root: str | Path) -> tuple[np.ndarray, np.
     return images, targets
 
 
+def _cifar10_train_from_tar(cifar10_root: str | Path) -> tuple[np.ndarray, np.ndarray]:
+    root = Path(cifar10_root)
+    candidates = [root / "cifar-10-python.tar.gz", root.parent / "cifar-10-python.tar.gz"]
+    tar_path = next((candidate for candidate in candidates if candidate.exists()), None)
+    if tar_path is None:
+        raise FileNotFoundError(f"Could not locate cifar-10-python.tar.gz under {root}")
+    image_parts, label_parts = [], []
+    with tarfile.open(tar_path, "r:gz") as tar:
+        for batch_id in range(1, 6):
+            member = tar.getmember(f"cifar-10-batches-py/data_batch_{batch_id}")
+            file_obj = tar.extractfile(member)
+            if file_obj is None:
+                raise FileNotFoundError(member.name)
+            batch = pickle.load(file_obj, encoding="latin1")
+            image_parts.append(np.asarray(batch.get("data", batch.get(b"data")), dtype=np.uint8))
+            label_parts.append(np.asarray(batch.get("labels", batch.get(b"labels")), dtype=np.int64))
+    images = np.concatenate(image_parts).reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
+    return images, np.concatenate(label_parts)
+
+
 def build_public_loader(
     cifar100_root: str | Path,
     public_size: int,
@@ -720,8 +776,10 @@ def build_public_loader(
     seed: int,
     download: bool,
     public_dataset: str = "cifar100",
+    public_views: str = "tensor",
 ):
-    transform = T.Compose([T.ToTensor()])
+    public_views = str(public_views).lower()
+    transform = None if public_views == "augmix" else T.Compose([T.ToTensor()])
     public_dataset = str(public_dataset).lower()
     if public_dataset == "cifar10_npy":
         root = Path(cifar100_root)
@@ -739,8 +797,21 @@ def build_public_loader(
             print("Falling back to direct cifar-100-python.tar.gz reader.")
             images, targets = _cifar100_train_from_tar(cifar100_root)
             ds = NumpyImageClassificationDataset(images, targets, transform=transform)
+    elif public_dataset == "cifar10":
+        try:
+            ds = datasets.CIFAR10(str(cifar100_root), train=True, transform=transform, download=download)
+        except Exception as exc:
+            print(f"torchvision CIFAR-10 loader failed: {exc}")
+            print("Falling back to direct cifar-10-python.tar.gz reader.")
+            images, targets = _cifar10_train_from_tar(cifar100_root)
+            ds = NumpyImageClassificationDataset(images, targets, transform=transform)
     else:
         raise ValueError(f"Unsupported public dataset: {public_dataset}")
+    if public_views == "augmix":
+        ds = PublicAugMixDataset(ds)
+    elif public_views != "tensor":
+        raise ValueError(f"Unsupported public view mode: {public_views}")
+
     rng = np.random.default_rng(seed)
     indices = rng.choice(np.arange(len(ds)), size=min(public_size, len(ds)), replace=False)
     subset = data.Subset(ds, indices.tolist())

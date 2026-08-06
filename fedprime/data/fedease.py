@@ -10,6 +10,7 @@ from fedprime.data.loaders import (
     CorruptionSkewClientDataset,
     TwoViewTransform,
     _private_test_transform,
+    _prepared_private_dataset_name,
     _rahfl_augmix_view_transforms,
 )
 from fedprime.utils.env import add_vendor_paths
@@ -69,7 +70,8 @@ def build_fedease_oracle_augmix_loaders(
     add_vendor_paths()
     from Dataset.dataaug import AugMixDataset
 
-    base, weak, preprocess = _rahfl_augmix_view_transforms()
+    dataset_name = _prepared_private_dataset_name(root)
+    base, weak, preprocess = _rahfl_augmix_view_transforms(dataset_name)
     train_loaders = []
     train_datasets = []
     for client_id in range(num_clients):
@@ -101,7 +103,7 @@ def build_fedease_oracle_augmix_loaders(
     test_dataset = CorruptionSkewClientDataset(
         root=root,
         train=False,
-        transform=_private_test_transform(),
+        transform=_private_test_transform(dataset_name),
         return_corruption=True,
     )
     test_loader = data.DataLoader(
@@ -130,7 +132,8 @@ def build_fedease_fit_augmix_loaders(
     from Dataset.dataaug import AugMixDataset
 
     root = Path(root)
-    base, weak, preprocess = _rahfl_augmix_view_transforms()
+    dataset_name = _prepared_private_dataset_name(root)
+    base, weak, preprocess = _rahfl_augmix_view_transforms(dataset_name)
     loaders: list[data.DataLoader] = []
     for client_id, split in sorted(client_splits.items()):
         base_dataset = CorruptionSkewClientDataset(
@@ -201,7 +204,7 @@ def load_client_class_environment_counts(
 class FedEASEEvaluationDataset(data.Dataset):
     """Evaluation split stored as NumPy images, labels, and optional environment IDs."""
 
-    def __init__(self, directory: str | Path) -> None:
+    def __init__(self, directory: str | Path, dataset_name: str = "cifar10") -> None:
         directory = Path(directory)
         self.images = np.load(directory / "test_images.npy")
         self.labels = np.load(directory / "test_labels.npy").astype(np.int64)
@@ -211,7 +214,7 @@ class FedEASEEvaluationDataset(data.Dataset):
             if environment_path.exists()
             else np.full(len(self.labels), -1, dtype=np.int64)
         )
-        self.transform = _private_test_transform()
+        self.transform = _private_test_transform(dataset_name)
 
     def __len__(self) -> int:
         return int(self.labels.size)
@@ -230,6 +233,7 @@ def build_fedease_evaluation_loaders(
     """Build every available clean/same/random/swapped/unseen evaluation split."""
 
     root = Path(root)
+    dataset_name = _prepared_private_dataset_name(root)
     result: dict[str, data.DataLoader | dict[int, data.DataLoader]] = {}
     common = {
         "batch_size": int(batch_size),
@@ -245,7 +249,7 @@ def build_fedease_evaluation_loaders(
     }
     for split, directory in shared_directories.items():
         if (directory / "test_images.npy").is_file():
-            result[split] = data.DataLoader(FedEASEEvaluationDataset(directory), **common)
+            result[split] = data.DataLoader(FedEASEEvaluationDataset(directory, dataset_name), **common)
 
     for split in ("same", "swapped"):
         split_root = root / f"test_{split}"
@@ -253,7 +257,7 @@ def build_fedease_evaluation_loaders(
         for client_id in range(num_clients):
             directory = split_root / f"client_{client_id}"
             if (directory / "test_images.npy").is_file():
-                client_loaders[client_id] = data.DataLoader(FedEASEEvaluationDataset(directory), **common)
+                client_loaders[client_id] = data.DataLoader(FedEASEEvaluationDataset(directory, dataset_name), **common)
         if len(client_loaders) == num_clients:
             result[split] = client_loaders
     return result

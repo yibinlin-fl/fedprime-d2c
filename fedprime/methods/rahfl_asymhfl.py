@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import math
+import time
 from pathlib import Path
 
 import torch
@@ -69,6 +70,11 @@ from fedprime.methods.pccd import (
 )
 from fedprime.augmentations.counterfactual import build_counterfactual_views
 from fedprime.models.factory import build_models, forward_logits
+from fedprime.communication.public_logits import (
+    CommunicationContext,
+    build_core_communication_strategy,
+)
+from fedprime.communication.baselines import build_baseline_communication_strategy
 from fedprime.utils.config import save_config
 from fedprime.utils.env import resolve_device, seed_everything
 
@@ -93,6 +99,13 @@ class AsymHFLExperiment:
         self._fedease_global_relation: dict[str, torch.Tensor | float] | None = None
         self._fedease_recipient_relations: dict[int, dict[str, torch.Tensor | float]] = {}
         self._fedease_evaluation_loaders = {}
+        communication_name = str(config.get("method", {}).get("communication", "asymhfl"))
+        self._communication_strategy = build_core_communication_strategy(communication_name)
+        if self._communication_strategy is None:
+            self._communication_strategy = build_baseline_communication_strategy(
+                communication_name, config.get("method", {})
+            )
+        self._communication_private_loaders = None
 
     def run(self) -> None:
         data_cfg = self.config["data"]
@@ -306,7 +319,15 @@ class AsymHFLExperiment:
             )
             prime_aug = None
 
-        if self._use_no_communication(method_cfg) or self._use_ebst_communication(method_cfg):
+        self._communication_private_loaders = private_loaders
+        strategy_requires_public = (
+            self._communication_strategy is None
+            or bool(getattr(self._communication_strategy, "requires_public_data", True))
+        )
+        if (
+            not strategy_requires_public
+            or self._use_ebst_communication(method_cfg)
+        ):
             print("[setup] per-round public loader is not required", flush=True)
             public_loader = None
             public_iter = None
@@ -320,6 +341,11 @@ class AsymHFLExperiment:
                 seed=int(self.config.get("seed", 0)),
                 download=bool(data_cfg.get("download_public", False)),
                 public_dataset=str(data_cfg.get("public_dataset", "cifar100")),
+                public_views=(
+                    "augmix"
+                    if str(method_cfg.get("communication", "")).lower() == "aughfl"
+                    else "tensor"
+                ),
             )
             public_iter = iter(public_loader)
 
@@ -372,6 +398,8 @@ class AsymHFLExperiment:
                 f,
                 fieldnames=[
                     "round",
+                    "round_seconds",
+                    "peak_cuda_memory_mb",
                     "avg_acc",
                     "worst_acc",
                     "worst_group_acc",
@@ -460,8 +488,13 @@ class AsymHFLExperiment:
                 operator_split_writer.writeheader()
 
             for round_idx in range(int(train_cfg["rounds"])):
+                round_started = time.perf_counter()
+                if self.device.type == "cuda":
+                    torch.cuda.reset_peak_memory_stats(self.device)
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
-                if self._use_no_communication(method_cfg):
+                if self._communication_strategy is not None and not bool(
+                    getattr(self._communication_strategy, "uses_accuracy_routing", False)
+                ):
                     accs_before = [0.0 for _ in range(num_clients)]
                     class_accs_before = None
                 elif self._use_cara_communication(method_cfg):
@@ -530,6 +563,12 @@ class AsymHFLExperiment:
                 )
                 row = {
                     "round": round_idx,
+                    "round_seconds": time.perf_counter() - round_started,
+                    "peak_cuda_memory_mb": (
+                        torch.cuda.max_memory_allocated(self.device) / (1024.0 * 1024.0)
+                        if self.device.type == "cuda"
+                        else 0.0
+                    ),
                     "avg_acc": sum(accs) / len(accs),
                     "worst_acc": min(accs),
                     "worst_group_acc": group_summary.get("worst_group_acc", ""),
@@ -765,12 +804,31 @@ class AsymHFLExperiment:
         stats,
         round_idx: int = 0,
     ) -> float:
+        method_cfg = self.config.get("method", {})
+        core_strategy = self._communication_strategy
+        if core_strategy is not None:
+            if self._use_no_communication(method_cfg):
+                print("[heartbeat] communication disabled for local-only probe", flush=True)
+            return core_strategy.step(
+                CommunicationContext(
+                    models=models,
+                    optimizers=optimizers,
+                    public_loader=public_loader,
+                    public_iter=public_iter,
+                    accuracies=accs,
+                    stats=stats,
+                    device=self.device,
+                    public_batches_per_round=int(
+                        self.config["train"].get("public_batches_per_round", 1)
+                    ),
+                    private_loaders=self._communication_private_loaders,
+                    num_classes=int(self.config.get("data", {}).get("num_classes", 10)),
+                    round_idx=int(round_idx),
+                )
+            )
+
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
-        method_cfg = self.config.get("method", {})
-        if self._use_no_communication(method_cfg):
-            print("[heartbeat] communication disabled for local-only probe", flush=True)
-            return 0.0
         if self._use_ebst_communication(method_cfg):
             return self._ebst_collaborative_phase(round_idx)
         if self._use_pccd_communication(method_cfg):
@@ -1752,6 +1810,19 @@ class AsymHFLExperiment:
                         max_grad_norm=train_cfg.get("max_grad_norm"),
                         skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
                         log_interval=train_cfg.get("local_log_interval"),
+                        communication_loss_fn=(
+                            (
+                                lambda *, receiver_logits, clean_images, labels,
+                                _model=models[client_id], _strategy=self._communication_strategy:
+                                _strategy.local_loss(
+                                    model=_model,
+                                    clean_images=clean_images,
+                                    labels=labels,
+                                )
+                            )
+                            if hasattr(self._communication_strategy, "local_loss")
+                            else None
+                        ),
                     )
                 losses.append(loss)
             if relation_accumulator is not None:

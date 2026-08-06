@@ -1,6 +1,6 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-05
+Updated: 2026-08-06
 
 ## Current Objective
 
@@ -9,6 +9,32 @@ label-skew Non-IID, and corruption-label entanglement. The current formal
 benchmark is four-client CLE-HFL v2 (`alpha=0.5`, `gamma=0.9`, seed 0), with 11
 seen and 4 unseen concrete corruption operators. Operator metadata is available
 to evaluation only.
+
+The immediate objective is paper-evidence completion. Communication
+decoupling, A0--A6 ablations, a 2x3 local/communication factorial, five
+external baseline adaptations, two cross-scenario datasets, a 2x3 CLE
+strength grid, a CIFAR-100-private second dataset, and PEW
+calibration/sensitivity/efficiency instrumentation were prepared on
+2026-08-06. These are implementation assets awaiting formal OpenI runs, not
+new research results. Run them in the order documented at:
+
+```text
+docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
+```
+
+Before the first paper-evidence run, the refactored AsymHFL strategy was
+protected by a legacy-vs-new numerical golden regression, cross-scenario
+configs were corrected to freeze training seed 0, and FedProto was replaced
+with native class-wise aggregation in the models' shared 1024-dimensional
+embedding space.
+
+The untracked CIFAR-100 screening archive is:
+
+```text
+local_runs/cle_hfl_v2_second_dataset/
+cle_hfl_v2_prepared_cifar100_alpha05_gamma09_seed0_split0.tar.gz
+SHA256 AF554AC3B9B46D38571445DDE84647965341444DAD175A1E4191851B8DD01EB4
+```
 
 ## Latest Formal Result
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,7 @@ from fedprime.methods.environment_witness import (
     PublicEnvironmentWitness,
     build_public_environment_loaders,
     calibrate_unknown_threshold,
+    evaluate_environment_witness,
     infer_environment_annotations,
     load_environment_witness,
     save_environment_witness,
@@ -32,19 +34,25 @@ class FedEASEExperiment(AsymHFLExperiment):
         if str(method_cfg.get("cl_module", "")).lower() != "fedease":
             raise ValueError("FedEASE requires method.cl_module=fedease.")
         environment_mode = str(fedease_cfg.get("environment_mode", "oracle")).lower()
-        if environment_mode not in {"oracle", "learned"}:
-            raise ValueError("FedEASE environment_mode must be oracle or learned.")
+        if environment_mode not in {"oracle", "oracle_family", "learned", "learned_shuffled"}:
+            raise ValueError(
+                "FedEASE environment_mode must be oracle, oracle_family, learned, "
+                "or learned_shuffled."
+            )
         communication = str(method_cfg.get("communication", "none")).lower()
         if communication not in {
             "none",
             "local_only",
             "asymhfl",
             "asymhfl_val",
+            "hfl",
+            "symmetric_hfl",
             "ebst",
             "ebst_v2",
         }:
             raise ValueError(
-                "FedEASE communication must be none/local_only, asymhfl/asymhfl_val, "
+                "FedEASE communication must be none/local_only, hfl/symmetric_hfl, "
+                "asymhfl/asymhfl_val, "
                 "ebst, or ebst_v2."
             )
         super().__init__(config)
@@ -52,16 +60,61 @@ class FedEASEExperiment(AsymHFLExperiment):
     def run(self) -> None:
         fedease_cfg = self.config["method"]["fedease"]
         self._fedease_environment_annotations = None
-        if str(fedease_cfg.get("environment_mode", "oracle")).lower() == "learned":
+        environment_mode = str(fedease_cfg.get("environment_mode", "oracle")).lower()
+        if environment_mode in {"learned", "learned_shuffled"}:
             self._prepare_learned_environment_annotations()
+            if environment_mode == "learned_shuffled":
+                self._shuffle_environment_annotations()
             seed_everything(int(self.config.get("seed", 0)))
             print(
                 "[setup] reset experiment RNG after PEW preparation for matched model initialization",
                 flush=True,
             )
+        elif environment_mode == "oracle_family":
+            self._prepare_oracle_family_annotations()
+            seed_everything(int(self.config.get("seed", 0)))
+            print(
+                "[setup] reset experiment RNG after oracle-family preparation for matched initialization",
+                flush=True,
+            )
         super().run()
 
+    def _shuffle_environment_annotations(self) -> None:
+        """Break sample/environment association while preserving PEW marginals."""
+
+        assert self._fedease_environment_annotations is not None
+        base_seed = int(self.config.get("seed", 0)) + 91_337
+        shuffled = {}
+        for client_id, annotation in sorted(self._fedease_environment_annotations.items()):
+            rng = np.random.default_rng(base_seed + int(client_id))
+            permutation = rng.permutation(len(annotation["environment_ids"]))
+            shuffled[client_id] = {
+                key: np.asarray(value)[permutation].copy()
+                for key, value in annotation.items()
+            }
+        self._fedease_environment_annotations = shuffled
+        print("[setup] shuffled PEW annotations as a frozen negative control", flush=True)
+
+    def _prepare_oracle_family_annotations(self) -> None:
+        """Build a reporting-only oracle upper bound from private operator metadata."""
+
+        root = Path(self.config["data"]["private_root"])
+        annotations = {}
+        for client_id in range(len(self.config["models"]["names"])):
+            operator_ids = np.load(
+                root / f"client_{client_id}" / "train_corruption_ids.npy"
+            ).astype(np.int64)
+            environment_ids = self._diagnostic_environment_ids(operator_ids, root)
+            annotations[client_id] = {"environment_ids": environment_ids}
+        self._fedease_environment_annotations = annotations
+        print(
+            "[setup] WARNING: oracle-family annotations use private operator metadata; "
+            "upper-bound analysis only",
+            flush=True,
+        )
+
     def _prepare_learned_environment_annotations(self) -> None:
+        prepare_started = time.perf_counter()
         data_cfg = self.config["data"]
         train_cfg = self.config["train"]
         fedease_cfg = self.config["method"]["fedease"]
@@ -87,6 +140,7 @@ class FedEASEExperiment(AsymHFLExperiment):
                 num_workers=int(self.config.get("num_workers", 2)),
                 seed=int(self.config.get("seed", 0)),
                 validation_fraction=float(pew_cfg.get("validation_fraction", 0.2)),
+                public_dataset=str(data_cfg.get("public_dataset", "cifar100")),
             )
         if checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True)):
             print(f"[setup] loading PEW checkpoint: {checkpoint}", flush=True)
@@ -165,6 +219,12 @@ class FedEASEExperiment(AsymHFLExperiment):
             "checkpoint": str(checkpoint),
             "unknown_threshold": unknown_threshold,
             "calibration": calibration,
+            "prepare_seconds": time.perf_counter() - prepare_started,
+            "validation": (
+                evaluate_environment_witness(witness, validation_loader, self.device).as_dict()
+                if validation_loader is not None
+                else None
+            ),
         }
         (self.output_dir / "pew_private_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"

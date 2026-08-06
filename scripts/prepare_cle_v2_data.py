@@ -3,7 +3,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import pickle
+import shutil
 import sys
+import tarfile
 from pathlib import Path
 
 import numpy as np
@@ -30,6 +33,12 @@ from scripts.prepare_corruption_skew_data import (  # noqa: E402
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build operator-level CLE-HFL v2 with seen/unseen corruptions."
+    )
+    parser.add_argument(
+        "--private-dataset",
+        choices=("cifar10", "cifar100"),
+        default="cifar10",
+        help="Private labeled dataset; the other CIFAR dataset is public data.",
     )
     parser.add_argument(
         "--cifar10-root",
@@ -261,8 +270,44 @@ def write_mapping_csv(
                 )
 
 
+def load_cifar100_arrays(root: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    candidates = [root / "cifar-100-python.tar.gz", root.parent / "cifar-100-python.tar.gz"]
+    tar_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if tar_path is None:
+        raise FileNotFoundError(f"Could not locate cifar-100-python.tar.gz under {root}")
+
+    def read_member(tar: tarfile.TarFile, name: str) -> tuple[np.ndarray, np.ndarray]:
+        file_obj = tar.extractfile(tar.getmember(name))
+        if file_obj is None:
+            raise FileNotFoundError(name)
+        batch = pickle.load(file_obj, encoding="latin1")
+        raw = batch.get("data", batch.get(b"data"))
+        labels = batch.get("fine_labels", batch.get(b"fine_labels"))
+        images = np.asarray(raw, dtype=np.uint8).reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
+        return images, np.asarray(labels, dtype=np.int64)
+
+    with tarfile.open(tar_path, "r:gz") as tar:
+        train_images, train_labels = read_member(tar, "cifar-100-python/train")
+        test_images, test_labels = read_member(tar, "cifar-100-python/test")
+    return train_images, train_labels, test_images, test_labels
+
+
+def copy_public_cifar10(source_root: Path, destination: Path) -> None:
+    candidates = [source_root / "cifar-10-python.tar.gz", source_root.parent / "cifar-10-python.tar.gz"]
+    source = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if source is None:
+        raise FileNotFoundError(f"Could not locate cifar-10-python.tar.gz under {source_root}")
+    destination.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination / source.name)
+
+
 def main() -> None:
     args = parse_args()
+    expected_classes = 10 if args.private_dataset == "cifar10" else 100
+    if int(args.num_classes) != expected_classes:
+        raise ValueError(
+            f"{args.private_dataset} requires --num-classes={expected_classes}, got {args.num_classes}"
+        )
     if not 0.0 <= float(args.gamma) <= 1.0:
         raise ValueError("gamma must be in [0, 1]")
     if not 1 <= args.severity_min <= args.severity_max <= 5:
@@ -275,15 +320,21 @@ def main() -> None:
         name: ("unseen" if name in unseen_operators else "seen")
         for name in operators
     }
-    package_root = args.output_root / f"cle_hfl_v2_prepared_{args.dataset_name}"
-    cle_root = package_root / "cifar_10_cle_v2" / args.dataset_name
+    package_root = args.output_root / f"cle_hfl_v2_prepared_{args.private_dataset}_{args.dataset_name}"
+    private_directory = "cifar_10_cle_v2" if args.private_dataset == "cifar10" else "cifar_100_cle_v2"
+    cle_root = package_root / private_directory / args.dataset_name
     audit_root = cle_root / "audit"
     cle_root.mkdir(parents=True, exist_ok=True)
 
-    train_images, train_labels, test_images, test_labels = load_cifar10_arrays(
-        args.cifar10_root,
-        args.download,
-    )
+    if args.private_dataset == "cifar10":
+        train_images, train_labels, test_images, test_labels = load_cifar10_arrays(
+            args.cifar10_root,
+            args.download,
+        )
+    else:
+        train_images, train_labels, test_images, test_labels = load_cifar100_arrays(
+            args.cifar100_root
+        )
     dataidx_map = partition_private_data(
         labels=train_labels,
         num_clients=args.num_clients,
@@ -418,7 +469,9 @@ def main() -> None:
     )
 
     metadata = {
-        "dataset": "cifar10_cle_hfl_v2",
+        "dataset": f"{args.private_dataset}_cle_hfl_v2",
+        "private_dataset": args.private_dataset,
+        "public_dataset": "cifar100" if args.private_dataset == "cifar10" else "cifar10",
         "protocol_version": 2,
         "dataset_name": args.dataset_name,
         "alpha": args.alpha,
@@ -463,7 +516,10 @@ def main() -> None:
     )
 
     if args.include_public:
-        copy_public_cifar100(args.cifar100_root, package_root / "cifar_100")
+        if args.private_dataset == "cifar10":
+            copy_public_cifar100(args.cifar100_root, package_root / "cifar_100")
+        else:
+            copy_public_cifar10(args.cifar10_root, package_root / "cifar_10")
     if args.make_tar:
         print(f"Wrote tarball: {make_tarball(package_root)}")
     print(f"Wrote CLE-HFL v2 dataset: {package_root}")

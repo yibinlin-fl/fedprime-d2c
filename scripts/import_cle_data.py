@@ -26,11 +26,13 @@ def maybe_extract_archive(source: Path, destination: Path) -> Path:
         if (
             (nested_root / "cifar_10_cle").is_dir()
             or (nested_root / "cifar_10_cle_v2").is_dir()
+            or (nested_root / "cifar_100_cle_v2").is_dir()
         ):
             return nested_root
         if (
             (extract_root / "cifar_10_cle").is_dir()
             or (extract_root / "cifar_10_cle_v2").is_dir()
+            or (extract_root / "cifar_100_cle_v2").is_dir()
         ):
             return extract_root
         return extract_root
@@ -54,6 +56,7 @@ def find_package_root(search_root: Path) -> Path:
     if (
         (search_root / "cifar_10_cle").is_dir()
         or (search_root / "cifar_10_cle_v2").is_dir()
+        or (search_root / "cifar_100_cle_v2").is_dir()
     ):
         return search_root
     matches = sorted(search_root.rglob("metadata.json")) if search_root.exists() else []
@@ -64,6 +67,7 @@ def find_package_root(search_root: Path) -> Path:
         if (
             (root / "cifar_10_cle").is_dir()
             or (root / "cifar_10_cle_v2").is_dir()
+            or (root / "cifar_100_cle_v2").is_dir()
         ):
             print(f"Located CLE-HFL package root: {root}")
             return root
@@ -96,7 +100,7 @@ def main() -> None:
     print(f"CLE-HFL package root: {package_root}")
 
     copied_private_roots = []
-    for directory_name in ("cifar_10_cle", "cifar_10_cle_v2"):
+    for directory_name in ("cifar_10_cle", "cifar_10_cle_v2", "cifar_100_cle_v2"):
         cle = package_root / directory_name
         if cle.is_dir():
             target = destination / "RAHFL-master/Dataset" / directory_name
@@ -104,12 +108,16 @@ def main() -> None:
             copied_private_roots.append(target)
     if not copied_private_roots:
         raise FileNotFoundError(
-            f"No cifar_10_cle or cifar_10_cle_v2 directory under {package_root}"
+            f"No supported CLE private directory under {package_root}"
         )
 
     cifar100 = package_root / "cifar_100"
     if cifar100.is_dir():
         copy_dir(cifar100, destination / "RAHFL-master/Dataset/cifar_100")
+
+    cifar10 = package_root / "cifar_10"
+    if cifar10.is_dir():
+        copy_dir(cifar10, destination / "RAHFL-master/Dataset/cifar_10")
 
     for required in copied_private_roots:
         if not safe_exists(required):

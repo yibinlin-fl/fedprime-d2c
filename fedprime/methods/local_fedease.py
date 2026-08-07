@@ -5,7 +5,9 @@ import torch.nn.functional as F
 
 from fedprime.methods.balanced_environment_risk import balanced_environment_risk
 from fedprime.methods.conditional_dependence import (
+    BufferedConditionalMomentAlignment,
     FrozenRandomProjector,
+    cdep_v2_ramp,
     normalized_conditional_cross_covariance,
 )
 from fedprime.methods.environment_structural_transfer import (
@@ -48,6 +50,8 @@ def train_local_fedease_epoch(
     log_interval: int | None = None,
     context: str = "FedEASE local phase",
     diagnostics: dict[str, float] | None = None,
+    cdep_v2_memory: BufferedConditionalMomentAlignment | None = None,
+    round_idx: int = 0,
     relation_accumulator: dict[str, torch.Tensor] | None = None,
     global_relation_state: dict[str, torch.Tensor | float] | None = None,
     client_supported_classes: torch.Tensor | None = None,
@@ -63,6 +67,7 @@ def train_local_fedease_epoch(
     scp_cfg = fedease_cfg.get("scp", fedease_cfg.get("safe_projection", {}))
     use_ber = bool(ber_cfg.get("enabled", True))
     use_cdep = bool(cdep_cfg.get("enabled", True))
+    cdep_version = str(cdep_cfg.get("version", "v1")).lower()
     use_dcl = bool(fedease_cfg.get("preserve_dcl", True))
     num_environments = int(fedease_cfg.get("num_environments", 4))
     lambda_cdep = float(cdep_cfg.get("lambda", 0.05))
@@ -78,6 +83,9 @@ def train_local_fedease_epoch(
         "cdep_loss": [],
         "cdep_valid_classes": [],
         "cdep_mean_abs_covariance": [],
+        "cdep_v2_valid_groups": [],
+        "cdep_v2_buffer_samples": [],
+        "cdep_v2_ramp": [],
         "ber_valid_groups": [],
         "ebst_loss": [],
         "ebst_active_samples": [],
@@ -95,8 +103,9 @@ def train_local_fedease_epoch(
         if len(batch) == 3:
             images, labels, environment_ids = batch
             environment_features = None
+            environment_confidence = None
         elif len(batch) == 5:
-            images, labels, environment_ids, environment_features, _ = batch
+            images, labels, environment_ids, environment_features, environment_confidence = batch
         else:
             raise ValueError(
                 "FedEASE requires (views, labels, environment_ids) or "
@@ -110,6 +119,8 @@ def train_local_fedease_epoch(
         environment_ids = environment_ids.to(device, non_blocking=True).long()
         if environment_features is not None:
             environment_features = environment_features.to(device, non_blocking=True).float()
+        if environment_confidence is not None:
+            environment_confidence = environment_confidence.to(device, non_blocking=True).float()
 
         batch_size = images[0].shape[0]
         logits_all = forward_logits(model, torch.cat(images[:3], dim=0))
@@ -171,7 +182,39 @@ def train_local_fedease_epoch(
         else:
             dcl_loss = clean_ce.new_zeros(())
 
-        if use_cdep:
+        if use_cdep and cdep_version == "v2":
+            if cdep_v2_memory is None:
+                raise ValueError("CDep-v2 requires a client-local memory")
+            projected = projector(clean_feature)
+            confidence = (
+                environment_confidence
+                if environment_confidence is not None
+                else clean_ce.new_ones(labels.shape)
+            )
+            cdep_raw_loss, v2_stats = cdep_v2_memory.loss_and_update(
+                projected,
+                labels,
+                environment_ids,
+                confidence,
+                min_confidence=float(cdep_cfg.get("min_confidence", 0.20)),
+                min_group_count=int(cdep_cfg.get("min_group_count", 4)),
+                min_environments=int(cdep_cfg.get("min_environments", 2)),
+                eps=float(cdep_cfg.get("eps", 1.0e-6)),
+            )
+            ramp = cdep_v2_ramp(
+                round_idx,
+                warmup_rounds=int(cdep_cfg.get("warmup_rounds", 2)),
+                ramp_rounds=int(cdep_cfg.get("ramp_rounds", 3)),
+            )
+            cdep_loss = cdep_raw_loss * float(ramp)
+            cdep_stats = {
+                "valid_classes": v2_stats["valid_classes"],
+                "mean_abs_covariance": v2_stats["mean_group_shift"],
+                "valid_groups": v2_stats["valid_groups"],
+                "buffer_samples": v2_stats["buffer_samples"],
+                "ramp": clean_ce.new_tensor(float(ramp)),
+            }
+        elif use_cdep:
             projected = projector(clean_feature)
             cdep_loss, cdep_stats = normalized_conditional_cross_covariance(
                 projected,
@@ -182,11 +225,19 @@ def train_local_fedease_epoch(
                 min_class_count=int(cdep_cfg.get("min_class_count", 3)),
                 eps=float(cdep_cfg.get("eps", 1.0e-5)),
             )
+            cdep_stats.update({
+                "valid_groups": clean_ce.new_zeros(()),
+                "buffer_samples": clean_ce.new_zeros(()),
+                "ramp": clean_ce.new_ones(()),
+            })
         else:
             cdep_loss = clean_ce.new_zeros(())
             cdep_stats = {
                 "valid_classes": clean_ce.new_zeros(()),
                 "mean_abs_covariance": clean_ce.new_zeros(()),
+                "valid_groups": clean_ce.new_zeros(()),
+                "buffer_samples": clean_ce.new_zeros(()),
+                "ramp": clean_ce.new_zeros(()),
             }
 
         primary_loss = (
@@ -294,6 +345,9 @@ def train_local_fedease_epoch(
             "cdep_loss": cdep_loss,
             "cdep_valid_classes": cdep_stats["valid_classes"],
             "cdep_mean_abs_covariance": cdep_stats["mean_abs_covariance"],
+            "cdep_v2_valid_groups": cdep_stats["valid_groups"],
+            "cdep_v2_buffer_samples": cdep_stats["buffer_samples"],
+            "cdep_v2_ramp": cdep_stats["ramp"],
             "ber_valid_groups": ber_stats["valid_groups"],
             "ebst_loss": ebst_loss,
             "ebst_active_samples": ebst_stats["active_samples"],

@@ -40,7 +40,10 @@ from fedprime.methods.local_prime import train_local_prime_dcl_epoch
 from fedprime.methods.local_fedease import train_local_fedease_epoch
 from fedprime.methods.local_fedclear import train_local_fedclear_epoch
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
-from fedprime.methods.conditional_dependence import FrozenRandomProjector
+from fedprime.methods.conditional_dependence import (
+    BufferedConditionalMomentAlignment,
+    FrozenRandomProjector,
+)
 from fedprime.methods.environment_structural_transfer import (
     aggregate_environment_balanced_relations,
     aggregate_leave_one_out_pair_relations,
@@ -95,6 +98,7 @@ class AsymHFLExperiment:
         self._last_pccd_metrics: dict[str, float] = {}
         self._last_fedease_metrics: dict[str, float] = {}
         self._fedease_projectors: dict[int, FrozenRandomProjector] = {}
+        self._fedease_cdep_v2_memories: dict[int, BufferedConditionalMomentAlignment] = {}
         self._fedease_client_relations: dict[int, dict[str, torch.Tensor]] = {}
         self._fedease_global_relation: dict[str, torch.Tensor | float] | None = None
         self._fedease_recipient_relations: dict[int, dict[str, torch.Tensor | float]] = {}
@@ -435,6 +439,9 @@ class AsymHFLExperiment:
                     "fedease_cdep_loss",
                     "fedease_cdep_valid_classes",
                     "fedease_cdep_mean_abs_covariance",
+                    "fedease_cdep_v2_valid_groups",
+                    "fedease_cdep_v2_buffer_samples",
+                    "fedease_cdep_v2_ramp",
                     "fedease_ber_valid_groups",
                     "fedease_ebst_loss",
                     "fedease_ebst_active_samples",
@@ -604,6 +611,9 @@ class AsymHFLExperiment:
                     "fedease_cdep_loss": self._last_fedease_metrics.get("cdep_loss", ""),
                     "fedease_cdep_valid_classes": self._last_fedease_metrics.get("cdep_valid_classes", ""),
                     "fedease_cdep_mean_abs_covariance": self._last_fedease_metrics.get("cdep_mean_abs_covariance", ""),
+                    "fedease_cdep_v2_valid_groups": self._last_fedease_metrics.get("cdep_v2_valid_groups", ""),
+                    "fedease_cdep_v2_buffer_samples": self._last_fedease_metrics.get("cdep_v2_buffer_samples", ""),
+                    "fedease_cdep_v2_ramp": self._last_fedease_metrics.get("cdep_v2_ramp", ""),
                     "fedease_ber_valid_groups": self._last_fedease_metrics.get("ber_valid_groups", ""),
                     "fedease_ebst_loss": self._last_fedease_metrics.get("ebst_loss", ""),
                     "fedease_ebst_active_samples": self._last_fedease_metrics.get("ebst_active_samples", ""),
@@ -685,6 +695,12 @@ class AsymHFLExperiment:
                         f"cdep={float(row['fedease_cdep_loss']):.4f} "
                         f"cdep_classes={float(row['fedease_cdep_valid_classes']):.2f} "
                     )
+                    if row["fedease_cdep_v2_buffer_samples"] != "":
+                        method_metrics += (
+                            f"cdep_v2_groups={float(row['fedease_cdep_v2_valid_groups']):.2f} "
+                            f"cdep_v2_buffer={float(row['fedease_cdep_v2_buffer_samples']):.0f} "
+                            f"cdep_v2_ramp={float(row['fedease_cdep_v2_ramp']):.2f} "
+                        )
                     if row["fedease_ebst_loss"] != "":
                         method_metrics += (
                             f"ebst={float(row['fedease_ebst_loss']):.4f} "
@@ -1704,6 +1720,16 @@ class AsymHFLExperiment:
                             output_dim=int(cdep_cfg.get("projection_dim", 64)),
                             seed=int(self.config.get("seed", 0)) * 1009 + client_id,
                         )
+                    if (
+                        bool(cdep_cfg.get("enabled", True))
+                        and str(cdep_cfg.get("version", "v1")).lower() == "v2"
+                        and client_id not in self._fedease_cdep_v2_memories
+                    ):
+                        self._fedease_cdep_v2_memories[client_id] = BufferedConditionalMomentAlignment(
+                            num_classes=num_classes,
+                            num_environments=int(fedease_cfg.get("num_environments", 6)),
+                            max_size_per_group=int(cdep_cfg.get("buffer_size_per_group", 64)),
+                        )
                     if bool(ebst_cfg.get("enabled", False)) and relation_accumulator is None:
                         relation_accumulator = new_relation_accumulator(
                             num_classes=num_classes,
@@ -1729,6 +1755,8 @@ class AsymHFLExperiment:
                         log_interval=train_cfg.get("local_log_interval"),
                         context=f"FedEASE local phase, round={round_idx}, client={client_id}",
                         diagnostics=epoch_diagnostics,
+                        cdep_v2_memory=self._fedease_cdep_v2_memories.get(client_id),
+                        round_idx=round_idx,
                         relation_accumulator=relation_accumulator,
                         global_relation_state=(
                             self._fedease_recipient_relations.get(client_id)

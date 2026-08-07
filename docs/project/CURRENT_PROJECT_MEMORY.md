@@ -3051,3 +3051,130 @@ Purpose:
 ```text
 Separate the contribution of AugMix+DCL local training from the communication method.
 ```
+
+## CLE-HFL Paper-Evidence Results - 2026-08-07
+
+Two strict 12-round seed-0 screens completed on the fixed CLE-HFL v2
+`alpha=0.5`, `gamma=0.9`, `seed0_split0` scenario. All comparisons used the
+same heterogeneous models, initialization policy, fit/audit roles,
+AsymHFL-val communication where applicable, and reporting-only final test.
+
+### External-baseline screen
+
+The completed arms were Local-only, FedMD, RHFL, native 1024-dimensional
+FedProto, AugHFL, RAHFL, and the full candidate. Candidate-minus-RAHFL
+last-five deltas were:
+
+```text
+Avg +3.9377, Worst +3.9040, WCCA +5.0500, CFG -6.3200
+```
+
+The candidate led this screen on both seen and unseen corruption operators.
+This is a fixed-scenario, single-training-seed screening result, not a complete
+SOTA claim. FedDF, KT-pFL, and FCCL remain absent.
+
+Evidence:
+
+```text
+outputs/cle_external_baselines_seed0_12round_outputs.tar.gz
+deliverables/cle_external_baselines_20260807/RESULT_SUMMARY_ZH.md
+```
+
+### A0--A6 local ablation
+
+Last-five values and attribution relative to A0 RAHFL:
+
+```text
+arm                 Avg      Worst    WCCA    CFG
+A0 RAHFL          30.0853   25.0427   0.85  30.440
+A1 BER-only       34.6320   29.4280   7.25  24.640
+A2 CDep-only      30.4070   24.7707   1.15  30.775
+A3 full           34.0230   28.9467   5.90  24.120
+A4 fixed PEW      33.5820   28.6040   5.05  27.070
+A5 shuffled PEW   31.5437   26.0147   2.55  37.375
+A6 oracle         35.1200   30.7253   7.70  20.690
+```
+
+```text
+BER-only - RAHFL:  Avg +4.5467, Worst +4.3853, WCCA +6.4000, CFG -5.8000
+CDep-only - RAHFL: Avg +0.3217, Worst -0.2720, WCCA +0.3000, CFG +0.3350
+Full - RAHFL:      Avg +3.9377, Worst +3.9040, WCCA +5.0500, CFG -6.3200
+Full - fixed PEW:  Avg +0.4410, Worst +0.3427, WCCA +0.8500, CFG -2.9500
+Full - shuffled:   Avg +2.4793, Worst +2.9320, WCCA +3.3500, CFG -13.2550
+Oracle - full:     Avg +1.0970, Worst +1.7787, WCCA +1.8000, CFG -3.4300
+```
+
+PEW group accuracy was 62.21% with calibration versus 39.99% with the fixed
+0.55 threshold. BER is the dominant positive local component. Correct PEW
+environment association and calibration contribute materially, with remaining
+headroom to the oracle. CDep alone is neutral/slightly negative; full versus
+BER-only loses `0.6090` Avg, `0.4813` Worst, and `1.3500` WCCA on last-five,
+while improving CFG by only `0.5200`. Do not claim an independent stable CDep
+benefit until the frozen lambda sensitivity is complete.
+
+Evidence:
+
+```text
+outputs/cle_local_ablation_12round_seed0_outputs.tar.gz
+deliverables/cle_local_ablation_20260807/RESULT_SUMMARY_ZH.md
+deliverables/cle_local_ablation_20260807/independent_analysis.json
+```
+
+Next decision: run the focused CDep sensitivity on the same seed-0 scenario,
+then freeze either calibrated PEW+BER+CDep or the simpler calibrated PEW+BER
+before running the CIFAR-100-private second-dataset A/B.
+
+## CDep Lambda Sensitivity - 2026-08-07
+
+The matched 12-round seed-0 sensitivity compared CDep lambda 0.01, 0.05, and
+0.10. All arms were complete; generated PEW annotations were byte-identical;
+configs differed only in experiment name and lambda. Last-five results were:
+
+```text
+method            Avg       Worst     WCCA      CFG
+BER-only A1       34.6320   29.4280   7.2500   24.6400
+CDep lambda .01   34.1847   29.1053   6.0000   24.4350
+CDep lambda .05   34.0230   28.9467   5.9000   24.1200
+CDep lambda .10   33.9827   29.0373   5.9000   25.2500
+```
+
+Lambda 0.01 was the best CDep accuracy setting but still lost to BER-only by
+`0.4473` Avg, `0.3227` Worst, and `1.2500` WCCA, with only `0.2050` lower CFG.
+Increasing lambda reduced the measured dependence proxy monotonically but did
+not improve robust classification. Current batch-local CDep is therefore not
+a validated additive component. Do not continue lambda-only tuning.
+
+Evidence:
+
+```text
+outputs/cle_sensitivity_12round_outputs.tar.gz
+deliverables/cle_sensitivity_20260807/RESULT_SUMMARY_ZH.md
+```
+
+A separate protocol limitation was identified: seed-0 private-unseen operators
+`impulse_noise`, `zoom_blur`, `fog`, and `pixelate` are excluded from client
+fit data but are included in the public PEW augmentation library. Existing
+unseen metrics establish private-fit holdout, not global operator holdout. A
+strict PEW leave-one-operator-out experiment is required for a stronger claim.
+
+## CDep-v2 Implementation Ready - 2026-08-07
+
+After the lambda sensitivity failed, one final structural CDep revision was
+implemented without changing PEW, BER, AsymHFL-val, audit routing, or legacy
+CDep. CDep-v2 aligns confidence-weighted environment feature centroids within
+each class using a bounded client-local cross-batch memory. It requires at
+least two supported environments, warms up for two rounds, and ramps over
+three rounds. Stored projected features are detached and never communicated.
+
+Frozen single-arm entry and decision contract:
+
+```text
+entry: scripts/openi_cle_cdep_v2_entry.py
+archive: cle_cdep_v2_12round_outputs.tar.gz
+reference: matched calibrated PEW+BER A1
+gates: ΔAvg >= 0, ΔWorst >= 0, ΔWCCA >= 0, ΔCFG <= -0.5
+```
+
+Focused tests passed (`24 passed`). A three-round local smoke confirmed buffer
+growth `8 -> 20 -> 29`, ramp `0, 0, 0.33`, and nonzero round-2 CDep-v2 loss.
+Smoke accuracy is not evidence.

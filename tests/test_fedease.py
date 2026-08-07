@@ -4,7 +4,9 @@ import torch
 
 from fedprime.methods.balanced_environment_risk import balanced_environment_risk
 from fedprime.methods.conditional_dependence import (
+    BufferedConditionalMomentAlignment,
     FrozenRandomProjector,
+    cdep_v2_ramp,
     normalized_conditional_cross_covariance,
 )
 
@@ -125,3 +127,60 @@ def test_frozen_random_projector_is_deterministic_and_backpropagates_to_features
     projected_a.square().mean().backward()
     assert features.grad is not None
     assert torch.isfinite(features.grad).all()
+
+
+def test_cdep_v2_ramp_has_two_round_warmup_and_three_round_activation():
+    values = [cdep_v2_ramp(index, warmup_rounds=2, ramp_rounds=3) for index in range(6)]
+    assert values == [0.0, 0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0, 1.0]
+
+
+def test_cdep_v2_uses_cross_batch_memory_and_backpropagates():
+    memory = BufferedConditionalMomentAlignment(
+        num_classes=2,
+        num_environments=2,
+        max_size_per_group=8,
+    )
+    first = torch.tensor([[1.0, 0.0], [0.9, 0.1]])
+    first_loss, first_stats = memory.loss_and_update(
+        first,
+        torch.zeros(2, dtype=torch.long),
+        torch.zeros(2, dtype=torch.long),
+        torch.full((2,), 0.9),
+        min_group_count=2,
+    )
+    assert first_loss.item() == 0.0
+    assert first_stats["valid_classes"].item() == 0.0
+
+    second = torch.tensor([[0.0, 1.0], [0.1, 0.9]], requires_grad=True)
+    second_loss, second_stats = memory.loss_and_update(
+        second,
+        torch.zeros(2, dtype=torch.long),
+        torch.ones(2, dtype=torch.long),
+        torch.full((2,), 0.9),
+        min_group_count=2,
+    )
+    assert second_loss.item() > 0.1
+    assert second_stats["valid_classes"].item() == 1.0
+    assert second_stats["valid_groups"].item() == 2.0
+    second_loss.backward()
+    assert second.grad is not None
+    assert torch.isfinite(second.grad).all()
+
+
+def test_cdep_v2_confidence_gate_rejects_uncertain_memory_samples():
+    memory = BufferedConditionalMomentAlignment(
+        num_classes=1,
+        num_environments=2,
+        max_size_per_group=8,
+    )
+    loss, stats = memory.loss_and_update(
+        torch.randn(4, 3, requires_grad=True),
+        torch.zeros(4, dtype=torch.long),
+        torch.tensor([0, 0, 1, 1]),
+        torch.tensor([0.9, 0.9, 0.2, 0.2]),
+        min_confidence=0.35,
+        min_group_count=2,
+    )
+    assert loss.item() == 0.0
+    assert stats["buffer_samples"].item() == 2.0
+    assert stats["valid_groups"].item() == 0.0

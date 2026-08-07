@@ -1,6 +1,26 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-08-04
+Last updated: 2026-08-07
+
+## CDep-v2 Single-Arm Screen Ready - 2026-08-07
+
+- Added `BufferedConditionalMomentAlignment`, a bounded client-local
+  class/environment feature memory with PEW-confidence weighting and support
+  gates. Stored features are detached and never communicated.
+- Added two warm-up rounds and a three-round activation ramp; the legacy CDep
+  and PEW+BER paths remain available and unchanged by configuration.
+- Added round diagnostics for active groups, memory size, ramp, and loss.
+- Added `scripts/openi_cle_cdep_v2_entry.py`, a single-arm 12-round OpenI entry
+  with automatic packaging and frozen comparison against existing matched
+  PEW+BER A1.
+- Focused unit, config, sensitivity, local-ablation, strict-AsymHFL, and
+  communication golden tests: `24 passed`.
+- Three-round local smoke passed. Memory grew `8 -> 20 -> 29`; ramp was
+  `0, 0, 0.33`; round-2 CDep-v2 loss was nonzero. Smoke accuracy is not
+  scientific evidence.
+
+Entry: `scripts/openi_cle_cdep_v2_entry.py` with no arguments.
+Guide: `docs/experiments/current/CLE_CDEP_V2_OPENI_RUN_ZH.md`.
 
 ## Strict PEW + AsymHFL-val A/B Probe Ready - 2026-08-04
 

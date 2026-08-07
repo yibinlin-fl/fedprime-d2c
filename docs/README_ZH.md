@@ -1,6 +1,6 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-05
+Updated: 2026-08-07
 
 ## 新会话最小读取顺序
 
@@ -28,6 +28,7 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ```text
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
+docs/experiments/current/CLE_CDEP_V2_OPENI_RUN_ZH.md              当前 CDep-v2 单臂最终筛选
 ```
 
 ```text

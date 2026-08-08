@@ -1,8 +1,19 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-08-07
+Last updated: 2026-08-08
 
-## CDep-v2 Single-Arm Screen Ready - 2026-08-07
+## CDep-v2 Single-Arm Screen Implemented - 2026-08-07
+
+The single-arm OpenI run completed on 2026-08-08. Its implementation and
+diagnostics passed, but attribution is inconclusive because the run retrained a
+different PEW from historical A1. A paired shared-PEW entry is now required;
+the single-arm entry must not be treated as the final CDep decision.
+
+The paired entry is implemented at
+`scripts/openi_cle_cdep_v2_paired_entry.py`. It runs control then candidate
+with one shared checkpoint, verifies byte-identical PEW annotations, computes
+the unchanged frozen gates, and packages both arms. The new focused suite is
+`23 passed`; dry-run config and environment checks passed.
 
 - Added `BufferedConditionalMomentAlignment`, a bounded client-local
   class/environment feature memory with PEW-confidence weighting and support
@@ -19,8 +30,9 @@ Last updated: 2026-08-07
   `0, 0, 0.33`; round-2 CDep-v2 loss was nonzero. Smoke accuracy is not
   scientific evidence.
 
-Entry: `scripts/openi_cle_cdep_v2_entry.py` with no arguments.
-Guide: `docs/experiments/current/CLE_CDEP_V2_OPENI_RUN_ZH.md`.
+Historical single-arm entry: `scripts/openi_cle_cdep_v2_entry.py`.
+Current paired entry: `scripts/openi_cle_cdep_v2_paired_entry.py` with no arguments.
+Guide: `docs/experiments/current/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md`.
 
 ## Strict PEW + AsymHFL-val A/B Probe Ready - 2026-08-04
 

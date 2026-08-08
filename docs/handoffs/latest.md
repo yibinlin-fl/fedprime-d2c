@@ -1,6 +1,6 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-07
+Updated: 2026-08-08
 
 ## Current Objective
 
@@ -22,24 +22,22 @@ new research results. Run them in the order documented at:
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
 ```
 
-CDep-v2 was implemented and locally verified on 2026-08-07 after all three
-CDep-v1 lambda settings failed to beat PEW+BER. It uses a bounded client-local
-class/environment feature memory, continuous PEW-confidence weighting,
-support gates, two warm-up rounds, and a three-round linear ramp. It does not
-change PEW, BER, AsymHFL-val, audit routing, or the legacy CDep path. The only
-next paid run is the single CDep-v2 arm:
+CDep-v2 was implemented and locally verified after all three CDep-v1 lambda
+settings failed to beat PEW+BER. The first single-arm run completed but was
+attribution-inconclusive because it retrained a different PEW from historical
+A1. A matched paired entry is now implemented and is the only next paid run:
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
-entry:   scripts/openi_cle_cdep_v2_entry.py
+entry:   scripts/openi_cle_cdep_v2_paired_entry.py
 args:    none
-guide:   docs/experiments/current/CLE_CDEP_V2_OPENI_RUN_ZH.md
-output:  cle_cdep_v2_12round_outputs.tar.gz
+guide:   docs/experiments/current/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md
+output:  cle_cdep_v2_paired_12round_outputs.tar.gz
 ```
 
-The local three-round smoke activated the buffer (`8 -> 20 -> 29`) and the
-pre-registered ramp (`0, 0, 0.33`) with a nonzero CDep-v2 loss at round 2.
-Smoke accuracy is not evidence.
+It runs 12-round PEW+BER control followed by 12-round CDep-v2 candidate using
+one shared checkpoint, then requires byte-identical annotation hashes before
+applying the unchanged four gates.
 
 Before the first paper-evidence run, the refactored AsymHFL strategy was
 protected by a legacy-vs-new numerical golden regression, cross-scenario
@@ -56,6 +54,35 @@ SHA256 AF554AC3B9B46D38571445DDE84647965341444DAD175A1E4191851B8DD01EB4
 ```
 
 ## Latest Formal Result
+
+The single-arm CDep-v2 12-round screen completed on 2026-08-08. The run was
+complete and the mechanism was active. Mechanical last-five comparison against
+historical PEW+BER A1 was:
+
+```text
+Avg +0.3607, Worst +0.2000, WCCA -0.2500, CFG -0.7900
+```
+
+Three of four frozen gates passed; WCCA non-inferiority failed by 0.25. More
+importantly, the CDep-v2 run retrained a different PEW: private group accuracy
+was 68.075% versus 62.21% for A1, threshold was 0.22 versus 0.0, and all four
+PEW annotation hashes differed. The historical comparison is therefore not a
+matched causal CDep comparison. Verdict: `INCONCLUSIVE_FOR_ATTRIBUTION`, not a
+validated PASS or a definitive CDep rejection.
+
+The next paid experiment must be one paired task sharing one PEW checkpoint
+and byte-identical annotations:
+
+```text
+control   = calibrated PEW + BER, CDep disabled
+candidate = the same calibrated PEW + BER + CDep-v2
+```
+
+Do not rerun CDep-v1 and do not change the four frozen gates. Report:
+
+```text
+deliverables/cle_cdep_v2_20260808/RESULT_SUMMARY_ZH.md
+```
 
 The focused CDep lambda sensitivity completed on 2026-08-07. All three arms
 ran rounds 0--11 with identical PEW annotations and configs differing only in

@@ -2,11 +2,27 @@
 
 ## Immediate - Resolve CDep and PEW Generalization Scope - 2026-08-07
 
+The 2026-08-08 CDep-v2 single-arm run is complete but cannot decide causal
+attribution because its newly trained PEW annotations differ from historical
+PEW+BER A1. The paired entry is now ready. Run exactly one OpenI task:
+
+```text
+dataset: openi_cle_hfl_v2_alpha05_gamma09
+entry: scripts/openi_cle_cdep_v2_paired_entry.py
+arguments: none
+archive: cle_cdep_v2_paired_12round_outputs.tar.gz
+```
+
+The task runs PEW+BER control and identical-PEW CDep-v2 candidate sequentially.
+Preserve the existing last-five four-gate contract. Do not add CDep-v1. Only
+after this paired result may the final local method be frozen.
+
 The CDep lambda sensitivity is complete. Lambda 0.01, 0.05, and 0.10 all lost
 to matched BER-only on last-five Avg, Worst, and WCCA. Current batch-local CDep
 is not a validated additive module. Do not continue lambda-only tuning.
 
-CDep-v2 is now implemented and locally verified. Run exactly one paid arm:
+CDep-v2 is implemented and locally verified. The original single-arm entry is
+now historical and must not be rerun as the final attribution experiment:
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
@@ -15,16 +31,10 @@ arguments: none
 expected archive: cle_cdep_v2_12round_outputs.tar.gz
 ```
 
-Do not rerun PEW+BER or CDep-v1. The entry automatically compares against the
-existing matched PEW+BER A1 using the frozen four-gate contract.
-
-Before the second-dataset or 40-round confirmation, make exactly one of these
-decisions:
-
-1. If CDep-v2 fails any frozen gate, freeze the primary local method as calibrated
-   PEW + BER and record current CDep as a negative ablation.
-2. If CDep-v2 passes all gates, retain it provisionally and confirm it only in
-   later final-method scenario/seed experiments; do not tune its frozen values.
+Its automatic historical comparison is retained as provenance only. The new
+paired entry must rerun PEW+BER exactly once because the shared-PEW requirement
+cannot be satisfied by the historical A1. After that paired result, fail any
+frozen gate -> freeze PEW+BER; pass all gates -> provisionally retain CDep-v2.
 
 Also fix the PEW generalization claim before final paper experiments. The four
 private-unseen seed-0 operators (`impulse_noise`, `zoom_blur`, `fog`,

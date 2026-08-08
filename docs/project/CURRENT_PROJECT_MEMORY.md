@@ -3178,3 +3178,39 @@ gates: ΔAvg >= 0, ΔWorst >= 0, ΔWCCA >= 0, ΔCFG <= -0.5
 Focused tests passed (`24 passed`). A three-round local smoke confirmed buffer
 growth `8 -> 20 -> 29`, ramp `0, 0, 0.33`, and nonzero round-2 CDep-v2 loss.
 Smoke accuracy is not evidence.
+
+## CDep-v2 Single-Arm Result - Attribution Inconclusive - 2026-08-08
+
+The complete 12-round CDep-v2 run mechanically compared to historical PEW+BER
+A1 as `Avg +0.3607`, `Worst +0.2000`, `WCCA -0.2500`, `CFG -0.7900`; three of
+four frozen gates passed. CDep-v2 was active with last-five mean loss 0.04103,
+7.0477 valid classes, 41.1299 valid groups, and a 2694.91 mean buffer size.
+
+However, the CDep-v2 entry retrained PEW under a new checkpoint path. Its
+private group accuracy was 68.075% versus 62.21% for historical A1, its
+calibrated threshold was 0.22 versus 0.0, and all four client annotation hashes
+differed. The historical automatic comparison is not a matched causal CDep
+test. Preserve the mechanical `pass=false`, but scientific status is
+`INCONCLUSIVE_FOR_ATTRIBUTION`.
+
+Required next experiment: one paired task that prepares PEW once and runs
+PEW+BER control and identical-PEW PEW+BER+CDep-v2 candidate. Keep the original
+last-five gates and do not rerun CDep-v1.
+
+The paired entry was implemented on 2026-08-08:
+
+```text
+scripts/openi_cle_cdep_v2_paired_entry.py
+```
+
+It runs control then candidate with `outputs/pew_checkpoints/
+cle_cdep_v2_paired_seed0.pt`, requires all four PEW annotation NPZ files to be
+byte-identical, and only then writes the unchanged four-gate decision. Focused
+tests (`23 passed`) and an entry dry-run passed.
+
+Evidence:
+
+```text
+outputs/cle_cdep_v2_12round_outputs.tar.gz
+deliverables/cle_cdep_v2_20260808/RESULT_SUMMARY_ZH.md
+```

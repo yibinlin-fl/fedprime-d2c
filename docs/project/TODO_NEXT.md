@@ -1,6 +1,24 @@
 # TODO Next
 
-## Immediate - Run Strict PEW Operator-LOO - 2026-08-08
+## Immediate - Run Remaining RAHFL-table Baselines - 2026-08-09
+
+Strict PEW-LOO completed and passed all four frozen gates. The next paid screen
+is the already implemented matched five-arm task:
+
+```text
+dataset: openi_cle_hfl_v2_alpha05_gamma09
+entry: scripts/openi_cle_remaining_baselines_entry.py
+arguments: none
+arms: feddf, kt_pfl, fccl, rahfl, pew_ber
+archive: cle_remaining_baselines_seed0_12round_outputs.tar.gz
+```
+
+Use this 12-round result to discard clearly weak baselines. Promote a baseline
+to 40 rounds if it is close to or better than RAHFL, or if its late curve is
+still rising and the gap is small. Do not interpret 12 rounds as a final
+negative conclusion for a slow-converging method.
+
+## Completed - Strict PEW Operator-LOO - 2026-08-09
 
 The matched shared-PEW CDep-v2 experiment is complete. Candidate-minus-control
 last-five was `Avg -0.1933`, `Worst -0.2280`, `WCCA -0.6000`, `CFG +0.4450`;
@@ -9,7 +27,7 @@ method as calibrated PEW+BER. Before propagating it to all large paper runs,
 test whether PEW depends on seeing the four private-unseen concrete operators
 in its public synthetic supervision.
 
-Run exactly one three-arm OpenI task:
+The three-arm OpenI task completed:
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
@@ -29,19 +47,13 @@ Primary Strict-LOO-minus-RAHFL last-five gates remain:
 Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
 ```
 
-After this result:
+Decision:
 
-1. If all gates pass, freeze Strict-LOO-compatible PEW+BER and remove CDep from
-   the Candidate arms of the prepared communication
-   factorial, cross-scenario, alpha/gamma stress, and second-dataset entries.
-2. If a gate fails, do not launch the old paper-evidence queue; decide whether
-   to implement Multi-label PEW + Soft-BER or reduce the paper claim.
-3. Keep PEW calibration, BER, strict fit/audit roles, AsymHFL-val, seeds, and
-   reporting unchanged.
-4. Run focused config/unit tests and audit one resolved control/candidate pair.
-5. Update the paper-evidence run guide with the revised frozen method.
-6. Only then choose the next paid run; do not submit the old CDep-bearing
-   candidate configs.
+1. All four gates passed. Freeze Strict-LOO compatibility as validated evidence.
+2. Keep standard PEW+BER as the primary method and use Strict-LOO as the
+   operator-generalization audit; Strict-LOO did not dominate standard PEW on WCCA.
+3. Keep CDep disabled in all new candidate arms.
+4. Do not claim unseen-family or arbitrary composite-corruption robustness.
 
 After propagation, the recommended next scientific run is communication
 orthogonality, followed by cross-scenario seeds 1/2, alpha/gamma stress, and
@@ -65,17 +77,17 @@ Its automatic historical comparison is retained as provenance only. The paired
 entry has now completed and failed all frozen gates. It must not be rerun or
 used as a new tuning surface.
 
-The PEW generalization implementation is now ready. The four
+The PEW operator-LOO generalization experiment is complete. The four
 private-unseen seed-0 operators (`impulse_noise`, `zoom_blur`, `fog`,
 `pixelate`) are absent from private fit data and the Strict variant now also
 excludes them from public PEW train and validation generation. Report existing
-results as `private-unseen`; the new experiment is specifically a PEW operator
+results as `private-unseen`; the completed experiment is specifically a PEW operator
 LOO audit, not a claim that every generic augmentation is globally unseen.
 
-After the local method and strict PEW protocol are frozen, run the matched
-CIFAR-100-private second-dataset A/B, followed by communication orthogonality,
-cross-scenario seeds 1/2, alpha/gamma stress tests, and missing
-FedDF/KT-pFL/FCCL baselines.
+Run the pending FedDF/KT-pFL/FCCL matched screen first. Then run communication
+orthogonality, cross-scenario seeds 1/2, alpha/gamma stress tests, and the
+matched CIFAR-100-private second-dataset A/B. FedDF/KT-pFL/FCCL are no longer
+implementation TODOs; only their formal run remains pending.
 
 ## Historical Completed Strict 12-Round A/B Probe - 2026-08-04
 

@@ -1,8 +1,8 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
-## Strict PEW Operator-LOO Ready - 2026-08-08
+## Strict PEW Operator-LOO Result - GO - 2026-08-09
 
 Added an optional `method.fedease.pew.exclude_operators` protocol. The default
 is empty, so all historical PEW configs and checkpoints retain their original
@@ -17,7 +17,13 @@ records the final public operator pools, disables CDep, and applies the original
 four candidate-vs-RAHFL gates. Focused verification: `29 passed`; entry dry-run
 and all three environment/path checks passed.
 
-Guide: `docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md`.
+The formal three-arm run completed. Strict-LOO minus RAHFL last-five was
+`Avg +4.9027`, `Worst +6.2547`, `WCCA +4.6000`, `CFG -6.1100`; all four
+pre-registered gates passed. All held-out private-fit counts were zero and the
+four operators were absent from Strict PEW public train/validation pools.
+
+Guide: `docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md`.
+Report: `deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md`.
 
 ## CDep-v2 Matched Paired Decision - NO-GO - 2026-08-08
 
@@ -1968,3 +1974,11 @@ Use:
 ```text
 读取 docs/project/PROJECT_STATE.md 和 docs/project/TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。
 ```
+
+## Remaining RAHFL-table baselines - 2026-08-09
+
+The unified communication registry now includes FedDF, KT-pFL, and FCCL.
+All three implement the published/released core communication mechanism through
+`CommunicationContext`, use the same public batch budget, and do not read audit
+or final-test labels. The matched OpenI entry is
+`scripts/openi_cle_remaining_baselines_entry.py`; formal results are pending.

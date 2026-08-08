@@ -3071,7 +3071,9 @@ Avg +3.9377, Worst +3.9040, WCCA +5.0500, CFG -6.3200
 
 The candidate led this screen on both seen and unseen corruption operators.
 This is a fixed-scenario, single-training-seed screening result, not a complete
-SOTA claim. FedDF, KT-pFL, and FCCL remain absent.
+SOTA claim. FedDF, KT-pFL, and FCCL were absent from this completed result.
+Their core-mechanism adapters and matched five-arm entry were implemented on
+2026-08-09, but have no formal result yet.
 
 Evidence:
 
@@ -3250,7 +3252,7 @@ deliverables/cle_cdep_v2_paired_20260808/RESULT_SUMMARY_ZH.md
 docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md
 ```
 
-## Strict PEW Operator-LOO Implementation Ready - 2026-08-08
+## Strict PEW Operator-LOO Result - GO - 2026-08-09
 
 To test whether PEW+BER depends on public PEW exposure to the four seed-0
 private-unseen concrete operators, an optional PEW public-operator exclusion
@@ -3273,13 +3275,30 @@ disables CDep. The standard and strict PEWs use separate checkpoints. Primary
 last-five gates for Strict LOO minus same-task RAHFL are the original
 `Avg >= +1.5`, `Worst >= +1.0`, `WCCA >= 0`, and `CFG <= -1.0`.
 
-Focused tests passed (`29 passed`) and the entry dry-run passed all three
-config/environment checks.
+The formal three-arm result completed with all rounds 0--11. Independently
+recomputed last-five values were:
+
+```text
+method             Avg       Worst     WCCA     CFG
+RAHFL              30.0853   25.0427   0.8500   30.4400
+standard PEW+BER   34.6320   29.4280   7.2500   24.6400
+Strict-LOO PEW+BER 34.9880   31.2973   5.4500   24.3300
+```
+
+Strict-LOO minus RAHFL was `Avg +4.9027`, `Worst +6.2547`, `WCCA +4.6000`,
+`CFG -6.1100`; all four frozen gates passed. Strict-LOO minus standard PEW was
+`Avg +0.3560`, `Worst +1.8693`, `WCCA -1.8000`, `CFG -0.3100`.
+
+All four held-out operators had zero private-fit counts and were absent from
+Strict PEW public train/validation pools. This validates operator-level LOO
+generalization within the known PEW families, not unseen-family or arbitrary
+composite-corruption robustness.
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
 entry: scripts/openi_cle_pew_loo_entry.py
 args: none
 archive: cle_pew_loo_12round_seed0_outputs.tar.gz
-guide: docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md
+guide: docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md
+report: deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md
 ```

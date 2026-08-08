@@ -1,6 +1,6 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-08
+Updated: 2026-08-09
 
 ## Current Objective
 
@@ -22,29 +22,51 @@ new research results. Run them in the order documented at:
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
 ```
 
+On 2026-08-09 the three RAHFL-table baselines missing from the first external
+screen were implemented behind the same `CommunicationContext`: FedDF logit
+ensemble fusion, KT-pFL personalized learned coefficients, and FCCL released
+cross-correlation communication. A matched five-arm 12-round entry is ready:
+
+```text
+entry:   scripts/openi_cle_remaining_baselines_entry.py
+arms:    feddf,kt_pfl,fccl,rahfl,pew_ber
+output:  cle_remaining_baselines_seed0_12round_outputs.tar.gz
+guide:   docs/experiments/current/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md
+tests:   16 focused communication/baseline tests passed
+```
+
+This is implementation readiness, not a result. The adapters reproduce each
+method's core mechanism under the fixed CLE protocol; they do not copy the
+original repositories' incompatible end-to-end training recipes.
+
 CDep-v2 was implemented after all three CDep-v1 lambda settings failed to beat
 PEW+BER. Its matched shared-PEW paired experiment is now complete. All four
 pre-registered last-five gates failed, so CDep-v1/v2 are frozen and the final
 local method is `calibrated PEW + BER`.
 
-The immediate next paid run is now a strict PEW operator leave-one-out audit.
-It preserves the original PEW as a separate arm and sequentially runs RAHFL,
-standard PEW+BER, and Strict-LOO PEW+BER for 12 rounds each. Strict LOO removes
-`impulse_noise`, `zoom_blur`, `fog`, and `pixelate` from both public PEW train
-and validation generation while leaving private data, AugMix, BER, and
-AsymHFL-val unchanged:
+The strict PEW operator leave-one-out audit completed on 2026-08-09. All three
+arms contain rounds 0--11; private-fit and public-PEW exclusion audits passed;
+and Strict-LOO minus same-task RAHFL passed all four pre-registered gates.
+Independently recomputed last-five deltas were:
 
 ```text
-dataset: openi_cle_hfl_v2_alpha05_gamma09
-entry:   scripts/openi_cle_pew_loo_entry.py
-args:    none
-guide:   docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md
-output:  cle_pew_loo_12round_seed0_outputs.tar.gz
+Avg +4.9027, Worst +6.2547, WCCA +4.6000, CFG -6.1100
+verdict: GO (4/4 gates)
 ```
 
-Its primary frozen gate is Strict-LOO PEW+BER minus same-task RAHFL last-five:
-`Avg >= +1.5`, `Worst >= +1.0`, `WCCA >= 0`, `CFG <= -1.0`. Do not run the
-older CDep entry and do not continue CDep tuning.
+Strict-LOO also had `Avg +0.3560`, `Worst +1.8693`, `CFG -0.3100`, but
+`WCCA -1.8000` versus standard PEW+BER. Treat this as successful operator-level
+LOO generalization, not universal unknown-corruption robustness or uniform
+dominance over standard PEW. Report:
+
+```text
+deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md
+docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md
+```
+
+The next paid experiment should be the completed remaining-baseline entry
+(`FedDF, KT-pFL, FCCL, RAHFL, PEW+BER`) before promoting competitive methods to
+40 rounds. Do not run older CDep entries and do not continue CDep tuning.
 
 Before the first paper-evidence run, the refactored AsymHFL strategy was
 protected by a legacy-vs-new numerical golden regression, cross-scenario
@@ -61,6 +83,24 @@ SHA256 AF554AC3B9B46D38571445DDE84647965341444DAD175A1E4191851B8DD01EB4
 ```
 
 ## Latest Formal Result
+
+The Strict PEW operator-LOO experiment completed on 2026-08-09. Standard and
+Strict PEW configs differed only in experiment name, checkpoint, and the
+pre-registered public operator exclusions. The four held-out operators had
+zero private-fit occurrences and were absent from Strict PEW public train and
+validation pools. Last-five values were:
+
+```text
+method             Avg       Worst     WCCA     CFG
+RAHFL              30.0853   25.0427   0.8500   30.4400
+standard PEW+BER   34.6320   29.4280   7.2500   24.6400
+Strict-LOO PEW+BER 34.9880   31.2973   5.4500   24.3300
+```
+
+Strict-LOO minus RAHFL passed all four frozen gates. Verdict: `GO` for
+operator-level leave-one-out generalization on fixed scenario/training seed 0.
+This does not establish unseen-family, composite-corruption, or cross-scenario
+generalization.
 
 The matched CDep-v2 shared-PEW experiment completed on 2026-08-08. Both arms
 contained rounds 0--11, their resolved configs differed only in experiment

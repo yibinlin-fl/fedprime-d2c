@@ -186,6 +186,232 @@ class AugHFLCommunicationStrategy:
         return sum(losses) / max(len(losses), 1)
 
 
+def _next_public_batch(
+    context: CommunicationContext,
+    public_iter,
+) -> tuple[torch.Tensor, object]:
+    if context.public_loader is None or public_iter is None:
+        raise RuntimeError("public-data communication requires a public loader")
+    try:
+        images, _ = next(public_iter)
+    except StopIteration:
+        public_iter = iter(context.public_loader)
+        images, _ = next(public_iter)
+    images = normalize_batch(images.to(context.device, non_blocking=True), context.stats)
+    return images, public_iter
+
+
+class FedDFCommunicationStrategy:
+    """FedDF heterogeneous logit-ensemble fusion on public data.
+
+    Each persistent client architecture is its own student.  The common teacher
+    is the softmax of the mean client logits, matching the heterogeneous FedDF
+    adaptation used by the FCCL/RAHFL comparison code.
+    """
+
+    name = "feddf"
+    requires_public_data = True
+    uses_accuracy_routing = False
+
+    def __init__(self, temperature: float = 1.0) -> None:
+        if temperature <= 0:
+            raise ValueError("FedDF temperature must be positive")
+        self.temperature = float(temperature)
+
+    @staticmethod
+    def ensemble_probabilities(
+        logits: list[torch.Tensor], temperature: float = 1.0
+    ) -> torch.Tensor:
+        return F.softmax(torch.stack(logits).mean(dim=0) / float(temperature), dim=1)
+
+    def step(self, context: CommunicationContext) -> float:
+        client_ids = sorted(context.models)
+        public_iter = context.public_iter
+        losses: list[float] = []
+        for _ in range(int(context.public_batches_per_round)):
+            images, public_iter = _next_public_batch(context, public_iter)
+            teacher_logits = []
+            for client_id in client_ids:
+                model = context.models[client_id]
+                model.eval()
+                with torch.no_grad():
+                    teacher_logits.append(forward_logits(model, images).detach())
+            teacher = self.ensemble_probabilities(
+                teacher_logits, self.temperature
+            ).detach()
+            for client_id in client_ids:
+                model = context.models[client_id]
+                model.train()
+                student = F.log_softmax(
+                    forward_logits(model, images) / self.temperature, dim=1
+                )
+                loss = F.kl_div(student, teacher, reduction="batchmean") * (
+                    self.temperature**2
+                )
+                context.optimizers[client_id].zero_grad(set_to_none=True)
+                loss.backward()
+                context.optimizers[client_id].step()
+                losses.append(float(loss.detach().cpu()))
+        return sum(losses) / max(len(losses), 1)
+
+
+class KTPFLCommunicationStrategy:
+    """KT-pFL personalized public-logit transfer with learned coefficients."""
+
+    name = "kt_pfl"
+    requires_public_data = True
+    uses_accuracy_routing = False
+
+    def __init__(
+        self,
+        temperature: float = 1.0,
+        coefficient_lr: float = 0.01,
+        uniform_regularization: float = 0.5,
+    ) -> None:
+        if temperature <= 0:
+            raise ValueError("KT-pFL temperature must be positive")
+        self.temperature = float(temperature)
+        self.coefficient_lr = float(coefficient_lr)
+        self.uniform_regularization = float(uniform_regularization)
+        self._coefficient_logits: torch.Tensor | None = None
+        self._coefficient_optimizer: torch.optim.Optimizer | None = None
+
+    def _ensure_coefficients(self, count: int, device: torch.device) -> None:
+        if self._coefficient_logits is not None:
+            if self._coefficient_logits.shape != (count, count):
+                raise ValueError("KT-pFL client count changed after initialization")
+            return
+        self._coefficient_logits = torch.zeros(
+            count, count, device=device, requires_grad=True
+        )
+        self._coefficient_optimizer = torch.optim.SGD(
+            [self._coefficient_logits], lr=self.coefficient_lr
+        )
+
+    @property
+    def coefficient_weights(self) -> torch.Tensor | None:
+        if self._coefficient_logits is None:
+            return None
+        return F.softmax(self._coefficient_logits.detach(), dim=1)
+
+    def step(self, context: CommunicationContext) -> float:
+        client_ids = sorted(context.models)
+        self._ensure_coefficients(len(client_ids), context.device)
+        assert self._coefficient_logits is not None
+        assert self._coefficient_optimizer is not None
+        public_iter = context.public_iter
+        losses: list[float] = []
+        for _ in range(int(context.public_batches_per_round)):
+            images, public_iter = _next_public_batch(context, public_iter)
+            teacher_probs = []
+            for client_id in client_ids:
+                model = context.models[client_id]
+                model.eval()
+                with torch.no_grad():
+                    teacher_probs.append(
+                        F.softmax(
+                            forward_logits(model, images) / self.temperature, dim=1
+                        ).detach()
+                    )
+            teacher_stack = torch.stack(teacher_probs)
+            weights = F.softmax(self._coefficient_logits, dim=1)
+            personalized = torch.einsum("nt,tbc->nbc", weights, teacher_stack)
+
+            # Alternate the paper's model and coefficient updates.  Targets are
+            # detached for model KD so coefficient gradients cannot leak into a
+            # client's optimizer.
+            for student_index, client_id in enumerate(client_ids):
+                model = context.models[client_id]
+                model.train()
+                student = F.log_softmax(
+                    forward_logits(model, images) / self.temperature, dim=1
+                )
+                loss = F.kl_div(
+                    student,
+                    personalized[student_index].detach(),
+                    reduction="batchmean",
+                ) * (self.temperature**2)
+                context.optimizers[client_id].zero_grad(set_to_none=True)
+                loss.backward()
+                context.optimizers[client_id].step()
+                losses.append(float(loss.detach().cpu()))
+
+            coefficient_fit = sum(
+                F.kl_div(
+                    personalized[index].clamp_min(1.0e-8).log(),
+                    teacher_stack[index],
+                    reduction="batchmean",
+                )
+                for index in range(len(client_ids))
+            ) / len(client_ids)
+            uniform = torch.full_like(weights, 1.0 / len(client_ids))
+            coefficient_loss = coefficient_fit + self.uniform_regularization * F.mse_loss(
+                weights, uniform
+            )
+            self._coefficient_optimizer.zero_grad(set_to_none=True)
+            coefficient_loss.backward()
+            self._coefficient_optimizer.step()
+        return sum(losses) / max(len(losses), 1)
+
+
+class FCCLCommunicationStrategy:
+    """FCCL public-logit cross-correlation communication core."""
+
+    name = "fccl"
+    requires_public_data = True
+    uses_accuracy_routing = False
+
+    def __init__(self, offdiag_weight: float = 0.0051, eps: float = 1.0e-6) -> None:
+        self.offdiag_weight = float(offdiag_weight)
+        self.eps = float(eps)
+
+    @staticmethod
+    def off_diagonal(matrix: torch.Tensor) -> torch.Tensor:
+        size, width = matrix.shape
+        if size != width:
+            raise ValueError("FCCL cross-correlation matrix must be square")
+        return matrix.flatten()[:-1].view(size - 1, size + 1)[:, 1:].flatten()
+
+    def correlation_loss(
+        self, student_logits: torch.Tensor, teacher_logits: torch.Tensor
+    ) -> torch.Tensor:
+        student = (student_logits - student_logits.mean(0)) / student_logits.std(0).clamp_min(
+            self.eps
+        )
+        teacher = (teacher_logits - teacher_logits.mean(0)) / teacher_logits.std(0).clamp_min(
+            self.eps
+        )
+        correlation = student.T @ teacher / student.shape[0]
+        on_diag = (torch.diagonal(correlation) - 1.0).pow(2).sum()
+        # FCCL's released implementation explicitly targets -1 off diagonal.
+        off_diag = (self.off_diagonal(correlation) + 1.0).pow(2).sum()
+        return on_diag + self.offdiag_weight * off_diag
+
+    def step(self, context: CommunicationContext) -> float:
+        client_ids = sorted(context.models)
+        public_iter = context.public_iter
+        losses: list[float] = []
+        for _ in range(int(context.public_batches_per_round)):
+            images, public_iter = _next_public_batch(context, public_iter)
+            targets = []
+            for client_id in client_ids:
+                model = context.models[client_id]
+                model.eval()
+                with torch.no_grad():
+                    targets.append(forward_logits(model, images).detach())
+            target_average = torch.stack(targets).mean(dim=0)
+            for client_id in client_ids:
+                model = context.models[client_id]
+                model.train()
+                student_logits = forward_logits(model, images)
+                loss = self.correlation_loss(student_logits, target_average)
+                context.optimizers[client_id].zero_grad(set_to_none=True)
+                loss.backward()
+                context.optimizers[client_id].step()
+                losses.append(float(loss.detach().cpu()))
+        return sum(losses) / max(len(losses), 1)
+
+
 class FedProtoFeatureStrategy:
     """FedProto using class-wise prototypes in the shared model embedding space."""
 
@@ -309,5 +535,22 @@ def build_baseline_communication_strategy(name: str, method_cfg: dict):
         return FedProtoFeatureStrategy(
             proto_weight=float(baseline_cfg.get("proto_weight", 1.0)),
             max_batches=baseline_cfg.get("max_proto_batches"),
+        )
+    if normalized == "feddf":
+        return FedDFCommunicationStrategy(
+            temperature=float(baseline_cfg.get("temperature", 1.0)),
+        )
+    if normalized in {"kt_pfl", "kt-pfl", "ktpfl"}:
+        return KTPFLCommunicationStrategy(
+            temperature=float(baseline_cfg.get("temperature", 1.0)),
+            coefficient_lr=float(baseline_cfg.get("coefficient_lr", 0.01)),
+            uniform_regularization=float(
+                baseline_cfg.get("uniform_regularization", 0.5)
+            ),
+        )
+    if normalized == "fccl":
+        return FCCLCommunicationStrategy(
+            offdiag_weight=float(baseline_cfg.get("offdiag_weight", 0.0051)),
+            eps=float(baseline_cfg.get("eps", 1.0e-6)),
         )
     return None

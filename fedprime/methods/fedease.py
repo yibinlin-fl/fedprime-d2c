@@ -15,6 +15,7 @@ from fedprime.methods.environment_witness import (
     evaluate_environment_witness,
     infer_environment_annotations,
     load_environment_witness,
+    resolve_public_corruption_groups,
     save_environment_witness,
     train_environment_witness,
 )
@@ -119,6 +120,10 @@ class FedEASEExperiment(AsymHFLExperiment):
         train_cfg = self.config["train"]
         fedease_cfg = self.config["method"]["fedease"]
         pew_cfg = fedease_cfg.get("pew", fedease_cfg.get("environment_witness", {}))
+        excluded_operators = tuple(
+            sorted({str(operator) for operator in pew_cfg.get("exclude_operators", ())})
+        )
+        public_corruption_groups = resolve_public_corruption_groups(excluded_operators)
         if int(fedease_cfg.get("num_environments", len(PEW_ENVIRONMENT_NAMES))) != len(PEW_ENVIRONMENT_NAMES):
             raise ValueError(
                 f"Learned PEW requires num_environments={len(PEW_ENVIRONMENT_NAMES)} "
@@ -141,13 +146,27 @@ class FedEASEExperiment(AsymHFLExperiment):
                 seed=int(self.config.get("seed", 0)),
                 validation_fraction=float(pew_cfg.get("validation_fraction", 0.2)),
                 public_dataset=str(data_cfg.get("public_dataset", "cifar100")),
+                excluded_operators=excluded_operators,
             )
         if checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True)):
             print(f"[setup] loading PEW checkpoint: {checkpoint}", flush=True)
             witness = load_environment_witness(checkpoint, self.device)
+            checkpoint_exclusions = tuple(
+                sorted(getattr(witness, "training_excluded_operators", ()))
+            )
+            if checkpoint_exclusions != excluded_operators:
+                raise ValueError(
+                    "PEW checkpoint operator exclusion mismatch: "
+                    f"checkpoint={list(checkpoint_exclusions)} "
+                    f"config={list(excluded_operators)}"
+                )
             history = []
         else:
-            print("[setup] training PEW from unlabeled CIFAR-100 corruptions", flush=True)
+            print(
+                "[setup] training PEW from unlabeled public corruptions; "
+                f"excluded_operators={list(excluded_operators)}",
+                flush=True,
+            )
             assert train_loader is not None and validation_loader is not None
             witness = PublicEnvironmentWitness(
                 embedding_dim=int(pew_cfg.get("embedding_dim", 32)),
@@ -164,7 +183,11 @@ class FedEASEExperiment(AsymHFLExperiment):
                 severity_weight=float(pew_cfg.get("severity_weight", 0.25)),
                 max_batches=pew_cfg.get("max_batches"),
             )
-            save_environment_witness(witness, checkpoint)
+            save_environment_witness(
+                witness,
+                checkpoint,
+                excluded_operators=excluded_operators,
+            )
             print(f"[setup] saved PEW checkpoint: {checkpoint}", flush=True)
 
         calibration = None
@@ -214,6 +237,11 @@ class FedEASEExperiment(AsymHFLExperiment):
         self._fedease_environment_annotations = annotations
         report = {
             "environment_names": PEW_ENVIRONMENT_NAMES,
+            "excluded_public_operators": list(excluded_operators),
+            "public_operator_pools": {
+                group: list(operators)
+                for group, operators in public_corruption_groups.items()
+            },
             "private_group_accuracy": 100.0 * private_correct / max(private_total, 1),
             "private_samples": private_total,
             "checkpoint": str(checkpoint),

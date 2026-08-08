@@ -8,20 +8,54 @@ import torch
 import torch.nn as nn
 from torch.utils import data
 
-from fedprime.data.corruptions import CORRUPTION_GROUPS, apply_corruption, sample_corruption_from_group
+from fedprime.data.corruptions import CORRUPTION_GROUPS, apply_corruption
 from fedprime.data.loaders import _cifar10_train_from_tar, _cifar100_train_from_tar
 
 
 PEW_ENVIRONMENT_NAMES = ("clean", *CORRUPTION_GROUPS.keys(), "unknown")
 
 
+def resolve_public_corruption_groups(
+    excluded_operators: list[str] | tuple[str, ...] | None = None,
+) -> dict[str, tuple[str, ...]]:
+    """Return PEW public corruption pools after an explicit operator holdout."""
+
+    excluded = tuple(dict.fromkeys(str(item) for item in (excluded_operators or ())))
+    known = {operator for operators in CORRUPTION_GROUPS.values() for operator in operators}
+    unknown = sorted(set(excluded) - known)
+    if unknown:
+        raise ValueError(f"Unknown PEW excluded operators: {unknown}")
+
+    resolved = {
+        group: tuple(operator for operator in operators if operator not in excluded)
+        for group, operators in CORRUPTION_GROUPS.items()
+    }
+    empty_groups = [group for group, operators in resolved.items() if not operators]
+    if empty_groups:
+        raise ValueError(f"PEW operator exclusion emptied corruption groups: {empty_groups}")
+    return resolved
+
+
 class PublicEnvironmentDataset(data.Dataset):
     """Synthetic environment supervision built only from unlabeled public images."""
 
-    def __init__(self, images: np.ndarray, indices: np.ndarray, seed: int) -> None:
+    def __init__(
+        self,
+        images: np.ndarray,
+        indices: np.ndarray,
+        seed: int,
+        excluded_operators: list[str] | tuple[str, ...] | None = None,
+    ) -> None:
         self.images = np.asarray(images, dtype=np.uint8)
         self.indices = np.asarray(indices, dtype=np.int64)
         self.seed = int(seed)
+        self.excluded_operators = tuple(
+            dict.fromkeys(str(operator) for operator in (excluded_operators or ()))
+        )
+        self.corruption_groups = resolve_public_corruption_groups(self.excluded_operators)
+
+    def _sample_operator(self, group: str, rng: np.random.Generator) -> str:
+        return str(rng.choice(self.corruption_groups[group]))
 
     def __len__(self) -> int:
         return int(self.indices.size)
@@ -40,13 +74,13 @@ class PublicEnvironmentDataset(data.Dataset):
             second_group = list(CORRUPTION_GROUPS)[(item + 1) % len(CORRUPTION_GROUPS)]
             corrupted = apply_corruption(
                 image,
-                sample_corruption_from_group(first_group, rng),
+                self._sample_operator(first_group, rng),
                 severity,
                 rng,
             )
             corrupted = apply_corruption(
                 corrupted,
-                sample_corruption_from_group(second_group, rng),
+                self._sample_operator(second_group, rng),
                 severity,
                 rng,
             )
@@ -55,7 +89,7 @@ class PublicEnvironmentDataset(data.Dataset):
             group = list(CORRUPTION_GROUPS)[environment_id - 1]
             corrupted = apply_corruption(
                 image,
-                sample_corruption_from_group(group, rng),
+                self._sample_operator(group, rng),
                 severity,
                 rng,
             )
@@ -145,6 +179,7 @@ def build_public_environment_loaders(
     seed: int,
     validation_fraction: float = 0.2,
     public_dataset: str = "cifar100",
+    excluded_operators: list[str] | tuple[str, ...] | None = None,
 ) -> tuple[data.DataLoader, data.DataLoader]:
     dataset_name = str(public_dataset).lower()
     if dataset_name == "cifar100":
@@ -156,8 +191,18 @@ def build_public_environment_loaders(
     rng = np.random.default_rng(seed)
     selected = rng.choice(len(images), size=min(int(public_size), len(images)), replace=False)
     split = max(1, min(len(selected) - 1, int(round(len(selected) * (1.0 - validation_fraction)))))
-    train_ds = PublicEnvironmentDataset(images, selected[:split], seed=seed)
-    val_ds = PublicEnvironmentDataset(images, selected[split:], seed=seed + 1_000_003)
+    train_ds = PublicEnvironmentDataset(
+        images,
+        selected[:split],
+        seed=seed,
+        excluded_operators=excluded_operators,
+    )
+    val_ds = PublicEnvironmentDataset(
+        images,
+        selected[split:],
+        seed=seed + 1_000_003,
+        excluded_operators=excluded_operators,
+    )
     common = {
         "batch_size": int(batch_size),
         "num_workers": int(num_workers),
@@ -427,7 +472,12 @@ def infer_environment_annotations(
     }
 
 
-def save_environment_witness(model: PublicEnvironmentWitness, path: str | Path) -> None:
+def save_environment_witness(
+    model: PublicEnvironmentWitness,
+    path: str | Path,
+    *,
+    excluded_operators: list[str] | tuple[str, ...] | None = None,
+) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
@@ -437,6 +487,7 @@ def save_environment_witness(model: PublicEnvironmentWitness, path: str | Path) 
             "num_environments": model.num_environments,
             "severity_levels": model.severity_levels,
             "environment_names": PEW_ENVIRONMENT_NAMES,
+            "excluded_operators": list(excluded_operators or ()),
         },
         path,
     )
@@ -450,6 +501,7 @@ def load_environment_witness(path: str | Path, device: torch.device) -> PublicEn
         severity_levels=int(payload["severity_levels"]),
     ).to(device)
     model.load_state_dict(payload["state_dict"])
+    model.training_excluded_operators = tuple(payload.get("excluded_operators", ()))
     for parameter in model.parameters():
         parameter.requires_grad_(False)
     model.eval()

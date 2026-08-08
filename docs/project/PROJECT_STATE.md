@@ -2,6 +2,45 @@
 
 Last updated: 2026-08-08
 
+## Strict PEW Operator-LOO Ready - 2026-08-08
+
+Added an optional `method.fedease.pew.exclude_operators` protocol. The default
+is empty, so all historical PEW configs and checkpoints retain their original
+behavior. Strict checkpoints record their exclusions and fail closed if a
+config attempts to reuse a checkpoint trained under another exclusion policy.
+
+The new OpenI entry `scripts/openi_cle_pew_loo_entry.py` runs three matched
+12-round arms: RAHFL, original PEW+BER, and Strict-LOO PEW+BER. Strict LOO
+removes `impulse_noise`, `zoom_blur`, `fog`, and `pixelate` from public PEW
+training and validation. It also audits zero occurrences in private fit,
+records the final public operator pools, disables CDep, and applies the original
+four candidate-vs-RAHFL gates. Focused verification: `29 passed`; entry dry-run
+and all three environment/path checks passed.
+
+Guide: `docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md`.
+
+## CDep-v2 Matched Paired Decision - NO-GO - 2026-08-08
+
+The strict shared-PEW paired experiment completed for 12-round PEW+BER control
+and 12-round PEW+BER+CDep-v2 candidate. Both arms contain rounds 0--11; all
+four client PEW annotations are byte-identical; resolved configs differ only
+in experiment name and CDep-v2 settings.
+
+Independent last-five candidate-minus-control recomputation:
+
+```text
+Avg -0.1933, Worst -0.2280, WCCA -0.6000, CFG +0.4450
+```
+
+All four frozen gates failed. CDep-v2 was active, with last-five mean loss
+0.04171, 41.8807 valid groups, and 2730.86 buffer samples. Final decision:
+freeze CDep-v1/v2 and freeze the local method as calibrated PEW+BER.
+
+Before another paid run, prepared paper-evidence configs must be updated to
+use the frozen PEW+BER candidate. Completed guide:
+`docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md`.
+Report: `deliverables/cle_cdep_v2_paired_20260808/RESULT_SUMMARY_ZH.md`.
+
 ## CDep-v2 Single-Arm Screen Implemented - 2026-08-07
 
 The single-arm OpenI run completed on 2026-08-08. Its implementation and
@@ -31,8 +70,8 @@ the unchanged frozen gates, and packages both arms. The new focused suite is
   scientific evidence.
 
 Historical single-arm entry: `scripts/openi_cle_cdep_v2_entry.py`.
-Current paired entry: `scripts/openi_cle_cdep_v2_paired_entry.py` with no arguments.
-Guide: `docs/experiments/current/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md`.
+Completed paired entry: `scripts/openi_cle_cdep_v2_paired_entry.py` with no arguments.
+Guide: `docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md`.
 
 ## Strict PEW + AsymHFL-val A/B Probe Ready - 2026-08-04
 

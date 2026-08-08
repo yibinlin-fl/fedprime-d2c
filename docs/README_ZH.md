@@ -28,7 +28,8 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ```text
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
-docs/experiments/current/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md       当前 CDep-v2 共享PEW两臂归因实验
+docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md               当前 Strict PEW operator-LOO 三臂实验
+docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md      已完成的 CDep-v2 共享PEW配对实验（NO-GO）
 docs/experiments/archive/CLE_CDEP_V2_SINGLE_ARM_OPENI_RUN_ZH.md   已完成但归因不匹配的单臂实验
 ```
 

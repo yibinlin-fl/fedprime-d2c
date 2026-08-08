@@ -1,21 +1,51 @@
 # TODO Next
 
-## Immediate - Resolve CDep and PEW Generalization Scope - 2026-08-07
+## Immediate - Run Strict PEW Operator-LOO - 2026-08-08
 
-The 2026-08-08 CDep-v2 single-arm run is complete but cannot decide causal
-attribution because its newly trained PEW annotations differ from historical
-PEW+BER A1. The paired entry is now ready. Run exactly one OpenI task:
+The matched shared-PEW CDep-v2 experiment is complete. Candidate-minus-control
+last-five was `Avg -0.1933`, `Worst -0.2280`, `WCCA -0.6000`, `CFG +0.4450`;
+all four frozen gates failed. Freeze CDep-v1/v2 and freeze the final local
+method as calibrated PEW+BER. Before propagating it to all large paper runs,
+test whether PEW depends on seeing the four private-unseen concrete operators
+in its public synthetic supervision.
+
+Run exactly one three-arm OpenI task:
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
-entry: scripts/openi_cle_cdep_v2_paired_entry.py
+entry: scripts/openi_cle_pew_loo_entry.py
 arguments: none
-archive: cle_cdep_v2_paired_12round_outputs.tar.gz
+archive: cle_pew_loo_12round_seed0_outputs.tar.gz
 ```
 
-The task runs PEW+BER control and identical-PEW CDep-v2 candidate sequentially.
-Preserve the existing last-five four-gate contract. Do not add CDep-v1. Only
-after this paired result may the final local method be frozen.
+It sequentially runs RAHFL, original PEW+BER, and Strict-LOO PEW+BER for 12
+rounds each. Strict LOO excludes `impulse_noise`, `zoom_blur`, `fog`, and
+`pixelate` from public PEW train/validation generation. The old PEW remains
+unchanged and uses a separate checkpoint.
+
+Primary Strict-LOO-minus-RAHFL last-five gates remain:
+
+```text
+Avg >= +1.5, Worst >= +1.0, WCCA >= 0, CFG <= -1.0
+```
+
+After this result:
+
+1. If all gates pass, freeze Strict-LOO-compatible PEW+BER and remove CDep from
+   the Candidate arms of the prepared communication
+   factorial, cross-scenario, alpha/gamma stress, and second-dataset entries.
+2. If a gate fails, do not launch the old paper-evidence queue; decide whether
+   to implement Multi-label PEW + Soft-BER or reduce the paper claim.
+3. Keep PEW calibration, BER, strict fit/audit roles, AsymHFL-val, seeds, and
+   reporting unchanged.
+4. Run focused config/unit tests and audit one resolved control/candidate pair.
+5. Update the paper-evidence run guide with the revised frozen method.
+6. Only then choose the next paid run; do not submit the old CDep-bearing
+   candidate configs.
+
+After propagation, the recommended next scientific run is communication
+orthogonality, followed by cross-scenario seeds 1/2, alpha/gamma stress, and
+the CIFAR-100-private second dataset.
 
 The CDep lambda sensitivity is complete. Lambda 0.01, 0.05, and 0.10 all lost
 to matched BER-only on last-five Avg, Worst, and WCCA. Current batch-local CDep
@@ -31,35 +61,34 @@ arguments: none
 expected archive: cle_cdep_v2_12round_outputs.tar.gz
 ```
 
-Its automatic historical comparison is retained as provenance only. The new
-paired entry must rerun PEW+BER exactly once because the shared-PEW requirement
-cannot be satisfied by the historical A1. After that paired result, fail any
-frozen gate -> freeze PEW+BER; pass all gates -> provisionally retain CDep-v2.
+Its automatic historical comparison is retained as provenance only. The paired
+entry has now completed and failed all frozen gates. It must not be rerun or
+used as a new tuning surface.
 
-Also fix the PEW generalization claim before final paper experiments. The four
+The PEW generalization implementation is now ready. The four
 private-unseen seed-0 operators (`impulse_noise`, `zoom_blur`, `fog`,
-`pixelate`) are absent from private fit data but are available to the current
-public PEW augmentation library. Prepare a strict PEW leave-one-operator-out
-variant that excludes these four transformations from public PEW training.
-Report current results as `private-unseen`, not globally unseen.
+`pixelate`) are absent from private fit data and the Strict variant now also
+excludes them from public PEW train and validation generation. Report existing
+results as `private-unseen`; the new experiment is specifically a PEW operator
+LOO audit, not a claim that every generic augmentation is globally unseen.
 
 After the local method and strict PEW protocol are frozen, run the matched
 CIFAR-100-private second-dataset A/B, followed by communication orthogonality,
 cross-scenario seeds 1/2, alpha/gamma stress tests, and missing
 FedDF/KT-pFL/FCCL baselines.
 
-## Immediate - Run One Strict 12-Round A/B Probe - 2026-08-04
+## Historical Completed Strict 12-Round A/B Probe - 2026-08-04
 
-The only authorized paid experiment is:
+This experiment is complete and retained only as historical provenance:
 
 ```text
 control   = AugMix/JSD/DCL + strict AsymHFL-val
 candidate = calibrated PEW/BER+CDep + the same strict AsymHFL-val
 ```
 
-Run `scripts/openi_strict_pew_asymhfl_entry.py --mode=both` with the existing
-CLE-HFL v2 archive. Do not run 40 rounds, multiple seeds, or loss-weight sweeps
-first. Inspect `outputs/strict_pew_asymhfl_val_comparison.json`.
+Do not rerun it as the current method decision. Its candidate included the now
+frozen CDep-v1. Inspect `outputs/strict_pew_asymhfl_val_comparison.json` only
+when historical provenance is needed.
 
 Proceed only if the candidate-minus-control last-five result satisfies all:
 

@@ -3214,3 +3214,72 @@ Evidence:
 outputs/cle_cdep_v2_12round_outputs.tar.gz
 deliverables/cle_cdep_v2_20260808/RESULT_SUMMARY_ZH.md
 ```
+
+## CDep-v2 Matched Shared-PEW Result - NO-GO - 2026-08-08
+
+The required paired task completed with 12 rounds for PEW+BER control followed
+by 12 rounds for the CDep-v2 candidate. Both arms contain exact rounds 0--11.
+All four client PEW annotation NPZ files are byte-identical, and the resolved
+configs differ only in experiment name and CDep-v2 settings. PEW diagnostics
+also match exactly: private group accuracy 62.21%, threshold 0.0, validation
+environment accuracy 57.4%, ECE 0.03412, and unknown AUROC 0.81671.
+
+Independent last-five candidate-minus-control recomputation:
+
+```text
+Avg -0.1933, Worst -0.2280, WCCA -0.6000, CFG +0.4450
+```
+
+All four pre-registered gates failed. Seen and private-unseen metrics both
+degraded. CDep-v2 was active rather than empty: last-five loss 0.04171, mean
+valid groups 41.8807, and mean buffer size 2730.86. Mean round time increased
+from 97.7426 to 99.2407 seconds (about 1.53%).
+
+Decision: `NO-GO`. Freeze CDep-v1 and CDep-v2; do not continue structural,
+lambda, buffer, or threshold tuning. The final local method is calibrated
+PEW+BER. Before further paid experiments, propagate this frozen definition to
+all prepared communication, cross-scenario, stress-grid, and second-dataset
+candidate configs and re-run focused tests.
+
+Evidence:
+
+```text
+outputs/cle_cdep_v2_paired_12round_outputs.tar.gz
+outputs/cle_cdep_v2_paired_20260808/
+deliverables/cle_cdep_v2_paired_20260808/RESULT_SUMMARY_ZH.md
+docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md
+```
+
+## Strict PEW Operator-LOO Implementation Ready - 2026-08-08
+
+To test whether PEW+BER depends on public PEW exposure to the four seed-0
+private-unseen concrete operators, an optional PEW public-operator exclusion
+protocol was added. The default exclusion list is empty and preserves all old
+behavior. Strict checkpoints persist their exclusion list and cannot be reused
+under a mismatched protocol.
+
+The new entry runs three sequential matched 12-round arms:
+
+```text
+RAHFL
+standard calibrated PEW+BER
+Strict-LOO calibrated PEW+BER
+```
+
+Strict LOO excludes `impulse_noise`, `zoom_blur`, `fog`, and `pixelate` from
+both public PEW train and validation generation. It audits that the four have
+zero occurrences in private fit, leaves AugMix/BER/AsymHFL unchanged, and
+disables CDep. The standard and strict PEWs use separate checkpoints. Primary
+last-five gates for Strict LOO minus same-task RAHFL are the original
+`Avg >= +1.5`, `Worst >= +1.0`, `WCCA >= 0`, and `CFG <= -1.0`.
+
+Focused tests passed (`29 passed`) and the entry dry-run passed all three
+config/environment checks.
+
+```text
+dataset: openi_cle_hfl_v2_alpha05_gamma09
+entry: scripts/openi_cle_pew_loo_entry.py
+args: none
+archive: cle_pew_loo_12round_seed0_outputs.tar.gz
+guide: docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md
+```

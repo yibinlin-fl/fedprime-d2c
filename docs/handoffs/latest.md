@@ -22,22 +22,29 @@ new research results. Run them in the order documented at:
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
 ```
 
-CDep-v2 was implemented and locally verified after all three CDep-v1 lambda
-settings failed to beat PEW+BER. The first single-arm run completed but was
-attribution-inconclusive because it retrained a different PEW from historical
-A1. A matched paired entry is now implemented and is the only next paid run:
+CDep-v2 was implemented after all three CDep-v1 lambda settings failed to beat
+PEW+BER. Its matched shared-PEW paired experiment is now complete. All four
+pre-registered last-five gates failed, so CDep-v1/v2 are frozen and the final
+local method is `calibrated PEW + BER`.
+
+The immediate next paid run is now a strict PEW operator leave-one-out audit.
+It preserves the original PEW as a separate arm and sequentially runs RAHFL,
+standard PEW+BER, and Strict-LOO PEW+BER for 12 rounds each. Strict LOO removes
+`impulse_noise`, `zoom_blur`, `fog`, and `pixelate` from both public PEW train
+and validation generation while leaving private data, AugMix, BER, and
+AsymHFL-val unchanged:
 
 ```text
 dataset: openi_cle_hfl_v2_alpha05_gamma09
-entry:   scripts/openi_cle_cdep_v2_paired_entry.py
+entry:   scripts/openi_cle_pew_loo_entry.py
 args:    none
-guide:   docs/experiments/current/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md
-output:  cle_cdep_v2_paired_12round_outputs.tar.gz
+guide:   docs/experiments/current/CLE_PEW_LOO_OPENI_RUN_ZH.md
+output:  cle_pew_loo_12round_seed0_outputs.tar.gz
 ```
 
-It runs 12-round PEW+BER control followed by 12-round CDep-v2 candidate using
-one shared checkpoint, then requires byte-identical annotation hashes before
-applying the unchanged four gates.
+Its primary frozen gate is Strict-LOO PEW+BER minus same-task RAHFL last-five:
+`Avg >= +1.5`, `Worst >= +1.0`, `WCCA >= 0`, `CFG <= -1.0`. Do not run the
+older CDep entry and do not continue CDep tuning.
 
 Before the first paper-evidence run, the refactored AsymHFL strategy was
 protected by a legacy-vs-new numerical golden regression, cross-scenario
@@ -55,6 +62,26 @@ SHA256 AF554AC3B9B46D38571445DDE84647965341444DAD175A1E4191851B8DD01EB4
 
 ## Latest Formal Result
 
+The matched CDep-v2 shared-PEW experiment completed on 2026-08-08. Both arms
+contained rounds 0--11, their resolved configs differed only in experiment
+name and CDep-v2, and all four PEW annotation files were byte-identical.
+Independently recomputed candidate-minus-control last-five deltas were:
+
+```text
+Avg -0.1933, Worst -0.2280, WCCA -0.6000, CFG +0.4450
+```
+
+All four frozen gates failed (0/4). CDep-v2 was active (last-five loss 0.04171,
+41.8807 valid groups, buffer size 2730.86), so this is not an empty-module
+failure. Verdict: `NO-GO`. Freeze the local method as calibrated PEW+BER and
+do not revive CDep-v1/v2 by further structural or hyperparameter tuning.
+
+Report:
+
+```text
+deliverables/cle_cdep_v2_paired_20260808/RESULT_SUMMARY_ZH.md
+```
+
 The single-arm CDep-v2 12-round screen completed on 2026-08-08. The run was
 complete and the mechanism was active. Mechanical last-five comparison against
 historical PEW+BER A1 was:
@@ -70,15 +97,16 @@ PEW annotation hashes differed. The historical comparison is therefore not a
 matched causal CDep comparison. Verdict: `INCONCLUSIVE_FOR_ATTRIBUTION`, not a
 validated PASS or a definitive CDep rejection.
 
-The next paid experiment must be one paired task sharing one PEW checkpoint
-and byte-identical annotations:
+The subsequently completed paired experiment used one PEW checkpoint and
+byte-identical annotations:
 
 ```text
 control   = calibrated PEW + BER, CDep disabled
 candidate = the same calibrated PEW + BER + CDep-v2
 ```
 
-Do not rerun CDep-v1 and do not change the four frozen gates. Report:
+This historical single-arm comparison must not override the paired NO-GO.
+Report:
 
 ```text
 deliverables/cle_cdep_v2_20260808/RESULT_SUMMARY_ZH.md

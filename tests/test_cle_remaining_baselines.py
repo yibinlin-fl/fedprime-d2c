@@ -4,9 +4,12 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from fedprime.communication.baselines import (
+    AugHFLFidelityCommunicationStrategy,
     FCCLCommunicationStrategy,
     FedDFCommunicationStrategy,
+    FedDFFidelityCommunicationStrategy,
     KTPFLCommunicationStrategy,
+    KTPFLFidelityCommunicationStrategy,
     build_baseline_communication_strategy,
 )
 from fedprime.communication.public_logits import CommunicationContext
@@ -57,6 +60,25 @@ def test_remaining_registry_exposes_three_distinct_strategies() -> None:
     assert isinstance(build_baseline_communication_strategy("fccl", {}), FCCLCommunicationStrategy)
 
 
+def test_fidelity_registry_preserves_historical_adapters() -> None:
+    assert isinstance(build_baseline_communication_strategy("feddf", {}), FedDFCommunicationStrategy)
+    assert isinstance(
+        build_baseline_communication_strategy("feddf_fidelity", {}),
+        FedDFFidelityCommunicationStrategy,
+    )
+    assert isinstance(
+        build_baseline_communication_strategy("kt_pfl_fidelity", {}),
+        KTPFLFidelityCommunicationStrategy,
+    )
+    assert isinstance(
+        build_baseline_communication_strategy("aughfl_fidelity", {}),
+        AugHFLFidelityCommunicationStrategy,
+    )
+    assert getattr(build_baseline_communication_strategy("feddf", {}), "phase", "pre_local") == "pre_local"
+    assert build_baseline_communication_strategy("feddf_fidelity", {}).phase == "post_local"
+    assert build_baseline_communication_strategy("kt_pfl_fidelity", {}).phase == "post_local"
+
+
 def test_feddf_uses_softmax_of_mean_logits() -> None:
     first = torch.tensor([[4.0, 0.0]])
     second = torch.tensor([[0.0, 2.0]])
@@ -103,6 +125,80 @@ def test_feddf_and_fccl_execute_through_the_shared_context() -> None:
         }
         value = strategy.step(_context(models))
         assert torch.isfinite(torch.tensor(value))
+
+
+def test_feddf_fidelity_uses_frozen_teachers_and_emits_diagnostics() -> None:
+    models = {
+        0: _LogitModel(torch.tensor([[1.0, 0.0], [0.0, 1.0]])),
+        1: _LogitModel(torch.tensor([[0.0, 1.0], [1.0, 0.0]])),
+    }
+    strategy = FedDFFidelityCommunicationStrategy(student_learning_rate=0.01)
+    value = strategy.step(_context(models))
+    assert torch.isfinite(torch.tensor(value))
+    assert strategy.last_metrics["server_updates"] == 1.0
+    assert strategy.last_metrics["teacher_entropy"] > 0.0
+    assert strategy.last_metrics["teacher_disagreement"] >= 0.0
+
+
+def test_kt_pfl_fidelity_alternates_models_then_coefficients() -> None:
+    models = {
+        0: _LogitModel(torch.tensor([[2.0, -1.0], [-1.0, 2.0]])),
+        1: _LogitModel(torch.tensor([[-0.5, 1.5], [1.0, -0.5]])),
+    }
+    strategy = KTPFLFidelityCommunicationStrategy(
+        coefficient_lr=0.1,
+        distillation_lr=0.02,
+    )
+    value = strategy.step(_context(models))
+    assert torch.isfinite(torch.tensor(value))
+    weights = strategy.coefficient_weights
+    assert weights is not None
+    assert torch.allclose(weights.sum(1), torch.ones(2), atol=1.0e-6)
+    for name in (
+        "coefficient_loss",
+        "coefficient_entropy",
+        "coefficient_diagonal",
+        "coefficient_offdiagonal",
+        "coefficient_drift",
+    ):
+        assert torch.isfinite(torch.tensor(strategy.last_metrics[name]))
+
+
+def test_aughfl_fidelity_consumes_independent_participant_views() -> None:
+    models = {
+        0: _LogitModel(torch.tensor([[1.0, 0.0], [0.0, 1.0]])),
+        1: _LogitModel(torch.tensor([[0.0, 1.0], [1.0, 0.0]])),
+    }
+    base = torch.tensor(
+        [
+            [[[1.0]], [[0.0]]],
+            [[[0.0]], [[1.0]]],
+            [[[1.0]], [[1.0]]],
+            [[[0.5]], [[-0.5]]],
+        ]
+    )
+    client_views = (
+        (base, base + 0.1, base - 0.1),
+        (base, base + 0.2, base - 0.2),
+    )
+    labels = torch.zeros(4).long()
+    loader = [(client_views, labels)]
+    context = CommunicationContext(
+        models=models,
+        optimizers={key: torch.optim.SGD(model.parameters(), lr=0.01) for key, model in models.items()},
+        public_loader=loader,
+        public_iter=iter(loader),
+        accuracies=[0.0, 0.0],
+        stats=DatasetStats([0.0, 0.0], [1.0, 1.0]),
+        device=torch.device("cpu"),
+        public_batches_per_round=1,
+        num_classes=2,
+    )
+    strategy = AugHFLFidelityCommunicationStrategy(learning_rate=0.01)
+    value = strategy.step(context)
+    assert torch.isfinite(torch.tensor(value))
+    assert strategy.last_metrics["teacher_weight_max"] >= strategy.last_metrics["teacher_weight_min"]
+    assert strategy.last_metrics["view_consistency"] >= 0.0
 
 
 def test_remaining_configs_keep_cle_protocol_matched() -> None:

@@ -134,11 +134,20 @@ class NumpyImageClassificationDataset(data.Dataset):
 
 
 class PublicAugMixDataset(data.Dataset):
-    """Pickle-safe public clean/AugMix view wrapper used by AugHFL."""
+    """Pickle-safe public clean/AugMix views used by AugHFL variants.
 
-    def __init__(self, dataset) -> None:
+    The released AugHFL code draws one independent clean/aug1/aug2 triplet per
+    participant.  ``num_clients=1`` preserves the historical shared-view
+    adapter, while larger values reproduce that participant-specific sampling
+    without changing the selected public examples.
+    """
+
+    def __init__(self, dataset, num_clients: int = 1) -> None:
         self.dataset = dataset
         self.preprocess = T.ToTensor()
+        self.num_clients = int(num_clients)
+        if self.num_clients < 1:
+            raise ValueError("num_clients must be positive")
 
     def __len__(self) -> int:
         return len(self.dataset)
@@ -148,11 +157,17 @@ class PublicAugMixDataset(data.Dataset):
         from Dataset.dataaug import aug
 
         image, label = self.dataset[index]
-        return (
-            self.preprocess(image),
-            aug(image, self.preprocess),
-            aug(image, self.preprocess),
-        ), label
+        def triplet():
+            return (
+                self.preprocess(image),
+                aug(image, self.preprocess),
+                aug(image, self.preprocess),
+            )
+
+        views = triplet() if self.num_clients == 1 else tuple(
+            triplet() for _ in range(self.num_clients)
+        )
+        return views, label
 
 
 def dataset_stats(name: str) -> DatasetStats:
@@ -777,9 +792,10 @@ def build_public_loader(
     download: bool,
     public_dataset: str = "cifar100",
     public_views: str = "tensor",
+    public_view_clients: int = 1,
 ):
     public_views = str(public_views).lower()
-    transform = None if public_views == "augmix" else T.Compose([T.ToTensor()])
+    transform = None if public_views in {"augmix", "aughfl_fidelity"} else T.Compose([T.ToTensor()])
     public_dataset = str(public_dataset).lower()
     if public_dataset == "cifar10_npy":
         root = Path(cifar100_root)
@@ -808,7 +824,9 @@ def build_public_loader(
     else:
         raise ValueError(f"Unsupported public dataset: {public_dataset}")
     if public_views == "augmix":
-        ds = PublicAugMixDataset(ds)
+        ds = PublicAugMixDataset(ds, num_clients=1)
+    elif public_views == "aughfl_fidelity":
+        ds = PublicAugMixDataset(ds, num_clients=int(public_view_clients))
     elif public_views != "tensor":
         raise ValueError(f"Unsupported public view mode: {public_views}")
 

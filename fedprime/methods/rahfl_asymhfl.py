@@ -97,6 +97,7 @@ class AsymHFLExperiment:
         self._last_ird_metrics: dict[str, float] = {}
         self._last_pccd_metrics: dict[str, float] = {}
         self._last_fedease_metrics: dict[str, float] = {}
+        self._last_baseline_metrics: dict[str, float] = {}
         self._fedease_projectors: dict[int, FrozenRandomProjector] = {}
         self._fedease_cdep_v2_memories: dict[int, BufferedConditionalMomentAlignment] = {}
         self._fedease_client_relations: dict[int, dict[str, torch.Tensor]] = {}
@@ -346,10 +347,15 @@ class AsymHFLExperiment:
                 download=bool(data_cfg.get("download_public", False)),
                 public_dataset=str(data_cfg.get("public_dataset", "cifar100")),
                 public_views=(
-                    "augmix"
-                    if str(method_cfg.get("communication", "")).lower() == "aughfl"
-                    else "tensor"
+                    "aughfl_fidelity"
+                    if str(method_cfg.get("communication", "")).lower() == "aughfl_fidelity"
+                    else (
+                        "augmix"
+                        if str(method_cfg.get("communication", "")).lower() == "aughfl"
+                        else "tensor"
+                    )
                 ),
+                public_view_clients=num_clients,
             )
             public_iter = iter(public_loader)
 
@@ -453,6 +459,17 @@ class AsymHFLExperiment:
                     "fedease_ebst_valid_pair_fraction",
                     "fedease_ebst_mean_source_count",
                     "fedease_ebst_mean_gate",
+                    "baseline_teacher_entropy",
+                    "baseline_teacher_disagreement",
+                    "baseline_teacher_weight_min",
+                    "baseline_teacher_weight_max",
+                    "baseline_view_consistency",
+                    "baseline_coefficient_loss",
+                    "baseline_coefficient_entropy",
+                    "baseline_coefficient_diagonal",
+                    "baseline_coefficient_offdiagonal",
+                    "baseline_coefficient_drift",
+                    "baseline_server_updates",
                 ],
             )
             writer.writeheader()
@@ -528,17 +545,27 @@ class AsymHFLExperiment:
                     else:
                         accs_before = self._evaluate(models, test_loader)
                     class_accs_before = None
-                print(f"[heartbeat] round {round_idx:03d} collaborative phase", flush=True)
-                col_loss = self._collaborative_phase(
-                    models=models,
-                    optimizers=optimizers,
-                    public_loader=public_loader,
-                    public_iter=public_iter,
-                    accs=accs_before,
-                    class_accs=class_accs_before,
-                    stats=stats,
-                    round_idx=round_idx,
+                communication_phase = str(
+                    getattr(self._communication_strategy, "phase", "pre_local")
                 )
+                if communication_phase == "post_local":
+                    print(
+                        f"[heartbeat] round {round_idx:03d} collaborative phase deferred until after local update",
+                        flush=True,
+                    )
+                    col_loss = 0.0
+                else:
+                    print(f"[heartbeat] round {round_idx:03d} collaborative phase", flush=True)
+                    col_loss = self._collaborative_phase(
+                        models=models,
+                        optimizers=optimizers,
+                        public_loader=public_loader,
+                        public_iter=public_iter,
+                        accs=accs_before,
+                        class_accs=class_accs_before,
+                        stats=stats,
+                        round_idx=round_idx,
+                    )
                 print(f"[heartbeat] round {round_idx:03d} local phase", flush=True)
                 local_loss = self._local_phase(
                     models=models,
@@ -553,6 +580,18 @@ class AsymHFLExperiment:
                     num_classes=num_classes,
                     round_idx=round_idx,
                 )
+                if communication_phase == "post_local":
+                    print(f"[heartbeat] round {round_idx:03d} post-local collaborative phase", flush=True)
+                    col_loss = self._collaborative_phase(
+                        models=models,
+                        optimizers=optimizers,
+                        public_loader=public_loader,
+                        public_iter=public_iter,
+                        accs=accs_before,
+                        class_accs=class_accs_before,
+                        stats=stats,
+                        round_idx=round_idx,
+                    )
                 if self._use_ebst_communication(method_cfg):
                     col_loss = float(self._last_fedease_metrics.get("ebst_loss", 0.0))
                 if group_names:
@@ -643,6 +682,17 @@ class AsymHFLExperiment:
                         if self._fedease_global_relation is not None
                         else ""
                     ),
+                    "baseline_teacher_entropy": self._last_baseline_metrics.get("teacher_entropy", self._last_baseline_metrics.get("teacher_weight_entropy", "")),
+                    "baseline_teacher_disagreement": self._last_baseline_metrics.get("teacher_disagreement", ""),
+                    "baseline_teacher_weight_min": self._last_baseline_metrics.get("teacher_weight_min", ""),
+                    "baseline_teacher_weight_max": self._last_baseline_metrics.get("teacher_weight_max", ""),
+                    "baseline_view_consistency": self._last_baseline_metrics.get("view_consistency", ""),
+                    "baseline_coefficient_loss": self._last_baseline_metrics.get("coefficient_loss", ""),
+                    "baseline_coefficient_entropy": self._last_baseline_metrics.get("coefficient_entropy", ""),
+                    "baseline_coefficient_diagonal": self._last_baseline_metrics.get("coefficient_diagonal", ""),
+                    "baseline_coefficient_offdiagonal": self._last_baseline_metrics.get("coefficient_offdiagonal", ""),
+                    "baseline_coefficient_drift": self._last_baseline_metrics.get("coefficient_drift", ""),
+                    "baseline_server_updates": self._last_baseline_metrics.get("server_updates", ""),
                 }
                 writer.writerow(row)
                 f.flush()
@@ -825,7 +875,7 @@ class AsymHFLExperiment:
         if core_strategy is not None:
             if self._use_no_communication(method_cfg):
                 print("[heartbeat] communication disabled for local-only probe", flush=True)
-            return core_strategy.step(
+            value = core_strategy.step(
                 CommunicationContext(
                     models=models,
                     optimizers=optimizers,
@@ -842,6 +892,8 @@ class AsymHFLExperiment:
                     round_idx=int(round_idx),
                 )
             )
+            self._last_baseline_metrics = dict(getattr(core_strategy, "last_metrics", {}))
+            return value
 
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")

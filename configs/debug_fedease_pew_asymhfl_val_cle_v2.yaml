@@ -65,8 +65,5 @@ method:
       max_batches: 1
       reuse_checkpoint: false
     ber: {enabled: true, support_gamma: 0.5, count_cap: 32, min_group_count: 2}
-    cdep: {enabled: true, projection_dim: 16, min_class_count: 3, lambda: 0.05, eps: 1.0e-5}
-    ebst: {enabled: false}
-    scp: {enabled: false}
 
 checkpoints: {save_final: false}

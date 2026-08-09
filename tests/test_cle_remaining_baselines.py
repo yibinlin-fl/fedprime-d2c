@@ -210,4 +210,4 @@ def test_remaining_configs_keep_cle_protocol_matched() -> None:
         assert config["method"]["strict_fit_audit"]["enabled"] is True
         assert config["train"]["rounds"] == 12
         assert config["train"]["public_batches_per_round"] == 4
-    assert configs["pew_ber"]["method"]["fedease"]["cdep"] == {"enabled": False}
+    assert "cdep" not in configs["pew_ber"]["method"]["fedease"]

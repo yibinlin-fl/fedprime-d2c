@@ -1,5 +1,5 @@
 experiment_name: nir_dcl_local_only_cifar10c_alpha05_cr1_t4
-method_name: prac_hfl
+method_name: rahfl
 seed: 0
 device: auto
 num_workers: 2
@@ -38,6 +38,7 @@ train:
     weight_decay: 0.0
 
 method:
+  communication: none
   augmix_module: jsd
   cl_module: nir_dcl
   lambda_jsd: 12.0
@@ -51,21 +52,6 @@ method:
     use_class_balance: true
     use_queue: true
     queue_size: 64
-  prac:
-    # Larger than train.rounds, so every round skips PRAC communication.
-    # This isolates the new Non-IID-aware robust DCL local objective.
-    warmup_rounds: 999
-    num_candidate_teachers: 3
-    classwise: true
-    temperature: 3.0
-    virtual_lr: 0.005
-    head_max_grad_norm: 1.0
-    positive_margin: 0.0
-    gate_tau: 0.05
-    accept_epsilon: 0.0
-    risk_lambda_aug: 0.0
-    risk_lambda_js: 0.0
-
 checkpoints:
   load_dir:
   resume: false

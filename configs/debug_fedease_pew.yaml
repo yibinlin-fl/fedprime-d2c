@@ -62,13 +62,6 @@ method:
       support_gamma: 0.5
       count_cap: 32
       min_group_count: 1
-    cdep:
-      enabled: true
-      projection_dim: 16
-      min_class_count: 2
-      lambda: 0.05
-    ebst:
-      enabled: false
     evaluation:
       splits: [random]
       max_batches: 1

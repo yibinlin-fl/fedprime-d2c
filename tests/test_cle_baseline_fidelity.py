@@ -15,7 +15,7 @@ def test_fidelity_entry_keeps_repaired_and_anchor_arms_separate() -> None:
     assert configs["feddf_fidelity"]["method"]["communication"] == "feddf_fidelity"
     assert configs["kt_pfl_fidelity"]["method"]["communication"] == "kt_pfl_fidelity"
     assert configs["rahfl"]["method"]["communication"] == "asymhfl_val"
-    assert configs["pew_ber"]["method"]["fedease"]["cdep"] == {"enabled": False}
+    assert "cdep" not in configs["pew_ber"]["method"]["fedease"]
 
 
 def test_fidelity_entry_preserves_common_cle_screening_contract() -> None:

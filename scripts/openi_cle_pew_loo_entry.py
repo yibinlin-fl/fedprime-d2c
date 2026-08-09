@@ -53,7 +53,6 @@ def build_configs() -> dict[str, dict]:
 
     standard = copy.deepcopy(candidate)
     standard["experiment_name"] = "cle_pew_loo_standard_pew_ber_seed0_12round"
-    standard["method"]["fedease"]["cdep"] = {"enabled": False}
     standard["method"]["fedease"]["pew"]["checkpoint"] = STANDARD_CHECKPOINT
     standard["method"]["fedease"]["pew"]["reuse_checkpoint"] = True
     standard["method"]["fedease"]["pew"]["exclude_operators"] = []

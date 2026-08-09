@@ -1,5 +1,5 @@
 experiment_name: debug_sara_local_only_cifar10c
-method_name: prac_hfl
+method_name: rahfl
 seed: 0
 device: auto
 num_workers: 0
@@ -39,6 +39,7 @@ train:
     weight_decay: 0.0
 
 method:
+  communication: none
   augmix_module: jsd
   cl_module: sara
   lambda_jsd: 12.0
@@ -55,20 +56,6 @@ method:
     use_class_calibration: true
     use_view_reliability: true
     use_relation_alignment: true
-  prac:
-    # Larger than train.rounds, so this debug run tests only AugMix + SARA.
-    warmup_rounds: 999
-    num_candidate_teachers: 3
-    classwise: true
-    temperature: 3.0
-    virtual_lr: 0.005
-    head_max_grad_norm: 1.0
-    positive_margin: 0.0
-    gate_tau: 0.05
-    accept_epsilon: 0.0
-    risk_lambda_aug: 0.0
-    risk_lambda_js: 0.0
-
 checkpoints:
   load_dir:
   resume: false

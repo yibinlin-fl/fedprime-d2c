@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from fedprime.data.fedfalsify import (
-    FedFalsifyClientSplit,
+from fedprime.data.strict_fit_audit import (
+    StrictClientSplit,
     build_client_audit_loaders,
 )
 from fedprime.methods.fedease import FedEASEExperiment
@@ -22,7 +22,7 @@ def test_client_audit_loader_contains_only_audit_indices() -> None:
     images = torch.arange(12, dtype=torch.float32).reshape(6, 2)
     labels = torch.arange(6, dtype=torch.long) % 2
     dataset = TensorDataset(images, labels)
-    split = FedFalsifyClientSplit(
+    split = StrictClientSplit(
         client_id=0,
         fit_indices=np.asarray([0, 2, 4]),
         audit_indices=np.asarray([1, 3, 5]),

@@ -57,7 +57,7 @@ def test_40round_configs_preserve_matched_protocol() -> None:
         assert candidate["method"]["cl_module"] == "fedease"
         assert candidate["method"]["fedease"]["preserve_dcl"] is True
         assert candidate["method"]["fedease"]["ber"]["enabled"] is True
-        assert candidate["method"]["fedease"]["cdep"]["enabled"] is True
+        assert "cdep" not in candidate["method"]["fedease"]
         assert _without_identity_and_rounds(control) == _without_identity_and_rounds(base_control)
         assert _without_identity_and_rounds(candidate) == _without_identity_and_rounds(base_candidate)
 

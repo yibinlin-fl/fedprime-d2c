@@ -18,7 +18,7 @@ from fedprime.utils.env import add_vendor_paths
 
 
 @dataclass(frozen=True)
-class FedFalsifyClientSplit:
+class StrictClientSplit:
     """Fixed client-local fit/audit split and its deterministic probe dataset."""
 
     client_id: int
@@ -158,7 +158,7 @@ def _validate_split(
         raise ValueError(f"Client {client_id} fit/audit split does not cover the training set")
 
 
-def build_fedfalsify_loaders(
+def build_strict_fit_audit_loaders(
     *,
     root: str | Path,
     num_clients: int,
@@ -175,10 +175,10 @@ def build_fedfalsify_loaders(
 ) -> tuple[
     list[data.DataLoader],
     data.DataLoader,
-    dict[int, FedFalsifyClientSplit],
+    dict[int, StrictClientSplit],
     dict[int, torch.Tensor],
 ]:
-    """Build disjoint fit/audit data for FedFalsify without touching final test."""
+    """Build disjoint fit/audit data without touching the final-test labels."""
 
     add_vendor_paths()
     from Dataset.dataaug import AugMixDataset
@@ -201,7 +201,7 @@ def build_fedfalsify_loaders(
             min_fit_per_class=min_fit_per_class,
             seed=seed,
         )
-        print(f"[setup] loaded fixed FedFalsify split: {split_path}", flush=True)
+        print(f"[setup] loaded fixed strict fit/audit split: {split_path}", flush=True)
     else:
         raw_splits = {
             client_id: stratified_fit_audit_indices(
@@ -221,12 +221,12 @@ def build_fedfalsify_loaders(
             min_fit_per_class=min_fit_per_class,
             seed=seed,
         )
-        print(f"[setup] wrote fixed FedFalsify split: {split_path}", flush=True)
+        print(f"[setup] wrote fixed strict fit/audit split: {split_path}", flush=True)
 
     dataset_name = _prepared_private_dataset_name(root)
     base, weak, preprocess = _rahfl_augmix_view_transforms(dataset_name)
     fit_loaders: list[data.DataLoader] = []
-    client_splits: dict[int, FedFalsifyClientSplit] = {}
+    client_splits: dict[int, StrictClientSplit] = {}
     class_counts: dict[int, torch.Tensor] = {}
     for client_id in range(int(num_clients)):
         labels = labels_by_client[client_id]
@@ -265,7 +265,7 @@ def build_fedfalsify_loaders(
             transform=_private_test_transform(dataset_name),
             return_corruption=False,
         )
-        client_splits[client_id] = FedFalsifyClientSplit(
+        client_splits[client_id] = StrictClientSplit(
             client_id=client_id,
             fit_indices=fit_indices,
             audit_indices=audit_indices,
@@ -282,7 +282,7 @@ def build_fedfalsify_loaders(
         fit_counts = np.bincount(labels[fit_indices], minlength=int(num_classes))
         audit_counts = np.bincount(labels[audit_indices], minlength=int(num_classes))
         print(
-            f"[setup] FedFalsify client={client_id} fit={len(fit_indices)} "
+            f"[setup] strict split client={client_id} fit={len(fit_indices)} "
             f"audit={len(audit_indices)} fit_per_class={fit_counts.tolist()} "
             f"audit_per_class={audit_counts.tolist()}",
             flush=True,
@@ -306,7 +306,7 @@ def build_fedfalsify_loaders(
 
 
 def build_client_audit_loaders(
-    client_splits: dict[int, FedFalsifyClientSplit],
+    client_splits: dict[int, StrictClientSplit],
     *,
     batch_size: int,
     num_workers: int,

@@ -16,15 +16,14 @@ from fedprime.data.fedease import (
     build_fedease_oracle_augmix_loaders,
     load_client_class_environment_counts,
 )
-from fedprime.data.fedfalsify import (
+from fedprime.data.strict_fit_audit import (
     build_client_audit_loaders,
-    build_fedfalsify_loaders,
+    build_strict_fit_audit_loaders,
 )
 from fedprime.data.loaders import (
     build_augmix_private_loaders,
     build_corruption_skew_augmix_loaders,
     build_corruption_skew_pretrain_loaders,
-    build_fedclear_private_loaders,
     build_prime_dcl_private_loaders,
     build_private_loaders,
     build_public_loader,
@@ -38,39 +37,13 @@ from fedprime.data.loaders import (
 from fedprime.methods.local_prime import train_local_prime_epoch
 from fedprime.methods.local_prime import train_local_prime_dcl_epoch
 from fedprime.methods.local_fedease import train_local_fedease_epoch
-from fedprime.methods.local_fedclear import train_local_fedclear_epoch
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
-from fedprime.methods.conditional_dependence import (
-    BufferedConditionalMomentAlignment,
-    FrozenRandomProjector,
-)
-from fedprime.methods.environment_structural_transfer import (
-    aggregate_environment_balanced_relations,
-    aggregate_leave_one_out_pair_relations,
-    finalize_client_relations,
-    finalize_pair_qualified_client_relations,
-    new_relation_accumulator,
-)
 from fedprime.engine.cle_metrics import evaluate_cle_split, write_cle_evaluation
 from fedprime.engine.operator_metrics import (
     load_operator_metadata,
     summarize_operator_splits,
 )
 from fedprime.methods.nir_dcl import NIRDCLFeatureQueue
-from fedprime.methods.ird import (
-    anchor_disagreement,
-    invariant_anchor,
-    leave_one_out_median,
-    smooth_worst_view_distillation,
-)
-from fedprime.methods.pccd import (
-    leave_one_out_consensus_teacher,
-    log_opinion_consensus,
-    normalized_entropy_confidence,
-    paired_counterfactual_distillation,
-    probability_view_disagreement,
-    teacher_margin,
-)
 from fedprime.augmentations.counterfactual import build_counterfactual_views
 from fedprime.models.factory import build_models, forward_logits
 from fedprime.communication.public_logits import (
@@ -83,7 +56,7 @@ from fedprime.utils.env import resolve_device, seed_everything
 
 
 class AsymHFLExperiment:
-    """Unified runner for RAHFL-style AsymHFL, RAHFL+PRIME, and FedCARA."""
+    """Unified runner for RAHFL-style AsymHFL and CLE-HFL experiments."""
 
     def __init__(self, config: dict):
         self.config = config
@@ -93,16 +66,8 @@ class AsymHFLExperiment:
         save_config(config, self.output_dir / "config.resolved.json")
         seed_everything(int(config.get("seed", 0)))
         self._nir_dcl_queues: dict[int, NIRDCLFeatureQueue] = {}
-        self._last_ccre_metrics: dict[str, float] = {}
-        self._last_ird_metrics: dict[str, float] = {}
-        self._last_pccd_metrics: dict[str, float] = {}
         self._last_fedease_metrics: dict[str, float] = {}
         self._last_baseline_metrics: dict[str, float] = {}
-        self._fedease_projectors: dict[int, FrozenRandomProjector] = {}
-        self._fedease_cdep_v2_memories: dict[int, BufferedConditionalMomentAlignment] = {}
-        self._fedease_client_relations: dict[int, dict[str, torch.Tensor]] = {}
-        self._fedease_global_relation: dict[str, torch.Tensor | float] | None = None
-        self._fedease_recipient_relations: dict[int, dict[str, torch.Tensor | float]] = {}
         self._fedease_evaluation_loaders = {}
         communication_name = str(config.get("method", {}).get("communication", "asymhfl"))
         self._communication_strategy = build_core_communication_strategy(communication_name)
@@ -140,8 +105,6 @@ class AsymHFLExperiment:
             cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
             client_splits = None
             if strict_fit_audit:
-                if cl_module == "ccre":
-                    raise ValueError("strict_fit_audit currently supports DCL or FedEASE local training")
                 split_path = strict_cfg.get(
                     "split_path",
                     self.output_dir / "strict_fit_audit_split.npz",
@@ -151,7 +114,7 @@ class AsymHFLExperiment:
                     flush=True,
                 )
                 private_loaders, test_loader, client_splits, self._client_class_counts = (
-                    build_fedfalsify_loaders(
+                    build_strict_fit_audit_loaders(
                         root=data_cfg["private_root"],
                         num_clients=num_clients,
                         train_batch_size=train_cfg["batch_size"],
@@ -200,15 +163,6 @@ class AsymHFLExperiment:
                     num_workers=int(self.config.get("num_workers", 2)),
                     augmix_module=method_cfg.get("augmix_module", "jsd"),
                     environment_annotations=getattr(self, "_fedease_environment_annotations", None),
-                )
-            elif cl_module == "ccre":
-                print(f"[setup] building {scenario} FedCLEAR private loaders", flush=True)
-                private_loaders, test_loader, _, _ = build_fedclear_private_loaders(
-                    root=data_cfg["private_root"],
-                    num_clients=num_clients,
-                    train_batch_size=train_cfg["batch_size"],
-                    test_batch_size=train_cfg.get("test_batch_size", 512),
-                    num_workers=int(self.config.get("num_workers", 2)),
                 )
             else:
                 print(f"[setup] building {scenario} AugMix private loaders", flush=True)
@@ -270,9 +224,9 @@ class AsymHFLExperiment:
             self._corruption_group_names = corruption_group_names_from_test_loader(test_loader)
             prime_aug = None
         else:
-            print("[setup] AsymHFL/FedCARA loading private labels", flush=True)
+            print("[setup] AsymHFL loading private labels", flush=True)
             labels = load_private_labels(data_cfg["private_root"], data_cfg["private_corrupt_rate"])
-            print("[setup] AsymHFL/FedCARA loading/creating private partition", flush=True)
+            print("[setup] AsymHFL loading/creating private partition", flush=True)
             dataidx_map = partition_private_data(
                 labels=labels,
                 num_clients=num_clients,
@@ -331,7 +285,6 @@ class AsymHFLExperiment:
         )
         if (
             not strategy_requires_public
-            or self._use_ebst_communication(method_cfg)
         ):
             print("[setup] per-round public loader is not required", flush=True)
             public_loader = None
@@ -426,39 +379,12 @@ class AsymHFLExperiment:
                     "unseen_cfg",
                     "local_loss",
                     "col_loss",
-                    "ccre_loss",
-                    "ccre_worst_view_risk",
-                    "ird_loss",
-                    "ird_anchor_disagreement",
-                    "ird_worst_view_kl",
-                    "pccd_loss",
-                    "pccd_teacher_entropy",
-                    "pccd_teacher_confidence",
-                    "pccd_view_disagreement",
-                    "pccd_teacher_margin",
-                    "pccd_worst_view_kl",
                     "fedease_clean_ce",
                     "fedease_classification_loss",
                     "fedease_ber_loss",
                     "fedease_jsd_loss",
                     "fedease_dcl_loss",
-                    "fedease_cdep_loss",
-                    "fedease_cdep_valid_classes",
-                    "fedease_cdep_mean_abs_covariance",
-                    "fedease_cdep_v2_valid_groups",
-                    "fedease_cdep_v2_buffer_samples",
-                    "fedease_cdep_v2_ramp",
                     "fedease_ber_valid_groups",
-                    "fedease_ebst_loss",
-                    "fedease_ebst_active_samples",
-                    "fedease_scp_gradient_dot",
-                    "fedease_scp_gradient_cosine",
-                    "fedease_scp_conflict_rate",
-                    "fedease_scp_projection_norm_ratio",
-                    "fedease_ebst_valid_environment_fraction",
-                    "fedease_ebst_valid_pair_fraction",
-                    "fedease_ebst_mean_source_count",
-                    "fedease_ebst_mean_gate",
                     "baseline_teacher_entropy",
                     "baseline_teacher_disagreement",
                     "baseline_teacher_weight_min",
@@ -518,15 +444,6 @@ class AsymHFLExperiment:
                 print(f"[heartbeat] round {round_idx:03d} start", flush=True)
                 if self._communication_strategy is not None and not bool(
                     getattr(self._communication_strategy, "uses_accuracy_routing", False)
-                ):
-                    accs_before = [0.0 for _ in range(num_clients)]
-                    class_accs_before = None
-                elif self._use_cara_communication(method_cfg):
-                    accs_before, class_accs_before = self._evaluate_detailed(models, test_loader, num_classes)
-                elif (
-                    self._use_ird_communication(method_cfg)
-                    or self._use_pccd_communication(method_cfg)
-                    or self._use_ebst_communication(method_cfg)
                 ):
                     accs_before = [0.0 for _ in range(num_clients)]
                     class_accs_before = None
@@ -592,8 +509,6 @@ class AsymHFLExperiment:
                         stats=stats,
                         round_idx=round_idx,
                     )
-                if self._use_ebst_communication(method_cfg):
-                    col_loss = float(self._last_fedease_metrics.get("ebst_loss", 0.0))
                 if group_names:
                     group_summary = self._evaluate_corruption_groups(models, test_loader, group_names, num_classes)
                     accs = group_summary.get("client_accs")
@@ -631,57 +546,12 @@ class AsymHFLExperiment:
                     "unseen_cfg": split_summaries.get("unseen", {}).get("cfg", ""),
                     "local_loss": local_loss,
                     "col_loss": col_loss,
-                    "ccre_loss": self._last_ccre_metrics.get("ccre_loss", ""),
-                    "ccre_worst_view_risk": self._last_ccre_metrics.get("ccre_worst_view_risk", ""),
-                    "ird_loss": self._last_ird_metrics.get("ird_loss", ""),
-                    "ird_anchor_disagreement": self._last_ird_metrics.get("ird_anchor_disagreement", ""),
-                    "ird_worst_view_kl": self._last_ird_metrics.get("ird_worst_view_kl", ""),
-                    "pccd_loss": self._last_pccd_metrics.get("pccd_loss", ""),
-                    "pccd_teacher_entropy": self._last_pccd_metrics.get("pccd_teacher_entropy", ""),
-                    "pccd_teacher_confidence": self._last_pccd_metrics.get("pccd_teacher_confidence", ""),
-                    "pccd_view_disagreement": self._last_pccd_metrics.get("pccd_view_disagreement", ""),
-                    "pccd_teacher_margin": self._last_pccd_metrics.get("pccd_teacher_margin", ""),
-                    "pccd_worst_view_kl": self._last_pccd_metrics.get("pccd_worst_view_kl", ""),
                     "fedease_clean_ce": self._last_fedease_metrics.get("clean_ce", ""),
                     "fedease_classification_loss": self._last_fedease_metrics.get("classification_loss", ""),
                     "fedease_ber_loss": self._last_fedease_metrics.get("ber_loss", ""),
                     "fedease_jsd_loss": self._last_fedease_metrics.get("jsd_loss", ""),
                     "fedease_dcl_loss": self._last_fedease_metrics.get("dcl_loss", ""),
-                    "fedease_cdep_loss": self._last_fedease_metrics.get("cdep_loss", ""),
-                    "fedease_cdep_valid_classes": self._last_fedease_metrics.get("cdep_valid_classes", ""),
-                    "fedease_cdep_mean_abs_covariance": self._last_fedease_metrics.get("cdep_mean_abs_covariance", ""),
-                    "fedease_cdep_v2_valid_groups": self._last_fedease_metrics.get("cdep_v2_valid_groups", ""),
-                    "fedease_cdep_v2_buffer_samples": self._last_fedease_metrics.get("cdep_v2_buffer_samples", ""),
-                    "fedease_cdep_v2_ramp": self._last_fedease_metrics.get("cdep_v2_ramp", ""),
                     "fedease_ber_valid_groups": self._last_fedease_metrics.get("ber_valid_groups", ""),
-                    "fedease_ebst_loss": self._last_fedease_metrics.get("ebst_loss", ""),
-                    "fedease_ebst_active_samples": self._last_fedease_metrics.get("ebst_active_samples", ""),
-                    "fedease_scp_gradient_dot": self._last_fedease_metrics.get("scp_gradient_dot", ""),
-                    "fedease_scp_gradient_cosine": self._last_fedease_metrics.get("scp_gradient_cosine", ""),
-                    "fedease_scp_conflict_rate": self._last_fedease_metrics.get("scp_conflict", ""),
-                    "fedease_scp_projection_norm_ratio": self._last_fedease_metrics.get(
-                        "scp_projection_norm_ratio", ""
-                    ),
-                    "fedease_ebst_valid_environment_fraction": (
-                        self._fedease_global_relation.get("valid_environment_fraction", "")
-                        if self._fedease_global_relation is not None
-                        else ""
-                    ),
-                    "fedease_ebst_valid_pair_fraction": (
-                        self._fedease_global_relation.get("valid_pair_fraction", "")
-                        if self._fedease_global_relation is not None
-                        else ""
-                    ),
-                    "fedease_ebst_mean_source_count": (
-                        self._fedease_global_relation.get("mean_source_count", "")
-                        if self._fedease_global_relation is not None
-                        else ""
-                    ),
-                    "fedease_ebst_mean_gate": (
-                        self._fedease_global_relation.get("mean_gate", "")
-                        if self._fedease_global_relation is not None
-                        else ""
-                    ),
                     "baseline_teacher_entropy": self._last_baseline_metrics.get("teacher_entropy", self._last_baseline_metrics.get("teacher_weight_entropy", "")),
                     "baseline_teacher_disagreement": self._last_baseline_metrics.get("teacher_disagreement", ""),
                     "baseline_teacher_weight_min": self._last_baseline_metrics.get("teacher_weight_min", ""),
@@ -719,52 +589,12 @@ class AsymHFLExperiment:
                         )
                     operator_split_file.flush()
                 method_metrics = ""
-                if row["ccre_loss"] != "":
-                    method_metrics += (
-                        f"ccre_loss={float(row['ccre_loss']):.4f} "
-                        f"ccre_worst={float(row['ccre_worst_view_risk']):.4f} "
-                    )
-                if row["ird_loss"] != "":
-                    method_metrics += (
-                        f"ird_loss={float(row['ird_loss']):.4f} "
-                        f"anchor_dis={float(row['ird_anchor_disagreement']):.4f} "
-                        f"ird_worst_kl={float(row['ird_worst_view_kl']):.4f} "
-                    )
-                if row["pccd_loss"] != "":
-                    method_metrics += (
-                        f"pccd_loss={float(row['pccd_loss']):.4f} "
-                        f"teacher_conf={float(row['pccd_teacher_confidence']):.4f} "
-                        f"view_dis={float(row['pccd_view_disagreement']):.4f} "
-                        f"teacher_margin={float(row['pccd_teacher_margin']):.4f} "
-                        f"pccd_worst_kl={float(row['pccd_worst_view_kl']):.4f} "
-                    )
                 if row["fedease_classification_loss"] != "":
                     method_metrics += (
                         f"cls={float(row['fedease_classification_loss']):.4f} "
                         f"ber={float(row['fedease_ber_loss']):.4f} "
-                        f"cdep={float(row['fedease_cdep_loss']):.4f} "
-                        f"cdep_classes={float(row['fedease_cdep_valid_classes']):.2f} "
+                        f"ber_groups={float(row['fedease_ber_valid_groups']):.2f} "
                     )
-                    if row["fedease_cdep_v2_buffer_samples"] != "":
-                        method_metrics += (
-                            f"cdep_v2_groups={float(row['fedease_cdep_v2_valid_groups']):.2f} "
-                            f"cdep_v2_buffer={float(row['fedease_cdep_v2_buffer_samples']):.0f} "
-                            f"cdep_v2_ramp={float(row['fedease_cdep_v2_ramp']):.2f} "
-                        )
-                    if row["fedease_ebst_loss"] != "":
-                        method_metrics += (
-                            f"ebst={float(row['fedease_ebst_loss']):.4f} "
-                            f"scp_conflict={float(row['fedease_scp_conflict_rate']):.2f} "
-                            f"gate={float(row['fedease_ebst_mean_gate']):.3f} "
-                            + (
-                                f"valid_pairs={float(row['fedease_ebst_valid_pair_fraction']):.3f} "
-                                f"sources={float(row['fedease_ebst_mean_source_count']):.2f} "
-                                if row["fedease_ebst_valid_pair_fraction"] != ""
-                                else ""
-                            )
-                            if row["fedease_ebst_mean_gate"] != ""
-                            else f"ebst={float(row['fedease_ebst_loss']):.4f} "
-                        )
                 print(
                     f"[round {round_idx:03d}] "
                     f"avg_acc={row['avg_acc']:.2f} "
@@ -826,32 +656,11 @@ class AsymHFLExperiment:
     def _use_no_communication(self, method_cfg: dict) -> bool:
         return str(method_cfg.get("communication", "asymhfl")).lower() in {"none", "local_only"}
 
-    def _use_cara_communication(self, method_cfg: dict) -> bool:
-        return method_cfg.get("communication", "asymhfl").lower() in {"cara", "cara_c", "fedcara"}
-
     def _use_ccad_communication(self, method_cfg: dict) -> bool:
         return method_cfg.get("communication", "asymhfl").lower() in {"ccad", "ccad_hybrid"}
 
     def _use_cs_communication(self, method_cfg: dict) -> bool:
         return method_cfg.get("communication", "asymhfl").lower() in {"cs_asymhfl", "fedsara_cs"}
-
-    def _use_ird_communication(self, method_cfg: dict) -> bool:
-        return method_cfg.get("communication", "asymhfl").lower() in {"ird", "fedclear"}
-
-    def _use_pccd_communication(self, method_cfg: dict) -> bool:
-        return method_cfg.get("communication", "asymhfl").lower() in {"pccd", "fedclear_pccd"}
-
-    def _use_ebst_communication(self, method_cfg: dict) -> bool:
-        return method_cfg.get("communication", "asymhfl").lower() in {
-            "ebst",
-            "ebst_v2",
-            "fedease",
-        }
-
-    def _use_ebst_v2(self, method_cfg: dict) -> bool:
-        communication = method_cfg.get("communication", "asymhfl").lower()
-        ebst_cfg = method_cfg.get("fedease", {}).get("ebst", {})
-        return communication == "ebst_v2" or int(ebst_cfg.get("version", 1)) >= 2
 
     def _ccad_uses_asymhfl_route(self, method_cfg: dict) -> bool:
         if not self._use_ccad_communication(method_cfg):
@@ -897,27 +706,6 @@ class AsymHFLExperiment:
 
         losses = []
         criterion = torch.nn.KLDivLoss(reduction="batchmean")
-        if self._use_ebst_communication(method_cfg):
-            return self._ebst_collaborative_phase(round_idx)
-        if self._use_pccd_communication(method_cfg):
-            return self._pccd_collaborative_phase(
-                models=models,
-                optimizers=optimizers,
-                public_loader=public_loader,
-                public_iter=public_iter,
-                stats=stats,
-                round_idx=round_idx,
-            )
-        if self._use_ird_communication(method_cfg):
-            return self._ird_collaborative_phase(
-                models=models,
-                optimizers=optimizers,
-                public_loader=public_loader,
-                public_iter=public_iter,
-                stats=stats,
-                round_idx=round_idx,
-            )
-        use_cara = self._use_cara_communication(method_cfg)
         use_ccad = self._use_ccad_communication(method_cfg)
         use_cs = self._use_cs_communication(method_cfg)
         use_class_residual = self._use_class_residual(method_cfg)
@@ -967,22 +755,7 @@ class AsymHFLExperiment:
                 for other_id in sorted(models):
                     if other_id == client_id:
                         continue
-                    if use_cara:
-                        if class_accs is None:
-                            raise RuntimeError("CARA-C communication requires class-wise accuracies.")
-                        class_weights = self._cara_class_weights(
-                            student_class_acc=class_accs[client_id],
-                            teacher_class_acc=class_accs[other_id],
-                            method_cfg=method_cfg,
-                        )
-                        if class_weights is None:
-                            continue
-                        learn_losses.append(self._weighted_kd_loss(
-                            student_log_probs=student_log_probs[client_id],
-                            teacher_probs=target_probs[other_id],
-                            class_weights=class_weights,
-                        ))
-                    elif use_ccad:
+                    if use_ccad:
                         if ccad_base_asym_weight > 0 and accs[client_id] <= accs[other_id]:
                             learn_losses.append(
                                 ccad_base_asym_weight
@@ -1031,322 +804,6 @@ class AsymHFLExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
-
-    def _ebst_collaborative_phase(self, round_idx: int) -> float:
-        method_cfg = self.config.get("method", {})
-        fedease_cfg = method_cfg.get("fedease", {})
-        ebst_cfg = fedease_cfg.get("ebst", fedease_cfg.get("structural_transfer", {}))
-        warmup_rounds = int(ebst_cfg.get("warmup_rounds", 1))
-        if round_idx < warmup_rounds or not self._fedease_client_relations:
-            self._fedease_global_relation = None
-            self._fedease_recipient_relations = {}
-            print(
-                f"[heartbeat] EBST warmup round={round_idx:03d}/{warmup_rounds:03d}; "
-                "waiting for client relation statistics",
-                flush=True,
-            )
-            return 0.0
-        if self._use_ebst_v2(method_cfg):
-            result = aggregate_leave_one_out_pair_relations(
-                self._fedease_client_relations,
-                min_source_clients=int(ebst_cfg.get("min_source_clients", 2)),
-                use_stability_gate=bool(ebst_cfg.get("stability_gate", {}).get("enabled", False)),
-                variance_temperature=float(
-                    ebst_cfg.get("stability_gate", {}).get(
-                        "variance_temperature",
-                        ebst_cfg.get("variance_temperature", 0.5),
-                    )
-                ),
-                eps=float(ebst_cfg.get("eps", 1.0e-6)),
-            )
-            self._fedease_recipient_relations = result.pop("recipients")
-            self._fedease_global_relation = result
-            print(
-                f"[heartbeat] EBST-v2 LOO aggregated round={round_idx:03d} "
-                f"valid_env={result['valid_environment_fraction']:.3f} "
-                f"valid_pairs={result['valid_pair_fraction']:.3f} "
-                f"sources={result['mean_source_count']:.2f} "
-                f"mean_gate={result['mean_gate']:.3f}",
-                flush=True,
-            )
-            return 0.0
-        self._fedease_recipient_relations = {}
-        self._fedease_global_relation = aggregate_environment_balanced_relations(
-            self._fedease_client_relations,
-            use_stability_gate=bool(ebst_cfg.get("stability_gate", {}).get("enabled", False)),
-            variance_temperature=float(
-                ebst_cfg.get("stability_gate", {}).get(
-                    "variance_temperature",
-                    ebst_cfg.get("variance_temperature", 0.5),
-                )
-            ),
-            eps=float(ebst_cfg.get("eps", 1.0e-6)),
-        )
-        print(
-            f"[heartbeat] EBST aggregated round={round_idx:03d} "
-            f"valid_env={self._fedease_global_relation['valid_environment_fraction']:.3f} "
-            f"mean_gate={self._fedease_global_relation['mean_gate']:.3f}",
-            flush=True,
-        )
-        return 0.0
-
-    def _pccd_collaborative_phase(
-        self,
-        models,
-        optimizers,
-        public_loader,
-        public_iter,
-        stats,
-        round_idx: int,
-    ) -> float:
-        method_cfg = self.config.get("method", {})
-        train_cfg = self.config.get("train", {})
-        pccd_cfg = method_cfg.get("pccd", {})
-        warmup_rounds = int(pccd_cfg.get("warmup_rounds", 3))
-        empty_metrics = {
-            "pccd_loss": 0.0,
-            "pccd_teacher_entropy": 0.0,
-            "pccd_teacher_confidence": 0.0,
-            "pccd_view_disagreement": 0.0,
-            "pccd_teacher_margin": 0.0,
-            "pccd_worst_view_kl": 0.0,
-        }
-        if round_idx < warmup_rounds:
-            self._last_pccd_metrics = empty_metrics
-            print(
-                f"[heartbeat] PCCD warmup round={round_idx:03d}/{warmup_rounds:03d}; communication skipped",
-                flush=True,
-            )
-            return 0.0
-
-        losses = []
-        teacher_entropies = []
-        teacher_confidences = []
-        view_disagreements = []
-        teacher_margins = []
-        worst_view_kls = []
-        num_batches = int(train_cfg.get("public_batches_per_round", 1))
-        lambda_pccd = float(pccd_cfg.get("lambda_pccd", 1.0))
-        skip_nonfinite = bool(train_cfg.get("skip_nonfinite", False))
-        max_grad_norm = pccd_cfg.get("max_grad_norm", train_cfg.get("max_grad_norm"))
-        base_seed = int(self.config.get("seed", 0))
-        eps = float(pccd_cfg.get("eps", 1e-7))
-
-        for batch_idx in range(num_batches):
-            try:
-                images, _ = next(public_iter)
-            except StopIteration:
-                public_iter = iter(public_loader)
-                images, _ = next(public_iter)
-            images = images.to(self.device, non_blocking=True)
-            view_seed = base_seed + round_idx * 1_000_003 + batch_idx
-            raw_views, operator_names = build_counterfactual_views(images, pccd_cfg, view_seed)
-            views = [normalize_batch(view, stats) for view in raw_views]
-
-            consensuses: dict[int, torch.Tensor] = {}
-            confidences: dict[int, torch.Tensor] = {}
-            for client_id in sorted(models):
-                model = models[client_id]
-                model.eval()
-                with torch.no_grad():
-                    probability_views = [F.softmax(forward_logits(model, view), dim=1) for view in views]
-                    consensus = log_opinion_consensus(probability_views, eps=eps)
-                    consensuses[client_id] = consensus.detach()
-                    confidences[client_id] = normalized_entropy_confidence(consensus, eps=eps).detach()
-                    view_disagreements.append(
-                        float(probability_view_disagreement(probability_views, eps=eps).detach().cpu())
-                    )
-
-            for client_id in sorted(models):
-                teacher, teacher_confidence = leave_one_out_consensus_teacher(
-                    consensuses,
-                    confidences,
-                    receiver_id=client_id,
-                    eps=eps,
-                )
-                teacher = teacher.detach()
-                teacher_confidence = teacher_confidence.detach()
-                safe_teacher = teacher.clamp_min(eps)
-                teacher_entropies.append(
-                    float((-(safe_teacher * safe_teacher.log()).sum(dim=1).mean()).detach().cpu())
-                )
-                teacher_confidences.append(float(teacher_confidence.mean().detach().cpu()))
-                teacher_margins.append(float(teacher_margin(teacher).mean().detach().cpu()))
-
-                model = models[client_id]
-                model.train()
-                student_logits_views = [forward_logits(model, view) for view in views]
-                result = paired_counterfactual_distillation(
-                    student_logits_views,
-                    teacher_probabilities=teacher,
-                    sample_weights=teacher_confidence,
-                    eps=eps,
-                )
-                loss = lambda_pccd * result.loss
-                if not torch.isfinite(loss):
-                    message = (
-                        f"PCCD communication, round={round_idx}, client={client_id}: "
-                        f"non-finite loss at public batch {batch_idx}"
-                    )
-                    if skip_nonfinite:
-                        print(f"[warning] {message}; skipping update", flush=True)
-                        continue
-                    raise FloatingPointError(message)
-
-                optimizers[client_id].zero_grad(set_to_none=True)
-                loss.backward()
-                grads_finite = all(
-                    parameter.grad is None or bool(torch.isfinite(parameter.grad).all())
-                    for parameter in model.parameters()
-                )
-                if not grads_finite:
-                    optimizers[client_id].zero_grad(set_to_none=True)
-                    message = (
-                        f"PCCD communication, round={round_idx}, client={client_id}: "
-                        f"non-finite gradient at public batch {batch_idx}"
-                    )
-                    if skip_nonfinite:
-                        print(f"[warning] {message}; skipping update", flush=True)
-                        continue
-                    raise FloatingPointError(message)
-                if max_grad_norm is not None:
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
-                optimizers[client_id].step()
-                losses.append(float(loss.detach().cpu()))
-                worst_view_kls.append(float(result.worst_view_kl.detach().cpu()))
-
-            print(
-                f"[heartbeat] PCCD round={round_idx:03d} public_batch={batch_idx + 1}/{num_batches} "
-                f"operators={','.join(operator_names)} "
-                f"teacher_conf={sum(teacher_confidences) / max(len(teacher_confidences), 1):.4f} "
-                f"view_dis={sum(view_disagreements) / max(len(view_disagreements), 1):.4f}",
-                flush=True,
-            )
-
-        self._last_pccd_metrics = {
-            "pccd_loss": sum(losses) / max(len(losses), 1),
-            "pccd_teacher_entropy": sum(teacher_entropies) / max(len(teacher_entropies), 1),
-            "pccd_teacher_confidence": sum(teacher_confidences) / max(len(teacher_confidences), 1),
-            "pccd_view_disagreement": sum(view_disagreements) / max(len(view_disagreements), 1),
-            "pccd_teacher_margin": sum(teacher_margins) / max(len(teacher_margins), 1),
-            "pccd_worst_view_kl": sum(worst_view_kls) / max(len(worst_view_kls), 1),
-        }
-        return self._last_pccd_metrics["pccd_loss"]
-
-    def _ird_collaborative_phase(
-        self,
-        models,
-        optimizers,
-        public_loader,
-        public_iter,
-        stats,
-        round_idx: int,
-    ) -> float:
-        method_cfg = self.config.get("method", {})
-        train_cfg = self.config.get("train", {})
-        ird_cfg = method_cfg.get("ird", {})
-        warmup_rounds = int(ird_cfg.get("warmup_rounds", 3))
-        if round_idx < warmup_rounds:
-            self._last_ird_metrics = {
-                "ird_loss": 0.0,
-                "ird_anchor_disagreement": 0.0,
-                "ird_worst_view_kl": 0.0,
-            }
-            print(
-                f"[heartbeat] IRD warmup round={round_idx:03d}/{warmup_rounds:03d}; communication skipped",
-                flush=True,
-            )
-            return 0.0
-
-        losses = []
-        disagreements = []
-        worst_view_kls = []
-        num_batches = int(train_cfg.get("public_batches_per_round", 1))
-        distill_temperature = float(ird_cfg.get("temperature", 2.0))
-        smooth_temperature = float(ird_cfg.get("smooth_temperature", 0.5))
-        lambda_ird = float(ird_cfg.get("lambda_ird", 1.0))
-        skip_nonfinite = bool(train_cfg.get("skip_nonfinite", False))
-        max_grad_norm = ird_cfg.get("max_grad_norm", train_cfg.get("max_grad_norm"))
-        base_seed = int(self.config.get("seed", 0))
-
-        for batch_idx in range(num_batches):
-            try:
-                images, _ = next(public_iter)
-            except StopIteration:
-                public_iter = iter(public_loader)
-                images, _ = next(public_iter)
-            images = images.to(self.device, non_blocking=True)
-            view_seed = base_seed + round_idx * 1_000_003 + batch_idx
-            raw_views, operator_names = build_counterfactual_views(images, ird_cfg, view_seed)
-            views = [normalize_batch(view, stats) for view in raw_views]
-
-            anchors: dict[int, torch.Tensor] = {}
-            for client_id in sorted(models):
-                model = models[client_id]
-                model.eval()
-                with torch.no_grad():
-                    logits_views = [forward_logits(model, view) for view in views]
-                    anchors[client_id] = invariant_anchor(logits_views).detach()
-            disagreement = anchor_disagreement(anchors)
-            disagreements.append(float(disagreement.detach().cpu()))
-
-            for client_id in sorted(models):
-                teacher_anchor = leave_one_out_median(anchors, client_id).detach()
-                model = models[client_id]
-                model.train()
-                student_logits_views = [forward_logits(model, view) for view in views]
-                result = smooth_worst_view_distillation(
-                    student_logits_views,
-                    teacher_anchor,
-                    distill_temperature=distill_temperature,
-                    smooth_temperature=smooth_temperature,
-                )
-                loss = lambda_ird * result.loss
-                if not torch.isfinite(loss):
-                    message = (
-                        f"IRD communication, round={round_idx}, client={client_id}: "
-                        f"non-finite loss at public batch {batch_idx}"
-                    )
-                    if skip_nonfinite:
-                        print(f"[warning] {message}; skipping update", flush=True)
-                        continue
-                    raise FloatingPointError(message)
-
-                optimizers[client_id].zero_grad(set_to_none=True)
-                loss.backward()
-                grads_finite = all(
-                    param.grad is None or bool(torch.isfinite(param.grad).all())
-                    for param in model.parameters()
-                )
-                if not grads_finite:
-                    optimizers[client_id].zero_grad(set_to_none=True)
-                    message = (
-                        f"IRD communication, round={round_idx}, client={client_id}: "
-                        f"non-finite gradient at public batch {batch_idx}"
-                    )
-                    if skip_nonfinite:
-                        print(f"[warning] {message}; skipping update", flush=True)
-                        continue
-                    raise FloatingPointError(message)
-                if max_grad_norm is not None:
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
-                optimizers[client_id].step()
-                losses.append(float(loss.detach().cpu()))
-                worst_view_kls.append(float(result.worst_view_kl.detach().cpu()))
-
-            print(
-                f"[heartbeat] IRD round={round_idx:03d} public_batch={batch_idx + 1}/{num_batches} "
-                f"operators={','.join(operator_names)} "
-                f"anchor_dis={disagreements[-1]:.4f}",
-                flush=True,
-            )
-
-        self._last_ird_metrics = {
-            "ird_loss": sum(losses) / max(len(losses), 1),
-            "ird_anchor_disagreement": sum(disagreements) / max(len(disagreements), 1),
-            "ird_worst_view_kl": sum(worst_view_kls) / max(len(worst_view_kls), 1),
-        }
-        return self._last_ird_metrics["ird_loss"]
 
     def _cs_public_views(self, images: torch.Tensor, stats, cs_cfg: dict) -> dict[str, torch.Tensor]:
         probe_groups = list(cs_cfg.get("probe_groups", ["clean", "noise", "blur", "weather", "digital"]))
@@ -1643,33 +1100,6 @@ class AsymHFLExperiment:
         per_sample_kl = (safe_teacher * (safe_teacher.log() - student_log_probs)).sum(dim=1)
         return (per_sample_kl * weights).sum() / weights.sum().clamp_min(eps)
 
-    def _cara_class_weights(
-        self,
-        student_class_acc: torch.Tensor,
-        teacher_class_acc: torch.Tensor,
-        method_cfg: dict,
-    ) -> torch.Tensor | None:
-        cara_cfg = method_cfg.get("cara", {})
-        student = student_class_acc.to(self.device).float().clamp(0.0, 1.0)
-        teacher = teacher_class_acc.to(self.device).float().clamp(0.0, 1.0)
-        margin = float(cara_cfg.get("better_margin", 0.0))
-        teacher_power = float(cara_cfg.get("teacher_power", 1.0))
-        need_power = float(cara_cfg.get("need_power", 1.0))
-        min_weight = float(cara_cfg.get("min_weight", 1e-6))
-
-        teacher_reliability = teacher.clamp_min(0.0).pow(teacher_power)
-        receiver_need = (1.0 - student).clamp_min(0.0).pow(need_power)
-        weights = teacher_reliability * receiver_need
-        if bool(cara_cfg.get("better_only", True)):
-            weights = weights * (teacher > student + margin).float()
-        weights = torch.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
-        if float(weights.sum().detach().cpu()) <= min_weight:
-            return None
-        if bool(cara_cfg.get("normalize", True)):
-            active = weights > min_weight
-            weights = weights / weights[active].mean().clamp_min(min_weight)
-        return weights.detach()
-
     def _use_class_residual(self, method_cfg: dict) -> bool:
         residual_cfg = method_cfg.get("class_residual", {})
         return bool(residual_cfg.get("enabled", False))
@@ -1725,7 +1155,7 @@ class AsymHFLExperiment:
 
     def _get_nir_dcl_queue(self, client_id: int, num_classes: int, method_cfg: dict) -> NIRDCLFeatureQueue:
         if client_id not in self._nir_dcl_queues:
-            nir_cfg = method_cfg.get("cara_l", method_cfg.get("nir_dcl", {}))
+            nir_cfg = method_cfg.get("nir_dcl", {})
             self._nir_dcl_queues[client_id] = NIRDCLFeatureQueue(
                 num_classes=num_classes,
                 max_size_per_class=int(nir_cfg.get("queue_size", 64)),
@@ -1756,44 +1186,18 @@ class AsymHFLExperiment:
         round_idx: int = 0,
     ) -> float:
         losses = []
-        ccre_diagnostics = []
         fedease_diagnostics = []
-        round_relation_states: dict[int, dict[str, torch.Tensor]] = {}
         for client_id, loader in enumerate(private_loaders):
-            relation_accumulator = None
             for _ in range(int(train_cfg.get("local_epochs", 1))):
                 cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
                 if cl_module == "fedease":
                     fedease_cfg = method_cfg.get("fedease", {})
-                    cdep_cfg = fedease_cfg.get("cdep", {})
-                    ebst_cfg = fedease_cfg.get("ebst", fedease_cfg.get("structural_transfer", {}))
-                    if client_id not in self._fedease_projectors:
-                        self._fedease_projectors[client_id] = FrozenRandomProjector(
-                            output_dim=int(cdep_cfg.get("projection_dim", 64)),
-                            seed=int(self.config.get("seed", 0)) * 1009 + client_id,
-                        )
-                    if (
-                        bool(cdep_cfg.get("enabled", True))
-                        and str(cdep_cfg.get("version", "v1")).lower() == "v2"
-                        and client_id not in self._fedease_cdep_v2_memories
-                    ):
-                        self._fedease_cdep_v2_memories[client_id] = BufferedConditionalMomentAlignment(
-                            num_classes=num_classes,
-                            num_environments=int(fedease_cfg.get("num_environments", 6)),
-                            max_size_per_group=int(cdep_cfg.get("buffer_size_per_group", 64)),
-                        )
-                    if bool(ebst_cfg.get("enabled", False)) and relation_accumulator is None:
-                        relation_accumulator = new_relation_accumulator(
-                            num_classes=num_classes,
-                            num_environments=int(fedease_cfg.get("num_environments", 4)),
-                        )
                     epoch_diagnostics = {}
                     loss = train_local_fedease_epoch(
                         model=models[client_id],
                         loader=loader,
                         optimizer=optimizers[client_id],
                         device=self.device,
-                        projector=self._fedease_projectors[client_id],
                         fedease_cfg=fedease_cfg,
                         class_environment_counts=getattr(
                             self,
@@ -1807,46 +1211,8 @@ class AsymHFLExperiment:
                         log_interval=train_cfg.get("local_log_interval"),
                         context=f"FedEASE local phase, round={round_idx}, client={client_id}",
                         diagnostics=epoch_diagnostics,
-                        cdep_v2_memory=self._fedease_cdep_v2_memories.get(client_id),
-                        round_idx=round_idx,
-                        relation_accumulator=relation_accumulator,
-                        global_relation_state=(
-                            self._fedease_recipient_relations.get(client_id)
-                            if self._use_ebst_v2(method_cfg)
-                            else self._fedease_global_relation
-                        ),
-                        client_supported_classes=(
-                            getattr(self, "_client_class_environment_counts", {})
-                            .get(client_id, torch.empty(0))
-                            .sum(dim=1)
-                            .gt(0)
-                            if client_id in getattr(self, "_client_class_environment_counts", {})
-                            else None
-                        ),
                     )
                     fedease_diagnostics.append(epoch_diagnostics)
-                elif cl_module == "ccre":
-                    epoch_diagnostics: dict[str, float] = {}
-                    loss = train_local_fedclear_epoch(
-                        model=models[client_id],
-                        loader=loader,
-                        optimizer=optimizers[client_id],
-                        normalizer=lambda x: normalize_batch(x, stats),
-                        device=self.device,
-                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
-                        ccre_cfg=method_cfg.get("ccre", {}),
-                        view_cfg=method_cfg.get("counterfactual_views", {}),
-                        round_idx=round_idx,
-                        client_id=client_id,
-                        seed=int(self.config.get("seed", 0)),
-                        client_class_counts=getattr(self, "_client_class_counts", {}).get(client_id),
-                        max_batches=train_cfg.get("max_local_batches"),
-                        max_grad_norm=train_cfg.get("max_grad_norm"),
-                        skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
-                        log_interval=train_cfg.get("local_log_interval"),
-                        diagnostics=epoch_diagnostics,
-                    )
-                    ccre_diagnostics.append(epoch_diagnostics)
                 elif use_prime:
                     if use_prime_dcl:
                         loss = train_local_prime_dcl_epoch(
@@ -1872,7 +1238,7 @@ class AsymHFLExperiment:
                         )
                 else:
                     feature_queue = None
-                    if method_cfg.get("cl_module", "dcl") in {"nir_dcl", "cara_l"}:
+                    if method_cfg.get("cl_module", "dcl") == "nir_dcl":
                         feature_queue = self._get_nir_dcl_queue(client_id, num_classes, method_cfg)
                     loss = train_local_augmix_dcl_epoch(
                         model=models[client_id],
@@ -1882,7 +1248,7 @@ class AsymHFLExperiment:
                         lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         cl_module=method_cfg.get("cl_module", "dcl"),
                         num_classes=num_classes,
-                        nir_dcl_cfg=method_cfg.get("cara_l", method_cfg.get("nir_dcl", {})),
+                        nir_dcl_cfg=method_cfg.get("nir_dcl", {}),
                         sara_cfg=method_cfg.get("sara", {}),
                         feature_queue=feature_queue,
                         client_class_counts=getattr(self, "_client_class_counts", {}).get(client_id),
@@ -1905,31 +1271,6 @@ class AsymHFLExperiment:
                         ),
                     )
                 losses.append(loss)
-            if relation_accumulator is not None:
-                if self._use_ebst_v2(method_cfg):
-                    round_relation_states[client_id] = finalize_pair_qualified_client_relations(
-                        relation_accumulator,
-                        min_group_support=int(ebst_cfg.get("min_group_support", 4)),
-                        min_competing_class_support=int(
-                            ebst_cfg.get("min_pair_class_support", 16)
-                        ),
-                        eps=float(ebst_cfg.get("eps", 1.0e-6)),
-                    )
-                else:
-                    round_relation_states[client_id] = finalize_client_relations(
-                        relation_accumulator,
-                        min_group_support=int(ebst_cfg.get("min_group_support", 4)),
-                        eps=float(ebst_cfg.get("eps", 1.0e-6)),
-                    )
-        if round_relation_states:
-            self._fedease_client_relations = round_relation_states
-        if ccre_diagnostics:
-            self._last_ccre_metrics = {
-                key: sum(item.get(key, 0.0) for item in ccre_diagnostics) / len(ccre_diagnostics)
-                for key in ("ccre_loss", "ccre_worst_view_risk")
-            }
-        else:
-            self._last_ccre_metrics = {}
         if fedease_diagnostics:
             metric_names = set().union(*(item.keys() for item in fedease_diagnostics))
             self._last_fedease_metrics = {

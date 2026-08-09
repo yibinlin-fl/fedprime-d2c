@@ -1,22 +1,35 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import sys
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from fedprime.methods.fedprime_d2c import FedPrimeD2CExperiment
-from fedprime.methods.fedprime_pair import FedPrimePairExperiment
-from fedprime.methods.fedclear import FedClearExperiment
-from fedprime.methods.fedclear_pccd import FedClearPCCDExperiment
-from fedprime.methods.fedease import FedEASEExperiment
-from fedprime.methods.fedfalsify_experiment import FedFalsifyExperiment
-from fedprime.methods.prac_hfl import PRACHFLExperiment
-from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.utils.config import load_config
+
+
+EXPERIMENTS = {
+    "fedease": ("fedprime.methods.fedease", "FedEASEExperiment"),
+    "rahfl": ("fedprime.methods.rahfl_asymhfl", "AsymHFLExperiment"),
+    "rahfl_prime": ("fedprime.methods.rahfl_asymhfl", "AsymHFLExperiment"),
+    "fedsara_cs": ("fedprime.methods.rahfl_asymhfl", "AsymHFLExperiment"),
+}
+
+
+def build_experiment(method: str, config: dict[str, Any]) -> Any:
+    """Load only the experiment selected by the configuration."""
+    try:
+        module_name, class_name = EXPERIMENTS[method]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported method_name: {method}") from exc
+    module = importlib.import_module(module_name)
+    experiment_class = getattr(module, class_name)
+    return experiment_class(config)
 
 
 def main() -> None:
@@ -25,25 +38,10 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_config(args.config)
-    method = config.get("method_name", "fedprime_d2c")
-    if method == "fedprime_d2c":
-        FedPrimeD2CExperiment(config).run()
-    elif method == "fedprime_pair":
-        FedPrimePairExperiment(config).run()
-    elif method == "fedclear":
-        FedClearExperiment(config).run()
-    elif method == "fedclear_pccd":
-        FedClearPCCDExperiment(config).run()
-    elif method == "fedease":
-        FedEASEExperiment(config).run()
-    elif method == "fedfalsify":
-        FedFalsifyExperiment(config).run()
-    elif method == "prac_hfl":
-        PRACHFLExperiment(config).run()
-    elif method in {"rahfl", "rahfl_prime", "fedcara", "fedsara_cs"}:
-        AsymHFLExperiment(config).run()
-    else:
-        raise ValueError(f"Unsupported method_name: {method}")
+    method = config.get("method_name")
+    if not method:
+        raise ValueError("Configuration must define method_name")
+    build_experiment(method, config).run()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,14 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-08
+Updated: 2026-08-09
+
+## 2026-08-09 基线公平性与忠实度修复
+
+```text
+docs/research/baselines/BASELINE_FIDELITY_REPAIR_ZH.md
+docs/experiments/current/CLE_BASELINE_FIDELITY_OPENI_RUN_ZH.md
+deliverables/baseline_fairness_audit_20260809/BASELINE_FAIRNESS_AUDIT_ZH.md
+```
 
 ## 新会话最小读取顺序
 
@@ -28,8 +36,8 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ```text
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
-docs/experiments/current/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md   FedDF/KT-pFL/FCCL 匹配筛选入口
 docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md               已完成 Strict PEW operator-LOO（GO）
+docs/experiments/archive/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md   已完成 FedDF/KT-pFL/FCCL 匹配筛选
 docs/experiments/archive/CLE_CDEP_V2_PAIRED_OPENI_RUN_ZH.md      已完成的 CDep-v2 共享PEW配对实验（NO-GO）
 docs/experiments/archive/CLE_CDEP_V2_SINGLE_ARM_OPENI_RUN_ZH.md   已完成但归因不匹配的单臂实验
 ```
@@ -60,6 +68,7 @@ docs/project/RESEARCH_CODE_PRACTICES_ZH.md  科研代码实践
 docs/research/baselines/RAHFL_IMPLEMENTATION_READING_ZH.md  RAHFL 源码与训练流程精读
 docs/archive/legacy/AGENT.md                            早期 D2C 约束，已经过时，禁止作为当前指令
 docs/archive/legacy/experiment_plan.md                  最早期 D2C 实验计划，仅作历史背景
+docs/archive/legacy/ARCHITECTURE_PRE_CLEANUP_2026_08_09.md  清理前的完整历史架构快照
 ```
 
 ## CLE-HFL 与当前研究问题
@@ -74,6 +83,7 @@ docs/research/status/CURRENT_RESEARCH_STATUS_FOR_EXTERNAL_AI_ZH.md
 ## 已归档的候选方法与负结果
 
 ```text
+docs/archive/methods/NEGATIVE_CODE_REMOVAL_INDEX_ZH.md
 docs/archive/methods/CONTINUOUS_WITNESS_OFFLINE_AUDIT_ZH.md
 docs/archive/methods/FEDCIS_FRAMEWORK_AND_OFFLINE_AUDIT_ZH.md
 docs/archive/methods/FEDCISA_FRAMEWORK_REVIEW_AND_MODULE_SPEC_ZH.md

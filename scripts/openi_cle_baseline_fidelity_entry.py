@@ -72,7 +72,6 @@ def build_configs() -> dict[str, dict]:
                 "knowledge_weight": 1.0,
             }
         elif arm == "pew_ber":
-            config["method"]["fedease"]["cdep"] = {"enabled": False}
             config["method"]["fedease"]["pew"]["checkpoint"] = (
                 "outputs/pew_checkpoints/cle_baseline_fidelity_seed0.pt"
             )

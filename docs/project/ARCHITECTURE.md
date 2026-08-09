@@ -1,1204 +1,133 @@
-# FedPRIME-D2C Architecture
+# FedPRIME-D2C 当前代码架构
 
-This document is the long-term code map for the FedPRIME-D2C project.
+Updated: 2026-08-09
 
-Use it together with:
-
-```text
-docs/project/PROJECT_STATE.md
-docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md
-docs/project/TODO_NEXT.md
-```
-
-When resuming work, read these three files first.
-
-## 2026-08-04 Strict Attribution Runner
-
-The current executable probe reuses the unified `AsymHFLExperiment` with an
-optional `method.strict_fit_audit` switch:
+本文件只描述清理后的活动代码。清理前的完整历史架构保存在：
 
 ```text
-private client train data
-  -> persisted class-stratified fit/audit split
-  -> fit-only AugMix/JSD/DCL or fit-only PEW/BER+CDep local update
-  -> audit-only per-client accuracy for AsymHFL teacher ordering
-  -> identical CIFAR-100 public-logit communication in both arms
-  -> final CLE-HFL v2 test used only for metrics
+docs/archive/legacy/ARCHITECTURE_PRE_CLEANUP_2026_08_09.md
 ```
 
-Core additions:
+## 当前研究主线
 
 ```text
-fedprime/data/fedfalsify.py        audit DataLoader construction
-fedprime/data/fedease.py           fit-only environment-annotated loaders/counts
-fedprime/methods/rahfl_asymhfl.py  strict split setup and audit-only routing
-fedprime/methods/fedease.py        CLE-HFL v2 + AsymHFL-val support
-scripts/openi_strict_pew_asymhfl_entry.py
+CLE-HFL v2 prepared data
+  -> strict fit/audit split
+  -> heterogeneous client models
+  -> PEW environment annotations
+  -> BER + AugMix/JSD + DCL local training
+  -> selected communication strategy
+  -> final-test reporting and CLE/operator metrics
 ```
 
-This is a controlled experiment around the strongest previously validated
-local signal. It is not yet the final paper method and does not make PEW
-taxonomy-free.
+正式协议边界：
 
-## 2026-08-03 Continuous Witness Audit Override - NO-GO
+- `fit` 仅用于梯度更新。
+- 客户端私有 `audit` 仅用于 AsymHFL-val 路由。
+- final-test 标签仅用于报告，不参与调参、选教师或早停。
+- PEW 使用无标签公共图像上的人工已知 corruption 训练；私有 operator 元数据仅用于诊断评估。
 
-The post-FedCIS candidate used no discrete environment taxonomy:
-
-```text
-normalized image
-  -> 22D continuous color/spatial/frequency witness
-  -> class-conditional continuous robust risk
-  -> class-conditional decision/witness covariance penalty
-  -> matched base/true/shuffled/moment-random one-step audit
-```
-
-Implementation:
-
-```text
-fedprime/methods/continuous_nuisance.py
-scripts/audit_continuous_nuisance.py
-tests/test_continuous_nuisance.py
-```
-
-The true witness reduced CFG but failed Worst, audit loss, and the 60% target
-gate. This version has no runner and must not be connected to AsymHFL.
-
-## 2026-08-03 Architecture Override - FedCIS-v0 Audited NO-GO
-
-The current candidate is FedCIS-v0 under four-client CLE-HFL v2. It is a
-completed standalone audit implementation, not a federated training method or
-positive result.
-
-```text
-existing heterogeneous client model
-  -> frozen AugMix/JSD/DCL local robust base
-  -> two independent AugMix views per supported class
-  -> normalized input-margin gradients
-  -> fixed multiscale DCT projection
-  -> PSD view-mean A and view-difference N statistics
-  -> fixed-shape class-conditional upload
-  -> server generalized-eigen subspace U_c
-  -> low-rank U_c broadcast
-  -> detached margin-descent perturbation in the orthogonal complement
-  -> counterfactual CE/JSD local update
-```
-
-FedCIS does not use public data/logits, prototypes, model averaging, or CLE
-operator metadata. It cannot repair fully missing classes and does not yet
-establish that a shared sensitivity subspace is semantic. Full specification
-and audit gates:
-
-```text
-docs/archive/methods/FEDCIS_FRAMEWORK_AND_OFFLINE_AUDIT_ZH.md
-```
-
-Implemented audit architecture:
-
-```text
-fedprime/analysis/fedcis.py
-  deterministic multiscale DCT basis
-  class-margin input gradients
-  PSD class sensitivity moments
-  generalized-eigen class subspaces
-  shuffled/random controls
-  detached orthogonal counterfactuals
-
-scripts/audit_fedcis_sensitivity.py
-  persisted fit/audit split
-  four heterogeneous checkpoint loading
-  three-seed extraction
-  geometry and projected-attack gates
-  CSV/JSON/Markdown report output
-
-tests/test_fedcis_audit.py
-  eight focused tests
-```
-
-The formal Audit A/B failed: true and class-shuffled cross-seed similarities
-were `0.1673/0.1669`, matched-class cross-client similarity was below the
-mismatched control, and only `30.30%` of attack targets beat both controls.
-No FedCIS config, runner, or OpenI entry should be implemented. Older
-FedEASE/FedFalsify/FedCFSA sections below remain historical.
-
-## 2026-07-19 Architecture Override
-
-The current candidate is CLE-HFL + FedEASE v2.1. The detailed theory and exact
-implementation boundary are documented in:
-
-```text
-docs/archive/methods/FEDEASE_V2_1_FRAMEWORK_AND_IMPLEMENTATION_ZH.md
-```
-
-Current code architecture:
-
-```text
-CLE Oracle or PEW environment loader
-  -> AugMix/JSD/DCL robust local path
-  -> BER replaces clean CE using client-local class-environment counts
-  -> fixed random projection or PEW environment embedding
-  -> class-conditional environment dependence penalty
-  -> local class x environment x class relation accumulation
-  -> server environment-balanced structural aggregation
-  -> cross-environment stability gate
-  -> classifier-head EBST alignment with SCP
-  -> clean/same/random/swapped/unseen evaluation
-```
-
-Formal entry and staged configs:
-
-```text
-scripts/openi_fedease_entry.py
-configs/openi_v100_fedease_oracle_control_probe.yaml
-configs/openi_v100_fedease_oracle_ber_cdep_probe.yaml
-configs/openi_v100_fedease_pew_probe.yaml
-configs/openi_v100_fedease_ebst_probe.yaml
-configs/openi_v100_fedease_full.yaml
-```
-
-This is a complete candidate implementation, not a validated positive result.
-The first formal run is `--mode=oracle_probe`.
-
-The older D2C, PRAC-HFL, SARA, FedCLEAR, and PCCD sections below are historical
-code maps and must not override the current FedEASE memory.
-
-## Project Goal
-
-FedPRIME-D2C targets robust heterogeneous federated learning under:
-
-```text
-model heterogeneity
-data heterogeneity / Non-IID label skew
-common corruption robustness
-```
-
-The main baseline is RAHFL.
-
-The intended paper story is:
-
-```text
-RAHFL mainly handles unreliable or corrupted collaborators by deciding which
-client should teach which other client.
-
-FedPRIME-D2C instead targets public-logit communication under Non-IID data:
-client public logits can be contaminated by local label priors, so D2C debiases
-client logits, builds class-aware teachers, and applies personalized
-complementary KD.
-```
-
-## Repository Layout
-
-```text
-FedPRIME-D2C/
-  fedprime/
-    augmentations/
-    data/
-    methods/
-    models/
-    engine/
-    utils/
-  configs/
-    ablations/
-  scripts/
-  PRIME-augmentations-main/
-  RAHFL-master/
-  outputs/
-  README.md
-  docs/project/PROJECT_STATE.md
-  docs/project/TODO_NEXT.md
-  docs/project/ARCHITECTURE.md
-  requirements.txt
-```
-
-Important external code:
-
-```text
-PRIME-augmentations-main/  official PRIME implementation
-RAHFL-master/             original RAHFL implementation
-```
-
-The `fedprime/` package wraps and reuses both codebases instead of rewriting
-them from scratch.
-
-## Core Files
-
-### Experiment Entry
+## 核心运行入口
 
 ```text
 scripts/run_experiment.py
 ```
 
-Dispatches by `method_name`:
+入口按 `method_name` 惰性加载实验类，不再静态导入已经冻结的方法。当前主要 runner：
 
 ```text
-fedprime_d2c -> FedPrimeD2CExperiment
-fedprime_pair -> FedPrimePairExperiment
-rahfl        -> AsymHFLExperiment
-rahfl_prime  -> AsymHFLExperiment
+fedprime/methods/rahfl_asymhfl.py  统一异构通信、评估和轮次控制
+fedprime/methods/fedease.py        PEW 准备、校准和私有环境推断
 ```
 
-Run multiple configs:
+## 当前本地训练
 
 ```text
-scripts/run_grid.py
+fedprime/methods/local_fedease.py
+fedprime/methods/balanced_environment_risk.py
+fedprime/methods/environment_witness.py
 ```
 
-Kaggle launcher:
+`local_fedease.py` 只保留当前选定目标：
 
 ```text
-scripts/run_kaggle.sh
+classification = BER over class x predicted-environment groups
+local objective = classification + lambda_jsd * JSD + DCL
 ```
 
-Current Kaggle default:
+CDep、EBST 和 SCP 已从活动实现中移除。历史公式、配置和结果位置见：
 
 ```text
-RAHFL vs FedPRIME-D2C
-no DCL in FedPRIME-D2C
-T4-safe batch sizes
-configs/kaggle_t4_rahfl.yaml
-configs/kaggle_t4_fedprime_d2c_warmup3.yaml
-FedPRIME-D2C uses three local PRIME-only warmup rounds
+docs/archive/methods/NEGATIVE_CODE_REMOVAL_INDEX_ZH.md
 ```
 
-Current experiment status on 2026-06-07:
+通用/历史但仍可运行的本地模块独立放置：
 
 ```text
-RAHFL final:          avg_acc=56.41, worst_acc=44.72
-FedPRIME-D2C final:   avg_acc=52.31, worst_acc=39.78
-LogitAvg+PRIME final: avg_acc=52.10, worst_acc=39.72
-
-Current D2C is effectively tied with ordinary LogitAvg. The next diagnostic is
-Oracle Prior D2C to test whether cross-domain predicted-prior estimation is the
-main bottleneck.
-```
-
-### Data
-
-```text
-fedprime/data/loaders.py
-```
-
-Responsibilities:
-
-```text
-load RAHFL-style CIFAR-10-C npy caches
-build private client loaders
-build public CIFAR-100 loader
-normalize CIFAR batches
-call RAHFL Dirichlet/IID partitioning
-save/load fixed partition indices
-build PRIME-DCL two-view loaders
-build AugMix loaders for RAHFL
-```
-
-Data preparation:
-
-```text
-scripts/prepare_data.py
-```
-
-Prepared mounted-data import:
-
-```text
-scripts/import_prepared_data.py
-```
-
-This helper searches a mounted prepared-data root, including nested Kaggle input
-layouts, then copies and verifies:
-
-```text
-cifar_10_c -> RAHFL-master/Dataset/cifar_10_c
-cifar_100 -> RAHFL-master/Dataset/cifar_100
-outputs/partitions -> outputs/partitions
-```
-
-The current Kaggle prepared dataset is named:
-
-```text
-fedprime-data
-```
-
-This downloads CIFAR-10/CIFAR-100 through torchvision and creates
-RAHFL-style random-corruption caches:
-
-```text
-RAHFL-master/Dataset/cifar_10_c/
-  train/random_corrupt_0.npy
-  train/random_corrupt_0.5.npy
-  train/random_corrupt_1.npy
-  train/labels.npy
-  test/random_corrupt_0.npy
-  test/random_corrupt_0.5.npy
-  test/random_corrupt_1.npy
-  test/labels.npy
-```
-
-This is not the official CIFAR-10-C layout. Official CIFAR-10-C files are only
-needed later for per-corruption group evaluation.
-
-### Model Factory
-
-```text
-fedprime/models/factory.py
-```
-
-This calls RAHFL's `Dataset.utils.init_nets` and builds heterogeneous clients:
-
-```text
-ResNet10
-ResNet12
-ShuffleNet
-Mobilenetv2
-```
-
-The helper `forward_logits` handles models that return either logits directly
-or `(logits, features)`.
-
-### PRIME Reuse
-
-```text
-fedprime/augmentations/prime_adapter.py
-```
-
-This imports the official PRIME primitives from `PRIME-augmentations-main` and
-builds a `GeneralizedPRIMEModule`.
-
-Local PRIME training uses three views:
-
-```text
-clean + prime_aug1 + prime_aug2
-```
-
-Local PRIME loss:
-
-```text
-CE(clean logits, labels) + lambda_jsd * JSD(clean, aug1, aug2)
-```
-
-Implementation:
-
-```text
-fedprime/methods/local_prime.py
-```
-
-### RAHFL Runner
-
-```text
-fedprime/methods/rahfl_asymhfl.py
-```
-
-Supports:
-
-```text
-method_name: rahfl
-  AugMix + DCL + AsymHFL
-
-method_name: rahfl_prime
-  PRIME + DCL + AsymHFL
-```
-
-RAHFL communication:
-
-```text
-evaluate each client
-on public data, weaker clients learn from clients with no worse accuracy
-loss is KL(student || selected teachers)
-```
-
-This runner keeps the RAHFL idea of asymmetric heterogeneous collaboration.
-
-### FedPRIME-D2C Runner
-
-```text
-fedprime/methods/fedprime_d2c.py
-```
-
-Main flow:
-
-```text
-1. load private labels
-2. build or load fixed client partition
-3. build private loaders and public CIFAR-100 loader
-4. build heterogeneous client models
-5. local PRIME training
-6. public-data communication
-7. evaluate all clients
-8. write metrics.csv
-9. save final checkpoints
-```
-
-Supported communication modes:
-
-```yaml
-method:
-  communication: d2c       # full D2C teacher
-  communication: logit_avg # plain public-logit averaging baseline
-```
-
-Supported warmup:
-
-```yaml
-method:
-  d2c_warmup_rounds: 0
-```
-
-If `d2c_warmup_rounds > 0`, early rounds run local PRIME only and skip public
-D2C distillation.
-
-Optional DCL local training:
-
-```yaml
-method:
-  use_dcl: true
-  cl_module: dcl
-```
-
-This gives:
-
-```text
-PRIME + DCL + D2C
-```
-
-It is intended as a stricter controlled comparison, not the first default claim.
-
-### FedPRIME-PAIR Runner
-
-```text
-fedprime/methods/fedprime_pair.py
-```
-
-FedPRIME-PAIR is the new switchable implementation for:
-
-```text
-PRIME + CBCL + CPAD
-```
-
-It is designed after the D2C diagnostics showed that public-prior debiasing is
-effectively tied with LogitAvg. The new communication unit is a directed class
-pair boundary `c -> j`, not a full softmax vector or a client-level route.
-
-Core files:
-
-```text
-fedprime/methods/cpad.py          CPAD tensor logic and expertise export
-fedprime/methods/local_prime.py   PRIME+CBCL local training
-scripts/analyze_pair_expertise.py class-pair expertise CSV/heatmap
-```
-
-Core switches:
-
-```yaml
-method:
-  use_prime: true
-  use_cbcl: true
-  use_cpad: true
-  lambda_jsd: 12.0
-  cbcl:
-    lambda_cbcl: 0.2
-  cpad:
-    warmup_rounds: 3
-    lambda_cpad: 1.0
-    leave_one_out: true
-```
-
-Implemented MVP flow:
-
-```text
-1. local PRIME training with optional CBCL
-2. estimate directed client-class-pair expertise E_{k,c->j}
-3. build leave-one-client-out class-pair teachers on public logits
-4. optimize CPAD PairBCE on public data
-5. write metrics, checkpoints, and pair-expertise snapshots
-```
-
-Code-level round flow:
-
-```text
-scripts/run_experiment.py
-  method_name: fedprime_pair
-    -> FedPrimePairExperiment.run()
-
-FedPrimePairExperiment.run()
-  1. load labels from RAHFL-style CIFAR-10-C caches
-  2. load or create the fixed Dirichlet partition
-  3. build private loaders and CIFAR-100 public loader
-  4. build heterogeneous RAHFL models
-  5. build the official PRIME module through prime_adapter.py
-  6. for each round:
-       a. _local_phase()
-       b. if round >= cpad.warmup_rounds: _estimate_all_pair_expertise()
-       c. if round >= cpad.warmup_rounds: _cpad_phase()
-       d. _evaluate()
-       e. append metrics.csv
-  7. save final client checkpoints
-```
-
-CBCL implementation:
-
-```text
-fedprime/methods/local_prime.py
-  train_local_prime_cbcl_epoch()
-    views = prime_aug(images)
-    output = model(views)
-    if output is (logits, embedding):
-      reuse both logits and embedding from the same forward pass
-    loss = CE(clean/aug views) + lambda_jsd * JSD + lambda_cbcl * CBCL
-```
-
-CBCL loss:
-
-```text
-_class_balanced_cbcl_loss()
-  - normalizes embeddings from clean + PRIME views
-  - builds supervised positives by class label
-  - gives each anchor a reliability weight based on true-class margin
-  - averages loss per local class first, then averages classes
-```
-
-CPAD implementation:
-
-```text
-fedprime/methods/cpad.py
-  normalize_logits()
-  pair_margins()
-  estimate_pair_expertise()
-  cpad_pair_bce_loss()
-```
-
-Pair expertise:
-
-```text
-For a local labeled sample with class c:
-  margin(c -> j) = normalized_logit_c - normalized_logit_j
-
-Across clean/PRIME views:
-  robust_margin = softmin(view margins)
-
-Client expertise:
-  E_raw[k,c,j] = mean sigmoid(robust_margin(c -> j) / expertise_tau)
-  E_weighted[k,c,j] = E_raw[k,c,j] * support(count_k,c)
-```
-
-CPAD public distillation:
-
-```text
-public_logits_all: [K, B, C]
-pair margins:      [K, B, C, C]
-
-For every student client i:
-  optionally remove client i from the teacher pool (leave-one-out)
-  aggregate teacher pair margins by E_weighted[k,c,j]
-  convert teacher/student margins to pair probabilities with sigmoid
-  optimize pairwise BCE, weighted by:
-    - gate: learn boundary only when global experts are stronger
-    - confidence: ignore teacher boundaries near 0.5
-    - agreement: downweight high-disagreement boundaries
-```
-
-Runtime logging:
-
-```text
-configs/kaggle_t4_fedprime_pair_full.yaml
-  train.progress_every_batches: 50
-
-FedPRIME-PAIR prints heartbeat logs for:
-  round start
-  each local client start/done
-  every N local batches
-  pair expertise estimation
-  CPAD public batches
-  evaluation and final round metrics
-```
-
-Configs:
-
-```text
-configs/debug_fedprime_pair_cifar10c.yaml
-configs/kaggle_t4_fedprime_pair_full.yaml
-```
-
-## D2C Module
-
-```text
-fedprime/methods/d2c.py
-```
-
-Input public logits:
-
-```text
-logits_all shape = [K, B, C]
-K = number of clients
-B = public batch size
-C = number of classes
-```
-
-For default configs:
-
-```text
-K = 4
-B = 256
-C = 10
-```
-
-Client softened public prediction:
-
-```text
-p_k(y|x) = softmax(z_k(x) / T)
-```
-
-Predictive prior:
-
-```text
-pi_k(y) = mean_x p_k(y|x)
-```
-
-Prior debias:
-
-```text
-z'_k(y|x) = z_k(y|x) - beta_k * log(pi_k(y) + eps)
-```
-
-Adaptive beta:
-
-```text
-beta_k = beta * (1 - H(pi_k) / log(C))
-```
-
-Class-balanced aggregation:
-
-```text
-a_k,c = pi_k(c)^eta / sum_j pi_j(c)^eta
-```
-
-Sample confidence:
-
-```text
-conf_k(x) = 1 - H(p'_k(.|x)) / log(C)
-```
-
-D2C teacher:
-
-```text
-q(y|x) = normalize_y sum_k a_k,y * conf_k(x) * p'_k(y|x)
-```
-
-Complementary KD:
-
-```text
-m_k(c) = (1 - pi_k(c))^rho
-
-L_k = T^2 * mean_x sum_c m_k(c) * q(c|x)
-      * [log q(c|x) - log p_k(c|x)]
-```
-
-Core switches:
-
-```yaml
-d2c:
-  adaptive_beta: false
-  ema_alpha:
-  use_prior_debias: true
-  use_class_balanced: true
-  use_sample_confidence: true
-
-method:
-  use_self_gate: false
-  use_complementary_kd: true
-  prior_source: predicted # or oracle
-```
-
-### Oracle Prior Diagnostic
-
-Oracle Prior is a diagnostic upper bound, not a deployable privacy-preserving
-method. It replaces the predicted public-data prior with the true class
-histogram of each client's fixed private partition.
-
-The compatibility entry point remains:
-
-```text
-D2CServer.build_teacher() -> teacher, used_prior
-```
-
-Optional diagnostics use:
-
-```text
-D2CServer.build_teacher_with_diagnostics()
-```
-
-This keeps the original predicted-prior training path unchanged. Regression
-tests verify its teacher and prior are exactly equal to the legacy formula.
-
-T4-safe formal diagnostic:
-
-```text
-configs/kaggle_t4_fedprime_d2c_oracle_warmup3.yaml
-```
-
-It is identical to `configs/kaggle_t4_fedprime_d2c_warmup3.yaml` except for the
-experiment name, `prior_source: oracle`, and diagnostic logging.
-
-Optional prior logging:
-
-```yaml
-method:
-  prior_diagnostics:
-    enabled: true
-    save_rounds: [3, 10, 20, 39]
-```
-
-Implementation:
-
-```text
-fedprime/engine/prior_diagnostics.py
-scripts/analyze_priors.py
-```
-
-Outputs:
-
-```text
-outputs/<experiment>/
-  prior_diagnostics.csv
-  prior_summary.json
-  priors/round_*.npz
-  prior_analysis/
-    prior_metrics_by_round.csv
-    prior_error_by_round.png
-    prior_heatmap_oracle.png
-    prior_heatmap_predicted.png
-    prior_heatmap_absolute_error.png
-```
-
-The CSV records every client/public-batch comparison, including complete
-predicted, oracle, and actually-used prior vectors plus L1, KL, cosine,
-entropy, and top-class-match metrics.
-
-## Fixed Partition Fairness
-
-All main comparison configs share fixed partition files through:
-
-```yaml
-data:
-  partition_indices_path: outputs/partitions/cifar10c_alpha05_seed0_clients4_samples10000.npz
-```
-
-Purpose:
-
-```text
-RAHFL, RAHFL+PRIME, FedPRIME-D2C, and ablations use the same client data split.
-```
-
-This avoids reviewer criticism that methods saw different Non-IID partitions.
-
-Audit script:
-
-```text
-scripts/audit_partition.py
-```
-
-Outputs:
-
-```text
-outputs/partition_audit/<experiment_name>/
-  client_class_counts.csv
-  client_class_proportions.csv
-  client_class_counts.png
-  partition_summary.json
-```
-
-## Experiment Config Matrix
-
-### Main Comparison
-
-```text
-configs/cifar10c_rahfl.yaml
-  RAHFL = AugMix + DCL + AsymHFL
-
-configs/fedprime_d2c_cifar10c.yaml
-  FedPRIME-D2C = PRIME + D2C
-```
-
-This is the urgent first comparison.
-
-### Strong Controlled Comparison
-
-```text
-configs/cifar10c_rahfl_prime.yaml
-  RAHFL+PRIME = PRIME + DCL + AsymHFL
-
-configs/fedprime_d2c_dcl_cifar10c.yaml
-  FedPRIME-D2C+DCL = PRIME + DCL + D2C
-```
-
-This isolates:
-
-```text
-AsymHFL vs D2C
-```
-
-### Severe Non-IID
-
-```text
-configs/fedprime_d2c_cifar10c_alpha01.yaml
-configs/fedprime_d2c_dcl_cifar10c_alpha01.yaml
-configs/logitavg_prime_cifar10c_alpha01.yaml
-```
-
-Alpha `0.1` is important because D2C should help more when label skew is
-stronger.
-
-### LogitAvg Baseline
-
-```text
-configs/logitavg_prime_cifar10c.yaml
-configs/logitavg_prime_cifar10c_alpha01.yaml
-```
-
-Purpose:
-
-```text
-Check whether D2C beats plain public-logit averaging.
-```
-
-### Debug Configs
-
-```text
-configs/debug_fedprime_d2c_cifar10c.yaml
-configs/debug_fedprime_d2c_dcl_cifar10c.yaml
-configs/debug_logitavg_prime_cifar10c.yaml
-```
-
-These use tiny data and one round to verify that code paths run.
-
-### Ablations
-
-```text
-configs/ablations/fedprime_d2c_no_prime.yaml
-configs/ablations/fedprime_d2c_no_prior_debias.yaml
-configs/ablations/fedprime_d2c_no_class_balanced.yaml
-configs/ablations/fedprime_d2c_no_complementary_kd.yaml
-configs/ablations/fedprime_d2c_oracle_prior.yaml
-configs/ablations/fedprime_d2c_adaptive_ema_gate.yaml
-```
-
-Purpose:
-
-```text
-identify which D2C components actually contribute
-```
-
-## Metrics
-
-Every main run writes:
-
-```text
-outputs/<experiment_name>/metrics.csv
-```
-
-Main columns:
-
-```text
-round
-avg_acc
-worst_acc
-local_loss
-d2c_loss or col_loss
-```
-
-Important interpretation:
-
-```text
-avg_acc   overall client performance
-worst_acc weakest-client performance, very important for Non-IID
-```
-
-For RAHFL:
-
-```text
-col_loss = AsymHFL collaboration loss
-```
-
-For FedPRIME-D2C:
-
-```text
-d2c_loss = D2C or LogitAvg public KD loss
-```
-
-Summary script:
-
-```text
-scripts/summarize_results.py
-```
-
-Writes:
-
-```text
-outputs/summary.csv
-outputs/summary.md
-```
-
-## Diagnostics
-
-### Underrepresented Class Accuracy
-
-```text
-scripts/diagnose_underrepresented.py
-```
-
-Usage:
-
-```bash
-python scripts/diagnose_underrepresented.py \
-  --config configs/fedprime_d2c_cifar10c.yaml \
-  --checkpoint_dir outputs/fedprime_d2c_cifar10c_alpha05_cr1/checkpoints
-```
-
-Output columns:
-
-```text
-overall_acc
-head_acc
-tail_acc
-missing_acc
-head_classes
-tail_classes
-missing_classes
-private_class_counts
-```
-
-Purpose:
-
-```text
-Check whether D2C helps classes that are rare or missing in a client's private data.
-```
-
-### Corruption Group Evaluation
-
-```text
-scripts/evaluate_corruptions.py
-```
-
-Requires official-style CIFAR-10-C per-corruption `.npy` files.
-
-Purpose:
-
-```text
-evaluate noise / blur / weather / digital corruption groups
-```
-
-## Kaggle Commands
-
-Current FedPRIME-PAIR runs should be launched from a **Python streaming
-launcher cell** in Kaggle, not from a long `%%bash` cell. The streaming launcher
-should clone/pull the repo, verify `git log -1 --oneline` is `8a4ee15` or
-later, then call:
-
-```bash
-RUN_DEBUG=1 PYTHONUNBUFFERED=1 bash scripts/run_kaggle_pair.sh
-```
-
-Reason:
-
-```text
-Kaggle may buffer %%bash stdout until the command exits.
-The Python launcher streams subprocess output line by line and prints a driver
-heartbeat every 60 seconds.
-Do not call sys.stdout.reconfigure in Kaggle notebooks.
-```
-
-The older commands below are kept for the historical FedPRIME-D2C comparison
-route.
-
-Default urgent comparison:
-
-```bash
-git clone https://github.com/yibinlin-fl/fedprime-d2c.git
-cd fedprime-d2c
-RUN_DEBUG=1 bash scripts/run_kaggle.sh
-```
-
-Default script runs:
-
-```text
-debug FedPRIME-D2C
-RAHFL vs FedPRIME-D2C with T4-safe configs
-summary
-```
-
-No manual CIFAR-10-C upload is needed for the first comparison. The script
-generates RAHFL-style random corruption caches.
-
-If data has already been downloaded in the active Kaggle session, rerun only the
-training stage:
-
-```bash
-git pull
-RUN_INSTALL=0 RUN_PREPARE_DATA=0 RUN_DEBUG=0 bash scripts/run_kaggle.sh
-```
-
-Full four-method comparison:
-
-```bash
-bash scripts/run_kaggle.sh \
-  configs/cifar10c_rahfl.yaml \
-  configs/cifar10c_rahfl_prime.yaml \
-  configs/fedprime_d2c_cifar10c.yaml \
-  configs/fedprime_d2c_dcl_cifar10c.yaml
-```
-
-Strict DCL-controlled comparison:
-
-```bash
-bash scripts/run_kaggle.sh \
-  configs/cifar10c_rahfl_prime.yaml \
-  configs/fedprime_d2c_dcl_cifar10c.yaml
-```
-
-## Quick Result Judgment
-
-## 2026-06-29 Active Architecture: PRAC-HFL
-
-The active architecture is:
-
-```text
-PRAC-HFL = RAHFL local robust training + receiver-adaptive safe communication
-```
-
-RAHFL local robust training is reused as the strong base:
-
-```text
-AugMix multi-view loader
-CE classification loss
-JSD consistency loss
-DCLLoss from RAHFL-master/loss.py
-```
-
-PRAC-HFL changes only the communication phase. Instead of RAHFL AsymHFL selecting teachers by global performance, each receiver client privately tests whether a teacher helps its own route batch.
-
-Communication phase:
-
-```text
-public logits -> candidate teacher set -> head-only virtual KD -> private route CE risk delta
--> classwise positive-effect weights -> mixed teacher -> accept-batch safety gate
-```
-
-Important implementation detail:
-
-```text
-PRAC-HFL currently updates only the classifier head during virtual teacher testing and accepted mixed-teacher KD.
-This is intentional for stability and speed, and targets the Non-IID classifier-boundary bias.
-```
-
-Main files:
-
-```text
-fedprime/methods/prac_hfl.py
-fedprime/methods/local_rahfl.py
-configs/kaggle_t4_prac_hfl.yaml
-scripts/run_kaggle_prac.sh
+fedprime/methods/local_rahfl.py  AugMix/JSD/DCL、NIR-DCL、SARA
+fedprime/methods/nir_dcl.py
+fedprime/methods/sara.py
+fedprime/methods/local_prime.py  PRIME 兼容本地训练
 ```
 
-Historical modules:
+## 数据与严格划分
 
 ```text
-fedprime/methods/fedprime_d2c.py      # historical diagnostic, not active mainline
-fedprime/methods/fedprime_pair.py     # historical diagnostic, not active mainline
-fedprime/methods/cpad.py              # historical diagnostic, not active mainline
+fedprime/data/strict_fit_audit.py  中性的 strict fit/audit 划分与 loader
+fedprime/data/fedease.py           PEW/BER 所需数据包装和统计
+fedprime/data/loaders.py           通用、CLE 和公共数据 loader
+fedprime/data/corruptions.py       corruption 操作
+fedprime/data/partition.py         通用分区
 ```
 
-Current evidence:
-
-```text
-RAHFL unified runner final: avg_acc=56.41, worst_acc=44.72.
-First unstable PRAC-HFL run reached round 028:
-  PRAC avg_acc=53.86 vs same-round RAHFL avg_acc=53.21.
-  PRAC worst_acc=39.52 vs same-round RAHFL worst_acc=41.64.
-Round 029 produced NaN; safe PRAC-HFL config was introduced and must be rerun.
-```
-
-For the first short run, do not judge only by round-5 absolute accuracy.
-
-Promising signs:
-
-```text
-FedPRIME-D2C avg_acc rises
-FedPRIME-D2C worst_acc does not collapse
-gap to RAHFL is small or shrinking
-d2c_loss is finite and stable
-local_loss is finite and stable
-```
+`strict_fit_audit.py` 原先位于带有 FedFalsify 名称的模块中。当前文件只承载通用协议，不包含已否定的 FedFalsify router。
 
-Warning signs:
+## 通信与外部基线
 
 ```text
-RAHFL rises but FedPRIME-D2C stays near random
-FedPRIME-D2C is more than 8-10 points behind and gap widens
-worst_acc is much worse than RAHFL
-d2c_loss or local_loss becomes nan
+fedprime/communication/public_logits.py  通信上下文和当前核心策略接口
+fedprime/communication/baselines.py      匹配预算的外部基线 runtime adapters
 ```
 
-Strong paper pattern:
-
-```text
-alpha=0.5: FedPRIME-D2C close to or better than RAHFL
-alpha=0.1: FedPRIME-D2C advantage becomes larger
-```
+`baselines.py` 集中保存共享同一 `CommunicationContext` 的轻量适配器，便于强制相同轮次、公共 batch、数据角色和指标记录。它不是官方源码的混合拷贝。
 
-That supports:
+官方/发布源码只作为只读参考，彼此隔离且默认不跟踪：
 
 ```text
-D2C is especially useful when Non-IID label skew is severe.
+local_runs/reference_sources/AugHFL/
+local_runs/reference_sources/FCCL/
+local_runs/reference_sources/FedDF/
+local_runs/reference_sources/FedProto/
+local_runs/reference_sources/RHFL/
 ```
 
-## Checkpoint Behavior
+RAHFL 和 PRIME 的 vendor/runtime 依赖分别位于：
 
-Current runners save only final client checkpoints:
-
 ```text
-outputs/<experiment_name>/checkpoints/client_0.pt
-outputs/<experiment_name>/checkpoints/client_1.pt
-outputs/<experiment_name>/checkpoints/client_2.pt
-outputs/<experiment_name>/checkpoints/client_3.pt
+RAHFL-master/
+PRIME-augmentations-main/
 ```
-
-They do not save every round, so disk usage is controlled.
 
-## GitHub Remote
+基线忠实度边界和未复现的官方 recipe 细节记录在：
 
-Remote repository:
-
 ```text
-git@github.com:yibinlin-fl/fedprime-d2c.git
+docs/research/baselines/BASELINE_FIDELITY_REPAIR_ZH.md
+deliverables/baseline_fairness_audit_20260809/BASELINE_FAIRNESS_AUDIT_ZH.md
 ```
 
-Branch:
+## 指标与产物
 
 ```text
-main
+fedprime/engine/cle_metrics.py       CLE-HFL 聚合指标
+fedprime/engine/operator_metrics.py  seen/unseen operator 指标
+outputs/                             原始输出、压缩包、checkpoint（不跟踪）
+deliverables/                        解析报告、图表和表格
+local_runs/                          参考源码、缓存和临时运行（不跟踪）
 ```
-
-The local repository is configured to push over SSH.
-
-## Important Cautions
 
-1. Do not claim D2C always beats RAHFL before full experiments.
-2. RAHFL is strong because it includes AugMix + DCL + AsymHFL.
-3. FedPRIME-D2C without DCL is the main-module claim.
-4. FedPRIME-D2C + DCL is a stricter controlled comparison, not the first default claim.
-5. LogitAvg+PRIME is important to prove D2C is better than plain public-logit averaging.
-6. Official CIFAR-10-C is still needed for detailed per-corruption group analysis.
-7. Use fixed partition files for fair method comparisons.
-# Current Architecture Override: CLE-HFL v2 + FedFalsify v0.3
-
-As of 2026-07-24, the next formal protocol is operator-level CLE-HFL v2.
-The method is:
-
-```text
-fixed private fit/audit split
-+ receiver/class/source paired-correctness non-inferiority UCB
-+ classifier-head TAU Top-1 routing
-+ conservative margin transfer
-+ AugMix/JSD/DCL local robust learning
-```
+## 维护边界
 
-The protocol uses concrete seen/unseen corruption operators, but operator
-metadata is evaluation-only and never enters training. Read
-`docs/archive/methods/CLE_HFL_V2_FEDFALSIFY_FRAMEWORK_ZH.md` for formulas and the exact data flow.
+- 新方法必须通过统一通信上下文或明确的新接口接入，不得把官方仓库训练循环直接揉进 runner。
+- 外部基线适配器与官方参考源码分离；适配器负责公平协议，参考源码负责忠实度核对。
+- 被冻结的方法不重新加入活动 registry；需要追溯时读取归档或 Git 历史。
+- 修改 strict split、PEW+BER 本地目标或 AsymHFL-val 路由时，必须运行对应聚焦回归和一轮 smoke。

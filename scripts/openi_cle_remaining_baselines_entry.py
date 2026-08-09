@@ -65,7 +65,6 @@ def build_configs() -> dict[str, dict]:
                 "eps": 1.0e-6,
             }
         elif arm == "pew_ber":
-            config["method"]["fedease"]["cdep"] = {"enabled": False}
             config["method"]["fedease"]["pew"]["checkpoint"] = (
                 "outputs/pew_checkpoints/cle_remaining_baselines_seed0.pt"
             )

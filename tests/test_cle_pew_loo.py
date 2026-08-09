@@ -90,8 +90,8 @@ def test_pew_loo_entry_keeps_standard_and_strict_variants() -> None:
     standard = configs["standard_pew_ber"]
     strict = configs["strict_loo_pew_ber"]
     assert standard["method"]["fedease"]["ber"]["enabled"] is True
-    assert standard["method"]["fedease"]["cdep"]["enabled"] is False
-    assert strict["method"]["fedease"]["cdep"]["enabled"] is False
+    assert "cdep" not in standard["method"]["fedease"]
+    assert "cdep" not in strict["method"]["fedease"]
     assert standard["method"]["fedease"]["pew"]["exclude_operators"] == []
     assert strict["method"]["fedease"]["pew"]["exclude_operators"] == list(
         DEFAULT_UNSEEN_CORRUPTIONS

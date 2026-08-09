@@ -115,6 +115,9 @@ handcrafted taxonomy-free continuous witness
 ```
 
 Use `docs/README_ZH.md` to locate their evidence before discussing them.
+Active implementations for several frozen methods were removed on 2026-08-09;
+use `docs/archive/methods/NEGATIVE_CODE_REMOVAL_INDEX_ZH.md`, archived evidence,
+deliverables, and Git history instead of recreating them in the current runner.
 Preserve the dirty worktree and never revert unrelated user changes.
 
 ## Research Workflow

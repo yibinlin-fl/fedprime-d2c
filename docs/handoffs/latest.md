@@ -22,22 +22,86 @@ new research results. Run them in the order documented at:
 docs/experiments/current/CLE_HFL_PAPER_EVIDENCE_OPENI_RUN_ZH.md
 ```
 
-On 2026-08-09 the three RAHFL-table baselines missing from the first external
-screen were implemented behind the same `CommunicationContext`: FedDF logit
-ensemble fusion, KT-pFL personalized learned coefficients, and FCCL released
-cross-correlation communication. A matched five-arm 12-round entry is ready:
+On 2026-08-09 a baseline-fairness audit found that the completed external table
+is a matched-budget core-adaptation screen, not a full official-recipe SOTA
+comparison. The historical `aughfl`, `feddf`, and `kt_pfl` adapters remain
+frozen so old results stay reproducible. Separate fidelity-repair strategies
+were added:
 
 ```text
-entry:   scripts/openi_cle_remaining_baselines_entry.py
-arms:    feddf,kt_pfl,fccl,rahfl,pew_ber
-output:  cle_remaining_baselines_seed0_12round_outputs.tar.gz
-guide:   docs/experiments/current/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md
-tests:   16 focused communication/baseline tests passed
+aughfl_fidelity: participant-specific public AugMix views and native PubAug details
+feddf_fidelity: post-local fusion with frozen round teachers and server students
+kt_pfl_fidelity: post-local personalized KD followed by Eq. (7)-style coefficient update
 ```
 
-This is implementation readiness, not a result. The adapters reproduce each
-method's core mechanism under the fixed CLE protocol; they do not copy the
-original repositories' incompatible end-to-end training recipes.
+All three emit mechanism diagnostics. Focused tests passed (`30 passed`) and a
+one-round three-arm local smoke passed; smoke accuracy is not evidence. The
+implementation reading and pending OpenI guide are:
+
+```text
+docs/research/baselines/BASELINE_FIDELITY_REPAIR_ZH.md
+docs/experiments/current/CLE_BASELINE_FIDELITY_OPENI_RUN_ZH.md
+scripts/openi_cle_baseline_fidelity_entry.py
+```
+
+No formal fidelity result exists yet. Do not merge these new arms with the old
+baseline rows until the new 12-round task completes and its RAHFL/PEW anchors
+are checked.
+
+Repository cleanup phase 1 completed on 2026-08-09. The isolated offline
+FedCIS, continuous-witness, FedCFSA, and FedRIFT audit source files were removed
+after reference checks; their conclusions, archived documents, deliverables,
+and long-term memory were retained. Current-path focused regression remained
+green (`30 passed`). The permanent removal/evidence map is:
+
+```text
+docs/archive/methods/NEGATIVE_CODE_REMOVAL_INDEX_ZH.md
+```
+
+Cleanup phases 2--3 substantially reduced the active tree. `run_experiment.py`
+now lazily imports only the selected experiment. D2C/Oracle-D2C,
+FedPRIME-PAIR/CPAD, PRAC-HFL communication, FedFalsify v0.2/v0.3, standalone
+FedCLEAR/PCCD runners, FedCARA v1, CDep v1/v2, EBST/EBST-v2, SCP, and the CCRE
+local path were removed. Historical conclusions, archived documents,
+deliverables, and Git provenance were retained.
+
+The strict split code formerly named after FedFalsify is now the neutral
+`fedprime/data/strict_fit_audit.py`; its protocol tests passed. Historical
+NIR-DCL/SARA local-only configs were migrated to the current runner with
+`communication: none`. `local_fedease.py` now implements only the selected
+PEW+BER + AugMix/JSD/DCL path. The current CLE-HFL base config no longer
+declares CDep/EBST/SCP. Focused post-cleanup regression passed (`49 passed`),
+and a one-round local smoke completed all four client updates and reporting;
+it timed out only during the optional extended evaluation. Smoke accuracy is
+not evidence.
+
+The frozen FedCLEAR/IRD/PCCD branches have also been removed from the unified
+runner. Do not delete CCAD or FedSARA-CS merely by association; they are
+outside the explicit frozen list.
+
+On 2026-08-09 the matched remaining-baseline screen completed for FedDF,
+KT-pFL, FCCL, RAHFL, and PEW+BER. All arms contain rounds 0--11 and all core
+metrics are finite. RAHFL and PEW+BER exactly reproduced historical A0/A1, so
+the two baseline batches can be merged without rerunning the older methods.
+Last-five values were:
+
+```text
+method    Avg       Worst     WCCA    CFG
+FedDF     23.6607   19.2507   0.35    38.395
+KT-pFL    23.6587   19.5467   0.35    38.730
+FCCL      23.3163   19.2280   0.70    37.400
+RAHFL     30.0853   25.0427   0.85    30.440
+PEW+BER   34.6320   29.4280   7.25    24.640
+```
+
+The three new baselines are 6.42--6.77 Avg points below RAHFL and show no rapid
+late catch-up. They do not pass the 12-round promotion screen and should not be
+advanced to 40 rounds now. Report and archived guide:
+
+```text
+deliverables/cle_remaining_baselines_20260809/RESULT_SUMMARY_ZH.md
+docs/experiments/archive/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md
+```
 
 CDep-v2 was implemented after all three CDep-v1 lambda settings failed to beat
 PEW+BER. Its matched shared-PEW paired experiment is now complete. All four
@@ -64,9 +128,9 @@ deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md
 docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md
 ```
 
-The next paid experiment should be the completed remaining-baseline entry
-(`FedDF, KT-pFL, FCCL, RAHFL, PEW+BER`) before promoting competitive methods to
-40 rounds. Do not run older CDep entries and do not continue CDep tuning.
+The next paid experiment should be the prepared communication-orthogonality
+experiment using the frozen PEW+BER local method. Do not run older CDep entries
+and do not continue CDep tuning.
 
 Before the first paper-evidence run, the refactored AsymHFL strategy was
 protected by a legacy-vs-new numerical golden regression, cross-scenario

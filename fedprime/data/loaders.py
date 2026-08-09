@@ -656,52 +656,6 @@ def build_corruption_skew_augmix_loaders(
     return train_loaders, test_loader, train_datasets, test_ds
 
 
-def build_fedclear_private_loaders(
-    root: str | Path,
-    num_clients: int,
-    train_batch_size: int,
-    test_batch_size: int,
-    num_workers: int,
-):
-    """Build raw-tensor CLE-HFL loaders for online counterfactual interventions."""
-
-    train_loaders = []
-    train_datasets = []
-    for client_id in range(num_clients):
-        train_ds = CorruptionSkewClientDataset(
-            root=root,
-            client_id=client_id,
-            train=True,
-            transform=_private_train_transform(raw_for_prime=True),
-            return_corruption=False,
-        )
-        train_loaders.append(data.DataLoader(
-            train_ds,
-            batch_size=train_batch_size,
-            shuffle=True,
-            drop_last=True,
-            num_workers=num_workers,
-            pin_memory=torch.cuda.is_available(),
-        ))
-        train_datasets.append(train_ds)
-
-    test_ds = CorruptionSkewClientDataset(
-        root=root,
-        train=False,
-        transform=_private_test_transform(),
-        return_corruption=True,
-    )
-    test_loader = data.DataLoader(
-        test_ds,
-        batch_size=test_batch_size,
-        shuffle=False,
-        drop_last=False,
-        num_workers=num_workers,
-        pin_memory=torch.cuda.is_available(),
-    )
-    return train_loaders, test_loader, train_datasets, test_ds
-
-
 def build_corruption_skew_pretrain_loaders(
     root: str | Path,
     num_clients: int,

@@ -45,6 +45,7 @@ class PublicEnvironmentDataset(data.Dataset):
         indices: np.ndarray,
         seed: int,
         excluded_operators: list[str] | tuple[str, ...] | None = None,
+        label_mode: str = "hard",
     ) -> None:
         self.images = np.asarray(images, dtype=np.uint8)
         self.indices = np.asarray(indices, dtype=np.int64)
@@ -53,6 +54,9 @@ class PublicEnvironmentDataset(data.Dataset):
             dict.fromkeys(str(operator) for operator in (excluded_operators or ()))
         )
         self.corruption_groups = resolve_public_corruption_groups(self.excluded_operators)
+        self.label_mode = str(label_mode).lower()
+        if self.label_mode not in {"hard", "multi_label"}:
+            raise ValueError("PEW label_mode must be hard or multi_label")
 
     def _sample_operator(self, group: str, rng: np.random.Generator) -> str:
         return str(rng.choice(self.corruption_groups[group]))
@@ -66,12 +70,15 @@ class PublicEnvironmentDataset(data.Dataset):
         severity = int((item // len(PEW_ENVIRONMENT_NAMES)) % 5) + 1
         rng = np.random.default_rng(self.seed + item * 104729)
 
+        target = np.zeros(len(PEW_ENVIRONMENT_NAMES), dtype=np.float32)
         if environment_id == 0:
             corrupted = image
             severity_target = 0
+            target[0] = 1.0
         elif environment_id == len(PEW_ENVIRONMENT_NAMES) - 1:
-            first_group = list(CORRUPTION_GROUPS)[item % len(CORRUPTION_GROUPS)]
-            second_group = list(CORRUPTION_GROUPS)[(item + 1) % len(CORRUPTION_GROUPS)]
+            group_names = list(self.corruption_groups)
+            first_group = group_names[item % len(group_names)]
+            second_group = group_names[(item + 1) % len(group_names)]
             corrupted = apply_corruption(
                 image,
                 self._sample_operator(first_group, rng),
@@ -85,8 +92,10 @@ class PublicEnvironmentDataset(data.Dataset):
                 rng,
             )
             severity_target = severity
+            target[group_names.index(first_group) + 1] = 1.0
+            target[group_names.index(second_group) + 1] = 1.0
         else:
-            group = list(CORRUPTION_GROUPS)[environment_id - 1]
+            group = list(self.corruption_groups)[environment_id - 1]
             corrupted = apply_corruption(
                 image,
                 self._sample_operator(group, rng),
@@ -94,9 +103,11 @@ class PublicEnvironmentDataset(data.Dataset):
                 rng,
             )
             severity_target = severity
+            target[environment_id] = 1.0
 
         tensor = torch.from_numpy(np.ascontiguousarray(corrupted.transpose(2, 0, 1))).float() / 255.0
-        return tensor, environment_id, severity_target
+        environment_target = environment_id if self.label_mode == "hard" else torch.from_numpy(target)
+        return tensor, environment_target, severity_target
 
 
 class PublicEnvironmentWitness(nn.Module):
@@ -180,6 +191,7 @@ def build_public_environment_loaders(
     validation_fraction: float = 0.2,
     public_dataset: str = "cifar100",
     excluded_operators: list[str] | tuple[str, ...] | None = None,
+    label_mode: str = "hard",
 ) -> tuple[data.DataLoader, data.DataLoader]:
     dataset_name = str(public_dataset).lower()
     if dataset_name == "cifar100":
@@ -196,12 +208,14 @@ def build_public_environment_loaders(
         selected[:split],
         seed=seed,
         excluded_operators=excluded_operators,
+        label_mode=label_mode,
     )
     val_ds = PublicEnvironmentDataset(
         images,
         selected[split:],
         seed=seed + 1_000_003,
         excluded_operators=excluded_operators,
+        label_mode=label_mode,
     )
     common = {
         "batch_size": int(batch_size),
@@ -231,28 +245,47 @@ def evaluate_environment_witness(
     confidences = []
     all_probabilities = []
     all_targets = []
+    all_soft_targets = []
     unknown_id = len(PEW_ENVIRONMENT_NAMES) - 1
     with torch.no_grad():
         for images, environments, severities in loader:
             images = images.to(device, non_blocking=True)
-            environments = environments.to(device).long()
+            environments = environments.to(device)
+            soft_targets = environments.ndim == 2
+            target_probabilities = environments.float() if soft_targets else None
+            hard_targets = (
+                target_probabilities.argmax(dim=1) if soft_targets else environments.long()
+            )
             severities = severities.to(device).long()
             environment_logits, severity_logits, _ = model(images)
-            probabilities = environment_logits.softmax(dim=1)
-            predictions = probabilities.argmax(dim=1)
-            environment_correct += int(predictions.eq(environments).sum().item())
-            environment_total += int(environments.numel())
+            probabilities = (
+                environment_logits.sigmoid() if soft_targets else environment_logits.softmax(dim=1)
+            )
+            predictions = (
+                probabilities[:, :unknown_id].argmax(dim=1)
+                if soft_targets
+                else probabilities.argmax(dim=1)
+            )
+            if soft_targets:
+                membership = target_probabilities.gather(1, predictions[:, None]).squeeze(1) > 0
+                environment_correct += int(membership.sum().item())
+                environment_total += int(predictions.numel())
+            else:
+                environment_correct += int(predictions.eq(hard_targets).sum().item())
+                environment_total += int(hard_targets.numel())
             confidences.append(probabilities.max(dim=1).values.detach().cpu())
             all_probabilities.append(probabilities.detach().cpu())
-            all_targets.append(environments.detach().cpu())
+            all_targets.append(hard_targets.detach().cpu())
+            if soft_targets:
+                all_soft_targets.append(target_probabilities.detach().cpu())
 
             severity_mask = severities > 0
             if bool(severity_mask.any()):
                 severity_predictions = severity_logits.argmax(dim=1) + 1
                 severity_correct += int(severity_predictions[severity_mask].eq(severities[severity_mask]).sum().item())
                 severity_total += int(severity_mask.sum().item())
-            clean_mask = environments == 0
-            unknown_mask = environments == unknown_id
+            clean_mask = hard_targets == 0
+            unknown_mask = hard_targets == unknown_id
             clean_correct += int(predictions[clean_mask].eq(0).sum().item())
             clean_total += int(clean_mask.sum().item())
             unknown_correct += int(predictions[unknown_mask].eq(unknown_id).sum().item())
@@ -262,20 +295,37 @@ def evaluate_environment_witness(
     probabilities = torch.cat(all_probabilities) if all_probabilities else torch.empty(0, len(PEW_ENVIRONMENT_NAMES))
     targets = torch.cat(all_targets) if all_targets else torch.empty(0, dtype=torch.long)
     predictions = probabilities.argmax(dim=1) if targets.numel() else targets
+    soft_targets = torch.cat(all_soft_targets) if all_soft_targets else None
+    if soft_targets is not None:
+        predictions = probabilities[:, :unknown_id].argmax(dim=1)
     confusion = torch.zeros(len(PEW_ENVIRONMENT_NAMES), len(PEW_ENVIRONMENT_NAMES), dtype=torch.int64)
     for target, prediction in zip(targets.tolist(), predictions.tolist()):
         confusion[int(target), int(prediction)] += 1
     ece = 0.0
     if targets.numel():
         max_probabilities = probabilities.max(dim=1).values
-        correctness = predictions.eq(targets).float()
+        correctness = (
+            (soft_targets.gather(1, predictions[:, None]).squeeze(1) > 0).float()
+            if soft_targets is not None
+            else predictions.eq(targets).float()
+        )
         for lower in torch.linspace(0.0, 0.9, 10):
             upper = lower + 0.1
             mask = (max_probabilities > lower) & (max_probabilities <= upper)
             if bool(mask.any()):
                 ece += float(mask.float().mean() * (correctness[mask].mean() - max_probabilities[mask].mean()).abs())
-        nll = float(nn.functional.nll_loss(probabilities.clamp_min(1e-12).log(), targets).item())
-        unknown_auroc = _binary_auroc(probabilities[:, unknown_id], targets.eq(unknown_id))
+        if soft_targets is not None:
+            nll = float(
+                nn.functional.binary_cross_entropy(
+                    probabilities.clamp(1e-12, 1.0 - 1e-12), soft_targets
+                ).item()
+            )
+        else:
+            nll = float(nn.functional.nll_loss(probabilities.clamp_min(1e-12).log(), targets).item())
+        unknown_targets = (
+            soft_targets[:, unknown_id] > 0 if soft_targets is not None else targets.eq(unknown_id)
+        )
+        unknown_auroc = _binary_auroc(probabilities[:, unknown_id], unknown_targets)
     else:
         nll = 0.0
         unknown_auroc = 0.0
@@ -316,10 +366,16 @@ def train_environment_witness(
             if max_batches is not None and batch_idx >= int(max_batches):
                 break
             images = images.to(device, non_blocking=True)
-            environments = environments.to(device).long()
+            environments = environments.to(device)
             severities = severities.to(device).long()
             environment_logits, severity_logits, _ = model(images)
-            environment_loss = nn.functional.cross_entropy(environment_logits, environments)
+            if environments.ndim == 2:
+                targets = environments.float()
+                environment_loss = nn.functional.binary_cross_entropy_with_logits(
+                    environment_logits, targets
+                )
+            else:
+                environment_loss = nn.functional.cross_entropy(environment_logits, environments.long())
             severity_mask = severities > 0
             if bool(severity_mask.any()):
                 severity_loss = nn.functional.cross_entropy(
@@ -415,15 +471,42 @@ def calibrate_unknown_threshold(
     with torch.no_grad():
         for images, environments, _ in loader:
             logits, _, _ = model(images.to(device, non_blocking=True))
-            probabilities.append(logits.softmax(dim=1).cpu())
-            targets.append(environments.long().cpu())
+            probabilities.append(
+                (logits.sigmoid() if environments.ndim == 2 else logits.softmax(dim=1)).cpu()
+            )
+            targets.append(environments.cpu())
     if not probabilities:
         raise ValueError("cannot calibrate PEW unknown threshold on an empty loader")
-    result = select_unknown_threshold(
-        torch.cat(probabilities),
-        torch.cat(targets),
-        unknown_id=len(PEW_ENVIRONMENT_NAMES) - 1,
-    )
+    probabilities = torch.cat(probabilities)
+    targets = torch.cat(targets)
+    if targets.ndim == 1:
+        result = select_unknown_threshold(
+            probabilities,
+            targets.long(),
+            unknown_id=len(PEW_ENVIRONMENT_NAMES) - 1,
+        )
+    else:
+        known_probabilities = probabilities[:, : len(PEW_ENVIRONMENT_NAMES) - 1]
+        confidence, native_prediction = known_probabilities.max(dim=1)
+        thresholds = torch.linspace(0.0, 0.95, 96)
+        best = None
+        for raw_threshold in thresholds:
+            threshold = float(raw_threshold.item())
+            accepted = confidence >= threshold
+            membership = targets.gather(1, native_prediction[:, None]).squeeze(1) > 0
+            accuracy = float((accepted & membership).float().mean().item())
+            candidate = {
+                "threshold": threshold,
+                "accuracy": accuracy,
+                "unknown_rate": float((~accepted).float().mean().item()),
+            }
+            if best is None or (accuracy, -threshold) > (best["accuracy"], -best["threshold"]):
+                best = candidate
+        assert best is not None
+        best["native_accuracy"] = float(
+            (targets.gather(1, native_prediction[:, None]).squeeze(1) > 0).float().mean().item()
+        )
+        result = best
     print(
         f"[setup] calibrated PEW unknown threshold={result['threshold']:.2f} "
         f"validation_acc={100.0 * result['accuracy']:.2f} "
@@ -441,6 +524,7 @@ def infer_environment_annotations(
     batch_size: int,
     confidence_threshold: float,
     max_samples: int | None = None,
+    include_probabilities: bool = False,
 ) -> dict[str, np.ndarray]:
     raw = np.asarray(images, dtype=np.uint8)
     if max_samples is not None:
@@ -450,13 +534,17 @@ def infer_environment_annotations(
     environment_ids = []
     confidences = []
     embeddings = []
+    all_probabilities = []
     unknown_id = len(PEW_ENVIRONMENT_NAMES) - 1
     model.eval()
     with torch.no_grad():
         for (batch,) in loader:
             logits, _, embedding = model(batch.to(device, non_blocking=True))
-            probabilities = logits.softmax(dim=1)
-            confidence, prediction = probabilities.max(dim=1)
+            probabilities = logits.sigmoid() if include_probabilities else logits.softmax(dim=1)
+            prediction_probabilities = (
+                probabilities[:, :unknown_id] if include_probabilities else probabilities
+            )
+            confidence, prediction = prediction_probabilities.max(dim=1)
             prediction = torch.where(
                 confidence >= float(confidence_threshold),
                 prediction,
@@ -465,11 +553,24 @@ def infer_environment_annotations(
             environment_ids.append(prediction.cpu())
             confidences.append(confidence.cpu())
             embeddings.append(embedding.cpu())
-    return {
+            if include_probabilities:
+                known = probabilities[:, :unknown_id]
+                known = known / known.sum(dim=1, keepdim=True).clamp_min(1e-12)
+                responsibilities = torch.zeros_like(probabilities)
+                accepted = confidence >= float(confidence_threshold)
+                responsibilities[accepted, :unknown_id] = known[accepted]
+                responsibilities[~accepted, unknown_id] = 1.0
+                all_probabilities.append(responsibilities.cpu())
+    result = {
         "environment_ids": torch.cat(environment_ids).numpy().astype(np.int64),
         "confidence": torch.cat(confidences).numpy().astype(np.float32),
         "embedding": torch.cat(embeddings).numpy().astype(np.float32),
     }
+    if include_probabilities:
+        result["environment_probabilities"] = (
+            torch.cat(all_probabilities).numpy().astype(np.float32)
+        )
+    return result
 
 
 def save_environment_witness(
@@ -477,6 +578,7 @@ def save_environment_witness(
     path: str | Path,
     *,
     excluded_operators: list[str] | tuple[str, ...] | None = None,
+    label_mode: str = "hard",
 ) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -488,6 +590,7 @@ def save_environment_witness(
             "severity_levels": model.severity_levels,
             "environment_names": PEW_ENVIRONMENT_NAMES,
             "excluded_operators": list(excluded_operators or ()),
+            "label_mode": str(label_mode),
         },
         path,
     )
@@ -502,6 +605,7 @@ def load_environment_witness(path: str | Path, device: torch.device) -> PublicEn
     ).to(device)
     model.load_state_dict(payload["state_dict"])
     model.training_excluded_operators = tuple(payload.get("excluded_operators", ()))
+    model.training_label_mode = str(payload.get("label_mode", "hard"))
     for parameter in model.parameters():
         parameter.requires_grad_(False)
     model.eval()

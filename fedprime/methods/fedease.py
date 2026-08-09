@@ -117,6 +117,9 @@ class FedEASEExperiment(AsymHFLExperiment):
         train_cfg = self.config["train"]
         fedease_cfg = self.config["method"]["fedease"]
         pew_cfg = fedease_cfg.get("pew", fedease_cfg.get("environment_witness", {}))
+        label_mode = str(pew_cfg.get("label_mode", "hard")).lower()
+        if label_mode not in {"hard", "multi_label"}:
+            raise ValueError("PEW label_mode must be hard or multi_label")
         excluded_operators = tuple(
             sorted({str(operator) for operator in pew_cfg.get("exclude_operators", ())})
         )
@@ -144,6 +147,7 @@ class FedEASEExperiment(AsymHFLExperiment):
                 validation_fraction=float(pew_cfg.get("validation_fraction", 0.2)),
                 public_dataset=str(data_cfg.get("public_dataset", "cifar100")),
                 excluded_operators=excluded_operators,
+                label_mode=label_mode,
             )
         if checkpoint.is_file() and bool(pew_cfg.get("reuse_checkpoint", True)):
             print(f"[setup] loading PEW checkpoint: {checkpoint}", flush=True)
@@ -156,6 +160,12 @@ class FedEASEExperiment(AsymHFLExperiment):
                     "PEW checkpoint operator exclusion mismatch: "
                     f"checkpoint={list(checkpoint_exclusions)} "
                     f"config={list(excluded_operators)}"
+                )
+            checkpoint_label_mode = str(getattr(witness, "training_label_mode", "hard"))
+            if checkpoint_label_mode != label_mode:
+                raise ValueError(
+                    "PEW checkpoint label mode mismatch: "
+                    f"checkpoint={checkpoint_label_mode} config={label_mode}"
                 )
             history = []
         else:
@@ -184,6 +194,7 @@ class FedEASEExperiment(AsymHFLExperiment):
                 witness,
                 checkpoint,
                 excluded_operators=excluded_operators,
+                label_mode=label_mode,
             )
             print(f"[setup] saved PEW checkpoint: {checkpoint}", flush=True)
 
@@ -216,6 +227,7 @@ class FedEASEExperiment(AsymHFLExperiment):
                 self.device,
                 batch_size=int(pew_cfg.get("inference_batch_size", 512)),
                 confidence_threshold=unknown_threshold,
+                include_probabilities=label_mode == "multi_label",
             )
             oracle = self._diagnostic_environment_ids(
                 np.load(client_root / "train_corruption_ids.npy").astype(np.int64),
@@ -234,6 +246,7 @@ class FedEASEExperiment(AsymHFLExperiment):
         self._fedease_environment_annotations = annotations
         report = {
             "environment_names": PEW_ENVIRONMENT_NAMES,
+            "label_mode": label_mode,
             "excluded_public_operators": list(excluded_operators),
             "public_operator_pools": {
                 group: list(operators)

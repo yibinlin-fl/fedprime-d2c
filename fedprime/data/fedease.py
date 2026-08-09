@@ -25,6 +25,7 @@ class EnvironmentAnnotatedDataset(data.Dataset):
         environment_ids,
         environment_features=None,
         confidence=None,
+        environment_probabilities=None,
     ) -> None:
         if len(dataset) != len(environment_ids):
             raise ValueError("dataset and environment_ids must have the same length")
@@ -34,10 +35,18 @@ class EnvironmentAnnotatedDataset(data.Dataset):
             None if environment_features is None else np.asarray(environment_features, dtype=np.float32)
         )
         self.confidence = None if confidence is None else np.asarray(confidence, dtype=np.float32)
+        self.environment_probabilities = (
+            None
+            if environment_probabilities is None
+            else np.asarray(environment_probabilities, dtype=np.float32)
+        )
         if self.environment_features is not None and len(self.environment_features) != len(dataset):
             raise ValueError("environment_features and dataset must have the same length")
         if self.confidence is not None and len(self.confidence) != len(dataset):
             raise ValueError("confidence and dataset must have the same length")
+        if self.environment_probabilities is not None:
+            if len(self.environment_probabilities) != len(dataset) or self.environment_probabilities.ndim != 2:
+                raise ValueError("environment_probabilities must have shape [sample, environment]")
 
     def __len__(self) -> int:
         return len(self.dataset)
@@ -47,12 +56,17 @@ class EnvironmentAnnotatedDataset(data.Dataset):
         environment_id = int(self.environment_ids[index])
         if self.environment_features is None:
             return images, label, environment_id
-        return (
+        result = (
             images,
             label,
             environment_id,
             torch.as_tensor(self.environment_features[index], dtype=torch.float32),
             float(self.confidence[index]) if self.confidence is not None else 1.0,
+        )
+        if self.environment_probabilities is None:
+            return result
+        return result + (
+            torch.as_tensor(self.environment_probabilities[index], dtype=torch.float32),
         )
 
 
@@ -89,6 +103,7 @@ def build_fedease_oracle_augmix_loaders(
             base_dataset.corruption_ids if annotation is None else annotation["environment_ids"],
             environment_features=None if annotation is None else annotation.get("embedding"),
             confidence=None if annotation is None else annotation.get("confidence"),
+            environment_probabilities=None if annotation is None else annotation.get("environment_probabilities"),
         )
         train_loaders.append(data.DataLoader(
             train_dataset,
@@ -150,6 +165,7 @@ def build_fedease_fit_augmix_loaders(
             base_dataset.corruption_ids if annotation is None else annotation["environment_ids"],
             environment_features=None if annotation is None else annotation.get("embedding"),
             confidence=None if annotation is None else annotation.get("confidence"),
+            environment_probabilities=None if annotation is None else annotation.get("environment_probabilities"),
         )
         fit_dataset = data.Subset(annotated, split.fit_indices.tolist())
         loaders.append(data.DataLoader(
@@ -185,18 +201,31 @@ def load_client_class_environment_counts(
             else np.asarray(annotation["environment_ids"], dtype=np.int64)
         )
         selected = None if fit_indices is None else np.asarray(fit_indices[client_id], dtype=np.int64)
+        probabilities = None if annotation is None else annotation.get("environment_probabilities")
+        if probabilities is not None:
+            probabilities = np.asarray(probabilities, dtype=np.float32)
         if selected is not None:
             labels = labels[selected]
             environment_ids = environment_ids[selected]
+            if probabilities is not None:
+                probabilities = probabilities[selected]
         if labels.shape != environment_ids.shape:
             raise ValueError(f"client {client_id} labels/environment IDs have different shapes")
         if ((environment_ids < 0) | (environment_ids >= num_environments)).any():
             raise ValueError(f"client {client_id} has an out-of-range environment ID")
-        flat = labels * num_environments + environment_ids
-        matrix = np.bincount(
-            flat,
-            minlength=num_classes * num_environments,
-        ).reshape(num_classes, num_environments)
+        if probabilities is None:
+            flat = labels * num_environments + environment_ids
+            matrix = np.bincount(
+                flat,
+                minlength=num_classes * num_environments,
+            ).reshape(num_classes, num_environments)
+        else:
+            if probabilities.shape != (len(labels), num_environments):
+                raise ValueError(f"client {client_id} has invalid environment probabilities")
+            normalizer = np.clip(probabilities.sum(axis=1, keepdims=True), 1e-12, None)
+            probabilities = probabilities / normalizer
+            matrix = np.zeros((num_classes, num_environments), dtype=np.float32)
+            np.add.at(matrix, labels, probabilities)
         counts[client_id] = torch.as_tensor(matrix, dtype=torch.float32)
     return counts
 

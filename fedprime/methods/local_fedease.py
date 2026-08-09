@@ -3,7 +3,10 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F
 
-from fedprime.methods.balanced_environment_risk import balanced_environment_risk
+from fedprime.methods.balanced_environment_risk import (
+    balanced_environment_risk,
+    soft_balanced_environment_risk,
+)
 from fedprime.models.factory import forward_logits
 from fedprime.utils.env import add_vendor_paths
 
@@ -35,6 +38,9 @@ def train_local_fedease_epoch(
 
     ber_cfg = fedease_cfg.get("ber", {})
     use_ber = bool(ber_cfg.get("enabled", True))
+    ber_assignment = str(ber_cfg.get("assignment", "hard")).lower()
+    if ber_assignment not in {"hard", "soft"}:
+        raise ValueError("BER assignment must be hard or soft")
     use_dcl = bool(fedease_cfg.get("preserve_dcl", True))
 
     model.train()
@@ -55,6 +61,16 @@ def train_local_fedease_epoch(
             images, labels, environment_ids = batch
         elif len(batch) == 5:
             images, labels, environment_ids, _environment_features, _environment_confidence = batch
+            environment_probabilities = None
+        elif len(batch) == 6:
+            (
+                images,
+                labels,
+                environment_ids,
+                _environment_features,
+                _environment_confidence,
+                environment_probabilities,
+            ) = batch
         else:
             raise ValueError(
                 "PEW+BER requires (views, labels, environment_ids) or "
@@ -66,6 +82,10 @@ def train_local_fedease_epoch(
         images = [image.to(device, non_blocking=True) for image in images]
         labels = labels.to(device, non_blocking=True).long()
         environment_ids = environment_ids.to(device, non_blocking=True).long()
+        if len(batch) == 3:
+            environment_probabilities = None
+        if environment_probabilities is not None:
+            environment_probabilities = environment_probabilities.to(device, non_blocking=True).float()
 
         batch_size = images[0].shape[0]
         logits_all = forward_logits(model, torch.cat(images[:3], dim=0))
@@ -74,15 +94,23 @@ def train_local_fedease_epoch(
         clean_ce = sample_ce.mean()
 
         if use_ber:
-            classification_loss, ber_stats = balanced_environment_risk(
-                sample_ce,
-                labels,
-                environment_ids,
-                group_counts=class_environment_counts,
-                support_gamma=float(ber_cfg.get("support_gamma", 0.0)),
-                count_cap=int(ber_cfg.get("count_cap", 32)),
-                min_group_count=int(ber_cfg.get("min_group_count", 1)),
-            )
+            common = {
+                "group_counts": class_environment_counts,
+                "support_gamma": float(ber_cfg.get("support_gamma", 0.0)),
+                "count_cap": int(ber_cfg.get("count_cap", 32)),
+                "min_group_count": float(ber_cfg.get("min_group_count", 1)),
+            }
+            if ber_assignment == "soft":
+                if environment_probabilities is None:
+                    raise ValueError("Soft-BER requires PEW environment probabilities")
+                classification_loss, ber_stats = soft_balanced_environment_risk(
+                    sample_ce, labels, environment_probabilities, **common
+                )
+            else:
+                common["min_group_count"] = int(common["min_group_count"])
+                classification_loss, ber_stats = balanced_environment_risk(
+                    sample_ce, labels, environment_ids, **common
+                )
             ber_loss = classification_loss
         else:
             classification_loss = clean_ce

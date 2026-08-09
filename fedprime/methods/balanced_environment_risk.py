@@ -3,6 +3,74 @@ from __future__ import annotations
 import torch
 
 
+def soft_balanced_environment_risk(
+    sample_losses: torch.Tensor,
+    labels: torch.Tensor,
+    environment_probabilities: torch.Tensor,
+    *,
+    group_counts: torch.Tensor | None = None,
+    support_gamma: float = 0.0,
+    count_cap: int = 32,
+    min_group_count: float = 1.0,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    """Balance class/environment risks using fractional PEW responsibilities."""
+
+    if sample_losses.ndim != 1 or labels.shape != sample_losses.shape:
+        raise ValueError("sample_losses and labels must have shape [batch]")
+    if environment_probabilities.ndim != 2 or environment_probabilities.shape[0] != len(labels):
+        raise ValueError("environment_probabilities must have shape [batch, environments]")
+    if not 0.0 <= support_gamma <= 1.0:
+        raise ValueError("support_gamma must be in [0, 1]")
+    if count_cap < 1 or min_group_count <= 0:
+        raise ValueError("count_cap and min_group_count must be positive")
+
+    labels = labels.long()
+    responsibilities = environment_probabilities.to(
+        device=sample_losses.device, dtype=sample_losses.dtype
+    )
+    if bool((responsibilities < 0).any()):
+        raise ValueError("environment probabilities cannot be negative")
+    responsibilities = responsibilities / responsibilities.sum(dim=1, keepdim=True).clamp_min(
+        torch.finfo(responsibilities.dtype).eps
+    )
+
+    if group_counts is None:
+        num_classes = int(labels.max().item()) + 1
+        counts = sample_losses.new_zeros((num_classes, responsibilities.shape[1]))
+        counts.index_add_(0, labels, responsibilities)
+    else:
+        counts = group_counts.to(device=sample_losses.device, dtype=sample_losses.dtype)
+        if counts.ndim != 2 or counts.shape[1] != responsibilities.shape[1]:
+            raise ValueError("group_counts must match [classes, environments]")
+        if int(labels.max().item()) >= counts.shape[0] or bool((counts < 0).any()):
+            raise ValueError("invalid group_counts for batch labels")
+
+    valid = counts >= float(min_group_count)
+    support = counts.clamp(max=float(count_cap)).pow(support_gamma)
+    support = torch.where(valid, support, torch.zeros_like(support))
+    environment_weights = support / support.sum(dim=1, keepdim=True).clamp_min(
+        torch.finfo(support.dtype).eps
+    )
+    valid_classes = valid.any(dim=1)
+    class_count = valid_classes.sum().clamp_min(1).to(sample_losses.dtype)
+    objective_weights = environment_weights / counts.clamp_min(
+        torch.finfo(counts.dtype).eps
+    ) / class_count
+    sample_weights = (objective_weights[labels] * responsibilities).sum(dim=1)
+    dataset_size = counts.sum()
+    loss = dataset_size * (sample_weights * sample_losses).mean()
+    effective = environment_weights.square().sum(dim=1).clamp_min(
+        torch.finfo(counts.dtype).eps
+    ).reciprocal()
+    return loss, {
+        "valid_classes": valid_classes.sum().to(sample_losses.dtype),
+        "valid_groups": valid.sum().to(sample_losses.dtype),
+        "effective_groups_per_class": (
+            effective[valid_classes].mean() if bool(valid_classes.any()) else sample_losses.new_zeros(())
+        ),
+    }
+
+
 def balanced_environment_risk(
     sample_losses: torch.Tensor,
     labels: torch.Tensor,

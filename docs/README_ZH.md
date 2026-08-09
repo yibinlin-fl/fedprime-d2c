@@ -2,6 +2,13 @@
 
 Updated: 2026-08-09
 
+当前待运行的 Multi-label PEW + Soft-BER 配对筛选：
+
+```text
+docs/experiments/current/CLE_MULTILABEL_PEW_SOFTBER_OPENI_RUN_ZH.md
+scripts/openi_cle_multilabel_softber_entry.py
+```
+
 ## 2026-08-09 基线公平性与忠实度修复
 
 ```text

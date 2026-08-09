@@ -4,6 +4,27 @@ Updated: 2026-08-09
 
 ## Current Objective
 
+On 2026-08-09 the repository cleanup was committed as `2df15c5`. The next
+local-method candidate is now implemented as an explicitly optional path:
+
+```text
+hard control = hard-label PEW + hard BER
+candidate    = compositional Multi-label PEW + Soft-BER
+```
+
+Mixed public corruptions receive known family mixture targets instead of the
+old hard `unknown` target. Private inference retains the full environment
+responsibility vector, and Soft-BER fractionally aggregates class-environment
+risk. Old checkpoints and behavior remain backward compatible and are guarded
+by checkpoint `label_mode`. Current-path tests passed (`71 passed`) and a one-round
+soft-path smoke completed; smoke accuracy is not evidence. The prepared
+matched 12-round OpenI entry is:
+
+```text
+scripts/openi_cle_multilabel_softber_entry.py
+docs/experiments/current/CLE_MULTILABEL_PEW_SOFTBER_OPENI_RUN_ZH.md
+```
+
 Study heterogeneous federated learning under simultaneous model heterogeneity,
 label-skew Non-IID, and corruption-label entanglement. The current formal
 benchmark is four-client CLE-HFL v2 (`alpha=0.5`, `gamma=0.9`, seed 0), with 11
@@ -128,9 +149,9 @@ deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md
 docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md
 ```
 
-The next paid experiment should be the prepared communication-orthogonality
-experiment using the frozen PEW+BER local method. Do not run older CDep entries
-and do not continue CDep tuning.
+The next paid experiment should be the prepared hard-vs-soft PEW/BER paired
+screen above. Communication-orthogonality remains pending until this local
+method decision is made. Do not run older CDep entries or continue CDep tuning.
 
 Before the first paper-evidence run, the refactored AsymHFL strategy was
 protected by a legacy-vs-new numerical golden regression, cross-scenario

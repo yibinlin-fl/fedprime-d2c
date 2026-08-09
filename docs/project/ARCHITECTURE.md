@@ -14,8 +14,8 @@ docs/archive/legacy/ARCHITECTURE_PRE_CLEANUP_2026_08_09.md
 CLE-HFL v2 prepared data
   -> strict fit/audit split
   -> heterogeneous client models
-  -> PEW environment annotations
-  -> BER + AugMix/JSD + DCL local training
+  -> PEW environment annotations (hard ID, or optional compositional probabilities)
+  -> BER/Soft-BER + AugMix/JSD + DCL local training
   -> selected communication strategy
   -> final-test reporting and CLE/operator metrics
 ```
@@ -26,6 +26,8 @@ CLE-HFL v2 prepared data
 - 客户端私有 `audit` 仅用于 AsymHFL-val 路由。
 - final-test 标签仅用于报告，不参与调参、选教师或早停。
 - PEW 使用无标签公共图像上的人工已知 corruption 训练；私有 operator 元数据仅用于诊断评估。
+- 默认路径继续使用硬 PEW+BER；实验性 `multi_label` 路径把复合 corruption 表示为 family 概率，并由 Soft-BER 进行分数责任聚合。
+- PEW checkpoint 保存标签模式，禁止硬/软 checkpoint 误复用。
 
 ## 核心运行入口
 
@@ -51,7 +53,8 @@ fedprime/methods/environment_witness.py
 `local_fedease.py` 只保留当前选定目标：
 
 ```text
-classification = BER over class x predicted-environment groups
+classification = hard BER over class x predicted-environment groups
+              or Soft-BER over class x probabilistic environment responsibilities
 local objective = classification + lambda_jsd * JSD + DCL
 ```
 

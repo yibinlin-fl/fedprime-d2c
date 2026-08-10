@@ -1,22 +1,44 @@
 # TODO Next
 
-## Immediate - Run Remaining RAHFL-table Baselines - 2026-08-09
+## Immediate - Review And Run Fidelity-Repaired Baselines - 2026-08-09
 
-Strict PEW-LOO completed and passed all four frozen gates. The next paid screen
-is the already implemented matched five-arm task:
+The historical baseline adapters are preserved. New `aughfl_fidelity`,
+`feddf_fidelity`, and `kt_pfl_fidelity` implementations passed focused tests
+and one-round smoke verification. No formal result exists yet.
+
+After reviewing the prepared changes, commit/push only when the user requests
+it, then run:
 
 ```text
-dataset: openi_cle_hfl_v2_alpha05_gamma09
-entry: scripts/openi_cle_remaining_baselines_entry.py
-arguments: none
-arms: feddf, kt_pfl, fccl, rahfl, pew_ber
-archive: cle_remaining_baselines_seed0_12round_outputs.tar.gz
+scripts/openi_cle_baseline_fidelity_entry.py --arms=all
 ```
 
-Use this 12-round result to discard clearly weak baselines. Promote a baseline
-to 40 rounds if it is close to or better than RAHFL, or if its late curve is
-still rising and the gap is small. Do not interpret 12 rounds as a final
-negative conclusion for a slow-converging method.
+Analyze mechanism diagnostics and RAHFL/PEW+BER anchors before replacing any
+old row. The communication-orthogonality experiment remains pending after this
+fidelity check.
+
+## Immediate - Run Communication Orthogonality - 2026-08-09
+
+Strict PEW-LOO passed all four frozen gates. The remaining FedDF/KT-pFL/FCCL
+screen also completed; all three were 6.42--6.77 last-five Avg points below
+RAHFL and did not qualify for 40-round promotion. RAHFL and PEW+BER anchors
+exactly reproduced historical A0/A1, so older baselines need not be rerun.
+
+The next paid experiment is the already prepared communication-orthogonality
+screen using the frozen PEW+BER local method. Before launch, verify that all
+candidate arms have CDep disabled and that the guide no longer describes the
+old PEW+BER+CDep candidate.
+
+Completed remaining-baseline evidence:
+
+```text
+archive: outputs/cle_remaining_baselines_seed0_12round_outputs.tar.gz
+report: deliverables/cle_remaining_baselines_20260809/RESULT_SUMMARY_ZH.md
+```
+
+Do not promote FedDF, KT-pFL, or FCCL to 40 rounds under the current screen.
+This is a negative result for their matched core adaptations, not for every
+possible original-recipe implementation.
 
 ## Completed - Strict PEW Operator-LOO - 2026-08-09
 
@@ -84,10 +106,9 @@ excludes them from public PEW train and validation generation. Report existing
 results as `private-unseen`; the completed experiment is specifically a PEW operator
 LOO audit, not a claim that every generic augmentation is globally unseen.
 
-Run the pending FedDF/KT-pFL/FCCL matched screen first. Then run communication
-orthogonality, cross-scenario seeds 1/2, alpha/gamma stress tests, and the
-matched CIFAR-100-private second-dataset A/B. FedDF/KT-pFL/FCCL are no longer
-implementation TODOs; only their formal run remains pending.
+Run communication orthogonality next, then cross-scenario seeds 1/2,
+alpha/gamma stress tests, and the matched CIFAR-100-private second-dataset A/B.
+FedDF/KT-pFL/FCCL implementation and formal 12-round screening are complete.
 
 ## Historical Completed Strict 12-Round A/B Probe - 2026-08-04
 

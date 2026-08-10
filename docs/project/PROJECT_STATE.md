@@ -2,6 +2,20 @@
 
 Last updated: 2026-08-09
 
+## Baseline Fidelity Repair Prepared - 2026-08-09
+
+The completed external-baseline results remain historical core-adaptation
+screens. Their strategy names and behavior were not changed. Separate
+`aughfl_fidelity`, `feddf_fidelity`, and `kt_pfl_fidelity` strategies now
+repair participant-specific public views, post-local fusion timing, frozen
+FedDF teachers, and the KT-pFL alternating coefficient update. The unified
+runner records method-specific teacher/coefficient diagnostics.
+
+Focused verification passed (`30 passed`) and a one-round three-arm local
+smoke passed with finite collaboration losses and diagnostics. No formal
+12-round fidelity result exists yet. Entry:
+`scripts/openi_cle_baseline_fidelity_entry.py`.
+
 ## Strict PEW Operator-LOO Result - GO - 2026-08-09
 
 Added an optional `method.fedease.pew.exclude_operators` protocol. The default
@@ -1975,10 +1989,15 @@ Use:
 读取 docs/project/PROJECT_STATE.md 和 docs/project/TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。
 ```
 
-## Remaining RAHFL-table baselines - 2026-08-09
+## Remaining RAHFL-table baselines - screened 2026-08-09
 
 The unified communication registry now includes FedDF, KT-pFL, and FCCL.
 All three implement the published/released core communication mechanism through
 `CommunicationContext`, use the same public batch budget, and do not read audit
-or final-test labels. The matched OpenI entry is
-`scripts/openi_cle_remaining_baselines_entry.py`; formal results are pending.
+or final-test labels. Their matched 12-round run completed with finite metrics
+and active communication losses. Last-five Avg was FedDF 23.6607, KT-pFL
+23.6587, FCCL 23.3163, versus RAHFL 30.0853 and PEW+BER 34.6320. The two
+anchors exactly reproduced historical A0/A1. None of the three new baselines
+qualified for 40-round promotion.
+
+Report: `deliverables/cle_remaining_baselines_20260809/RESULT_SUMMARY_ZH.md`.

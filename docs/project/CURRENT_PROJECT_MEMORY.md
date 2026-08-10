@@ -3073,7 +3073,28 @@ The candidate led this screen on both seen and unseen corruption operators.
 This is a fixed-scenario, single-training-seed screening result, not a complete
 SOTA claim. FedDF, KT-pFL, and FCCL were absent from this completed result.
 Their core-mechanism adapters and matched five-arm entry were implemented on
-2026-08-09, but have no formal result yet.
+2026-08-09. The formal 12-round screen later completed the same day. RAHFL and
+PEW+BER exactly reproduced historical A0/A1. Last-five results were:
+
+```text
+method    Avg       Worst     WCCA    CFG
+FedDF     23.6607   19.2507   0.35    38.395
+KT-pFL    23.6587   19.5467   0.35    38.730
+FCCL      23.3163   19.2280   0.70    37.400
+RAHFL     30.0853   25.0427   0.85    30.440
+PEW+BER   34.6320   29.4280   7.25    24.640
+```
+
+The three new core adaptations were 6.42--6.77 Avg points below RAHFL and
+showed no rapid late catch-up, so none qualified for 40-round promotion. This
+does not claim that every original-recipe implementation of those papers would
+fail. Evidence:
+
+```text
+outputs/cle_remaining_baselines_seed0_12round_outputs.tar.gz
+deliverables/cle_remaining_baselines_20260809/RESULT_SUMMARY_ZH.md
+docs/experiments/archive/CLE_REMAINING_BASELINES_OPENI_RUN_ZH.md
+```
 
 Evidence:
 

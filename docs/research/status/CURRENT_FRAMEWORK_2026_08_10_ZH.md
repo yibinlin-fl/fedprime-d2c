@@ -93,6 +93,7 @@ hard PEW + hard BER:              当前本地核心，强正消融信号
 Multi-label PEW + Soft-BER:       NO-GO, 0/4 gates
 PIE-v1 taxonomy-free audit:       NO-GO, 6/7，边界 held-out severity 失败
 MPIE-v2 radial ordinal audit:     NO-GO，held-out severity 比 matched v1 低 0.073579
+C3R counterfactual regret audit:  NO-GO，跨 seed persistence/AUROC/cell relevance 失败
 PBR:                              未实现、无资格进入 runner
 AsymHFL-val:                      当前通信骨架，不是原创创新
 ```
@@ -114,4 +115,5 @@ fedprime/engine/cle_metrics.py             Avg/Worst/WCCA/CFG
 
 fedprime/methods/latent_environment.py             isolated PIE-v1 audit code
 fedprime/methods/monotone_latent_environment.py    isolated MPIE-v2 negative probe
+fedprime/methods/counterfactual_regret.py          isolated C3R signal audit
 ```

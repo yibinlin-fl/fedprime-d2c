@@ -2,22 +2,26 @@
 
 Updated: 2026-08-10
 
-## Active Audit 0 - Class-Conditional Counterfactual Regret
+## 2026-08-10 C3R Audit 0 - NO-GO
 
-The next taxonomy-free local candidate is now pre-registered as a signal-only
-Audit 0. It uses within-class ranks of the same sample's correct-class margin
-drop across independent AugMix interventions. It does not classify or encode
-corruption environments and is intended to replace, not stack with, hard
-PEW+BER if it later passes attribution.
+The pre-registered signal-only Class-Conditional Counterfactual Regret (C3R)
+Audit 0 completed locally on clients 1/3 with ResNet12/Mobilenetv2. Both probe
+models were valid (mean base accuracy `0.5490/0.6745`), regret was active, and
+its AUROC beat CE/JSD in all six directed augmentation-seed pairs. However,
+only four of seven frozen gates passed. Cross-seed persistence was `0.1987 <
+0.25`, median flip AUROC was `0.5738 < 0.60`, and class-operator cell
+correlation was `0.0069 < 0.30` with only `17 < 20` valid cells. Independent
+recomputation from raw sample signals matched the script verdict.
 
-Audit 0 uses clients 1/3 with ResNet12/Mobilenetv2, trains only on mutually
-exclusive subsets of the persisted `fit` split, and evaluates cross-seed
-prediction on a deterministic fit-internal probe. Private `audit` remains
-routing-only and final-test data are not read. No runner integration or long
-experiment is authorized before all frozen G0--G6 gates pass. Guide:
+Verdict: `NO-GO`. C3R is an active but weak/stochastic sample-fragility signal,
+not a stable surrogate for the class-corruption cells that BER protects. Do
+not implement its training loss, run a one-step update, connect it to the
+runner, or tune its margin/top-fraction definition. Private `audit` and final
+test were not read. Evidence:
 
 ```text
-docs/experiments/current/CLASS_CONDITIONAL_COUNTERFACTUAL_REGRET_AUDIT_ZH.md
+docs/experiments/archive/CLASS_CONDITIONAL_COUNTERFACTUAL_REGRET_AUDIT_ZH.md
+outputs/class_conditional_counterfactual_regret_audit0/result.json
 ```
 
 ## 2026-08-10 Current Decision

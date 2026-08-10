@@ -2,10 +2,10 @@
 
 Updated: 2026-08-10
 
-当前 taxonomy-free 本地信号预注册审计：
+已完成并冻结的 taxonomy-free 本地信号审计：
 
 ```text
-docs/experiments/current/CLASS_CONDITIONAL_COUNTERFACTUAL_REGRET_AUDIT_ZH.md
+docs/experiments/archive/CLASS_CONDITIONAL_COUNTERFACTUAL_REGRET_AUDIT_ZH.md
 ```
 
 已完成并冻结的 taxonomy-free 本地表征审计：

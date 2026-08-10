@@ -144,3 +144,49 @@ candidate = control + stop-gradient C3R loss 的一步更新
 
 只有一步更新对最差类别/cell 有正归因且平均性能不回退，才允许把 C3R 接入可选本地
 runner。Smoke accuracy 仍只证明执行。
+
+## 8. 正式结果
+
+正式 Audit 0 使用已提交实现 `727afd3`，本地 CUDA 运行两个预注册客户端和全部三个
+epoch。训练集与 probe 均严格来自原 `fit`，且互不重叠：
+
+```text
+client 1 / ResNet12:    train 8058, probe 442, mean base accuracy 0.5490
+client 3 / MobileNetV2: train 8029, probe 468, mean base accuracy 0.6745
+```
+
+Regret 不是空信号：两个客户端的正值比例中位数为 `0.8552/0.7756`，p90 为
+`1.2718/1.1958`。六个有向 seed pair 上，C3R AUROC 均高于 CE 和 JSD；top-25%
+flip 富集中位数为 `1.3350`。但它没有通过绝对预测性和 cell relevance 门槛：
+
+```text
+G0 validity:             PASS
+G1 activity:             PASS
+G2 persistence:          FAIL, 0.1987 < 0.25
+G3 predictive AUROC:     FAIL, 0.5738 < 0.60
+                              baseline advantage +0.0374
+G4 tail enrichment:      PASS, 1.3350, advantage +0.0661
+G5 cell relevance:       FAIL, rho 0.0069 < 0.30, cells 17 < 20
+G6 cross-client wins:    PASS, 6/6, both clients
+```
+
+原始 `sample_signals.npz` 经过独立重算，逐门槛 PASS/FAIL 与 `result.json` 完全一致。
+
+## 9. 决策
+
+```text
+Verdict: NO-GO (4/7 frozen gates)
+```
+
+C3R 能比 CE/JSD 更好地找到部分下一次会 flip 的样本，但跨独立增广的排序稳定性不足，
+而且几乎不对应 `class x operator` 弱单元。因此它不能替代 hard PEW + hard BER，
+也无资格进入一步更新审计。冻结 C3R，不调整 margin 定义、top fraction、损失权重或
+增广 seed 来复活。
+
+原始输出：
+
+```text
+outputs/class_conditional_counterfactual_regret_audit0/result.json
+outputs/class_conditional_counterfactual_regret_audit0/sample_signals.npz
+outputs/class_conditional_counterfactual_regret_audit0/RESULT_SUMMARY_ZH.md
+```

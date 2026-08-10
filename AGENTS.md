@@ -112,6 +112,7 @@ EBST / EBST-v2
 FedFalsify v0.2/v0.3
 FedCIS-v0
 handcrafted taxonomy-free continuous witness
+class-conditional counterfactual regret (C3R)
 ```
 
 Use `docs/README_ZH.md` to locate their evidence before discussing them.

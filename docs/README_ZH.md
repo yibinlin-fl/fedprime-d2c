@@ -1,6 +1,15 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-10
+Updated: 2026-08-11
+
+已完成并冻结的 CRSR 类条件预测残差谱风险审计（`NO-GO`；G0--G3 通过，
+G4--G6 失败）：
+
+```text
+docs/experiments/archive/CLASS_RESIDUAL_SPECTRAL_RISK_AUDIT_ZH.md
+fedprime/methods/class_residual_spectral_risk.py
+scripts/audit_class_residual_spectral_risk.py
+```
 
 已完成并冻结的 taxonomy-free 本地信号审计：
 

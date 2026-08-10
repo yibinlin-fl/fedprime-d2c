@@ -2,6 +2,24 @@
 
 Updated: 2026-08-10
 
+## Active Audit 0 - Class-Conditional Counterfactual Regret
+
+The next taxonomy-free local candidate is now pre-registered as a signal-only
+Audit 0. It uses within-class ranks of the same sample's correct-class margin
+drop across independent AugMix interventions. It does not classify or encode
+corruption environments and is intended to replace, not stack with, hard
+PEW+BER if it later passes attribution.
+
+Audit 0 uses clients 1/3 with ResNet12/Mobilenetv2, trains only on mutually
+exclusive subsets of the persisted `fit` split, and evaluates cross-seed
+prediction on a deterministic fit-internal probe. Private `audit` remains
+routing-only and final-test data are not read. No runner integration or long
+experiment is authorized before all frozen G0--G6 gates pass. Guide:
+
+```text
+docs/experiments/current/CLASS_CONDITIONAL_COUNTERFACTUAL_REGRET_AUDIT_ZH.md
+```
+
 ## 2026-08-10 Current Decision
 
 The matched 12-round hard-vs-soft screen returned and was independently read

@@ -219,7 +219,13 @@ delete or cleanup commands.
 
 - Inspect the relevant Git status before editing. Existing dirty files belong
   to the user unless the current task clearly owns them.
+- After completing a coherent implementation or research-stage objective,
+  create a scoped local commit without waiting for a separate user reminder,
+  unless the user has requested no commit. Commit only the files owned by that
+  completed objective; keep unrelated dirty changes and generated artifacts
+  out of the commit. Do not push unless the user explicitly requests it.
 - Never overwrite, revert, format, stage, or commit unrelated changes.
 - Keep datasets, checkpoints, raw outputs, and local test artifacts untracked.
-- Commit or push only when the user explicitly asks. A commit must contain only
-  the current task's intended files.
+- Outside the standing stage-completion rule above, commit only when the user
+  explicitly asks. A commit must contain only the current task's intended
+  files, and pushing always requires an explicit user request.

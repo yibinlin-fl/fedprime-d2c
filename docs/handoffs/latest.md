@@ -1,6 +1,54 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-09
+Updated: 2026-08-10
+
+## 2026-08-10 Current Decision
+
+The matched 12-round hard-vs-soft screen returned and was independently read
+from `outputs/cle_multilabel_softber_seed0_12round_outputs.tar.gz`. Multi-label
+PEW + Soft-BER failed all four frozen last-five gates versus hard PEW + hard
+BER: `Avg -1.4180`, `Worst -1.0467`, `WCCA -3.3500`, `CFG +9.2350`. Treat it
+as a `NO-GO`; its multi-label formulation remains useful as a reviewer-facing
+diagnostic, not as the selected core method.
+
+The next method direction is a new taxonomy-free local module, not another
+Non/HFL/AsymHFL ranking exercise. Phase 1 is now implemented in isolation as
+FedLENS-PIE: a learned continuous degradation encoder trained from
+cross-content paired public interventions. It never receives corruption-family
+labels or public semantic labels during training. The standalone Audit A entry
+and frozen promotion gates are documented at:
+
+```text
+fedprime/methods/latent_environment.py
+scripts/audit_fedlens_pie.py
+docs/experiments/archive/FEDLENS_PIE_AUDIT_ZH.md
+```
+
+Focused PIE/protocol regression passed (`18 passed`). The full seed-0 Audit A
+then completed locally on 5,000 training and 1,000 disjoint audit images. Six
+of seven frozen gates passed. The only failure was held-out severity Spearman:
+`0.498202 < 0.500000` (margin `-0.001798`). Seen/held-out retrieval lifts were
+`5.3250/5.2140`, all dimensions were active, and content probes stayed below
+the 5% ceiling. Strict verdict: `NO-GO` for Phase-2 promotion under the frozen
+all-gates rule. Do not change the threshold, run extra seeds merely to reverse
+the verdict, implement PBR, or connect PIE to the current runner. This is a
+borderline held-out ordinal-generalization miss, not representation collapse or
+content leakage. Do not revive the removed handcrafted continuous-witness/CDep
+path.
+
+The single allowed structural revision, radial monotone PIE (MPIE), was then
+pre-registered on a new seed/operator split and evaluated against a matched
+four-view unordered PIE control. Its ordinal mechanism was active (last-epoch
+mean radius `1.219 -> 2.241`) and seen retrieval lift improved by `+1.2557`,
+but held-out severity Spearman fell from `0.521280` to `0.447701` (`-0.073579`).
+MPIE failed both the absolute and attribution gates. Verdict: `NO-GO`; freeze
+PIE/MPIE and do not implement PBR. Current one-screen architecture and evidence
+map:
+
+```text
+docs/research/status/CURRENT_FRAMEWORK_2026_08_10_ZH.md
+docs/experiments/archive/FEDLENS_MPIE_CONFIRMATORY_AUDIT_ZH.md
+```
 
 ## Current Objective
 

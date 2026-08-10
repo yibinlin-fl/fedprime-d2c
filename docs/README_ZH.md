@@ -1,8 +1,23 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-09
+Updated: 2026-08-10
 
-当前待运行的 Multi-label PEW + Soft-BER 配对筛选：
+已完成并冻结的 taxonomy-free 本地表征审计：
+
+```text
+docs/experiments/archive/FEDLENS_PIE_AUDIT_ZH.md
+docs/experiments/archive/FEDLENS_MPIE_CONFIRMATORY_AUDIT_ZH.md
+scripts/audit_fedlens_pie.py
+scripts/audit_fedlens_mpie_confirmatory.py
+```
+
+当前项目框架一屏说明：
+
+```text
+docs/research/status/CURRENT_FRAMEWORK_2026_08_10_ZH.md
+```
+
+已完成且判定为 `NO-GO (0/4 gates)` 的 Multi-label PEW + Soft-BER 配对筛选：
 
 ```text
 docs/experiments/current/CLE_MULTILABEL_PEW_SOFTBER_OPENI_RUN_ZH.md

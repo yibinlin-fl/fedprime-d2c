@@ -11,6 +11,49 @@ six-arm communication factorial. A candidate must first define a new
 mathematical object, require no environment label, differ from PEW/PIE/C3R and
 the frozen robust-risk baselines, and pass an isolated local promotion audit.
 
+## Latest Theory Result: LCC - NO-GO Before Implementation
+
+Latent Correction Conflict (LCC) was formalized as class-conditioned
+per-sample last-layer gradient grouping followed by a minimum-norm common
+descent update. It requires no environment labels and differs from the frozen
+project methods, but it does not pass the external novelty gate:
+
+```text
+gradient clustering -> latent robust groups   GRASP collision
+minimum-norm common descent                   MGDA/CAGrad collision
+last-layer gradient KNN soft neighborhoods    GoG (KDD 2025) collision
+```
+
+Verdict: `THEORY NO-GO`. Do not implement LCC, change its clustering/graph, or
+spend GPU/OpenI time on it. Evidence:
+
+```text
+docs/archive/methods/LCC_NOVELTY_AUDIT_ZH.md
+```
+
+## Taxonomy-Free Identifiability Boundary
+
+Using client identity as an unlabeled mixture view was also checked before
+turning it into a communication module. For class `c`, observable client risks
+satisfy `r_c = Pi_c rho_c`; centered client contrasts can identify at most
+`K-1` environment-risk directions. In the frozen four-client CLE mapping, the
+effective family-contrast ranks by class are:
+
+```text
+class: 0 1 2 3 4 5 6 7 8 9
+rank:  1 2 1 3 1 1 2 2 0 2
+```
+
+Only class 3 has full four-family contrast coverage; class 8 has none. Model
+heterogeneity further confounds client-risk differences. Pure client-class
+variance/DRO therefore cannot replace BER with a clean guarantee and must not
+be promoted as the next communication innovation. Evidence:
+
+```text
+docs/research/status/TAXONOMY_FREE_IDENTIFIABILITY_2026_08_11_ZH.md
+scripts/audit_mixture_contrast_identifiability.py
+```
+
 ## Latest Result: CRSR Audit 0 - NO-GO
 
 Class-conditional Residual Spectral Risk (CRSR) used only fit-internal labels
@@ -88,10 +131,10 @@ GroupDRO/CVaR and CCAD instead of merely renaming their objective.
 
 ## Next Action
 
-Return to theory before code. The next candidate must model a different source
-of BER's benefit than residual variance: a taxonomy-free, class-conditional
-notion of *directional correction conflict or intervention consistency* with a
-derivation connecting it to hidden subgroup error. Before implementation,
-write the object, assumptions, bound, distinctions from frozen methods, and a
-cheaper falsification audit. Do not run another full local training audit until
-that paper-level filter is passed.
+Do not implement LCC or pure client-mixture contrast. The next candidate must
+state what additional information makes hidden environments identifiable
+(rather than silently assuming labels, clusters, high-loss tails, or enough
+clients). First define that side information, its minimal assumption and a
+cheap falsification audit; then distinguish it from PIE/MPIE, C3R, CRSR,
+FedCIS, continuous witness, GRASP/GoG, MixStyle/Fourier mixing, and CVaR. Do not
+run another full local training audit until this paper-level filter passes.

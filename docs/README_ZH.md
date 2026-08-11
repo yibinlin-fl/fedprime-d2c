@@ -2,6 +2,14 @@
 
 Updated: 2026-08-11
 
+已完成的 LCC 数学定义、外部查重与 taxonomy-free 可识别性边界：
+
+```text
+docs/archive/methods/LCC_NOVELTY_AUDIT_ZH.md                 THEORY NO-GO；GRASP/GoG/MGDA 碰撞
+docs/research/status/TAXONOMY_FREE_IDENTIFIABILITY_2026_08_11_ZH.md  客户端混合对比的秩与覆盖边界
+scripts/audit_mixture_contrast_identifiability.py            纯 metadata 秩审计，无训练
+```
+
 已完成并冻结的 CRSR 类条件预测残差谱风险审计（`NO-GO`；G0--G3 通过，
 G4--G6 失败）：
 

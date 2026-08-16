@@ -1,6 +1,41 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-11
+Updated: 2026-08-16
+
+## Latest Paper-Claim Audit: PEW+BER Is Baseline GO, Core-Method NO-GO
+
+The implementation, existing evidence and external literature were audited without
+running experiments. The current exact method is a six-way public synthetic
+corruption-family classifier followed by class x predicted-environment reweighted
+ERM. It does not read private operator metadata for training, but it is not
+taxonomy-free. BER is neither GroupDRO nor CVaR; it is a support-shrunk grouped
+average risk and does not define a new robust-optimization principle.
+
+External collision is material: Corrupted CIFAR-10 in Learning from Failure
+(NeurIPS 2020) already couples labels with corruption types; SSA/BARACK already
+use predicted spurious/group attributes for downstream robust training; CCDB and
+FG-CCDB directly study class-conditional distribution balancing. CLE-HFL can be
+positioned only as a controlled model-heterogeneous federated extension with
+client-specific mappings and operator-cell evaluation, not as the first
+class-corruption entanglement problem.
+
+Verdict:
+
+```text
+PEW+BER empirical mechanism on fixed CLE:       GO
+PEW+BER taxonomy-assisted diagnostic baseline:  GO
+PEW+BER as the sole paper-level core method:     NO-GO
+CLE-HFL as a federated benchmark extension:      CONDITIONAL GO
+```
+
+Do not spend the next stage merely adding exact PEW+BER seeds/rounds or renaming
+the scenario. Preserve PEW+BER as the positive anchor; a new candidate must add
+an FL-specific mathematical object and pass paper-level collision checks before
+implementation. Full evidence:
+
+```text
+docs/research/status/PEW_BER_PAPER_CLAIM_AUDIT_2026_08_16_ZH.md
+```
 
 ## Current Objective
 

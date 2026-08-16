@@ -1,6 +1,17 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-11
+Updated: 2026-08-16
+
+2026-08-16 完成 PEW+BER 论文主张、实现、证据与外部新颖性审计：
+
+```text
+docs/research/status/PEW_BER_PAPER_CLAIM_AUDIT_2026_08_16_ZH.md
+```
+
+判决为 `CORE-METHOD NO-GO / BASELINE GO / BENCHMARK CONDITIONAL GO`。PEW+BER
+保留为强 taxonomy-assisted 诊断基线和后续方法必须保住的 empirical target，不能
+作为唯一论文核心创新；CLE-HFL 是 centralized class-corruption spurious correlation
+在模型异构联邦下的受控扩展，不能声称首次提出类别-损坏纠缠。
 
 已完成的 LCC 数学定义、外部查重与 taxonomy-free 可识别性边界：
 

@@ -1,6 +1,46 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-16
+Updated: 2026-08-17
+
+## Latest Candidate Audit: FCNT / FPER / FRT Do Not Enter Implementation
+
+Three explicit side-information routes were formalized and checked against both frozen project
+evidence and primary literature without changing training code or running experiments:
+
+```text
+FCNT: continuous nuisance coordinates + class-conditional federated OT
+FPER: paired restoration intervention + degradation-effect risk
+FRT:  public multi-view response tensor factorization
+```
+
+None passes the current core-method gate. FCNT is surrounded by CCDB/FG-CCDB,
+class-conditioned Wasserstein DRO, FedWaD/FedDaDiL and SLOT-Align; a Wasserstein barycenter
+also provides no lower mass bound for latent weak cells. FPER requires an unverifiable
+label-preserving nuisance-removal oracle, does not prevent minority-cell dilution and collides with
+counterfactual invariance/generation plus the frozen C3R/FedCISA reasoning. FRT lacks an identifiable
+semantic/shortcut decomposition, cannot connect public responses to private weak-cell mass, and
+repeats the public multi-view/shared-subspace risks already rejected by CCAD/IRD/FedCIS/EBST.
+
+Verdict:
+
+```text
+FCNT current-protocol core:       NO-GO
+FCNT with explicit real metadata: CONDITIONAL REFRAME ONLY
+FPER observed-only core:          NO-GO; paired/clean ORACLE ONLY
+FRT communication:               NO-GO
+implementation / experiment:     NONE
+```
+
+Full report:
+
+```text
+docs/archive/methods/FCNT_FPER_FRT_THEORY_NOVELTY_AUDIT_2026_08_17_ZH.md
+```
+
+The next action is a strategic route choice, not a fourth taxonomy-free module: explicitly add a
+realistically available side-information assumption, retain PEW+BER for a conservative empirical
+paper, or stop CLE as the method-paper mainline. Do not implement or run any of these three candidates
+before the user selects the route.
 
 ## Latest Paper-Claim Audit: PEW+BER Is Baseline GO, Core-Method NO-GO
 
@@ -39,12 +79,13 @@ docs/research/status/PEW_BER_PAPER_CLAIM_AUDIT_2026_08_16_ZH.md
 
 ## Current Objective
 
-Replace the reviewer-vulnerable five-family PEW assumption with a genuinely
-taxonomy-free local risk mechanism that can retain BER's weak-cell benefit.
-Do not spend the next stage ranking Non/HFL/AsymHFL or running the prepared
-six-arm communication factorial. A candidate must first define a new
-mathematical object, require no environment label, differ from PEW/PIE/C3R and
-the frozen robust-risk baselines, and pass an isolated local promotion audit.
+Await the user's strategic route choice after the paper-level rejection of the
+three explicit side-information candidates. Do not implement another
+taxonomy-free local or communication module by default. Preserve PEW+BER as the
+strong supervised reference and the CLE-HFL scenario as a controlled benchmark
+extension. The next authorized direction must explicitly choose between a new
+realistic side-information assumption, a conservative empirical/benchmark
+paper, or leaving CLE as the method-paper mainline.
 
 ## Latest Theory Result: LCC - NO-GO Before Implementation
 

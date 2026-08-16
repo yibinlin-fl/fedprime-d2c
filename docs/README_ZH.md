@@ -1,6 +1,16 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-16
+Updated: 2026-08-17
+
+2026-08-17 完成三个额外信息候选的数学设计与原始论文查重：
+
+```text
+docs/archive/methods/FCNT_FPER_FRT_THEORY_NOVELTY_AUDIT_2026_08_17_ZH.md
+```
+
+FCNT、FPER、FRT 均未通过当前协议下的论文核心门槛，不进入实现或实验。FCNT 只在显式增加
+可信连续设备元数据的新问题设定下 `CONDITIONAL REFRAME`；FPER 只允许作为 paired/clean-source
+oracle；FRT 因不可识别性、BER 链条缺失及 CCAD/IRD/FedCIS/FCCL+ 碰撞判定 `NO-GO`。
 
 2026-08-16 完成 PEW+BER 论文主张、实现、证据与外部新颖性审计：
 

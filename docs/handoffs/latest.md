@@ -2,6 +2,39 @@
 
 Updated: 2026-08-17
 
+## Latest Theory Audit: Safe Model-Heterogeneous FTTA Is Paper NO-GO
+
+The proposed safe collaborative continual test-time adaptation setting was audited before any
+implementation. With no target task labels, two worlds can share identical source data, target
+images, public responses, model outputs and communication histories while reversing whether a
+collaboration helps or harms. Therefore the sign of target collaboration harm is not identifiable
+from the current observation set. Source audit certifies source behavior only.
+
+The usual repairs do not pass the paper gate. Covariate shift plus overlap is mathematically
+sufficient but untestable and implausible for arbitrary information-destroying corruptions. A
+calibrated unlabeled loss proxy assumes the key risk relation and collides with AETTA and NeurIPS
+2025 TTA risk monitoring. Collaborative and continual FTTA are already covered by FedTHE, ATP,
+FedTSA, CoLA, FedCTTA and Latte; adding arbitrary backbones is an implementation intersection,
+not yet a new identifiable object.
+
+Verdict:
+
+```text
+fully-unlabeled safe collaborative MH-CTTA: PAPER NO-GO
+implementation / local smoke / OpenI:       NONE
+sparse unbiased delayed target labels:      CONDITIONAL REFRAME ONLY
+```
+
+Full report:
+
+```text
+docs/archive/methods/SAFE_MODEL_HETERO_FTTA_IDENTIFIABILITY_AUDIT_2026_08_17_ZH.md
+```
+
+The delayed-label route requires shadow candidates or randomized actions to estimate
+counterfactual collaboration harm and changes the task to delayed-supervision online/continual
+learning. Do not implement it unless the user explicitly accepts that problem change.
+
 ## Latest Candidate Audit: FCNT / FPER / FRT Do Not Enter Implementation
 
 Three explicit side-information routes were formalized and checked against both frozen project
@@ -79,13 +112,12 @@ docs/research/status/PEW_BER_PAPER_CLAIM_AUDIT_2026_08_16_ZH.md
 
 ## Current Objective
 
-Await the user's strategic route choice after the paper-level rejection of the
-three explicit side-information candidates. Do not implement another
-taxonomy-free local or communication module by default. Preserve PEW+BER as the
-strong supervised reference and the CLE-HFL scenario as a controlled benchmark
-extension. The next authorized direction must explicitly choose between a new
-realistic side-information assumption, a conservative empirical/benchmark
-paper, or leaving CLE as the method-paper mainline.
+Await the user's decision after the paper-level rejection of fully-unlabeled safe
+model-heterogeneous FTTA. Do not implement or run it. The only retained variant
+explicitly assumes sparse unbiased delayed target task labels and must be treated
+as a new delayed-supervision online-learning problem with a separate novelty
+audit. If that task change is not accepted, search for a topic whose target is
+observable rather than another proxy for hidden target risk.
 
 ## Latest Theory Result: LCC - NO-GO Before Implementation
 

@@ -2,6 +2,17 @@
 
 Updated: 2026-08-17
 
+2026-08-17 完成“模型异构联邦安全持续测试时适应”的不可识别性、最弱假设与外部碰撞审计：
+
+```text
+docs/archive/methods/SAFE_MODEL_HETERO_FTTA_IDENTIFIABILITY_AUDIT_2026_08_17_ZH.md
+```
+
+fully-unlabeled 目标流下，协作收益符号不可识别；source audit、公共响应和多模型一致性不能
+自动提供 target no-harm 保证。候选同时与 FedTHE/ATP/FedTSA/CoLA/FedCTTA/Latte 以及
+AETTA/TTA risk monitoring 高度相邻，判定 `PAPER NO-GO`，不进入实现或实验。稀疏无偏
+延迟任务标签仅为 `CONDITIONAL REFRAME`，属于新的 online/continual learning 问题。
+
 2026-08-17 完成三个额外信息候选的数学设计与原始论文查重：
 
 ```text

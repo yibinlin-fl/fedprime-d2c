@@ -22,9 +22,14 @@ from Dataset.utils import mkdirs
 import skimage as sk
 from skimage.filters import gaussian
 from io import BytesIO
-from wand.image import Image as WandImage
-from wand.api import library as wandlibrary
-import wand.color as WandColor
+try:
+    from wand.image import Image as WandImage
+    from wand.api import library as wandlibrary
+    import wand.color as WandColor
+except (ImportError, OSError):
+    WandImage = None
+    wandlibrary = None
+    WandColor = None
 import ctypes
 from PIL import Image as PILImage
 import cv2
@@ -51,16 +56,20 @@ def disk(radius, alias_blur=0.1, dtype=np.float32):
 
 
 # # Tell Python about the C method
-wandlibrary.MagickMotionBlurImage.argtypes = (ctypes.c_void_p,  # wand
-                                              ctypes.c_double,  # radius
-                                              ctypes.c_double,  # sigma
-                                              ctypes.c_double)  # angle
+if wandlibrary is not None:
+    wandlibrary.MagickMotionBlurImage.argtypes = (ctypes.c_void_p,  # wand
+                                                  ctypes.c_double,  # radius
+                                                  ctypes.c_double,  # sigma
+                                                  ctypes.c_double)  # angle
 
 
 # Extend wand.image.Image class to include method signature
-class MotionImage(WandImage):
-    def motion_blur(self, radius=0.0, sigma=0.0, angle=0.0):
-        wandlibrary.MagickMotionBlurImage(self.wand, radius, sigma, angle)
+if WandImage is not None:
+    class MotionImage(WandImage):
+        def motion_blur(self, radius=0.0, sigma=0.0, angle=0.0):
+            wandlibrary.MagickMotionBlurImage(self.wand, radius, sigma, angle)
+else:
+    MotionImage = None
 
 
 # modification of https://github.com/FLHerne/mapgen/blob/master/diamondsquare.py
@@ -420,73 +429,257 @@ def elastic_transform(image, severity=1):
 # /////////////// End Distortions ///////////////
 
 import collections
+import argparse
+import json
 
-"""
-Generating corrupt dataset
-"""
-seed = 0
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
+def corruption_registry():
+    """Return the ordered corruption registry used by the released RAHFL generator."""
 
-# corrupt ways:
-d = collections.OrderedDict()
-d['Gaussian Noise'] = gaussian_noise
-d['Shot Noise'] = shot_noise
-d['Impulse Noise'] = impulse_noise
-d['Defocus Blur'] = defocus_blur
-d['Glass Blur'] = glass_blur
-d['Motion Blur'] = motion_blur
-d['Zoom Blur'] = zoom_blur
-d['Snow'] = snow
-d['Frost'] = frost
-d['Fog'] = fog
-d['Brightness'] = brightness
-d['Contrast'] = contrast
-d['Elastic'] = elastic_transform
-d['Pixelate'] = pixelate
-d['JPEG'] = jpeg_compression
-# d['Speckle Noise'] = speckle_noise
-# d['Gaussian Blur'] = gaussian_blur
-# d['Spatter'] = spatter
-# d['Saturate'] = saturate
+    registry = collections.OrderedDict()
+    registry['Gaussian Noise'] = gaussian_noise
+    registry['Shot Noise'] = shot_noise
+    registry['Impulse Noise'] = impulse_noise
+    registry['Defocus Blur'] = defocus_blur
+    registry['Glass Blur'] = glass_blur
+    registry['Motion Blur'] = motion_blur
+    registry['Zoom Blur'] = zoom_blur
+    registry['Snow'] = snow
+    registry['Frost'] = frost
+    registry['Fog'] = fog
+    registry['Brightness'] = brightness
+    registry['Contrast'] = contrast
+    registry['Elastic'] = elastic_transform
+    registry['Pixelate'] = pixelate
+    registry['JPEG'] = jpeg_compression
+    return registry
 
-Make_Corrupt_Dataset = 'cifar10' #['cifar10', 'cifar100']
-Train_Dataset = True
-Corrupt_Rate = 0.5
 
-print('Using ' + Make_Corrupt_Dataset + ' data')
-if Make_Corrupt_Dataset == 'cifar10':
-    origin_data_root = '../Dataset/cifar_10'
-    origin_data = dset.CIFAR10(root=origin_data_root, train=Train_Dataset)
-elif Make_Corrupt_Dataset == 'cifar100':
-    origin_data_root = '../Dataset/cifar_100'
-    origin_data = dset.CIFAR100(root=origin_data_root, train=Train_Dataset)
-convert_img = trn.Compose([trn.ToTensor(), trn.ToPILImage()])
+def _consume_corruption_rng(method_name, image, severity, registry):
+    """Replay the legacy NumPy RNG stream without requiring ImageMagick.
 
-print('Generating corrupt data idxs')
-all_items_num = origin_data.data.shape[0]
-corrupt_items_num = int(Corrupt_Rate * all_items_num)
-all_idxs = [i for i in range(all_items_num)] # initial user and index for whole dataset
-corrupt_idxs = np.random.choice(all_idxs, corrupt_items_num, replace=False) # 'replace=False' make sure that there is no repeat
+    Motion blur and snow draw their NumPy randomness before invoking
+    ImageMagick. The external image operation does not mutate NumPy's RNG, so
+    consuming those draws is sufficient when only provenance is reconstructed.
+    Other corruptions execute normally because some distributions (notably
+    Poisson noise) consume a data-dependent number of random values.
+    """
 
-print('Creating corrupt images')
-image_c, labels = [], []  
-for index, (img, label) in enumerate(zip(origin_data.data, origin_data.targets)):
-    method_name = random.sample(d.keys(), 1)[0]
-    severity = np.random.randint(1, 5)
-    corruption = lambda clean_img: d[method_name](clean_img, severity)
-    labels.append(label)
-    if index in corrupt_idxs:
-        image_c.append(np.uint8(corruption(convert_img(img))))
+    image_array = np.asarray(image)
+    if method_name == 'Gaussian Noise':
+        scale = [0.04, 0.06, .08, .09, .10][severity - 1]
+        np.random.normal(size=image_array.shape, scale=scale)
+        return
+    if method_name == 'Shot Noise':
+        c = [500, 250, 100, 75, 50][severity - 1]
+        np.random.poisson((image_array / 255.) * c)
+        return
+    if method_name == 'Impulse Noise':
+        # skimage.random_noise uses its own Generator when no RNG is supplied.
+        return
+    if method_name == 'Glass Blur':
+        _, max_delta, iterations = [
+            (0.05,1,1), (0.25,1,1), (0.4,1,1), (0.25,1,2), (0.4,1,2)
+        ][severity - 1]
+        for _ in range(iterations):
+            for _ in range(32 - max_delta, max_delta, -1):
+                for _ in range(32 - max_delta, max_delta, -1):
+                    np.random.randint(-max_delta, max_delta, size=(2,))
+        return
+    if method_name == 'Motion Blur':
+        np.random.uniform(-45, 45)
+        return
+    if method_name == 'Snow':
+        c = [(0.1,0.2,1,0.6,8,3,0.95),
+             (0.1,0.2,1,0.5,10,4,0.9),
+             (0.15,0.3,1.75,0.55,10,4,0.9),
+             (0.25,0.3,2.25,0.6,12,6,0.85),
+             (0.3,0.3,1.25,0.65,14,12,0.8)][severity - 1]
+        np.random.normal(size=(32, 32), loc=c[0], scale=c[1])
+        np.random.uniform(-135, -45)
+        return
+    if method_name == 'Frost':
+        frost_index = np.random.randint(5)
+        # Canonical RAHFL frost assets after the generator's fx=fy=0.2 resize.
+        resized_shapes = [(120, 180), (63, 112), (63, 112), (70, 105), (99, 132)]
+        height, width = resized_shapes[frost_index]
+        np.random.randint(0, height - 32)
+        np.random.randint(0, width - 32)
+        return
+    if method_name == 'Fog':
+        wibble_decay = [3, 3, 2.5, 2, 1.75][severity - 1]
+        plasma_fractal(wibbledecay=wibble_decay)
+        return
+    if method_name == 'Elastic':
+        np.random.uniform(-1, 1, size=(3, 2))
+        np.random.uniform(-1, 1, size=(32, 32))
+        np.random.uniform(-1, 1, size=(32, 32))
+        return
+    # Defocus/zoom/brightness/contrast/pixelate/JPEG draw no random values.
+
+
+def replay_corruption_metadata(
+    *,
+    dataset_name='cifar10',
+    dataset_root=None,
+    output_root=None,
+    train=True,
+    corrupt_rate=0.5,
+    seed=0,
+):
+    """Reconstruct exact legacy provenance while leaving frozen images intact."""
+
+    random.seed(int(seed))
+    np.random.seed(int(seed))
+    torch.manual_seed(int(seed))
+    registry = corruption_registry()
+    method_names = list(registry.keys())
+
+    if dataset_root is None:
+        dataset_root = '../Dataset/cifar_10' if dataset_name == 'cifar10' else '../Dataset/cifar_100'
+    if output_root is None:
+        output_root = str(dataset_root) + '_c'
+    if dataset_name == 'cifar10':
+        origin_data = dset.CIFAR10(root=dataset_root, train=bool(train))
+    elif dataset_name == 'cifar100':
+        origin_data = dset.CIFAR100(root=dataset_root, train=bool(train))
     else:
-        image_c.append(img)
+        raise ValueError('Unsupported dataset: {}'.format(dataset_name))
+    convert_img = trn.Compose([trn.ToTensor(), trn.ToPILImage()])
 
-print('Saving corrupt images')
-if Train_Dataset:
-    train_or_test = 'train'
-else:
-    train_or_test = 'test'
-mkdirs(origin_data_root+'_c/'+train_or_test)
-np.save(origin_data_root+'_c/'+train_or_test+'/random_corrupt_'+str(Corrupt_Rate)+'.npy', np.array(image_c).astype(np.uint8))
-np.save(origin_data_root+'_c/'+train_or_test+'/labels.npy', np.array(labels).astype(np.uint8))
+    all_items_num = origin_data.data.shape[0]
+    corrupt_items_num = int(float(corrupt_rate) * all_items_num)
+    all_idxs = np.arange(all_items_num, dtype=np.int64)
+    corrupt_idxs = np.random.choice(all_idxs, corrupt_items_num, replace=False)
+    corrupt_mask = np.zeros(all_items_num, dtype=np.bool_)
+    corrupt_mask[corrupt_idxs] = True
+    corruption_type = np.full(all_items_num, -1, dtype=np.int16)
+    corruption_severity = np.zeros(all_items_num, dtype=np.int8)
+
+    for index, img in enumerate(origin_data.data):
+        method_name = random.sample(method_names, 1)[0]
+        severity = int(np.random.randint(1, 5))
+        if corrupt_mask[index]:
+            corruption_type[index] = method_names.index(method_name)
+            corruption_severity[index] = severity
+            _consume_corruption_rng(method_name, convert_img(img), severity, registry)
+
+    split_name = 'train' if train else 'test'
+    split_root = os.path.join(str(output_root), split_name)
+    mkdirs(split_root)
+    np.save(os.path.join(split_root, 'corruption_type.npy'), corruption_type)
+    np.save(os.path.join(split_root, 'corruption_severity.npy'), corruption_severity)
+    np.save(os.path.join(split_root, 'corruption_mask.npy'), corrupt_mask)
+    manifest = {
+        'dataset': dataset_name,
+        'split': split_name,
+        'seed': int(seed),
+        'corruption_rate': float(corrupt_rate),
+        'sample_count': int(all_items_num),
+        'severity_policy': 'rahfl_legacy_1_to_4',
+        'corruption_names': method_names,
+        'mode': 'metadata_rng_replay',
+    }
+    with open(os.path.join(split_root, 'corruption_manifest.json'), 'w', encoding='utf-8') as handle:
+        json.dump(manifest, handle, ensure_ascii=False, indent=2)
+    return manifest
+
+
+def generate_corrupt_dataset(
+    *,
+    dataset_name='cifar10',
+    dataset_root=None,
+    output_root=None,
+    train=True,
+    corrupt_rate=0.5,
+    seed=0,
+):
+    """Generate the legacy RAHFL images plus exact per-sample provenance metadata."""
+
+    random.seed(int(seed))
+    np.random.seed(int(seed))
+    torch.manual_seed(int(seed))
+    registry = corruption_registry()
+    method_names = list(registry.keys())
+
+    if dataset_root is None:
+        dataset_root = '../Dataset/cifar_10' if dataset_name == 'cifar10' else '../Dataset/cifar_100'
+    if output_root is None:
+        output_root = str(dataset_root) + '_c'
+
+    print('Using ' + dataset_name + ' data')
+    if dataset_name == 'cifar10':
+        origin_data = dset.CIFAR10(root=dataset_root, train=bool(train))
+    elif dataset_name == 'cifar100':
+        origin_data = dset.CIFAR100(root=dataset_root, train=bool(train))
+    else:
+        raise ValueError('Unsupported dataset: {}'.format(dataset_name))
+    convert_img = trn.Compose([trn.ToTensor(), trn.ToPILImage()])
+
+    print('Generating corrupt data idxs')
+    all_items_num = origin_data.data.shape[0]
+    corrupt_items_num = int(float(corrupt_rate) * all_items_num)
+    all_idxs = np.arange(all_items_num, dtype=np.int64)
+    corrupt_idxs = np.random.choice(all_idxs, corrupt_items_num, replace=False)
+    corrupt_mask = np.zeros(all_items_num, dtype=np.bool_)
+    corrupt_mask[corrupt_idxs] = True
+
+    print('Creating corrupt images')
+    image_c, labels = [], []
+    corruption_type = np.full(all_items_num, -1, dtype=np.int16)
+    corruption_severity = np.zeros(all_items_num, dtype=np.int8)
+    for index, (img, label) in enumerate(zip(origin_data.data, origin_data.targets)):
+        method_name = random.sample(method_names, 1)[0]
+        severity = int(np.random.randint(1, 5))
+        labels.append(label)
+        if corrupt_mask[index]:
+            corruption_type[index] = method_names.index(method_name)
+            corruption_severity[index] = severity
+            image_c.append(np.uint8(registry[method_name](convert_img(img), severity)))
+        else:
+            image_c.append(img)
+
+    split_name = 'train' if train else 'test'
+    split_root = os.path.join(str(output_root), split_name)
+    mkdirs(split_root)
+    rate_token = str(corrupt_rate)
+    print('Saving corrupt images and metadata to ' + split_root)
+    np.save(os.path.join(split_root, 'random_corrupt_' + rate_token + '.npy'), np.asarray(image_c, dtype=np.uint8))
+    np.save(os.path.join(split_root, 'labels.npy'), np.asarray(labels, dtype=np.uint8))
+    np.save(os.path.join(split_root, 'corruption_type.npy'), corruption_type)
+    np.save(os.path.join(split_root, 'corruption_severity.npy'), corruption_severity)
+    np.save(os.path.join(split_root, 'corruption_mask.npy'), corrupt_mask)
+    manifest = {
+        'dataset': dataset_name,
+        'split': split_name,
+        'seed': int(seed),
+        'corruption_rate': float(corrupt_rate),
+        'sample_count': int(all_items_num),
+        'severity_policy': 'rahfl_legacy_1_to_4',
+        'corruption_names': method_names,
+    }
+    with open(os.path.join(split_root, 'corruption_manifest.json'), 'w', encoding='utf-8') as handle:
+        json.dump(manifest, handle, ensure_ascii=False, indent=2)
+    return manifest
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser(description='Generate RAHFL corrupted data with provenance metadata.')
+    parser.add_argument('--dataset', choices=['cifar10', 'cifar100'], default='cifar10')
+    parser.add_argument('--dataset-root')
+    parser.add_argument('--output-root')
+    parser.add_argument('--split', choices=['train', 'test'], default='train')
+    parser.add_argument('--corrupt-rate', type=float, default=0.5)
+    parser.add_argument('--seed', type=int, default=0)
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = _parse_args()
+    generate_corrupt_dataset(
+        dataset_name=args.dataset,
+        dataset_root=args.dataset_root,
+        output_root=args.output_root,
+        train=args.split == 'train',
+        corrupt_rate=args.corrupt_rate,
+        seed=args.seed,
+    )

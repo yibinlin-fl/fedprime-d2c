@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import math
 import time
 from pathlib import Path
@@ -20,6 +21,7 @@ from fedprime.data.strict_fit_audit import (
     build_client_audit_loaders,
     build_strict_fit_audit_loaders,
 )
+from fedprime.data.corruption_label_coupling import build_coupling_loaders
 from fedprime.data.loaders import (
     build_augmix_private_loaders,
     build_corruption_skew_augmix_loaders,
@@ -94,12 +96,50 @@ class AsymHFLExperiment:
             "corruption_skew",
             "cle_hfl",
             "cle_hfl_v2",
+            "corruption_label_coupling",
         }
         strict_cfg = method_cfg.get("strict_fit_audit", {})
         strict_fit_audit = bool(strict_cfg.get("enabled", False))
         self._routing_audit_loaders = {}
         pretrain_loaders = None
-        if scenario in prepared_corruption_scenarios:
+        if scenario == "corruption_label_coupling":
+            if use_prime:
+                raise ValueError("corruption-label coupling Phase-A freezes the RAHFL AugMix/DCL base")
+            if not strict_fit_audit:
+                raise ValueError("corruption-label coupling Phase-A requires strict clean-audit routing")
+            coupling_cfg = method_cfg.get("corruption_label_coupling", {})
+            beta = float(coupling_cfg.get("beta", 0.0))
+            coupling_loaders = build_coupling_loaders(
+                data_root=data_cfg["private_root"],
+                artifact_root=data_cfg["coupling_artifact_root"],
+                beta=beta,
+                num_clients=num_clients,
+                train_batch_size=train_cfg["batch_size"],
+                test_batch_size=train_cfg.get("test_batch_size", 512),
+                audit_batch_size=int(strict_cfg.get("audit_batch_size", 256)),
+                num_workers=int(self.config.get("num_workers", 2)),
+                augmix_module=method_cfg.get("augmix_module", "jsd"),
+                expected_noise_rate=float(coupling_cfg.get("noise_rate", 0.20)),
+                expected_audit_ratio=float(strict_cfg.get("audit_ratio", 0.10)),
+            )
+            private_loaders = coupling_loaders.fit_augmix
+            pretrain_loaders = coupling_loaders.pretrain
+            self._routing_audit_loaders = coupling_loaders.audit
+            test_loader = coupling_loaders.test
+            self._client_class_counts = coupling_loaders.class_counts
+            self._client_class_environment_counts = {}
+            self._corruption_group_names = []
+            prime_aug = None
+            (self.output_dir / "coupling_training_contract.json").write_text(
+                json.dumps(coupling_loaders.contract, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            print(
+                f"[setup] corruption-label coupling beta={beta:g}: noisy fit-only gradients, "
+                "trusted clean-audit routing, clean final-test labels",
+                flush=True,
+            )
+        elif scenario in prepared_corruption_scenarios:
             if use_prime:
                 raise ValueError(f"{scenario} currently supports AugMix/SARA-style local training, not PRIME.")
             cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
@@ -344,6 +384,7 @@ class AsymHFLExperiment:
         client_group_metrics_path = self.output_dir / "client_group_acc.csv"
         class_corruption_metrics_path = self.output_dir / "class_corruption_acc.csv"
         operator_split_metrics_path = self.output_dir / "operator_split_metrics.csv"
+        teacher_edges_path = self.output_dir / "teacher_edges.csv"
         group_file = group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         client_group_file = client_group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
         class_corruption_file = (
@@ -356,6 +397,25 @@ class AsymHFLExperiment:
             if operator_metadata
             else None
         )
+        teacher_edges_file = (
+            teacher_edges_path.open("w", newline="", encoding="utf-8")
+            if scenario == "corruption_label_coupling"
+            else None
+        )
+        teacher_edges_writer = None
+        if teacher_edges_file is not None:
+            teacher_edges_writer = csv.DictWriter(
+                teacher_edges_file,
+                fieldnames=[
+                    "round",
+                    "student_id",
+                    "teacher_id",
+                    "student_audit_acc",
+                    "teacher_audit_acc",
+                    "active_edge",
+                ],
+            )
+            teacher_edges_writer.writeheader()
         with metrics_path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
@@ -365,6 +425,7 @@ class AsymHFLExperiment:
                     "peak_cuda_memory_mb",
                     "avg_acc",
                     "worst_acc",
+                    *[f"routing_acc_c{client_id}" for client_id in range(num_clients)],
                     "worst_group_acc",
                     "worst_client_group_acc",
                     "wcca",
@@ -462,6 +523,22 @@ class AsymHFLExperiment:
                     else:
                         accs_before = self._evaluate(models, test_loader)
                     class_accs_before = None
+                if teacher_edges_writer is not None:
+                    for student_id in range(num_clients):
+                        for teacher_id in range(num_clients):
+                            if student_id == teacher_id:
+                                continue
+                            teacher_edges_writer.writerow({
+                                "round": round_idx,
+                                "student_id": student_id,
+                                "teacher_id": teacher_id,
+                                "student_audit_acc": accs_before[student_id],
+                                "teacher_audit_acc": accs_before[teacher_id],
+                                "active_edge": int(
+                                    accs_before[student_id] <= accs_before[teacher_id]
+                                ),
+                            })
+                    teacher_edges_file.flush()
                 communication_phase = str(
                     getattr(self._communication_strategy, "phase", "pre_local")
                 )
@@ -532,6 +609,10 @@ class AsymHFLExperiment:
                     ),
                     "avg_acc": sum(accs) / len(accs),
                     "worst_acc": min(accs),
+                    **{
+                        f"routing_acc_c{client_id}": accs_before[client_id]
+                        for client_id in range(num_clients)
+                    },
                     "worst_group_acc": group_summary.get("worst_group_acc", ""),
                     "worst_client_group_acc": group_summary.get("worst_client_group_acc", ""),
                     "wcca": group_summary.get("wcca", ""),
@@ -632,6 +713,8 @@ class AsymHFLExperiment:
             class_corruption_file.close()
         if operator_split_file is not None:
             operator_split_file.close()
+        if teacher_edges_file is not None:
+            teacher_edges_file.close()
         if self._fedease_evaluation_loaders:
             self._run_fedease_extended_evaluation(models, num_classes)
         if bool(self.config.get("checkpoints", {}).get("save_final", True)):

@@ -1,0 +1,50 @@
+experiment_name: rahfl_coupling_phase_a_seed0_beta4
+method_name: rahfl
+seed: 0
+device: auto
+num_workers: 2
+output_root: outputs
+
+data:
+  scenario: corruption_label_coupling
+  private_dataset: cifar10
+  private_root: RAHFL-master/Dataset/cifar_10_c
+  coupling_artifact_root: local_runs/rahfl_coupling_phase_a_seed0
+  public_root: RAHFL-master/Dataset/cifar_100
+  public_dataset: cifar100
+  num_classes: 10
+  public_size: 5000
+  download_public: false
+
+models:
+  names: [ResNet10, ResNet12, ShuffleNet, Mobilenetv2]
+
+train:
+  pretrain_epochs: 40
+  rounds: 40
+  local_epochs: 1
+  batch_size: 256
+  test_batch_size: 512
+  public_batch_size: 256
+  public_batches_per_round: 20
+  optimizer:
+    name: adam
+    lr: 0.001
+    weight_decay: 0.0
+
+method:
+  use_prime: false
+  augmix_module: jsd
+  cl_module: dcl
+  communication: asymhfl
+  lambda_jsd: 12.0
+  corruption_label_coupling:
+    beta: 4
+    noise_rate: 0.20
+  strict_fit_audit:
+    enabled: true
+    audit_ratio: 0.10
+    audit_batch_size: 256
+
+checkpoints:
+  save_final: true

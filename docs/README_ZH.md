@@ -2,17 +2,42 @@
 
 Updated: 2026-08-30
 
-2026-08-30 完成 Phase-A1a 前置审计、四臂实现与 OpenI 输入准备：
+2026-08-30 完成 CLE local-first directional shortcut 的定义、不可识别性反例、最弱干预
+假设与 2024--2026 方法碰撞审计：
+
+```text
+docs/research/status/CLE_LOCAL_FIRST_DIRECTIONAL_SHORTCUT_IDENTIFIABILITY_AUDIT_2026_08_30_ZH.md
+```
+
+结论是：CLE 现实动机和当前受控诊断成立，DSA 可作为论文中的评价贡献，但不能声称首次发现
+类别—损坏 spurious correlation。只用已损坏图像、标签和同分布 AugMix views 无法识别真实
+directional shortcut；两世界反例给出严格 NO-GO。唯一条件候选 PIDR 必须增加语义保持、能
+overwrite 退化且 probe identity 可区分的主动干预桥，并与 FedPIN、FedCD、ShortcutProbe、
+FedDDL/FedCAug 等直接邻接方法区分。
+
+同日完成 PIDR 零训练隐藏绑定恢复门槛。分析器只复用现有 round12/round40 prediction cache；
+promotion matrix 估计阶段不读取 family id 或 binding，真值只用于最终评分。round40 的
+HFL/Local gamma0.9 mAP 为 `0.844847/0.865557`，相对 gamma0 增量
+`+0.402993/+0.434935`，class-to-family hit 为 `0.85/0.875`，4/4客户端同向，两类置换
+`p=0.000999`，全部门槛通过，判定 `GO_TO_INTERVENTION_BRIDGE_DESIGN`。这只允许继续设计
+能真实改写基础退化的 probe bridge，不允许直接实现训练 loss 或启动12轮实验。结果位于：
+
+```text
+deliverables/cle_pidr_zero_training_gate_20260830/RESULT_SUMMARY_ZH.md
+```
+
+2026-08-30 完成 Phase-A1a 四臂 OpenI 通信放大归因：
 
 ```text
 docs/experiments/current/CLE_SHORTCUT_COMMUNICATION_AMPLIFICATION_PHASE_A1A_ZH.md
 ```
 
-没有可复用的严格匹配 CLE-v1 `gamma00/gamma09` 40-round Local-only checkpoint；历史 runner
-与当前训练路径也存在版本差异，因此不允许把新 Local 与旧 HFL 权重拼接作因果比较。当前实现
-在同一新冻结数据、代码、初始化和本地随机轨迹上联合运行 HFL/Local x gamma00/gamma09，
-以 DSA difference-in-differences 判断通信是否放大 shortcut。匹配输入包、共享初始化、
-round12/40 checkpoint、首批增强轨迹审计、四臂分析器和 OpenI 入口均已就绪；正式训练尚未启动。
+严格匹配的 `H0/H9/L0/L9` 均完成40轮，数据、初始化、fit/audit 与本地增强轨迹审计全部
+通过。round-40 的 HFL/Local CLE 效应分别为 `0.202748/0.204366`，通信差分中的差分
+`A_pool=-0.001618`，CI95 `[-0.003337,0.000128]`，仅1/4客户端为正；正式结论为
+`NO_GO_FL_SPECIFIC_AMPLIFICATION`。CLE directional shortcut 仍然强且可复现，但机制是
+local-first，不能继续讲坏教师或通信放大。用户明确继续 CLE；下一步只做无环境标签本地
+shortcut-suppression 数学对象与查重，不先实现或训练。
 
 2026-08-30 完成 CLE directional shortcut 的零训练 Phase-A0 OpenI 审计：
 

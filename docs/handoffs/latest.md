@@ -2,7 +2,74 @@
 
 Updated: 2026-08-30
 
-## Current Conditional CLE Screen: Directional Shortcut Alignment Phase-A0 Passed
+## Latest Zero-Training Gate: PIDR Recovers Hidden Binding Under Oracle Probes
+
+The paper-only definition, identifiability counterexample, weakest-assumption analysis and 2024--2026
+collision audit are complete:
+
+```text
+docs/research/status/CLE_LOCAL_FIRST_DIRECTIONAL_SHORTCUT_IDENTIFIABILITY_AUDIT_2026_08_30_ZH.md
+```
+
+The current CIFAR CLE construction is a valid controlled stress test and DSA is a binding-specific
+directional diagnostic, but neither is evidence that class--corruption spurious correlation is a newly
+discovered real-world phenomenon. Real acquisition/quality shortcuts are documented; the cyclic four-
+family map and gamma 0.9 are synthetic controls and must be described as such.
+
+The population local-first directional shortcut risk is the DSA causal estimand. It is not identifiable
+from a single already-corrupted image, its task label and i.i.d. AugMix views: two worlds can have the
+same complete observable transcript while the model uses the degradation in one and the semantic
+feature in the other. A view-residual, spectral or clustering rewrite would either miss persistent base
+shortcuts or revive frozen C3R/CRSR-style negatives.
+
+The only conditional candidate is Probe-Indexed Directional Promotion Risk (PIDR). It requires a
+semantic-preserving intervention bridge whose distinguishable probes overwrite rather than merely
+overlay the relevant degradation and cover every harmful direction. Under those assumptions PIDR
+upper-bounds the unknown binding-set probability promotion up to coverage and intervention errors.
+This is not yet a method GO: FedPIN, FedCD, ShortcutProbe, FedDDL, FedCAug, GIC and recent unlabeled
+debiasing methods create strong collisions.
+
+The approved zero-training oracle gate is complete. It reused the existing round12/round40 prediction
+caches; no training and no inference ran. The estimator read only probabilities, task labels and 16
+probe tensor identities. Binding and operator-family metadata were opened only after all promotion
+matrices existed, for scoring and null tests.
+
+Round-40 formal result:
+
+```text
+arm   PIDR       mAP       AUC       class-to-family hit
+H0    0.024559   0.441855  0.510677  0.225
+H9    0.175479   0.844847  0.923906  0.850
+L0    0.025401   0.430622  0.507083  0.275
+L9    0.174728   0.865557  0.933177  0.875
+
+HFL mAP delta:      +0.402993
+Local mAP delta:    +0.434935
+positive clients:   4/4 and 4/4
+class/probe null p: 0.000999 for H9 and L9
+verdict:             GO_TO_INTERVENTION_BRIDGE_DESIGN
+```
+
+All six frozen gates passed for both HFL and Local. Round12 already showed the same pattern. This
+establishes oracle-side directional observability: distinguishable degradation probes can recover the
+hidden class binding without giving the estimator a family taxonomy. It does not establish that
+i.i.d. AugMix views overwrite the base degradation, that training without clean sources is identified,
+or that PIDR is method-novel relative to ShortcutProbe/FedCD.
+
+```text
+engine:     fedprime/engine/cle_probe_directional_promotion.py
+analyzer:   scripts/analyze_cle_pidr_zero_training_gate.py
+tests:      10 focused tests passed
+result:     deliverables/cle_pidr_zero_training_gate_20260830/
+commit:     NONE (preserve current no-proactive-commit instruction)
+```
+
+Next action: paper-only design of the weakest probe bridge satisfying semantic preservation,
+degradation overwrite, coverage and paired observability. Do not implement a training loss or start
+12-round training until the bridge is distinguished from ordinary AugMix, a fixed corruption bank,
+ShortcutProbe and FedCD.
+
+## Current CLE Result: Directional Shortcut Is Local-First; Communication Amplification NO-GO
 
 The bad-teacher / wrong-routing / shortcut-propagation story remains parked. Historical D2C and
 Oracle D2C results, FedFalsify attribution and the beta0/beta4 coupling screen do not support making
@@ -77,42 +144,52 @@ not currently present locally, so exact client-label/source-index identity canno
 the deterministic generator uses the same alpha, seed and `partition_seed=seed`, which establishes
 the intended matched partition. Any promoted paper experiment must persist partition/source hashes.
 
-Phase-A1a preflight completed on 2026-08-30. No reusable matched CLE-v1 gamma00/gamma09 40-round
-Local-only checkpoints exist. The closest Local-only result is CLE-v2 gamma09-only at 12 rounds with
-`save_final=false`, so it cannot supply the four-arm DSA contrast. Although `prepare_cle_data.py` and
-the diagnostic configs have not changed since commit `5870fd7`, their loader/training dependencies
-and the RAHFL runner have changed substantially, and the original local prepared archives are absent.
-New Local checkpoints therefore must not be causally compared against the historical HFL weights.
+Phase-A1a completed on OpenI on 2026-08-30 using four jointly matched 40-round arms:
+`H0/H9 = strict AsymHFL-val at gamma 0/0.9`, `L0/L9 = Local-only at gamma 0/0.9`.
+All arms used the same code, source partition, labels, severities, persisted fit/audit split,
+per-client initial weights and arm-independent private-loader RNG. Runtime hashes verified that HFL
+and Local saw identical first-batch labels and all AugMix/DCL views in every round and client. Final
+test labels remained reporting-only. The returned probability tensors were independently recomputed.
 
-The recommended Phase-A1a design jointly reruns four matched arms (HFL/Local x gamma00/gamma09) on
-one newly hashed CLE-v1 dataset and one shared code version. It defines communication amplification
-as a DSA difference-in-differences and requires byte-identical initialization plus factorized local
-and communication RNG streams so communication cannot change later AugMix draws by consuming global
-randomness. The frozen design uses a 40-round primary decision, round-12 diagnostic checkpoints,
-exact integrity checks and five promotion gates. Its matched data builder, four-arm OpenI entry,
-shared-initialization harness, per-round local stochastic trace and DSA difference-in-differences
-analyzer are implemented. Focused Phase-A0/Phase-A1a math tests pass (`6 passed`); formal training
-remains unrun pending user authorization.
-
-The new attribution must not reproduce the old diagnostic's final-test-accuracy routing. All four
-arms share a persisted client-private fit/audit split; private gradients use fit only, strict HFL
-routing uses audit only, Local leaves audit unused, and final-test labels are reporting-only.
+Round-40 formal DSA result:
 
 ```text
-docs/experiments/current/CLE_SHORTCUT_COMMUNICATION_AMPLIFICATION_PHASE_A1A_ZH.md
+H0  0.0015228341        H9  0.2042704937
+L0  0.0008234010        L9  0.2051892788
+HFL CLE effect:          +0.2027476596
+Local CLE effect:        +0.2043658778
+communication A_pool:    -0.0016182182
+paired source CI95:      [-0.0033365882, 0.0001283891]
+positive clients:        1/4
+top-1 amplification:     +0.0025799851
+H9 shuffled-map p:       0.000999001
+verdict:                 NO_GO_FL_SPECIFIC_AMPLIFICATION
 ```
 
-Prepared self-contained OpenI input:
+G1--G3 failed; G4--G5 passed. At round 12, `A_pool=-0.0169168048` with CI entirely below zero,
+but this early suppression disappeared by round 40. CLE itself is strong and reproducible in both
+training systems: controls have DSA near zero, while gamma09 has DSA about 0.204; Avg falls about
+6--7pp, WCCA falls 20--26pp, CFG rises from about 2.8 to about 12, and paired prediction flips rise
+from about 0.15 to about 0.36. The supported mechanism is therefore `CLE -> local-first directional
+shortcut`; strict AsymHFL neither materially amplifies nor durably suppresses it.
 
 ```text
-local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0.tar.gz
-bytes: 408228487
-sha256: 6322F16513C6980CDC5904D7EF91204A241205BC76DCCE8BC450E635519B4202
-entry: scripts/openi_cle_shortcut_amplification_phase_a1a_entry.py --device=auto
+code commit: 6199dd8 (pushed to origin/main)
+input: cle_shortcut_amplification_phase_a1a_seed0.tar.gz
+input bytes/sha256: 408228487 / 6322F16513C6980CDC5904D7EF91204A241205BC76DCCE8BC450E635519B4202
+result: cle_shortcut_amplification_phase_a1a_seed0_analysis_outputs.tar.gz
+result bytes/sha256: 19322309 / FDF1BEC2395334DD3816BC9C3F594B01D814DB22C0CC245CD1378A45180F397C
+spec: docs/experiments/current/CLE_SHORTCUT_COMMUNICATION_AMPLIFICATION_PHASE_A1A_ZH.md
 ```
 
-Do not start formal local training. Next action is user review, then explicit commit/push and OpenI
-upload/run authorization.
+The user explicitly chooses to continue CLE. Do not revive bad-teacher, routing-amplification,
+D2C/Oracle-D2C, PEW/BER-as-core, or tune/repeat Phase-A1a to rescue communication amplification.
+The next stage is paper-only design and collision audit for a genuinely local-first directional
+shortcut-suppression object that uses no environment/corruption labels, no clean counterpart and no
+source index. It must be distinguished from AugMix/JSD, AugMax, consistency regularization,
+IRM/VREx, GroupDRO/CVaR, counterfactual invariance and all frozen project negatives before code or
+new training. The Phase-A1a bootstrap covers evaluation-source uncertainty only; seed 0 alone does
+not establish training-seed stability.
 
 ## Superseding Topic-Selection State: Stop Extending RAHFL by Adding One More Difficulty
 

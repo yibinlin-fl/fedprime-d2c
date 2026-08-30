@@ -5,10 +5,10 @@ Updated: 2026-08-30
 ## 0. 状态与目的
 
 ```text
-status: IMPLEMENTED; AWAITING USER AUTHORIZATION FOR OPENI
-implementation: DATA/HARNESS/ANALYZER FOCUSED TESTS PASS
-training: NOT STARTED
-commit/push: NONE
+status: COMPLETE; NO_GO_FL_SPECIFIC_AMPLIFICATION
+implementation: COMPLETE; INTEGRITY PASS; INDEPENDENT RECOMPUTATION MATCH
+training: H0/H9/L0/L9 40-ROUND COMPLETE ON OPENI
+commit/push: 6199dd8 / origin/main
 ```
 
 Phase-A0 已在历史 CLE-v1 diagnostic RAHFL checkpoint 上证明：`gamma=0.9` 会产生强方向性
@@ -261,11 +261,53 @@ Focused verification on 2026-08-30：
 
 ```text
 py_compile: PASS
-Phase-A0 + Phase-A1a math tests: 6 passed
+Phase-A0/Phase-A1a/communication focused tests: 13 passed
 paired data manifest/hash verification: PASS
 shared initialization/config preflight: PASS
-formal training: NOT STARTED
+formal training: H0/H9/L0/L9 COMPLETE
 ```
 
-下一步是用户确认后提交/推送代码，再由用户在 OpenI 上传上述唯一输入包并启动。当前没有在
-本地 RTX 3050 上跑训练，也没有主动启动 OpenI。
+正式训练与推理均在 OpenI 完成，本地 RTX 3050 未运行正式训练。
+
+## 10. 正式结果与判定
+
+全部预注册完整性门槛通过。OpenI summary 与本地从 round12/round40 原始概率缓存的独立复算
+完全一致。round 40 正式结果：
+
+```text
+H0 DSA:                 0.0015228341
+H9 DSA:                 0.2042704937
+L0 DSA:                 0.0008234010
+L9 DSA:                 0.2051892788
+HFL CLE effect:         0.2027476596
+Local CLE effect:       0.2043658778
+A_pool:                -0.0016182182
+CI95:                  [-0.0033365882, 0.0001283891]
+A_client:              [-0.0027690681, -0.0023939108, -0.0016801117, +0.0003702177]
+top1 amplification:     0.0025799851
+H9 shuffled p:          0.000999001
+```
+
+```text
+G1 minimum amplification: FAIL
+G2 positive CI:           FAIL
+G3 >=3 positive clients:  FAIL (1/4)
+G4 top-1 amplification:   PASS
+G5 H9 binding-specific:   PASS
+formal verdict:           NO_GO_FL_SPECIFIC_AMPLIFICATION
+```
+
+Round 12 的 `A_pool=-0.0169168048`、CI `[-0.0183210229,-0.0155504985]` 表示早期短暂抑制，
+但到 round 40 已收敛到近零，因此不能主张通信具有持久防御效果。可支持的机制结论是：CLE
+在 HFL 与 Local 中都产生约 `0.204` 的强方向性 shortcut，主要在本地训练阶段形成；strict
+AsymHFL 既没有额外放大，也没有持久消除。
+
+```text
+result archive: cle_shortcut_amplification_phase_a1a_seed0_analysis_outputs.tar.gz
+result bytes:   19322309
+result SHA256:  FDF1BEC2395334DD3816BC9C3F594B01D814DB22C0CC245CD1378A45180F397C
+```
+
+用户决定继续 CLE，但通信放大假设已经冻结为 NO-GO。下一步只允许先定义并查重一个
+local-first、无环境/损坏标签、无 clean counterpart/source-index oracle 的 directional
+shortcut suppression 数学对象；不得通过增加 seed、轮数、路由调参或改名来挽救本假设。

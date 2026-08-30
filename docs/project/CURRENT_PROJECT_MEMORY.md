@@ -2,6 +2,123 @@
 
 Updated: 2026-08-30
 
+## CLE PIDR Zero-Training Hidden-Binding Gate - 2026-08-30
+
+The PIDR paper-only identifiability audit was followed by the approved zero-training gate. The new
+analyzer reused Phase-A1a round12/round40 softmax caches only; it ran no training and no inference.
+Promotion matrices were completed using only probabilities, task labels and probe tensor position.
+The class-to-family binding and operator-family ids were withheld until final scoring and two
+independent permutation nulls.
+
+Formal round40:
+
+```text
+arm   PIDR       mAP       AUC       positive P/R       class-family hit
+H0    0.024559   0.441855  0.510677  0.2465 / 0.4688   0.225
+H9    0.175479   0.844847  0.923906  0.5691 / 0.9063   0.850
+L0    0.025401   0.430622  0.507083  0.2448 / 0.4313   0.275
+L9    0.174728   0.865557  0.933177  0.5878 / 0.9250   0.875
+```
+
+HFL/Local mAP deltas were `+0.402993/+0.434935`; both had 4/4 positive client deltas. H9 and L9
+each achieved `p=0.000999` against both shuffled class maps and shuffled probe identities. All six
+frozen gates passed for both systems; verdict `GO_TO_INTERVENTION_BRIDGE_DESIGN`. Round12 already
+showed H9/L9 mAP `0.8135/0.8360` and hit `0.80/0.875`.
+
+This is an oracle observability GO, not a method GO. It proves distinguishable probes can reveal the
+hidden directional binding without providing the estimator a family taxonomy. It does not prove that
+ordinary i.i.d. AugMix views overwrite an existing base corruption, that clean-source-free training is
+identified, or that PIDR is novel relative to ShortcutProbe/FedCD. The next stage is paper-only probe-
+bridge design; no training loss or 12-round A/B is authorized.
+
+```text
+code:       fedprime/engine/cle_probe_directional_promotion.py
+analyzer:   scripts/analyze_cle_pidr_zero_training_gate.py
+tests:      tests/test_cle_probe_directional_promotion.py
+result:     deliverables/cle_pidr_zero_training_gate_20260830/
+verification: 10 passed
+commit:     none
+```
+
+## CLE Shortcut Communication Amplification Phase-A1a - 2026-08-30
+
+The matched four-arm OpenI attribution completed and was independently recomputed from both returned
+probability caches. It used CIFAR-10 CLE-v1, alpha 0.5, seed 0, four heterogeneous clients, no
+pretraining, 40 rounds, one local epoch, AugMix/JSD+DCL, a persisted private 85/15 fit/audit split,
+and shared initial weights. `H0/H9` used strict audit-only AsymHFL-val routing; `L0/L9` used exact
+no-op communication. Final-test labels were reporting-only.
+
+All integrity checks passed: source indices, labels and severity draws were paired across gamma;
+the split and initial states were shared; round-12/final checkpoints existed; and every HFL/Local
+pair had identical first-batch labels and all AugMix/DCL views for all 40 rounds and four clients.
+The two probability tensors had shape `[4,4,1000,16,10]`, were finite and normalized. Six relevant
+OpenI source-file hashes match the local checkout exactly. OpenI did not retain `.git`, so the
+contract records `base_git_commit=UNAVAILABLE`; file hashes bind it to the pushed `6199dd8` code.
+
+Formal round-40 DSA:
+
+```text
+arm                  DSA
+H0                   0.0015228341
+H9                   0.2042704937
+L0                   0.0008234010
+L9                   0.2051892788
+HFL CLE effect       0.2027476596
+Local CLE effect     0.2043658778
+A_pool              -0.0016182182
+CI95                [-0.0033365882, 0.0001283891]
+A_client            [-0.0027690681, -0.0023939108, -0.0016801117, +0.0003702177]
+top1 amplification   0.0025799851
+H9 shuffled p        0.000999001
+```
+
+Only 1/4 clients had positive amplification. G1 minimum effect, G2 positive CI and G3 client
+direction failed; G4 top-1 direction and G5 binding-specificity passed. Formal decision:
+`NO_GO_FL_SPECIFIC_AMPLIFICATION`. Round 12 showed temporary suppression
+`A_pool=-0.0169168048`, CI `[-0.0183210229,-0.0155504985]`, which vanished by round 40 and is not a
+durable mitigation claim.
+
+Round-40 secondary metrics:
+
+```text
+arm   Avg       Worst     WCCA      CFG       paired flip
+H0    52.0125   44.6063   31.5625   2.8063    0.1460
+H9    45.9641   38.1063   11.8125  11.7625    0.3612
+L0    52.7969   44.6188   34.5625   2.8313    0.1525
+L9    45.9000   38.1063    8.3125  12.0750    0.3591
+```
+
+Scientific interpretation: CLE robustly causes a directional corruption-to-class shortcut and a
+large robustness--invariance gap, but the shortcut is already learned locally. Strict AsymHFL does
+not materially amplify or durably suppress it. Do not use bad-teacher propagation, wrong routing or
+communication amplification as the CLE paper story, and do not run seed sweeps, router tuning or
+more rounds to rescue this rejected hypothesis. The paired bootstrap quantifies evaluation-source
+uncertainty, not training-seed variability.
+
+The user explicitly keeps CLE as the project direction. The active research target is now a
+local-first, environment-label-free directional shortcut suppression module. Before implementation,
+it must define an observable and differentiable risk using only the allowed training information,
+avoid clean-source/corruption-label/source-index oracles, and pass a collision audit against
+AugMix/JSD, AugMax, consistency regularization, IRM/VREx, GroupDRO/CVaR, counterfactual invariance,
+PEW/BER, C3R, CCAD/IRD and all frozen communication routes. No method is yet approved for code.
+
+Artifacts:
+
+```text
+code commit: 6199dd8 (origin/main)
+input archive: local_runs/cle_shortcut_amplification_phase_a1a/
+               cle_shortcut_amplification_phase_a1a_seed0.tar.gz
+input bytes: 408228487
+input SHA256: 6322F16513C6980CDC5904D7EF91204A241205BC76DCCE8BC450E635519B4202
+result archive: outputs/openi_downloads/cle_shortcut_amplification_phase_a1a_seed0/
+                cle_shortcut_amplification_phase_a1a_seed0_analysis_outputs.tar.gz
+result bytes: 19322309
+result SHA256: FDF1BEC2395334DD3816BC9C3F594B01D814DB22C0CC245CD1378A45180F397C
+summary: outputs/openi_downloads/cle_shortcut_amplification_phase_a1a_seed0/extracted/
+         outputs/cle_shortcut_amplification_phase_a1a_seed0_analysis/
+         cle_shortcut_phase_a1a_summary.json
+```
+
 ## CLE Directional Shortcut Alignment Phase-A0 - 2026-08-30
 
 The frozen zero-training OpenI audit completed on eight historical RAHFL checkpoints: four from

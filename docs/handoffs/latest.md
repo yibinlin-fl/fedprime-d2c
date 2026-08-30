@@ -2,6 +2,83 @@
 
 Updated: 2026-08-30
 
+## Latest Paper Design: Public Canonicalization + Signed Directional Withdrawal
+
+The paper-only intervention-bridge design is complete:
+
+```text
+docs/research/status/CLE_PUBLIC_CANONICALIZATION_DIRECTIONAL_WITHDRAWAL_DESIGN_2026_08_30_ZH.md
+```
+
+Directly overlaying another fixed corruption bank on already-corrupted private images is rejected:
+it does not overwrite the original degradation and revives an artificial taxonomy. The conditional
+candidate instead uses the public unlabeled data already required by heterogeneous logit
+communication to learn a frozen Public Nuisance Canonicalization Bridge (PNCB). The bridge is trained
+only by public corrupted-to-source reconstruction; it consumes no private class, corruption, family
+or binding metadata.
+
+For private image `X`, the client obtains `C(X)` and estimates, for every wrong class, the signed
+probability withdrawal `p(c|X)-p(c|C(X))` over samples whose task label is not `c`. The proposed SCDW
+loss penalizes only a positive one-sided lower confidence bound, stop-grads the standard-error
+threshold and canonical probability, and keeps the existing AugMix/JSD/DCL objective. A separate
+canonical-view CE term is mandatory, as is a `bridge-only` arm for attribution. The method adds no
+communication and is compatible with heterogeneous backbones because it operates in input and class-
+probability spaces.
+
+This is only `CONDITIONAL GO`. Its weakest assumptions are semantic preservation, contraction of the
+original hidden degradation, label-independent public reconstruction, paired observability and
+limited cancellation of harmful directions. The next gate is bridge-only, before classifier
+training:
+
+```text
+Identity bridge
+vs AugMix overlay
+vs public canonicalizer
+
+audit: semantic preservation, source-conditioned nuisance contraction,
+       H9/L9-vs-H0/L0 hidden-binding retrieval, clean artifact null,
+       and per-client consistency
+```
+
+If the public canonicalizer cannot preserve semantics while contracting the old degradation, the
+candidate is `NO-GO`; SCDW weights must not be tuned to rescue it. If it passes, the first classifier
+experiment is a matched `baseline / bridge-only / bridge+SCDW` 12-round screen. Only the Phase-B0
+bridge harness and execution smoke are authorized; no formal OpenI run or classifier training has
+started, and no communication method, PEW/BER revival or fixed corruption labels should be added.
+
+Phase-B0 implementation is now complete without classifier training:
+
+```text
+spec:       docs/experiments/current/CLE_PUBLIC_CANONICALIZATION_PHASE_B0_ZH.md
+model:      fedprime/models/public_canonicalizer.py
+engine:     fedprime/engine/cle_directional_withdrawal.py
+train:      scripts/train_cle_public_canonicalizer_phase_b0.py
+analyzer:   scripts/analyze_cle_public_canonicalization_phase_b0.py
+OpenI:      scripts/openi_cle_public_canonicalization_phase_b0_entry.py
+tests:      7 focused tests passed; 16/16 final checkpoints strict-loaded
+smoke:      4 public images, one CPU batch, execution-only PASS
+formal run: NOT STARTED
+```
+
+The four approximately 173 MiB H0/H9/L0/L9 Phase-A1a arm archives are now local and verified. Each
+contains four final and four round-12 checkpoints; the Phase-B0 input intentionally extracted only
+the 16 final round-40 checkpoints. The slim OpenI package is complete:
+
+```text
+input:  local_runs/cle_public_canonicalization_phase_b0/
+        cle_public_canonicalization_phase_b0_seed0_inputs.tar.gz
+bytes:  535256689
+sha256: DFB766F6494A5F61AA16F45666EC250A30501066AB54D89C984CD2324293B9BC
+entry:  scripts/openi_cle_public_canonicalization_phase_b0_entry.py --mode=smoke
+```
+
+It contains only the frozen 1,000-source evaluation arrays, CIFAR-100 public tar, 16 final
+checkpoints and a per-file hash manifest; private Phase-A1a training arrays and round-12 duplicate
+weights are excluded. The OpenI entry defaults to smoke and verifies both the archive hash and every
+manifest file before execution. The next action is one OpenI end-to-end smoke. It is execution-only;
+do not interpret its metrics. A formal `--mode=formal` run still requires the smoke to pass and the
+user to approve it. No Phase-A1a retrain is required.
+
 ## Latest Zero-Training Gate: PIDR Recovers Hidden Binding Under Oracle Probes
 
 The paper-only definition, identifiability counterexample, weakest-assumption analysis and 2024--2026
@@ -61,13 +138,11 @@ engine:     fedprime/engine/cle_probe_directional_promotion.py
 analyzer:   scripts/analyze_cle_pidr_zero_training_gate.py
 tests:      10 focused tests passed
 result:     deliverables/cle_pidr_zero_training_gate_20260830/
-commit:     NONE (preserve current no-proactive-commit instruction)
+commit:     bd37fc6 (local only; not pushed)
 ```
 
-Next action: paper-only design of the weakest probe bridge satisfying semantic preservation,
-degradation overwrite, coverage and paired observability. Do not implement a training loss or start
-12-round training until the bridge is distinguished from ordinary AugMix, a fixed corruption bank,
-ShortcutProbe and FedCD.
+Next action superseded by the PNCB-SCDW bridge-only gate above. Do not implement a classifier loss or
+start 12-round training until that gate passes.
 
 ## Current CLE Result: Directional Shortcut Is Local-First; Communication Amplification NO-GO
 

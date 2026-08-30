@@ -2,6 +2,35 @@
 
 Updated: 2026-08-30
 
+2026-08-30 完成 PIDR 之后的最小干预桥与训练目标纸面设计：
+
+```text
+docs/research/status/CLE_PUBLIC_CANONICALIZATION_DIRECTIONAL_WITHDRAWAL_DESIGN_2026_08_30_ZH.md
+```
+
+当前条件候选为 Public Nuisance Canonicalization Bridge（PNCB）+ Signed
+Class-Directional Withdrawal（SCDW）。它复用 HFL 已有公共无标签图像学习退化中和器，客户端
+只惩罚原图相对中和图中统计可信的错误类别正向证据，不读取 corruption/family/binding 标签，
+不修改通信。该方案仍是 `CONDITIONAL GO`：下一步必须先做 Identity/AugMix-overlay/public-
+canonicalizer 三桥对照，验证语义保持、旧退化收缩、隐藏绑定恢复与 clean artifact null；
+bridge gate 通过前不得实现12轮训练。
+
+Phase-B0 冻结规范与实现入口：
+
+```text
+docs/experiments/current/CLE_PUBLIC_CANONICALIZATION_PHASE_B0_ZH.md
+fedprime/models/public_canonicalizer.py
+fedprime/engine/cle_directional_withdrawal.py
+scripts/train_cle_public_canonicalizer_phase_b0.py
+scripts/analyze_cle_public_canonicalization_phase_b0.py
+scripts/prepare_cle_public_canonicalization_phase_b0_input.py
+scripts/openi_cle_public_canonicalization_phase_b0_entry.py
+```
+
+Phase-B0 当前 focused tests 为 `7/7`，4图/1-batch CPU 训练器运行 smoke 已通过。Phase-A1a
+的 H0/H9/L0/L9 四臂16个 round-40 最终 checkpoint 已严格加载，并连同1000张冻结评估源图
+和 CIFAR-100 公共 tar 打成单一瘦身输入包；OpenI 端到端 smoke 与正式运行均尚未启动。
+
 2026-08-30 完成 CLE local-first directional shortcut 的定义、不可识别性反例、最弱干预
 假设与 2024--2026 方法碰撞审计：
 

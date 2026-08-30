@@ -1,6 +1,580 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-17
+Updated: 2026-08-30
+
+## Current Conditional CLE Screen: Directional Shortcut Alignment Phase-A0 Passed
+
+The bad-teacher / wrong-routing / shortcut-propagation story remains parked. Historical D2C and
+Oracle D2C results, FedFalsify attribution and the beta0/beta4 coupling screen do not support making
+teacher selection the dominant CLE mechanism.
+
+A narrower zero-training screen asked whether the historical `gamma=0.9` RAHFL
+models directionally move predictions toward classes bound to an applied corruption family more
+than matched `gamma=0.0` models. Existing assets were audited: the 272,728,582-byte historical
+archive contains all four `gamma=0/0.9` client checkpoints. Existing balanced tests repeat the same
+source indices across corruptions but independently sample severity and omit explicit source IDs,
+so the formal audit must regenerate a deterministic paired evaluation grid from 1,000 clean images:
+16 old-CLE operators, severity 3, eight checkpoints, 128,000 forward items.
+
+Formal inference ran on OpenI; the local RTX 3050 was used only for archive/hash checks, tiny
+synthetic dry-runs and an independent recomputation from the returned probability cache. The frozen
+protocol used Directional Shortcut Alignment, a `gamma09-gamma00` contrast, group-size-preserving
+shuffled binding maps, paired bootstrap, integrity gates and five scientific promotion gates.
+
+Implementation and artifact status:
+
+```text
+spec:           FROZEN
+implementation: COMPLETE
+focused tests:  3 passed
+checkpoint load: 8/8 strict CPU PASS
+input package:  cle_shortcut_alignment_phase_a0_seed0_inputs.tar.gz
+input bytes:    184575308
+input sha256:   C1F6823E186DDAF6DB44A38BCBDA300C78B9F1B4702C5E84B7AEE3A485499EFE
+OpenI run:      COMPLETE
+result archive: cle_shortcut_alignment_phase_a0_seed0_outputs.tar.gz
+result bytes:   4883205
+result sha256:  CCC91ED4EC3F08C6CA6433CA275423AD3E32EDB824993F7760F94A8A49B4B76F
+code commit:    e005689 (pushed to origin/main)
+```
+
+Frozen specification:
+
+```text
+docs/experiments/current/CLE_SHORTCUT_ALIGNMENT_PHASE_A0_OPENI_ZH.md
+```
+
+All input-integrity checks passed. The OpenI summary and an independent recomputation from the
+returned `predictions.npz` agree exactly:
+
+```text
+gamma00 pooled DSA: -0.0003018894
+gamma09 pooled DSA:  0.2013210658
+delta DSA:           0.2016229552
+paired CI95:         [0.1964123272, 0.2072188988]
+positive clients:    4/4
+pooled shuffled p:   0.000999001
+client shuffled p:   0.000999001 for all 4 clients
+verdict:             GO_TO_MATCHED_PARTITION_DESIGN (G1--G5 all PASS)
+```
+
+Secondary changes from `gamma00` to `gamma09` were Avg `52.2422 -> 46.8250`, Worst
+`43.4188 -> 37.9375`, WCCA `36.0000 -> 19.3125`, CFG `2.6500 -> 11.8813`, and paired
+prediction-flip rate `0.148325 -> 0.353404`. This is strong evidence that CLE induces a directional
+corruption-to-class shortcut under the historical RAHFL protocol. It does not yet show that the
+effect is caused or amplified by federation, communication or model heterogeneity. Passing Phase-A0
+permits only the matched-global Local-D/Local-E attribution design; it is not a paper or method GO.
+
+Checkpoint provenance was re-audited on 2026-08-30. The eight weights were copied byte-for-byte
+from `outputs/cle_rahfl_diagnostic_outputs.tar.gz`, specifically the four final client checkpoints
+under each of `diag_rahfl_cle_alpha05_gamma00_seed0` and `diag_rahfl_cle_alpha05_gamma09_seed0`.
+They are project-trained historical diagnostic models with matched alpha 0.5, seed 0, architectures,
+optimizer, local epochs, public batches and AugMix/JSD+DCL+AsymHFL configuration; only the intended
+CLE dataset root differs. Their resolved configs set `pretrain_epochs=0` and `rounds=40`. Therefore
+Phase-A0 is an internally valid post-hoc matched diagnostic, but it is not evidence from the canonical
+40-pretrain + 40-communication RAHFL schedule. The old prepared gamma00/gamma09 dataset archives are
+not currently present locally, so exact client-label/source-index identity cannot now be byte-audited;
+the deterministic generator uses the same alpha, seed and `partition_seed=seed`, which establishes
+the intended matched partition. Any promoted paper experiment must persist partition/source hashes.
+
+Phase-A1a preflight completed on 2026-08-30. No reusable matched CLE-v1 gamma00/gamma09 40-round
+Local-only checkpoints exist. The closest Local-only result is CLE-v2 gamma09-only at 12 rounds with
+`save_final=false`, so it cannot supply the four-arm DSA contrast. Although `prepare_cle_data.py` and
+the diagnostic configs have not changed since commit `5870fd7`, their loader/training dependencies
+and the RAHFL runner have changed substantially, and the original local prepared archives are absent.
+New Local checkpoints therefore must not be causally compared against the historical HFL weights.
+
+The recommended Phase-A1a design jointly reruns four matched arms (HFL/Local x gamma00/gamma09) on
+one newly hashed CLE-v1 dataset and one shared code version. It defines communication amplification
+as a DSA difference-in-differences and requires byte-identical initialization plus factorized local
+and communication RNG streams so communication cannot change later AugMix draws by consuming global
+randomness. The frozen design uses a 40-round primary decision, round-12 diagnostic checkpoints,
+exact integrity checks and five promotion gates. Its matched data builder, four-arm OpenI entry,
+shared-initialization harness, per-round local stochastic trace and DSA difference-in-differences
+analyzer are implemented. Focused Phase-A0/Phase-A1a math tests pass (`6 passed`); formal training
+remains unrun pending user authorization.
+
+The new attribution must not reproduce the old diagnostic's final-test-accuracy routing. All four
+arms share a persisted client-private fit/audit split; private gradients use fit only, strict HFL
+routing uses audit only, Local leaves audit unused, and final-test labels are reporting-only.
+
+```text
+docs/experiments/current/CLE_SHORTCUT_COMMUNICATION_AMPLIFICATION_PHASE_A1A_ZH.md
+```
+
+Prepared self-contained OpenI input:
+
+```text
+local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0.tar.gz
+bytes: 408228487
+sha256: 6322F16513C6980CDC5904D7EF91204A241205BC76DCCE8BC450E635519B4202
+entry: scripts/openi_cle_shortcut_amplification_phase_a1a_entry.py --device=auto
+```
+
+Do not start formal local training. Next action is user review, then explicit commit/push and OpenI
+upload/run authorization.
+
+## Superseding Topic-Selection State: Stop Extending RAHFL by Adding One More Difficulty
+
+There is currently no active paper method, implementation task, local run or OpenI run. Preserve
+all RAHFL/CLE-HFL/PEW+BER code and evidence, but do not restart any candidate below without a new
+paper-level argument that changes its mathematical core.
+
+The adversarial-attack / dual-robustness extension is now formally `PAPER NO-GO`. Model-
+heterogeneous FL with adversarial robustness, malicious clients, logit poisoning and trustworthy
+heterogeneous distillation already has direct adjacent literature. A narrower story such as
+`robustness-profile conflict`, `teacher-ranking conflict`, `routing-amplified poisoning` or
+`corruption-camouflaged poisoning` does not by itself create an independent method contribution;
+its likely defense reduces to existing detection, trust weighting or robust logit aggregation.
+Do not run the proposed Phase-A0, add PGD/FGSM/AutoAttack, modify RAHFL, implement a poisoning
+harness or design a defense for this route.
+
+Current corruption/robustness topic pool:
+
+```text
+severity heterogeneity:                 NO-GO
+compound corruption:                    NO-GO as a paper core
+corruption--label coupling:             EXPERIMENTAL SCREEN NO-GO
+communication-induced forgetting:       low-value diagnostic; do not invest
+robustness propagation:                 composition-risk conditional idea; no active test
+data cleaning / sample removal:         NO-GO for the intended paper narrative
+availability--corruption coupling:      NO-GO due direct collisions
+dynamic corruption:                     NO-GO / highly crowded
+compression robustness:                 high composition risk; not active
+adversarial attack / dual robustness:   FORMAL NO-GO
+PEW+BER:                                strong baseline, not the paper method core
+```
+
+The search rule is changed. Do not ask what extra factor RAHFL lacks. Start from an effective
+2024--2026 centralized robustness objective or method and identify a necessary information object
+that becomes unavailable, non-decomposable or incomparable in FL: global distributions, cross-
+sample pairing, global hard-example order, cross-domain statistics, a common parameter space,
+stable/unstable feature identities, a centralized reference model, or global corruption
+statistics. A candidate advances only if all of the following are made explicit before code:
+
+```text
+centralized problem and why its method works
+the exact necessary information that is broken by federation
+why the fracture is nontrivial and not a toy protocol choice
+the weakest assumption that repairs identifiability/executability
+2024--2026 collision audit, including federated variants
+available datasets/code and a cheap falsification test
+```
+
+Next action: paper-only reverse search from centralized robustness methods to genuine federated
+structural fractures. Do not implement, run experiments or proactively commit during topic
+selection.
+
+## Completed Historical Result: RAHFL Corruption--Label Coupling Phase-A
+
+This completed screen asked whether a fixed amount of annotation noise causes an additional penalty
+when wrong labels concentrate on high-severity corrupted samples, and whether RAHFL/HFL amplifies
+that penalty. It is retained for provenance and is not an active topic.
+
+Frozen Phase-A1a comparison:
+
+```text
+Independent:     beta=0
+Strong Coupled:  beta=4
+same frozen corrupted images, disjoint client partition, fit/audit split,
+20% noisy-label count and true-class -> wrong-class transition matrix
+```
+
+Each of four heterogeneous clients has 10,000 mutually exclusive CIFAR-10 samples and an exact
+9,000/1,000 fit/audit split. The fit labels contain exactly 1,800 errors per client. The same noisy
+label manifest is used by local CE pretraining and communication-round CE/DCL. Trusted clean audit
+labels are routing-only; final test labels are reporting-only. The actual legacy RAHFL IID helper is
+disjoint, but the default `Network/pretrain.py` and `HHF/RAHFL.py` IID branches independently sample
+clients and may overlap; the new disjoint split is an explicit protocol choice.
+
+Implementation status:
+
+```text
+commit: 999fee0 (pushed to origin/main on 2026-08-24)
+focused tests: 2 passed
+beta0/beta4 1+1 smoke: passed
+artifact audit: all checks passed
+formal 40+40: not started
+OpenI seed0 10+10 screen: completed; no promotion
+```
+
+The artifact audit recovered a frozen image SHA256 beginning `e20128a7ad50`, verified 40,000 unique
+client samples, exact 9,000/1,000 splits, identical flip matrices, clean audits and unchanged tests.
+Mean severity among noisy fit samples is 2.5029 for beta=0 and 3.5699 for beta=4.
+
+OpenI input and entry:
+
+```text
+dataset: rahfl_coupling_phase_a_seed0_prepared.tar.gz
+bytes: 327018418
+sha256: AE5F9524AF594963C790016FB386BD0EB600ACD84BBC1D12EF57DA7393D1835F
+entry: scripts/openi_rahfl_coupling_phase_a_entry.py
+args: --mode=both
+```
+
+The completed entry copied condition archives and the paired JSON summary to
+`c2net_context.output_path`, then called `upload_output()`. Returned files included
+`rahfl_coupling_phase_a_screen_seed0_beta0_outputs.tar.gz`,
+`rahfl_coupling_phase_a_screen_seed0_beta4_outputs.tar.gz`,
+`rahfl_coupling_phase_a_screen_seed0_both_outputs.tar.gz`, and
+`rahfl_coupling_phase_a_screen_seed0_summary.json`.
+
+The OpenI 10+10 screen completed on 2026-08-24. Independently recomputed beta0-minus-beta4 results
+were final Avg/Worst `-1.90/-1.83pp`, last-3 Avg/Worst `-2.01/-1.37pp`, and all-10 Avg/Worst
+`-0.40/-0.07pp`. Beta4 was better, not worse. Before the first collaborative phase, beta4 clean-audit
+accuracy was already +2.45pp on average and higher for all four clients, so the reverse signal began
+in local pretraining rather than an AsymHFL amplification failure. Configs differed only by name and
+beta; both have rounds 0--9 and four checkpoints. Verdict: `SCREEN NO-GO`; do not promote to 40+40,
+Local/Centralized diagnostics, beta/noise sweeps, or a post-hoc inverted paper claim. Evidence:
+`deliverables/rahfl_coupling_phase_a_screen_20260824/RESULT_SUMMARY_ZH.md`.
+
+## Latest Topic Reset: Federated Source-Graph Weak Supervision Is the Conditional Primary
+
+After parking corruption/CLE-HFL/PEW-BER as the paper mainline, a benchmark-first screen of recent
+federated topics removed heterogeneous LoRA, federated calibration/conformal prediction, open-world
+category discovery, incomplete-modality multimodal FL, federated causal overlap recovery and generic
+pairwise-risk optimization because direct 2024--2026 methods already cover their central mechanisms.
+
+One candidate survives for a strict theory gate:
+
+```text
+Federated Source-Reliability Completion
+under Private and Partially Overlapping Labeling Functions
+```
+
+Clients hold unlabeled data and private subsets of programmatic labeling functions. They do not send
+samples, LF code or per-sample weak-label matrices; they send aggregate LF-pair agreement moments.
+The union co-observation graph can contain reliability information absent from every local graph. In
+the minimal binary conditionally-independent model, `M_jk = a_j a_k`. Disconnected graphs are not
+globally alignable; connected bipartite graphs retain a multiplicative scale ambiguity; a connected
+non-bipartite graph plus one orientation anchor can identify source reliability in the ideal model.
+
+This is not a claim that federated weak supervision is new. WSHFL already mines and shares
+parameterized candidate LFs, and US20230237321A1 already transfers weak labels through cross-client
+sample similarity without sharing LF code. The only possible new core is the identifiability and
+recovery of partially overlapping private source reliabilities from aggregate co-observation
+statistics. WRENCH and BOXWRENCH provide public weak-supervision tasks and code.
+
+Verdict:
+
+```text
+source-graph weak supervision: CONDITIONAL GO FOR THEORY GATE
+global survival concordance:   HIGH-RISK BACKUP ONLY
+implementation / experiment:   NONE / NONE
+commit:                        NONE (user requested no proactive commits)
+```
+
+Evidence:
+
+```text
+docs/research/status/CCF_B_FEDERATED_TOPIC_RESET_SCREEN_2026_08_17_ZH.md
+```
+
+Next action: paper-only impossibility and identifiability audit for the source-graph candidate. It
+must handle disconnected/bipartite graphs, abstention, client-dependent LF accuracy, finite-sample
+error, natural WRENCH/BOXWRENCH domain partitions and exact collisions with WSHFL/FlyingSquid/the
+weak-supervision patent. Do not implement or run experiments before this gate passes.
+
+## Latest Theory Gate: Federated Ordinal Boundary Completion Is NO-GO
+
+The proposed topic on completing missing ordinal severity boundaries across clients has completed
+its paper-only audit. The application is real, and the direct Federated Ordinal Learning study
+already observes that missing adjacent classes reduce the information needed to learn ordinal
+boundaries. However, the candidate does not create a new identifiable FL object.
+
+For homogeneous models, every cumulative cutpoint risk remains a weighted sum of client risks, so
+one-step FedSGD exactly recovers the centralized gradient even when each client's local cutpoint
+optimum diverges. Multiple-local-step bias is ordinary client drift; cutpoint-wise prevalence
+correction collides with FedLC, while class deficiency is covered by FedGELA and SSDI. The proposed
+boundary-complementarity statistic reduces to `Var_w(p_i,k)` via the law of total variance.
+
+For heterogeneous models, client score/cutpoint scales are incomparable without shared parameters,
+common inputs or a shared proxy, and label counts plus boundary support cannot identify the missing
+input-label mapping. Adding common inputs reduces the protocol to FedMD/FedH2L plus ordinal
+encoding; adding a shared proxy reduces it to FedeKD-style reliable bidirectional distillation.
+FedeKD already evaluates model/data heterogeneity on RetinaMNIST and Diabetic Retinopathy.
+
+Verdict:
+
+```text
+ordinal severity task / missing-boundary phenomenon: REAL / ALREADY DOCUMENTED
+client-boundary observability diagnostic:            VALID BUT SIMPLE
+homogeneous FL method novelty:                        NO-GO
+heterogeneous FL without bridge:                      UNIDENTIFIABLE
+heterogeneous FL with bridge:                         KD COMPOSITION / NO-GO
+implementation / experiment / commit:                 NONE / NONE / NONE
+```
+
+Evidence:
+
+```text
+docs/archive/methods/FEDERATED_ORDINAL_BOUNDARY_COMPLETION_AUDIT_2026_08_17_ZH.md
+```
+
+Do not implement boundary-support weighting, cutpoint teacher routing, ordinal public-logit
+distillation or a shared ordinal proxy. Select a new problem only after establishing a target that
+is neither additively solved by standard federated gradients nor bridged by existing heterogeneous
+KD.
+
+## Latest New-Topic Screen: No Paper-GO Candidate Outside Model-Heterogeneous HFL Yet
+
+The user has explicitly allowed the new paper topic to leave model-heterogeneous HFL and rejected
+any CLE-HFL + PEW/BER benchmark fallback. A final problem-first screen therefore removed corruption,
+public logits, heterogeneous backbones and KD from the required core.
+
+Federated backward-compatible representations are paper `NO-GO`: centralized BCT, BC-Aligner and
+multi-generation compatibility already cover the mechanism, and federating their local loss does
+not create a new FL object. Client optimizer autonomy is `NO-GO` because Federated Blended
+Optimization already treats heterogeneous local optimizers as black boxes, while FedPM/FedPAC
+directly cover incompatible preconditioner geometries. Cross-client deduplication is `NO-GO` due
+EP-MPD and FedRW. Heterogeneous label maturity/delay is real but currently reduces to local
+inverse-maturity correction plus delayed-feedback learning and ordinary aggregation, so it is also
+method `NO-GO`.
+
+The final theory gate also rejected repeated adaptive use of client-private validation sets. Across
+rounds, server proposals do depend on reused audit responses, so the statistical problem is real.
+Define the useful diagnostic:
+
+```text
+FVI_i(T) = I(H_T ; A_i | training transcript and other clients' audits).
+```
+
+For sub-Gaussian loss, the expected client validation optimism is controlled by
+`sqrt(2 sigma^2 FVI_i(T) / m_i)`. However, Reusable Holdout/Thresholdout already permits arbitrarily
+adaptive queries based on the entire previous transcript. Running one mechanism per client remains
+valid when the server uses other clients' answers to construct later proposals: relative to a target
+audit set, the rest is adaptive post-processing and mechanisms on disjoint data. Thus the per-client
+FVI vector adds reporting granularity but no new joint validity mechanism. DP-Hype additionally
+covers local evaluation, noising, secure aggregation and private federated selection.
+
+Verdict:
+
+```text
+federated adaptive validation-reuse problem: REAL
+per-client FVI diagnostic:                   VALID BUT NOT A NEW METHOD
+paper core / implementation / experiment:    NO-GO / NONE
+all PEW/BER or model-HFL fallbacks:           EXCLUDED BY USER
+```
+
+Evidence:
+
+```text
+docs/research/status/FEDERATED_NEW_TOPIC_FINAL_SCREEN_2026_08_17_ZH.md
+```
+
+Next action: obtain the user's boundary decision: either the new topic may leave federated learning
+entirely, or it must remain in FL while accepting new real data / observable side information.
+Do not change code, run experiments or commit.
+
+## Latest Theory Gate: Client Architecture Transition Core Is NO-GO
+
+The conditional primary on personalized knowledge continuity after the same client changes
+architecture has completed its paper-only identifiability/nontriviality audit. If the old client
+function is queryable on the relevant input distribution, ordinary local old-to-new distillation is
+the optimal projection into the new hypothesis class for the pure preservation objective; no
+federated transcript can lower that objective. If old outputs are unavailable or observed only on a
+finite transfer set, two worlds can have identical local observations and federated transcripts but
+opposite old personalized functions on an unqueried positive-mass region, so uniform recovery is
+impossible.
+
+Adding current federated knowledge changes the objective from preservation to collaborative task
+improvement and reduces to historical-local + current-global dual/multi-teacher distillation. This
+directly collides with pFedSD/comprehensive KD, pFedKT and FedPSD, while AdaptFL and FedKDNAS already
+cover real-time resource changes, changing client architectures and heterogeneous KD. Cross-
+architecture KD and adaptive dual-teacher CAKD cover the remaining transfer mechanism.
+
+Verdict:
+
+```text
+architecture-transition scenario reality:       GO
+ATR / FTG as controlled evaluation metrics:      GO
+FL-specific identifiable preservation target:   NO-GO
+non-dual-teacher method object:                  NO-GO
+CCF-B core / implementation / experiment:        NO-GO / NONE
+```
+
+Evidence:
+
+```text
+docs/archive/methods/CLIENT_ARCHITECTURE_TRANSITION_IDENTIFIABILITY_AUDIT_2026_08_17_ZH.md
+```
+
+Do not implement an architecture-switch runner, old+global teacher loss, architecture-specific
+temperature/projector/gate, or run local/OpenI experiments. The only survivor from the prior screen
+is the architecture-conditioned collaboration-benefit diagnostic, and it remains a benchmark-only
+conditional route rather than a CCF-B method paper.
+
+## Latest Topic Convergence: One Conditional Primary and One Diagnostic Backup
+
+A top-down screen compared six non-corruption topics against current literature, frozen negative
+routes, existing infrastructure and a one-to-two-month CCF-B window. Proxy-data coverage, receiver
+capacity/learnability, heterogeneous label spaces and model-heterogeneous federated unlearning all
+have direct collisions and are paper `NO-GO` for this project.
+
+The only conditional primary is personalized knowledge continuity when the *same client* changes
+architecture during federation. AdaptFL already assigns resource-specific architectures under
+round-wise resource changes, and FedKDNAS selects an architecture every round while exchanging
+public-reference logits. Therefore dynamic architecture selection itself is not new. The remaining
+question is whether architecture-switch loss and personalized-knowledge continuity admit an
+FL-specific object that beats the strongest local old-to-new KD and cannot reduce to an old-local +
+current-federation dual teacher. This has not passed its theory gate and must not be implemented yet.
+
+The sole backup is a diagnostic/benchmark on architecture-conditioned collaboration benefit, using
+matched data twins across backbones to separate architecture from data. Collaborative fairness,
+individual benefit over Local and low-end-device inclusiveness already exist, so this is not yet a
+method-paper contribution and is retained only if the user accepts a diagnostic paper.
+
+Evidence:
+
+```text
+docs/research/status/CCF_B_TOPIC_CONVERGENCE_MATRIX_2026_08_17_ZH.md
+```
+
+Next action: paper-only identifiability/nontriviality audit for architecture transitions. Do not
+change code, run experiments, revive frozen routers, or commit for this screen.
+
+## Latest Theory Gate: Missed-Knowledge Path Is Valid but Paper NO-GO
+
+The ordered replay gate for a returning model-heterogeneous client has completed without code or
+experiments. A minimal non-injective student-response construction proves that endpoint-only and
+mean-teacher distillation can remain at an information-degenerate point, while chronological and
+reverse replay select opposite final branches. Thus order can contain information absent from the
+final aggregate teacher. A standard contraction bound also relates recovery error to initial
+staleness, weighted teacher-path compression error, and local optimization/capacity error.
+
+The paper gate nevertheless fails. Pro-KD, progressive distillation's implicit-curriculum theory,
+Continuation-KD and curriculum extraction directly cover the advantage of intermediate teacher
+checkpoints over a final teacher. FAPD already brings progressive, capacity-aware distillation into
+federated learning; FedGKD uses historical global teachers; FedLFH uses client historical
+trajectories. Path-variation recovery bounds are standard dynamic-regret/tracking results. The exact
+returning-client/public-logit protocol was not found verbatim, but its method is an obvious
+composition rather than a new CCF-B core.
+
+Verdict:
+
+```text
+ordered-path mathematical phenomenon: GO
+new KD principle:                     NO-GO
+CCF-B rejoining-client core method:   NO-GO
+implementation / experiment:          NONE
+```
+
+Evidence:
+
+```text
+docs/research/status/REJOINING_HETERO_LOGIT_RECOVERY_AUDIT_2026_08_17_ZH.md
+docs/archive/methods/MISSED_KNOWLEDGE_PATH_THEORY_GATE_2026_08_17_ZH.md
+```
+
+Keep data-corruption x model-HFL parked as the current submission mainline, preserve all existing
+RAHFL/CLE-HFL/PEW+BER assets, and do not implement or tune the missed-path candidate.
+
+## Latest New-Topic Audit: Public-Logit Privacy Is Real but Not a New Core
+
+The public-logit privacy route was audited against the exact current protocol. Every round exposes
+per-client, per-public-sample 10-way probability vectors before receiver-specific AsymHFL routing.
+The resulting transcript can support label-distribution and membership inference; this is a real
+risk, not merely a paper story.
+
+It does not pass the novelty and feasibility gates. PoPETs 2025 already attacks public-dataset-assisted
+federated distillation, including CIFAR-10 private / CIFAR-100 public. USENIX Security 2024 directly
+studies architecture-dependent privacy leakage. FedMD-NFDP, one-shot/noisy federated KD,
+Selective-FD, CoFedMID and secure heterogeneous FD aggregation surround the available defenses.
+Under formal DP, the worst-case sensitivity of probability releases is architecture-independent;
+under empirical architecture-aware perturbation, protection is attack-specific and provides no
+worst-case privacy claim. Privacy-budgeted teacher-query routing is the only less-directly occupied
+formulation, but query utility is counterfactual and fewer deterministic queries do not themselves
+provide DP.
+
+Verdict:
+
+```text
+privacy risk in the current communication:              REAL
+heterogeneous leakage as an empirical audit:             VALID BUT WEAK
+architecture-aware logit release as a paper core:        NO-GO
+privacy-budgeted teacher-query routing:                  CONDITIONAL, THEORY INCOMPLETE
+implementation / local attacks / OpenI:                  NONE
+```
+
+Evidence:
+
+```text
+docs/archive/methods/MODEL_HETERO_PUBLIC_LOGIT_PRIVACY_AUDIT_2026_08_17_ZH.md
+```
+
+Do not implement per-backbone noise, temperature, top-k, argmax, query dropping or an attack-AUC
+controller. The next independent topic screen should examine late-joining/intermittent heterogeneous
+clients and must first distinguish itself from asynchronous FL, stale-update revival and continual HFL.
+
+## Latest Theory Audit: Compound Degradation Does Not Rescue the Current Paper Core
+
+The compound-degradation route was formalized without corruption labels, quality metadata, client
+filtering or sample downweighting. Its sole candidate, Federated Compound Interaction Risk (FCIR),
+measures whether adding an augmentation after an existing augmentation history creates positive
+loss synergy beyond the same augmentation's singleton damage. A valid telescoping bound controls
+long compositions when every prefix interaction is bounded.
+
+This is only a closed augmentation-library result. It cannot cover unknown real corruptions without
+a label-preserving augmentation-to-corruption coverage and loss-smoothness assumption. The local
+behavior is surrounded by AugMix, AugMax, CoCor and representation straightening; communicating
+class-by-augmentation interaction tables reduces to FedAvP-style shared augmentation policy. The
+route also has no mechanism that increases training quality in the private weak class-environment
+cells responsible for BER's WCCA/CFG gains.
+
+Verdict:
+
+```text
+compound degradation as an evaluation extension: CONDITIONAL GO
+compound degradation as a new problem claim:     NO-GO
+FCIR closed-library mathematics:                  VALID BUT WEAK
+FCIR as a standalone paper core:                  NO-GO
+implementation / local / OpenI:                   NONE
+```
+
+Evidence:
+
+```text
+docs/archive/methods/COMPOUND_DEGRADATION_INVARIANT_KNOWLEDGE_AUDIT_2026_08_17_ZH.md
+```
+
+Do not implement FCIR, shared augmentation-interaction communication, or a renamed compound
+AugMix module. If the user still rejects a taxonomy-assisted benchmark paper, stop the data
+corruption x model-HFL method mainline and select a new topic with an observable target and a
+short, existing-data experimental path.
+
+## Latest Theory Audit: Latent Degradation Risk Identifiability Is Not a New Paper Core
+
+The proposed paper route formalized class-conditional latent degradation risk as
+`r_c = Pi_c rho_c`, constructed observationally equivalent worlds with different hidden
+worst-cell risks, and derived the known-mixture rank condition, transcript invariance and the
+additional confounding caused by model-specific risk vectors. These statements are mathematically
+valid and explain why ordinary public-logit communication cannot replace missing environment side
+information.
+
+They do not pass the novelty gate. Unknown-group worst risk is already covered by fairness without
+demographics and its federated version; aggregate-statistic bounds and partial identification have
+direct precedents; multi-mixture component identifiability is covered by mutual-contamination theory.
+The proposed heterogeneous shortcut-transfer estimand also collides with knowledge-distillation
+mechanism-transfer work and AugHFL/RAHFL's corrupted-knowledge motivation.
+
+Verdict:
+
+```text
+latent degradation risk as an internal diagnostic: VALID
+P0 identifiability as a standalone paper core:      NO-GO
+P1 shortcut transfer as a standalone paper core:    NO-GO
+implementation / offline audit / experiment:        NONE
+```
+
+Evidence:
+
+```text
+docs/archive/methods/LATENT_DEGRADATION_RISK_IDENTIFIABILITY_AUDIT_2026_08_17_ZH.md
+```
+
+Do not implement identified-set optimization, communication difference-in-differences, or another
+hidden-environment proxy. The next strategic choice must be a transparent PEW+BER empirical paper,
+a real-metadata/observable-fault problem change, or leaving the data-corruption x model-HFL mainline.
 
 ## Latest Theory Audit: Safe Model-Heterogeneous FTTA Is Paper NO-GO
 
@@ -112,12 +686,13 @@ docs/research/status/PEW_BER_PAPER_CLAIM_AUDIT_2026_08_16_ZH.md
 
 ## Current Objective
 
-Await the user's decision after the paper-level rejection of fully-unlabeled safe
-model-heterogeneous FTTA. Do not implement or run it. The only retained variant
-explicitly assumes sparse unbiased delayed target task labels and must be treated
-as a new delayed-supervision online-learning problem with a separate novelty
-audit. If that task change is not accepted, search for a topic whose target is
-observable rather than another proxy for hidden target risk.
+The user has rejected all CLE-HFL/PEW+BER benchmark fallbacks and allowed the submission topic to
+leave model-heterogeneous HFL while clarifying that heterogeneous models remain allowed and may be
+desirable. Model heterogeneity is therefore a permitted protocol condition, not a required novelty
+claim. The first broader FL screen and the subsequent Federated Ordinal Boundary Completion audit
+have no paper-GO survivor. Preserve all prior assets and negative evidence, but do not force the
+topic back into corruption, KD, public logits or architecture heterogeneity. There is currently no
+active method candidate.
 
 ## Latest Theory Result: LCC - NO-GO Before Implementation
 
@@ -239,10 +814,8 @@ GroupDRO/CVaR and CCAD instead of merely renaming their objective.
 
 ## Next Action
 
-Do not implement LCC or pure client-mixture contrast. The next candidate must
-state what additional information makes hidden environments identifiable
-(rather than silently assuming labels, clusters, high-loss tails, or enough
-clients). First define that side information, its minimal assumption and a
-cheap falsification audit; then distinguish it from PIE/MPIE, C3R, CRSR,
-FedCIS, continuous witness, GRASP/GoG, MixStyle/Fourier mixing, and CVaR. Do not
-run another full local training audit until this paper-level filter passes.
+Report the ordinal-boundary `NO-GO` and start no implementation. The next independent topic screen
+must begin from an observable target that standard additive federated gradients cannot already
+solve and that existing KD/proxy communication cannot trivially bridge. Homogeneous and
+heterogeneous models are both allowed; architecture heterogeneity alone is not the contribution.
+Do not run local/OpenI experiments or commit during topic selection.

@@ -1,16 +1,16 @@
-# CLE Shortcut Alignment Phase-A0 OpenI 审计规范（待确认）
+# CLE Shortcut Alignment Phase-A0 OpenI 审计与正式结果
 
 Updated: 2026-08-30
 
 ## 0. 当前状态与边界
 
 ```text
-status: FROZEN / implementation ready
+status: COMPLETE / G1--G5 PASS
 training: NONE
 formal inference: OpenI only
 local RTX 3050: forbidden for formal inference
 implementation: COMPLETE
-OpenI task: NOT STARTED
+OpenI task: COMPLETE
 ```
 
 本阶段只判断历史 CLE-HFL 模型是否真的把 corruption 当成类别线索。它不研究坏教师、
@@ -301,16 +301,42 @@ tiny synthetic unit test / CLI help / analyzer dry-run
 
 不得在本地 RTX 3050 上运行正式 8-checkpoint 推理。
 
-## 10. 实现验证与待运行工作
+## 10. 实现验证与正式结果
 
 ```text
 focused tests:             3 passed
 checkpoint strict loading: 8/8 passed on CPU
 archive members:           13 exact, no extra payload
 formal local inference:    not run
-formal OpenI inference:    not started
+formal OpenI inference:    complete
 ```
 
-下一步仅为：保持不提交，等待用户明确允许 commit/push；随后用户上传上述输入包并在 OpenI
-运行 `scripts/openi_cle_shortcut_alignment_phase_a0_entry.py`（无需额外参数）。回传后由 Codex
-独立复算并按 G1--G5 给出 GO/NO-GO。
+代码提交 `e005689` 已推送到 `origin/main`。正式回传归档：
+
+```text
+name:   cle_shortcut_alignment_phase_a0_seed0_outputs.tar.gz
+bytes:  4883205
+sha256: CCC91ED4EC3F08C6CA6433CA275423AD3E32EDB824993F7760F94A8A49B4B76F
+```
+
+OpenI summary 与从 `predictions.npz` 进行的独立复算完全一致：
+
+```text
+gamma00 pooled DSA: -0.0003018894
+gamma09 pooled DSA:  0.2013210658
+delta DSA:           0.2016229552
+paired CI95:         [0.1964123272, 0.2072188988]
+positive clients:    4/4
+pooled shuffled p:   0.000999001
+client shuffled p:   0.000999001 for all clients
+verdict:             GO_TO_MATCHED_PARTITION_DESIGN
+```
+
+G1--G5 全部通过。辅助指标从 `gamma00` 到 `gamma09`：Avg `52.2422 -> 46.8250`，
+Worst `43.4188 -> 37.9375`，WCCA `36.0000 -> 19.3125`，CFG `2.6500 -> 11.8813`，
+paired prediction-flip rate `0.148325 -> 0.353404`。
+
+结论严格限定为：历史强 CLE 模型确实表现出 corruption-family 到绑定类别的方向性捷径，
+而 independent CLE 模型接近零。该结果尚不能把成因归于 federation、communication、teacher
+routing 或 model heterogeneity。下一步只允许先完成 matched-global Local-D/Local-E 的归因
+设计；这不是论文或新方法 GO。

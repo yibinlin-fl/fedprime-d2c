@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import time
@@ -167,6 +168,11 @@ class AsymHFLExperiment:
                         seed=int(strict_cfg.get("seed", self.config.get("seed", 0))),
                         num_classes=num_classes,
                         augmix_module=method_cfg.get("augmix_module", "jsd"),
+                        loader_seed=(
+                            int(strict_cfg["loader_seed"])
+                            if strict_cfg.get("loader_seed") is not None
+                            else None
+                        ),
                     )
                 )
                 self._routing_audit_loaders = build_client_audit_loaders(
@@ -704,6 +710,13 @@ class AsymHFLExperiment:
                         f"CFG {unseen['cfg']:.2f}",
                         flush=True,
                     )
+                save_rounds = {
+                    int(value)
+                    for value in self.config.get("checkpoints", {}).get("save_rounds", [])
+                }
+                completed_round = round_idx + 1
+                if completed_round in save_rounds:
+                    self._save_models(models, subdirectory=f"round_{completed_round:03d}")
 
         if group_file is not None:
             group_file.close()
@@ -1352,6 +1365,14 @@ class AsymHFLExperiment:
                             if hasattr(self._communication_strategy, "local_loss")
                             else None
                         ),
+                        batch_trace_fn=(
+                            self._build_local_batch_trace_fn(
+                                round_idx=round_idx,
+                                client_id=client_id,
+                            )
+                            if bool(method_cfg.get("record_local_batch_trace", False))
+                            else None
+                        ),
                     )
                 losses.append(loss)
         if fedease_diagnostics:
@@ -1363,6 +1384,36 @@ class AsymHFLExperiment:
         else:
             self._last_fedease_metrics = {}
         return sum(losses) / max(len(losses), 1)
+
+    def _build_local_batch_trace_fn(self, *, round_idx: int, client_id: int):
+        trace_path = self.output_dir / "local_batch_trace.jsonl"
+
+        def record(*, batch_idx: int, images, labels) -> None:
+            if int(batch_idx) != 0:
+                return
+            digest = hashlib.sha256()
+            tensors = list(images) if isinstance(images, (tuple, list)) else [images]
+            shapes = []
+            for tensor in tensors:
+                value = tensor.detach().cpu().contiguous()
+                shapes.append(list(value.shape))
+                digest.update(str(value.dtype).encode("ascii"))
+                digest.update(value.numpy().tobytes())
+            label_value = labels.detach().cpu().contiguous()
+            digest.update(str(label_value.dtype).encode("ascii"))
+            digest.update(label_value.numpy().tobytes())
+            row = {
+                "round": int(round_idx) + 1,
+                "client": int(client_id),
+                "batch": 0,
+                "image_shapes": shapes,
+                "label_shape": list(label_value.shape),
+                "sha256": digest.hexdigest().upper(),
+            }
+            with trace_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+        return record
 
     def _pretrain_phase(self, models, optimizers, private_loaders, pretrain_epochs: int, train_cfg: dict) -> None:
         criterion = torch.nn.CrossEntropyLoss()
@@ -1633,11 +1684,14 @@ class AsymHFLExperiment:
         images, labels = batch
         return images, labels, None
 
-    def _save_models(self, models) -> None:
+    def _save_models(self, models, subdirectory: str | None = None) -> None:
         ckpt_dir = self.output_dir / "checkpoints"
+        if subdirectory:
+            ckpt_dir = ckpt_dir / str(subdirectory)
         ckpt_dir.mkdir(parents=True, exist_ok=True)
         for client_id, model in models.items():
             torch.save(model.state_dict(), ckpt_dir / f"client_{client_id}.pt")
+        print(f"[checkpoint] saved {len(models)} client models to {ckpt_dir}", flush=True)
 
     def _load_models_if_configured(self, models) -> None:
         ckpt_cfg = self.config.get("checkpoints", {})
@@ -1645,9 +1699,12 @@ class AsymHFLExperiment:
         if not load_dir:
             return
         load_dir = Path(load_dir)
+        require_all = bool(ckpt_cfg.get("require_all", False))
         for client_id, model in models.items():
             path = load_dir / f"client_{client_id}.pt"
             if not path.exists():
+                if require_all:
+                    raise FileNotFoundError(path)
                 continue
             state = torch.load(path, map_location=self.device)
             if isinstance(state, dict) and "state_dict" in state:
@@ -1657,3 +1714,4 @@ class AsymHFLExperiment:
                 for key, value in state.items()
             }
             model.load_state_dict(cleaned, strict=bool(ckpt_cfg.get("strict", True)))
+            print(f"[checkpoint] loaded client={client_id} from {path}", flush=True)

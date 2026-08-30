@@ -32,6 +32,7 @@ def train_local_augmix_dcl_epoch(
     log_interval: int | None = None,
     context: str = "RAHFL local phase",
     communication_loss_fn=None,
+    batch_trace_fn=None,
 ) -> float:
     add_vendor_paths()
     from loss import DCLLoss, SupConLoss
@@ -45,6 +46,8 @@ def train_local_augmix_dcl_epoch(
     for batch_idx, (images, labels) in enumerate(loader):
         if max_batches is not None and batch_idx >= max_batches:
             break
+        if batch_trace_fn is not None:
+            batch_trace_fn(batch_idx=batch_idx, images=images, labels=labels)
 
         pending_queue_update = None
         labels = labels.to(device, non_blocking=True).long()

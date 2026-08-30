@@ -1,6 +1,250 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-08-05
+Updated: 2026-08-30
+
+## CLE Directional Shortcut Alignment Phase-A0 - 2026-08-30
+
+The frozen zero-training OpenI audit completed on eight historical RAHFL checkpoints: four from
+matched `gamma=0.0` and four from `gamma=0.9`. It evaluated the same 1,000 balanced clean CIFAR-10
+sources under all 16 historical CLE-v1 corruption operators at severity 3, for 128,000 total forward
+items. All integrity checks passed. The returned summary was independently recomputed from the raw
+probability cache with exact agreement.
+
+```text
+gamma00 pooled DSA: -0.0003018894
+gamma09 pooled DSA:  0.2013210658
+delta DSA:           0.2016229552
+paired CI95:         [0.1964123272, 0.2072188988]
+positive clients:    4/4
+pooled shuffled p:   0.000999001
+client shuffled p:   0.000999001 for all 4 clients
+decision:            GO_TO_MATCHED_PARTITION_DESIGN; G1--G5 all PASS
+```
+
+Secondary changes were Avg `52.2422 -> 46.8250`, Worst `43.4188 -> 37.9375`, WCCA
+`36.0000 -> 19.3125`, CFG `2.6500 -> 11.8813`, paired prediction-flip rate
+`0.148325 -> 0.353404`, and family-bound top-1 bias `0.000010 -> 0.230527`.
+
+Interpretation is deliberately limited: the historical strong-CLE models directionally exploit
+corruption families as class evidence, while the independent-CLE models do not. This establishes
+the shortcut mechanism and a robustness--invariance gap in the historical RAHFL protocol. It does
+not identify federation, communication, teacher routing or model heterogeneity as the cause. The
+next authorized scientific step is the already pre-registered matched-global Local-D/Local-E
+attribution design. No new method or full training experiment is authorized by this result alone.
+
+Provenance limitation: these are the final four-client checkpoints from the project-trained
+`diag_rahfl_cle_alpha05_gamma00_seed0` and `diag_rahfl_cle_alpha05_gamma09_seed0` runs. Both resolved
+configs use alpha 0.5, seed 0, AugMix/JSD+DCL+AsymHFL, `pretrain_epochs=0`, 40 communication rounds
+and one local epoch per round. They are not the canonical 40-pretrain + 40-communication RAHFL
+schedule. The post-hoc Phase-A0 comparison is internally matched and valid for this historical
+diagnostic protocol, but a paper-level full-RAHFL claim would require a separately matched run. The
+historical prepared v1 datasets are no longer local, so their source/label identity cannot be
+re-hashed; the deterministic generator uses identical alpha, seed and partition seed across gamma.
+Future promoted runs must persist explicit source-index, label and partition hashes.
+
+Artifacts:
+
+```text
+code commit: e005689 (origin/main)
+result archive: outputs/openi_downloads/cle_shortcut_alignment_phase_a0_seed0/
+                cle_shortcut_alignment_phase_a0_seed0_outputs.tar.gz
+result bytes: 4883205
+result SHA256: CCC91ED4EC3F08C6CA6433CA275423AD3E32EDB824993F7760F94A8A49B4B76F
+```
+
+## Corruption/Robustness Topic-Pool Closure and New Search Rule - 2026-08-25
+
+The project has formally stopped using the search pattern `RAHFL + one additional difficulty`.
+That pattern repeatedly produces combinations already occupied by mature neighboring literature:
+attack, label noise, dynamic corruption, resource heterogeneity, availability and compression. It
+also encourages post-hoc renaming of a known problem rather than discovering an independent
+federated object. No current candidate is authorized for implementation or experimentation.
+
+The current topic-pool decisions are:
+
+```text
+topic                                      decision
+severity heterogeneity                     NO-GO
+compound corruption                        PAPER-CORE NO-GO; evaluation-only at most
+corruption--label coupling                 SCREEN NO-GO; beta4 outperformed beta0
+communication-induced robustness forgetting LOW-VALUE DIAGNOSTIC; DO NOT INVEST
+architecture-agnostic robustness propagation COMPOSITION-RISK CONDITIONAL; NOT ACTIVE
+data cleaning / damaged-sample removal      NO-GO for the intended paper narrative
+availability--corruption coupling           NO-GO due literature collision
+dynamic corruption                         NO-GO / highly crowded
+compression robustness                     HIGH COMPOSITION RISK; NOT ACTIVE
+adversarial attack / dual robustness HFL    FORMAL NO-GO
+PEW+BER                                    STRONG BASELINE; CORE-METHOD NO-GO
+```
+
+The attack route is frozen broadly, not only for one proposed experiment. Do not implement the
+one-shot attack Phase-A0; do not add PGD, FGSM or AutoAttack; do not implement malicious-logit,
+poisoning or backdoor experiments; and do not modify RAHFL for an attack defense. Literature already
+covers the relevant intersection through model-heterogeneous adversarial robustness, federated-
+distillation logit poisoning and trustworthy heterogeneous logit fusion. Narrowing the story to
+`robustness-profile conflict`, `teacher-ranking conflict`, `routing amplification` or
+`corruption-camouflaged poisoning` is insufficient when the resulting method remains anomaly
+detection, trust weighting or robust logit aggregation.
+
+The architecture-agnostic common-corruption robustness-propagation idea is not recorded as a GO.
+It remains only a composition-risk hypothesis adjacent to FedRBN, FedERL/DART, AugHFL/RAHFL and
+robust distillation. No Phase-A harness or pretraining should be started unless a later paper-level
+audit establishes a non-compositional mathematical core.
+
+Future topic selection must reverse direction:
+
+```text
+effective centralized robustness method/objective
+    -> identify information necessary for its correctness
+    -> show that federation removes or fractures that information
+    -> prove the fracture is not solved by additive local gradients, ordinary KD or a proxy
+    -> audit exact federated collisions
+    -> only then define a minimal falsification experiment
+```
+
+Candidate structural fractures include, but are not automatically research contributions: missing
+global data distributions, unavailable cross-sample pairs, missing global hard-example rankings,
+unshareable cross-domain statistics, incomparable heterogeneous parameter spaces, unavailable
+stable/unstable feature identities, absent centralized reference models and unavailable global
+corruption statistics. Every new candidate must state the centralized problem, why the centralized
+method works, exactly what information is lost in FL, the weakest repair assumption, why the setting
+is non-toy, available data/code, direct 2024--2026 collisions and the cheapest Kill Test before any
+implementation.
+
+Current operational state:
+
+```text
+active paper method: none
+active implementation: none
+active local/OpenI experiment: none
+next action: paper-only reverse search from centralized robustness to federated structural fracture
+git policy during topic selection: no proactive commit
+```
+
+## RAHFL Corruption-Dependent Label-Noise Coupling Phase-A - 2026-08-24
+
+The active research screen has returned to corruption robustness for one narrowly defined causal
+question. It does **not** revive PEW/BER or claim that class--corruption entanglement is new. It asks
+whether equal-rate annotation errors become more damaging when they preferentially occur on
+high-severity corrupted samples, and later whether the resulting coupling penalty is amplified by
+the federated/RAHFL system relative to Local and Centralized training.
+
+Phase-A1a freezes two paired worlds:
+
+```text
+beta=0: independent noisy-mask scoring
+beta=4: severity-biased noisy-mask scoring
+
+fixed across worlds:
+images, four-client disjoint IID partition, exact 90/10 fit-audit split,
+20% fit noise, per-stratum quotas, shared Gumbels, wrong-label destination
+multisets and the aggregate true-class -> wrong-class transition matrix
+```
+
+Protocol details:
+
+```text
+clients: 4 heterogeneous RAHFL models
+samples per client: 10,000, mutually exclusive across clients
+fit/audit: exactly 9,000 / 1,000 per client
+noisy fit labels: exactly 1,800 per client
+pretraining: uses the regime's persisted noisy-label manifest
+communication local CE/DCL: uses the same persisted noisy-label manifest
+AsymHFL teacher routing: trusted clean client-private audit only
+final corrupted test: reporting only
+DCL: intentionally unchanged and therefore exposed to the noisy labels
+```
+
+The IID implementation distinction is now explicit. `Dataset/sampling.py::iid_sampling()` is
+mutually exclusive, but the actual default IID branches in `Network/pretrain.py` and `HHF/RAHFL.py`
+independently execute `np.random.permutation(50000)[:Private_Data_Len]` for each client and therefore
+permit overlap. Phase-A uses a fixed disjoint IID partition as an experimental protocol choice; it
+does not claim that the helper itself is buggy.
+
+Implementation and verification were committed and pushed:
+
+```text
+commit: 999fee0 Add RAHFL label-coupling Phase-A harness
+remote: https://github.com/yibinlin-fl/fedprime-d2c.git
+branch: main
+focused unit tests: 2 passed
+beta0 1-pretrain-batch + 1-round smoke: passed
+beta4 1-pretrain-batch + 1-round smoke: passed
+formal training: not started
+```
+
+The generated artifact audit passed all frozen equivalence checks:
+
+```text
+unique client samples: 40,000
+fit/audit per client: 9,000 / 1,000
+noisy fit labels per client: 1,800
+frozen image sha256: e20128a7ad506cf5ea0eccd386c81ad5b5bde8ea4ddf6dd6c9ab90e9d6a8435f
+beta0 E[severity | noisy]: 2.5029
+beta4 E[severity | noisy]: 3.5699
+partition/split/noise count/flip matrices/test role: matched
+clean audit and no audit gradient: verified
+pretrain and local CE/DCL label source: identical persisted noisy manifest
+```
+
+Current cost-saving OpenI screen:
+
+```text
+beta0: 10 pretrain epochs + 10 communication rounds
+beta4: 10 pretrain epochs + 10 communication rounds
+entry: scripts/openi_rahfl_coupling_phase_a_entry.py
+arguments: --mode=both
+status: completed on 2026-08-24
+```
+
+Prepared OpenI dataset:
+
+```text
+file: outputs/rahfl_coupling_phase_a_seed0_prepared.tar.gz
+upload name: rahfl_coupling_phase_a_seed0_prepared.tar.gz
+size: 327,018,418 bytes (~311.9 MiB)
+sha256: AE5F9524AF594963C790016FB386BD0EB600ACD84BBC1D12EF57DA7393D1835F
+visibility recommendation: private
+```
+
+OpenI success-return behavior is frozen and remembered. The entry obtains the mounted dataset and
+output paths through `c2net.context.prepare()`, safely extracts the exact prepared archive, runs the
+artifact verifier, executes beta0 and beta4 sequentially, packages beta0 immediately after it
+finishes, writes a paired descriptive summary after both finish, copies the archives/summary into
+`context.output_path`, and finally calls `c2net.context.upload_output()`.
+
+Expected returned files:
+
+```text
+rahfl_coupling_phase_a_screen_seed0_beta0_outputs.tar.gz
+rahfl_coupling_phase_a_screen_seed0_beta4_outputs.tar.gz
+rahfl_coupling_phase_a_screen_seed0_both_outputs.tar.gz
+rahfl_coupling_phase_a_screen_seed0_summary.json
+```
+
+The 10+10 result is screening-only and cannot establish a formal paper claim. It nevertheless fails
+the pre-registered promotion direction. Independent beta0-minus-beta4 recomputation gave:
+
+```text
+window       CP Avg      CP Worst
+all-10       -0.40pp     -0.07pp
+last-3       -2.01pp     -1.37pp
+final        -1.90pp     -1.83pp
+```
+
+Beta4 was better, not worse. At round 0 before the first collaborative phase, beta4 clean-audit
+accuracy averaged 50.775 versus 48.325 for beta0 (+2.45pp), and beta4 was higher for every client.
+Thus the reverse signal already arose from local pretraining; the screen supplies no evidence that
+RAHFL communication amplifies corruption-dependent label-noise harm. Teacher graphs were identical
+in rounds 0--2 and 8--9 and differed only modestly in five middle rounds. Both conditions completed
+rounds 0--9 and four final checkpoints under configs differing only in name and beta.
+
+Decision: `SCREEN NO-GO`. Do not run 40+40, Local/Centralized causal diagnostics, intermediate beta,
+noise-rate sweeps, DCL changes or AsymHFL changes for this hypothesis. Do not post-hoc invert the
+claim into a paper contribution. A possible explanation is that mislabeled clear samples in beta0
+provide stronger contradictory gradients than mislabeled low-information severity-4 samples, but
+this is a local-learning interpretation, not an established FL-specific novelty. Full report:
+`deliverables/rahfl_coupling_phase_a_screen_20260824/RESULT_SUMMARY_ZH.md`.
 
 ## Strict PEW + AsymHFL-val Formal Training-Seed Result - 2026-08-04
 

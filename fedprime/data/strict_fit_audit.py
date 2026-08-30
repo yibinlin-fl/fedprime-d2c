@@ -172,6 +172,7 @@ def build_strict_fit_audit_loaders(
     seed: int,
     num_classes: int = 10,
     augmix_module: str = "jsd",
+    loader_seed: int | None = None,
 ) -> tuple[
     list[data.DataLoader],
     data.DataLoader,
@@ -250,6 +251,10 @@ def build_strict_fit_audit_loaders(
             preprocess,
             jsd_or_nojsd=augmix_module,
         )
+        loader_generator = None
+        if loader_seed is not None:
+            loader_generator = torch.Generator()
+            loader_generator.manual_seed(int(loader_seed) * 1009 + client_id)
         fit_loader = data.DataLoader(
             fit_augmix,
             batch_size=int(train_batch_size),
@@ -257,6 +262,7 @@ def build_strict_fit_audit_loaders(
             drop_last=True,
             num_workers=int(num_workers),
             pin_memory=torch.cuda.is_available(),
+            generator=loader_generator,
         )
         probe_dataset = CorruptionSkewClientDataset(
             root=root,

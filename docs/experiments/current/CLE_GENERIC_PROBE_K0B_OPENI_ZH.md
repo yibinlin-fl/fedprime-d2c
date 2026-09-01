@@ -218,3 +218,27 @@ python scripts/openi_cle_generic_probe_k0b_entry.py --mode=formal
 
 Formal固定1,000 carriers、64+64 recipes、16 checkpoints、1,000 bootstrap。不得改bank、
 seed、active/CVaR定义或门槛。
+
+## 8. 2026-09-02 Formal结果
+
+正式OpenI产物已完成完整性核验，并从16份原始response tensors独立重算。报告与重算均为：
+
+```text
+GO_TO_K1_CHECKPOINT_SURGERY
+```
+
+HFL与Local各自8/8冻结gates通过，generic-fragility kill未触发。关键结果：
+
+```text
+HFL:  K delta=+0.252727, R ratio=4.901569, R positive clients=4/4
+Local: K delta=+0.232752, R ratio=4.385780, R positive clients=4/4
+Bank A/B R ratios: HFL 5.739226/4.317300, Local 5.166668/4.094945
+```
+
+完整独立审计：
+
+```text
+deliverables/cle_generic_probe_k0b_20260902/RESULT_SUMMARY_ZH.md
+```
+
+该GO只授权另行设计K1 checkpoint surgery。K0-B没有训练纠正模块，也没有证明最终CLE性能收益。

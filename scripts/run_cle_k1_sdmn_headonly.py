@@ -112,13 +112,19 @@ def public_split(total: int, *, discover_count: int, surgery_count: int, holdout
     discover = frozen_discover[: int(discover_count)]
     available = np.setdiff1d(np.arange(total, dtype=np.int64), frozen_discover, assume_unique=False)
     split_rng = np.random.default_rng(SPLIT_SEED)
-    selected = split_rng.choice(
-        available,
-        size=int(surgery_count) + int(holdout_count),
+    # Freeze the complete 2,000-image surgery pool before drawing holdout.  This
+    # preserves the exact calibration surgery set when formal adds a holdout set;
+    # np.random.choice(..., size=4000) is not prefix-stable with size=2000.
+    frozen_surgery = split_rng.choice(available, size=2000, replace=False).astype(np.int64)
+    if int(surgery_count) > frozen_surgery.size:
+        raise ValueError("surgery_count exceeds the frozen K1-A surgery pool")
+    surgery = frozen_surgery[: int(surgery_count)]
+    holdout_candidates = available[~np.isin(available, frozen_surgery)]
+    holdout = split_rng.choice(
+        holdout_candidates,
+        size=int(holdout_count),
         replace=False,
     ).astype(np.int64)
-    surgery = selected[: int(surgery_count)]
-    holdout = selected[int(surgery_count) :]
     if np.intersect1d(discover, surgery).size or np.intersect1d(discover, holdout).size:
         raise AssertionError("discover overlaps surgery/holdout")
     if np.intersect1d(surgery, holdout).size:
@@ -217,7 +223,7 @@ def trace_payload(trace) -> dict[str, object]:
         "objective_after": trace.objective,
         "anchor_kl": trace.anchor_kl,
         "accepted": trace.accepted,
-        "learning_rate": trace.learning_rate,
+        "effective_learning_rate_trace": trace.learning_rate,
         "nonincrease_steps": int(
             sum(after <= before + 1.0e-12 for before, after in zip(trace.objective_before, trace.objective))
         ),
@@ -272,6 +278,7 @@ def inspect_assets(args: argparse.Namespace, banks: dict[str, dict[str, object]]
 def run_one_fold_client(
     *,
     model: torch.nn.Module,
+    checkpoint_arm: str,
     client_id: int,
     fold_name: str,
     discover_images: np.ndarray,
@@ -356,7 +363,7 @@ def run_one_fold_client(
     response_dir = output_dir / "unseen_bank_metrics" / "responses"
     for path in (selection_dir, direction_dir, trace_dir, checkpoint_dir, response_dir):
         path.mkdir(parents=True, exist_ok=True)
-    key = f"{fold_name}_client{client_id}"
+    key = f"{checkpoint_arm}_{fold_name}_client{client_id}"
     write_json(selection_dir / f"{key}.json", selection_payload(selection, bank_name=fold_name[0], client_id=client_id))
     np.savez_compressed(
         direction_dir / f"{key}.npz",
@@ -444,16 +451,16 @@ def calibration_for_client_fold(
                 and all(payload["accepted"])
                 and not payload["trust_region_events"]
             )
-            rows.append({"learning_rate": learning_rate, "pass": passed, **payload})
+            rows.append({"candidate_learning_rate": learning_rate, "pass": passed, **payload})
         except (FloatingPointError, RuntimeError) as exc:
             rows.append(
                 {
-                    "learning_rate": learning_rate,
+                    "candidate_learning_rate": learning_rate,
                     "pass": False,
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
-    passing = [row["learning_rate"] for row in rows if row["pass"]]
+    passing = [row["candidate_learning_rate"] for row in rows if row["pass"]]
     return {
         "fold": fold_name,
         "client": int(client_id),
@@ -556,6 +563,7 @@ def main() -> None:
             if args.mode == "smoke":
                 result = run_one_fold_client(
                     model=model,
+                    checkpoint_arm=checkpoint_arm,
                     client_id=client_id,
                     fold_name=fold_name,
                     discover_images=images[split["discover"]],

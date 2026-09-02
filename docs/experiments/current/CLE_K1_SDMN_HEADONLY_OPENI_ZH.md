@@ -1,6 +1,6 @@
 # CLE-HFL K1-A：Head-only SDMN Checkpoint Surgery
 
-状态：实现与smoke阶段。Formal保持锁定。
+状态：INSPECT、smoke与calibration均已审计通过；Formal K1-A协议已冻结并实现，等待OpenI正式运行。
 
 ## 1. 科学问题
 
@@ -135,16 +135,93 @@ Calibration对H9/L9全部8个client、A->B/B->A两fold，只使用discover+surge
 LR为`1e-4/3e-4/1e-3`，每个10步。它禁止读取holdout bank、DSA、WCCA、CFG、CLE binding和
 private test。选择满足有限值、至少8/10步objective不增、anchor KL `<0.005`的最大LR。
 
-## 6. Formal lock
+Calibration正式审计结果：
 
-网页handoff没有明确冻结optimizer、formal maximum surgery steps及backtracking细节。当前实现为
-smoke/calibration使用Adam、KL rollback、factor 0.5、最多12次rollback；这些不是formal科学结论。
+```text
+archive: cle_k1_sdmn_headonly_seed0_calibration_outputs.tar.gz
+bytes:   43365
+sha256:  5B1740185723823862D722C4ABE724AC4B1A21B7405C065385D1E330F3ABF80C
+1e-4 pass: 16/16
+3e-4 pass:  2/16
+1e-3 pass:  0/16
+verdict: CALIBRATION_PASS_READY_FOR_PROTOCOL_FREEZE
+```
 
-Formal入口会主动拒绝执行，直到：
+原始JSON存在一个不影响数值结果的schema覆盖：候选标量`learning_rate`被同名的10步LR轨迹覆盖。
+轨迹完整、所有候选恒定且可由首元素无歧义恢复，因此不重跑。代码已将字段拆成
+`candidate_learning_rate`和`effective_learning_rate_trace`；正式标量清单冻结于：
 
-1. calibration产物完成并审计；
-2. 每个client/fold LR写入冻结manifest；
-3. maximum surgery steps与optimizer/backtracking规则正式冻结；
-4. formal primary封存、oracle解锁和最终三类verdict实现完成。
+```text
+configs/cle_k1_sdmn_headonly_calibration_seed0.json
+```
 
-不得绕过该锁直接运行formal或完整CLE-HFL训练。
+## 6. Formal协议
+
+正式优化合同在看任何正式结果前冻结为：
+
+```text
+optimizer          Adam
+steps              10
+anchor KL          <= 0.02
+backtracking       x 0.5
+maximum rollback   12
+LR                 每个system/client/fold读取冻结manifest
+```
+
+Formal固定运行H9与L9、4个异构client、A->B/B->A两fold，每个fold均从原round-40 checkpoint
+独立开始。每个fold运行五臂：
+
+```text
+Frozen
+Targeted SDMN
+Direction-Sham
+Random-Probe
+Generic Invariance
+```
+
+正式入口：
+
+```bash
+python scripts/openi_cle_k1_sdmn_headonly_entry.py --mode=formal
+```
+
+仍复用Phase-B0输入数据集，不需要上传新数据。Formal的2,000张surgery与calibration完全一致；
+新增2,000张holdout后不会改变surgery pool：
+
+```text
+discover sha256 = 731B8CFF...57F6CA
+surgery sha256  = B5441E50...05334A
+holdout sha256  = 321C0910...E240EE
+```
+
+## 7. 两阶段结果封存
+
+Primary阶段只允许读取无标签CIFAR-100、冻结PRIME bank和checkpoint。它先生成并哈希：
+
+```text
+probe selection / direction
+optimization traces
+five-arm checkpoints
+opposite-bank responses and S/Dcf/K/R
+primary_result.json
+primary_artifact_manifest.json
+```
+
+只有primary seal写完后，才动态加载CLE binding、16个真实corruption与test labels，计算
+DSA/WCCA/CFG/Avg/Worst/Clean。Primary未通过或真实DSA不下降时不得将普通head扰动描述为
+CLE shortcut removal。
+
+正式判决仅有：
+
+```text
+GO_TO_TRAINING_INTEGRATION
+MECHANISM_PASS_INTEGRATION_NEEDS_REDESIGN
+NO_GO_DIRECTIONAL_SURGERY
+```
+
+Formal依然不是完整训练，不修改通信，不进入K1之后的training integration。
+
+## 8. 旧Formal lock说明
+
+早期版本因缺少最大步数与优化器合同而主动拒绝Formal。上述四项现在均已完成，所以只解除
+Formal K1-A入口；完整CLE-HFL训练、通信修改和K1之后阶段仍保持禁止。

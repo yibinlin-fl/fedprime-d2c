@@ -1,0 +1,61 @@
+{
+  "protocol": "cle_k1a_sdmn_headonly_formal_freeze_v1",
+  "frozen_at": "2026-09-02",
+  "source_calibration_archive": {
+    "name": "cle_k1_sdmn_headonly_seed0_calibration_outputs.tar.gz",
+    "bytes": 43365,
+    "sha256": "5B1740185723823862D722C4ABE724AC4B1A21B7405C065385D1E330F3ABF80C"
+  },
+  "schema_recovery": {
+    "issue": "The raw calibration JSON used learning_rate for both the scalar candidate and the per-step trace, so the trace overwrote the scalar.",
+    "rerun_required": false,
+    "recovery_rule": "The nominal scalar is the first value of the constant effective learning-rate trace; every recovered scalar is also one of the preregistered candidates.",
+    "candidate_learning_rates": [0.0001, 0.0003, 0.001],
+    "candidate_pass_counts": {
+      "0.0001": 16,
+      "0.0003": 2,
+      "0.001": 0
+    }
+  },
+  "optimizer_contract": {
+    "optimizer": "adam",
+    "formal_steps": 10,
+    "formal_anchor_kl_limit": 0.02,
+    "calibration_anchor_kl_limit": 0.005,
+    "backtracking_factor": 0.5,
+    "maximum_backtracks": 12,
+    "all_control_arms_use_same_client_fold_learning_rate": true
+  },
+  "public_split": {
+    "discover_count": 1000,
+    "discover_sha256": "731B8CFFDCBD241474D33B261E323F9EC11C2EA59BC7705261140A3B8572F6CA",
+    "surgery_count": 2000,
+    "surgery_sha256": "B5441E50539085299F81CD1291636C84A18BA2894BA57D8CB2631D6DF905334A",
+    "formal_holdout_count": 2000,
+    "formal_holdout_sha256": "321C0910E8AA376B10D04D1319F24917EE91EABD25BCC8C31A0BDE66F8E240EE",
+    "public_labels_loaded_or_used": false
+  },
+  "bank_sha256": {
+    "a": "6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01",
+    "b": "4A53497EC5DB6EC05C312E6166109FA4B52A5CC402CCE74E6EDB1253D913BF4E"
+  },
+  "learning_rates": {
+    "h9": {
+      "ab": [0.0001, 0.0001, 0.0003, 0.0001],
+      "ba": [0.0001, 0.0001, 0.0003, 0.0001]
+    },
+    "l9": {
+      "ab": [0.0001, 0.0001, 0.0001, 0.0001],
+      "ba": [0.0001, 0.0001, 0.0001, 0.0001]
+    }
+  },
+  "formal_forbidden_until_primary_seal": [
+    "CLE binding",
+    "corruption operator/family/severity metadata",
+    "DSA",
+    "WCCA",
+    "CFG",
+    "clean/private task utility",
+    "opposite-bank feedback during surgery"
+  ]
+}

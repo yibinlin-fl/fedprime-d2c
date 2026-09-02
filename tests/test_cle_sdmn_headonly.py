@@ -3,6 +3,8 @@ from __future__ import annotations
 import numpy as np
 import torch
 import inspect
+import json
+from pathlib import Path
 
 from fedprime.engine.cle_public_carrier_moment import class_vs_rest_evidence
 from fedprime.engine.cle_sdmn_headonly import (
@@ -14,6 +16,7 @@ from fedprime.engine.cle_sdmn_headonly import (
     select_high_risk_probes,
 )
 from scripts.run_cle_k1_sdmn_headonly import public_split, sha256_array
+from scripts.run_cle_k1_sdmn_formal import aggregate_primary, load_frozen_contract
 
 
 def test_torch_class_vs_rest_matches_frozen_numpy_definition() -> None:
@@ -104,6 +107,59 @@ def test_public_three_way_split_preserves_k0b_discover_and_is_disjoint() -> None
     assert np.intersect1d(split["discover"], split["surgery"]).size == 0
     assert np.intersect1d(split["discover"], split["holdout"]).size == 0
     assert np.intersect1d(split["surgery"], split["holdout"]).size == 0
+    assert sha256_array(split["surgery"]) == (
+        "B5441E50539085299F81CD1291636C84A18BA2894BA57D8CB2631D6DF905334A"
+    )
+    assert sha256_array(split["holdout"]) == (
+        "321C0910E8AA376B10D04D1319F24917EE91EABD25BCC8C31A0BDE66F8E240EE"
+    )
+
+
+def test_formal_calibration_contract_contains_only_scalar_learning_rates() -> None:
+    root = Path(__file__).resolve().parents[1]
+    path = root / "configs/cle_k1_sdmn_headonly_calibration_seed0.json"
+    contract = load_frozen_contract(path)
+    for system in ("h9", "l9"):
+        for fold in ("ab", "ba"):
+            values = contract["learning_rates"][system][fold]
+            assert len(values) == 4
+            assert all(isinstance(value, float) for value in values)
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    assert raw["optimizer_contract"]["formal_steps"] == 10
+    assert raw["schema_recovery"]["rerun_required"] is False
+
+
+def test_formal_primary_gate_requires_directional_specificity() -> None:
+    rows = []
+    values = {
+        "frozen": 10.0,
+        "targeted": 6.0,
+        "direction_sham": 8.0,
+        "random_probe": 9.0,
+        "generic_invariance": 7.0,
+    }
+    for system in ("h9", "l9"):
+        for fold in ("ab", "ba"):
+            for client in range(4):
+                rows.append(
+                    {
+                        "checkpoint_arm": system,
+                        "fold": fold,
+                        "client": client,
+                        "metrics": {arm: {"R": value} for arm, value in values.items()},
+                    }
+                )
+    summary = aggregate_primary(rows)
+    assert summary["h9"]["pass"] is True
+    assert summary["l9"]["pass"] is True
+    assert np.isclose(summary["h9"]["combined_relative_R_reduction"]["targeted"], 0.4)
+
+
+def test_formal_module_has_no_eager_cle_taxonomy_import() -> None:
+    import scripts.run_cle_k1_sdmn_formal as formal
+
+    source = inspect.getsource(formal)
+    assert "from fedprime.engine.cle_shortcut_alignment import" not in source
 
 
 def test_primary_surgery_analyzer_does_not_import_cle_taxonomy() -> None:

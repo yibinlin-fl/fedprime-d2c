@@ -144,11 +144,6 @@ def upload_outputs(context, paths: list[Path]) -> None:
 
 def main() -> None:
     args = parse_args()
-    if args.mode == "formal":
-        raise RuntimeError(
-            "Formal K1-A remains locked. Run smoke, then calibration, audit its manifest, "
-            "and freeze the maximum surgery-step budget first."
-        )
     os.chdir(ROOT)
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
@@ -163,35 +158,55 @@ def main() -> None:
     input_root = extraction / INPUT_DIRECTORY
     verify_manifest(input_root)
     output_dir = ROOT / "outputs" / f"cle_k1_sdmn_headonly_seed0_{args.mode}"
-    command = [
-        sys.executable,
-        "scripts/run_cle_k1_sdmn_headonly.py",
-        "--mode",
-        args.mode,
-        "--public-root",
-        str(input_root / "public"),
-        "--checkpoint-root",
-        str(input_root / "checkpoints"),
-        "--evaluation-root",
-        str(input_root / "evaluation"),
-        "--output-dir",
-        str(output_dir),
-        "--device",
-        args.device,
-        "--batch-size",
-        str(args.batch_size),
-    ]
+    if args.mode == "formal":
+        command = [
+            sys.executable,
+            "scripts/run_cle_k1_sdmn_formal.py",
+            "--public-root",
+            str(input_root / "public"),
+            "--checkpoint-root",
+            str(input_root / "checkpoints"),
+            "--evaluation-root",
+            str(input_root / "evaluation"),
+            "--calibration-manifest",
+            "configs/cle_k1_sdmn_headonly_calibration_seed0.json",
+            "--output-dir",
+            str(output_dir),
+            "--device",
+            args.device,
+            "--batch-size",
+            str(args.batch_size),
+        ]
+    else:
+        command = [
+            sys.executable,
+            "scripts/run_cle_k1_sdmn_headonly.py",
+            "--mode",
+            args.mode,
+            "--public-root",
+            str(input_root / "public"),
+            "--checkpoint-root",
+            str(input_root / "checkpoints"),
+            "--evaluation-root",
+            str(input_root / "evaluation"),
+            "--output-dir",
+            str(output_dir),
+            "--device",
+            args.device,
+            "--batch-size",
+            str(args.batch_size),
+        ]
     run(command, environment)
     run_manifest = {
         "protocol": "cle_k1a_sdmn_headonly_openi_v1",
         "mode": args.mode,
-        "scientific_decision_allowed": False,
+        "scientific_decision_allowed": args.mode == "formal",
         "input_archive": source.name,
         "input_bytes": source.stat().st_size,
         "input_sha256": sha256_file(source),
         "full_training_performed": False,
         "communication_modified": False,
-        "formal_locked": True,
+        "formal_locked": False if args.mode == "formal" else True,
     }
     manifest_path = output_dir / "openi_run_manifest.json"
     manifest_path.write_text(json.dumps(run_manifest, indent=2), encoding="utf-8")

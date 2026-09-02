@@ -105,6 +105,26 @@ verdict:                 SMOKE_ONLY_NO_SCIENTIFIC_DECISION
 
 这些数值只验证实现、梯度、对照臂、trust region与未见bank接口，不作为Targeted有效性的证据。
 
+OpenI smoke随后完成并通过独立审计：
+
+```text
+archive bytes:  138746333
+archive sha256: D75911EE280E5A9C3FF09E0B98DBB7C3411544ED50CA19431417007163C8F327
+manifest errors: 0
+16 checkpoints: present
+public split overlaps: 0/0/0
+checkpoint change scope: linear.weight/linear.bias only
+maximum anchor KL: 0.002898
+unseen metric recompute max error: 0.0
+verdict: SMOKE_ONLY_NO_SCIENTIFIC_DECISION
+```
+
+报告：
+
+```text
+deliverables/cle_k1_sdmn_headonly_20260902/SMOKE_AUDIT_ZH.md
+```
+
 Smoke审计后再运行数值校准：
 
 ```bash

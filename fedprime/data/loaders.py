@@ -717,6 +717,29 @@ def _cifar100_train_from_tar(cifar100_root: str | Path) -> tuple[np.ndarray, np.
     return images, targets
 
 
+def cifar100_train_images_from_tar(cifar100_root: str | Path) -> np.ndarray:
+    """Load only the CIFAR-100 image matrix for label-free public protocols."""
+
+    root = Path(cifar100_root)
+    candidates = [
+        root / "cifar-100-python.tar.gz",
+        root.parent / "cifar-100-python.tar.gz",
+    ]
+    tar_path = next((candidate for candidate in candidates if candidate.exists()), None)
+    if tar_path is None:
+        raise FileNotFoundError(f"Could not locate cifar-100-python.tar.gz under {root}")
+    with tarfile.open(tar_path, "r:gz") as tar:
+        member = tar.getmember("cifar-100-python/train")
+        file_obj = tar.extractfile(member)
+        if file_obj is None:
+            raise FileNotFoundError(member.name)
+        batch = pickle.load(file_obj, encoding="latin1")
+    data_arr = batch.get("data", batch.get(b"data"))
+    if data_arr is None:
+        raise KeyError("CIFAR-100 train batch is missing data.")
+    return np.asarray(data_arr, dtype=np.uint8).reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
+
+
 def _cifar10_train_from_tar(cifar10_root: str | Path) -> tuple[np.ndarray, np.ndarray]:
     root = Path(cifar10_root)
     candidates = [root / "cifar-10-python.tar.gz", root.parent / "cifar-10-python.tar.gz"]

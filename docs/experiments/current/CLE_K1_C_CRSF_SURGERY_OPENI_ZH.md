@@ -21,6 +21,13 @@ L_CRSF       = ||K||_F^2 / (trace(K)^2 + 1e-12)
 它优化方向集中度而非响应幅度。Formal 禁止 mini-batch 近似；每个参数步用全 2000 张
 公共图像的两遍 sufficient-statistic VJP 得到精确矩梯度。
 
+工程实现允许复用数学上完全相同的中间量，但不得改变上述精确协议。特别是：每个 Adam
+candidate update 后，必须在完整 `D_surgery x 64` 上重新计算 updated exact objective，
+并在完整 `D_surgery` 上重新计算相对原始 checkpoint 的 anchor KL；只有二者都满足门槛
+才 accept，否则恢复参数与 Adam state 后回溯。上一 accepted step 的 post-update exact
+moments 可作为下一步的 pre-update moments；同一初始 checkpoint 的三个 LR 可共享 step-1
+更新前 moments、anchor reference 和 exact gradient。
+
 ## 冻结输入与拆分
 
 - 输入包：`cle_public_canonicalization_phase_b0_seed0_inputs.tar.gz`
@@ -48,6 +55,11 @@ CIFAR-10 标签、DSA/WCCA/CFG。Stage 1 文件全部写出并生成
 分类头、早期 backbone、全部 BN 参数与 running statistics、projector 均冻结。只保存
 late-block 参数 delta，不复制完整 checkpoint。frozen-prefix float32 cache 只存在 OpenI 临时盘，
 不进入结果包。
+
+PRIME transformed public inputs 与模型无关，因此 calibration/formal 先各自冻结一次 input-level
+float32 cache，随后跨 architecture/system 复用。prefix cache 仍由每个具体 checkpoint 计算，
+但只使用一个覆盖式 architecture workspace，避免四种架构缓存累计约 30 GiB。input/source/
+checkpoint/PRIME manifest hash 必须保持冻结；浮点输出文件本身不要求 SHA256 与旧实现相同。
 
 ## 五个实验臂
 
@@ -116,3 +128,14 @@ NO_GO_CRSF_INTERVENTION
 
 下一步只运行 OpenI `--mode=calibration`。不要跳过校准直接 formal，也不要依据 smoke
 效果量改学习率、步数、开放层或门槛。
+
+## 等价优化验收与运行可观测性
+
+- old-vs-new objective/moments 在冻结数值容差内一致；
+- gradient relative error `<=1e-5`，cosine `>=0.99999`；
+- accepted/rejected 决策必须完全一致；
+- heartbeat 覆盖 architecture/system/fold/LR/step/pass/probe；
+- 每个 LR 完成后原子写入 `calibration_progress.json`，同一容器内可按完整输入签名 resume；
+- calibration manifest 记录 PRIME preprocessing、各 architecture/context prefix cache、单个 exact
+  gradient、post-update exact objective、单 context 与总耗时；
+- 优化期间仍禁止读取 unseen bank、CLE binding、DSA/WCCA/CFG 或任何任务标签。

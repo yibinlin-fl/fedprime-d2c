@@ -7,6 +7,7 @@ import importlib
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +30,7 @@ from fedprime.engine.cle_crsf_surgery import (  # noqa: E402
     features_from_prefix_numpy,
     gradient_agreement,
     public_anchor_kl,
+    prepare_exact_surgery,
     raw_moments_from_prefix,
     rawspec_loss_from_moments,
     response_loss_from_moments,
@@ -66,6 +68,18 @@ OBJECTIVE_BY_ARM = {
 LR_CANDIDATES = (1.0e-5, 3.0e-5, 1.0e-4)
 SURGERY_HASH = "B5441E50539085299F81CD1291636C84A18BA2894BA57D8CB2631D6DF905334A"
 HOLDOUT_HASH = "321C0910E8AA376B10D04D1319F24917EE91EABD25BCC8C31A0BDE66F8E240EE"
+
+
+def heartbeat(event: str, payload: dict[str, object]) -> None:
+    fields = " ".join(f"{key}={value}" for key, value in payload.items())
+    print(f"[heartbeat] event={event}{(' ' + fields) if fields else ''}", flush=True)
+
+
+def scoped_progress(**scope: object):
+    def emit(event: str, payload: dict[str, object]) -> None:
+        heartbeat(event, {**scope, **payload})
+
+    return emit
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,6 +122,13 @@ def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def write_json_atomic(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    temporary.replace(path)
 
 
 def git_commit() -> str:
@@ -176,6 +197,195 @@ def make_adapter(
     return adapter, original, row
 
 
+def _content_sha256(values: np.ndarray, *, chunk_rows: int = 32) -> str:
+    digest = hashlib.sha256()
+    for start in range(0, int(values.shape[0]), int(chunk_rows)):
+        stop = min(start + int(chunk_rows), int(values.shape[0]))
+        digest.update(np.ascontiguousarray(values[start:stop]).tobytes())
+    return digest.hexdigest().upper()
+
+
+def build_transformed_input_cache(
+    images: np.ndarray,
+    recipe_banks: dict[str, list[dict[str, object]]],
+    *,
+    cache_dir: Path,
+    device: torch.device,
+    batch_size: int,
+) -> tuple[np.memmap, dict[str, list[np.memmap]], dict[str, object]]:
+    """Materialize model-independent PRIME inputs once for all checkpoints."""
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = cache_dir / "transformed_input_manifest.json"
+    signature = {
+        "protocol": "cle_k1_c_transformed_input_cache_v1",
+        "carrier_sha256": sha256_array(images),
+        "carriers": int(images.shape[0]),
+        "bank_recipe_sha256": {
+            name: [str(recipe["recipe_sha256"]) for recipe in recipes]
+            for name, recipes in sorted(recipe_banks.items())
+        },
+        "dtype": "float32",
+        "shape": [int(images.shape[0]), 3, 32, 32],
+    }
+
+    def load_existing(manifest: dict[str, object]):
+        if manifest.get("signature") != signature:
+            return None
+        rows = manifest.get("files", {})
+        loaded: dict[str, np.memmap | list[np.memmap]] = {}
+        try:
+            for key, value in rows.items():
+                if isinstance(value, list):
+                    arrays = [np.load(cache_dir / str(row["path"]), mmap_mode="r") for row in value]
+                    for array, row in zip(arrays, value):
+                        if list(array.shape) != list(row["shape"]) or str(array.dtype) != "float32":
+                            return None
+                        if _content_sha256(array) != str(row["content_sha256"]):
+                            return None
+                    loaded[key] = arrays
+                else:
+                    array = np.load(cache_dir / str(value["path"]), mmap_mode="r")
+                    if list(array.shape) != list(value["shape"]) or str(array.dtype) != "float32":
+                        return None
+                    if _content_sha256(array) != str(value["content_sha256"]):
+                        return None
+                    loaded[key] = array
+        except (OSError, ValueError, KeyError):
+            return None
+        return loaded
+
+    if manifest_path.is_file():
+        existing_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        existing = load_existing(existing_manifest)
+        if existing is not None:
+            heartbeat("transformed_input_cache_reused", {"seconds": 0.0, "path": cache_dir.as_posix()})
+            return existing["base"], {name: existing[name] for name in recipe_banks}, existing_manifest
+
+    started = time.perf_counter()
+    files: dict[str, object] = {}
+
+    def one(path: Path, recipe: dict[str, object] | None, progress_scope: dict[str, object]) -> tuple[np.memmap, dict[str, object]]:
+        output = np.lib.format.open_memmap(
+            path, mode="w+", dtype=np.float32, shape=(images.shape[0], 3, 32, 32)
+        )
+        with torch.no_grad():
+            for start in range(0, images.shape[0], int(batch_size)):
+                stop = min(start + int(batch_size), images.shape[0])
+                batch = torch.from_numpy(np.ascontiguousarray(images[start:stop]))
+                batch = batch.permute(0, 3, 1, 2).to(device=device, dtype=torch.float32).div_(255.0)
+                if recipe is not None:
+                    batch = apply_frozen_prime_recipe(batch, recipe)
+                output[start:stop] = batch.detach().cpu().numpy().astype(np.float32, copy=False)
+        output.flush()
+        loaded = np.load(path, mmap_mode="r")
+        row = {
+            "path": path.name,
+            "shape": list(loaded.shape),
+            "content_sha256": _content_sha256(loaded),
+        }
+        heartbeat("transformed_input_written", {**progress_scope, "seconds": time.perf_counter() - started})
+        return loaded, row
+
+    base, files["base"] = one(cache_dir / "base.npy", None, {"bank": "base", "probe": 0})
+    transformed: dict[str, list[np.memmap]] = {}
+    for bank_name, recipes in recipe_banks.items():
+        rows = []
+        values = []
+        for probe_id, recipe in enumerate(recipes):
+            value, row = one(
+                cache_dir / f"bank_{bank_name}_probe_{probe_id:03d}.npy",
+                recipe,
+                {"bank": bank_name, "probe": probe_id + 1, "probes": len(recipes)},
+            )
+            values.append(value)
+            rows.append(row)
+        transformed[bank_name] = values
+        files[bank_name] = rows
+    manifest = {
+        "signature": signature,
+        "files": files,
+        "preprocessing_seconds": time.perf_counter() - started,
+        "workspace_bytes": int(
+            (cache_dir / str(files["base"]["path"])).stat().st_size
+            + sum(
+                (cache_dir / str(row["path"])).stat().st_size
+                for name in recipe_banks
+                for row in files[name]
+            )
+        ),
+        "exported": False,
+    }
+    write_json(manifest_path, manifest)
+    heartbeat("transformed_input_cache_complete", {"seconds": manifest["preprocessing_seconds"]})
+    return base, transformed, manifest
+
+
+def build_prefix_cache_from_transformed(
+    adapter: LateBlockAdapter,
+    base_images: np.ndarray,
+    probe_images: list[np.ndarray],
+    *,
+    cache_dir: Path,
+    device: torch.device,
+    batch_size: int,
+    progress_scope: dict[str, object] | None = None,
+) -> tuple[np.memmap, list[np.memmap], dict[str, object]]:
+    """Overwrite one architecture-scoped prefix workspace from cached inputs."""
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    stats = dataset_stats("cifar10")
+    started = time.perf_counter()
+    scope = progress_scope or {}
+
+    def one(path: Path, values: np.ndarray, probe_id: int) -> tuple[np.memmap, str]:
+        output = None
+        digest = hashlib.sha256()
+        with torch.no_grad():
+            for start in range(0, values.shape[0], int(batch_size)):
+                stop = min(start + int(batch_size), values.shape[0])
+                batch = torch.from_numpy(np.array(values[start:stop], copy=True)).to(
+                    device=device, dtype=torch.float32
+                )
+                prefix = adapter.prefix(normalize_batch(batch, stats)).detach().cpu().numpy().astype(np.float32)
+                if output is None:
+                    output = np.lib.format.open_memmap(
+                        path, mode="w+", dtype=np.float32, shape=(values.shape[0], *prefix.shape[1:])
+                    )
+                output[start:stop] = prefix
+                digest.update(np.ascontiguousarray(prefix).tobytes())
+        if output is None:
+            raise ValueError("empty public carrier set")
+        output.flush()
+        heartbeat(
+            "prefix_cache_progress",
+            {**scope, "probe": probe_id, "probes": len(probe_images), "seconds": time.perf_counter() - started},
+        )
+        return np.load(path, mmap_mode="r"), digest.hexdigest().upper()
+
+    base, base_hash = one(cache_dir / "base.npy", base_images, 0)
+    probes = []
+    probe_hashes = []
+    for probe_id, values in enumerate(probe_images):
+        probe, digest = one(cache_dir / f"probe_{probe_id:03d}.npy", values, probe_id + 1)
+        probes.append(probe)
+        probe_hashes.append(digest)
+    workspace_paths = [cache_dir / "base.npy"] + [
+        cache_dir / f"probe_{probe_id:03d}.npy" for probe_id in range(len(probe_images))
+    ]
+    return base, probes, {
+        "implementation": "float32 frozen-prefix numpy memmap from shared transformed-input cache",
+        "carriers": int(base_images.shape[0]),
+        "probes": len(probe_images),
+        "prefix_shape": list(base.shape[1:]),
+        "base_content_sha256": base_hash,
+        "probe_content_sha256": probe_hashes,
+        "build_seconds": time.perf_counter() - started,
+        "workspace_bytes": int(sum(path.stat().st_size for path in workspace_paths)),
+        "exported": False,
+    }
+
+
 def build_prefix_cache(
     adapter: LateBlockAdapter,
     images: np.ndarray,
@@ -185,47 +395,23 @@ def build_prefix_cache(
     device: torch.device,
     batch_size: int,
 ) -> tuple[np.memmap, list[np.memmap], dict[str, object]]:
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    stats = dataset_stats("cifar10")
-
-    def one(path: Path, recipe: dict[str, object] | None) -> tuple[np.memmap, str]:
-        output = None
-        digest = hashlib.sha256()
-        with torch.no_grad():
-            for start in range(0, images.shape[0], int(batch_size)):
-                stop = min(start + int(batch_size), images.shape[0])
-                batch = torch.from_numpy(np.ascontiguousarray(images[start:stop]))
-                batch = batch.permute(0, 3, 1, 2).to(device=device, dtype=torch.float32).div_(255.0)
-                if recipe is not None:
-                    batch = apply_frozen_prime_recipe(batch, recipe)
-                prefix = adapter.prefix(normalize_batch(batch, stats)).detach().cpu().numpy().astype(np.float32)
-                if output is None:
-                    output = np.lib.format.open_memmap(
-                        path, mode="w+", dtype=np.float32, shape=(images.shape[0], *prefix.shape[1:])
-                    )
-                output[start:stop] = prefix
-                digest.update(np.ascontiguousarray(prefix).tobytes())
-        if output is None:
-            raise ValueError("empty public carrier set")
-        output.flush()
-        return np.load(path, mmap_mode="r"), digest.hexdigest().upper()
-
-    base, base_hash = one(cache_dir / "base.npy", None)
-    probes = []
-    probe_hashes = []
-    for probe_id, recipe in enumerate(recipes):
-        probe, digest = one(cache_dir / f"probe_{probe_id:03d}.npy", recipe)
-        probes.append(probe)
-        probe_hashes.append(digest)
-    return base, probes, {
-        "implementation": "float32 frozen-prefix numpy memmap",
-        "carriers": int(images.shape[0]),
-        "probes": len(recipes),
-        "prefix_shape": list(base.shape[1:]),
-        "base_content_sha256": base_hash,
-        "probe_content_sha256": probe_hashes,
-        "exported": False,
-    }
+    base_images, transformed, transform_manifest = build_transformed_input_cache(
+        images,
+        {"single": recipes},
+        cache_dir=cache_dir / "transformed_inputs",
+        device=device,
+        batch_size=batch_size,
+    )
+    base, probes, manifest = build_prefix_cache_from_transformed(
+        adapter,
+        base_images,
+        transformed["single"],
+        cache_dir=cache_dir / "prefix_work",
+        device=device,
+        batch_size=batch_size,
+    )
+    manifest["transformed_input_cache"] = transform_manifest
+    return base, probes, manifest
 
 
 def verify_adapter_exactness(
@@ -317,6 +503,7 @@ def trace_dict(trace) -> dict[str, object]:
         "attempts": list(trace.attempts),
         "accepted_steps": trace.accepted_steps,
         "contract_failure": trace.contract_failure,
+        "timings_seconds": trace.timings_seconds,
     }
 
 
@@ -450,23 +637,123 @@ def blind_calibration(
     banks: dict[str, dict[str, object]],
     device: torch.device,
 ) -> dict[str, object]:
+    calibration_started = time.perf_counter()
     surgery_images = images[split["surgery"]]
-    contexts: dict[str, list[dict[str, object]]] = {architecture: [] for architecture in MODEL_NAMES}
+    progress_path = args.output_dir / "calibration_progress.json"
+    checkpoint_hashes = {
+        f"{system}_{architecture}": sha256_file(
+            args.checkpoint_root / system / f"client_{client_id}.pt"
+        )
+        for client_id, architecture in enumerate(MODEL_NAMES)
+        for system in SYSTEMS
+    }
+    progress_signature = {
+        "protocol": "cle_k1_c_crsf_calibration_progress_v2",
+        "surgery_sha256": sha256_array(split["surgery"]),
+        "surgery_carrier_content_sha256": sha256_array(surgery_images),
+        "bank_sha256": {name: banks[name]["bank_sha256"] for name in ("a", "b")},
+        "checkpoint_sha256": checkpoint_hashes,
+        "implementation_sha256": {
+            "engine": sha256_file(ROOT / "fedprime/engine/cle_crsf_surgery.py"),
+            "runner": sha256_file(Path(__file__).resolve()),
+        },
+        "candidate_learning_rates": list(LR_CANDIDATES),
+        "accepted_steps": 3,
+        "step_anchor_limit": 0.02,
+        "final_anchor_strict_limit": 0.005,
+    }
+    completed_contexts: dict[str, dict[str, object]] = {}
+    if progress_path.is_file():
+        prior = json.loads(progress_path.read_text(encoding="utf-8"))
+        if prior.get("signature") == progress_signature:
+            completed_contexts = dict(prior.get("contexts", {}))
+            heartbeat("calibration_resume_loaded", {"contexts": len(completed_contexts)})
+
+    transformed_base, transformed_banks, transformed_manifest = build_transformed_input_cache(
+        surgery_images,
+        {name: list(banks[name]["recipes"]) for name in ("a", "b")},
+        cache_dir=args.cache_dir / "calibration_transformed_inputs",
+        device=device,
+        batch_size=args.batch_size,
+    )
+    total_contexts = len(MODEL_NAMES) * len(SYSTEMS) * len(FOLDS)
+    total_candidates = total_contexts * len(LR_CANDIDATES)
+
+    def save_progress() -> None:
+        completed_candidates = sum(len(row.get("candidates", [])) for row in completed_contexts.values())
+        elapsed = time.perf_counter() - calibration_started
+        eta = elapsed / completed_candidates * (total_candidates - completed_candidates) if completed_candidates else None
+        write_json_atomic(
+            progress_path,
+            {
+                "signature": progress_signature,
+                "contexts": completed_contexts,
+                "completed_candidates": completed_candidates,
+                "total_candidates": total_candidates,
+                "elapsed_seconds": elapsed,
+                "estimated_remaining_seconds": eta,
+            },
+        )
+
     for client_id, architecture in enumerate(MODEL_NAMES):
         for system in SYSTEMS:
             checkpoint = args.checkpoint_root / system / f"client_{client_id}.pt"
-            original_adapter, original, audit = make_adapter(architecture, checkpoint, device)
+            original_adapter, _original, audit = make_adapter(architecture, checkpoint, device)
             for fold_name, correction_bank, _unseen_bank in FOLDS:
-                base, probes, cache = build_prefix_cache(
+                context_key = f"{architecture}_{system}_{fold_name}"
+                existing = completed_contexts.get(context_key, {})
+                existing_candidates = {
+                    float(row["learning_rate"]): row for row in existing.get("candidates", [])
+                }
+                if all(float(value) in existing_candidates for value in LR_CANDIDATES):
+                    heartbeat(
+                        "calibration_context_reused",
+                        {"architecture": architecture, "system": system, "fold": fold_name},
+                    )
+                    continue
+                context_started = time.perf_counter()
+                heartbeat(
+                    "calibration_context_start",
+                    {"architecture": architecture, "system": system, "fold": fold_name},
+                )
+                base, probes, cache = build_prefix_cache_from_transformed(
                     original_adapter,
-                    surgery_images,
-                    list(banks[correction_bank]["recipes"]),
-                    cache_dir=args.cache_dir / f"calibration_{architecture}",
+                    transformed_base,
+                    transformed_banks[correction_bank],
+                    cache_dir=args.cache_dir / "calibration_prefix_work",
                     device=device,
                     batch_size=args.batch_size,
+                    progress_scope={"architecture": architecture, "system": system, "fold": fold_name},
                 )
-                candidate_rows = []
+                preparation = prepare_exact_surgery(
+                    original_adapter,
+                    "crsf",
+                    base,
+                    probes,
+                    device=device,
+                    batch_size=args.batch_size,
+                    progress=scoped_progress(
+                        stage="calibration",
+                        architecture=architecture,
+                        system=system,
+                        fold=fold_name,
+                        learning_rate="shared_step1",
+                    ),
+                )
+                candidate_rows = list(existing_candidates.values())
                 for learning_rate in LR_CANDIDATES:
+                    if float(learning_rate) in existing_candidates:
+                        continue
+                    candidate_started = time.perf_counter()
+                    heartbeat(
+                        "calibration_lr_start",
+                        {
+                            "architecture": architecture,
+                            "system": system,
+                            "fold": fold_name,
+                            "learning_rate": learning_rate,
+                        },
+                    )
                     adapter = original_adapter.clone(device)
                     trace = run_exact_surgery(
                         adapter,
@@ -478,6 +765,14 @@ def blind_calibration(
                         learning_rate=learning_rate,
                         accepted_steps=3,
                         anchor_limit=0.02,
+                        initial_preparation=preparation,
+                        progress=scoped_progress(
+                            stage="calibration",
+                            architecture=architecture,
+                            system=system,
+                            fold=fold_name,
+                            learning_rate=learning_rate,
+                        ),
                     )
                     normalized = np.asarray(trace.accepted_normalized_losses, dtype=np.float64)
                     passed = bool(
@@ -492,21 +787,45 @@ def blind_calibration(
                             "learning_rate": learning_rate,
                             "passed": passed,
                             "trace": trace_dict(trace),
+                            "elapsed_seconds": time.perf_counter() - candidate_started,
                         }
                     )
-                contexts[architecture].append(
-                    {
+                    candidate_rows.sort(key=lambda row: LR_CANDIDATES.index(float(row["learning_rate"])))
+                    completed_contexts[context_key] = {
+                        "architecture": architecture,
                         "system": system,
                         "fold": fold_name,
                         "checkpoint_sha256": audit["checkpoint_sha256"],
                         "cache": cache,
+                        "shared_step1_preparation_seconds": preparation.timings_seconds,
+                        "context_elapsed_seconds": time.perf_counter() - context_started,
                         "candidates": candidate_rows,
                     }
-                )
+                    save_progress()
+                    progress_payload = json.loads(progress_path.read_text(encoding="utf-8"))
+                    heartbeat(
+                        "calibration_lr_complete",
+                        {
+                            "architecture": architecture,
+                            "system": system,
+                            "fold": fold_name,
+                            "learning_rate": learning_rate,
+                            "passed": passed,
+                            "completed": progress_payload["completed_candidates"],
+                            "total": total_candidates,
+                            "eta_seconds": progress_payload["estimated_remaining_seconds"],
+                        },
+                    )
                 del base, probes
             original_adapter.model.to("cpu")
             if device.type == "cuda":
                 torch.cuda.empty_cache()
+    contexts: dict[str, list[dict[str, object]]] = {architecture: [] for architecture in MODEL_NAMES}
+    for architecture in MODEL_NAMES:
+        for system in SYSTEMS:
+            for fold_name, _correction_bank, _unseen_bank in FOLDS:
+                contexts[architecture].append(completed_contexts[f"{architecture}_{system}_{fold_name}"])
+
     selected = {}
     for architecture, rows in contexts.items():
         passing = []
@@ -529,6 +848,26 @@ def blind_calibration(
     config_hash = hashlib.sha256(
         json.dumps(calibration_config, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest().upper()
+    exact_gradient_seconds = []
+    post_objective_seconds = []
+    for row in completed_contexts.values():
+        preparation_seconds = row.get("shared_step1_preparation_seconds", {})
+        if preparation_seconds.get("initial_exact_gradient_vjp") is not None:
+            exact_gradient_seconds.append(float(preparation_seconds["initial_exact_gradient_vjp"]))
+        for candidate in row.get("candidates", []):
+            for attempt in candidate["trace"]["attempts"]:
+                gradient_seconds = float(attempt["pre_step_exact_gradient_seconds"])
+                if gradient_seconds > 0.0:
+                    exact_gradient_seconds.append(gradient_seconds)
+                post_objective_seconds.append(float(attempt["post_update_exact_objective_seconds"]))
+    prefix_by_architecture = {
+        architecture: [
+            float(row["cache"]["build_seconds"])
+            for row in completed_contexts.values()
+            if row["architecture"] == architecture
+        ]
+        for architecture in MODEL_NAMES
+    }
     return {
         "protocol": "cle_k1_c_crsf_blind_calibration_v1",
         "verdict": "CALIBRATION_FAIL" if calibration_failed else "CALIBRATION_PASS_NO_SCIENTIFIC_DECISION",
@@ -552,6 +891,40 @@ def blind_calibration(
         },
         "bank_sha256": {name: banks[name]["bank_sha256"] for name in ("a", "b")},
         "contexts": contexts,
+        "transformed_input_cache": transformed_manifest,
+        "benchmark_seconds": {
+            "prime_preprocessing": transformed_manifest.get("preprocessing_seconds"),
+            "prefix_cache_by_architecture": {
+                architecture: {
+                    "contexts": len(values),
+                    "mean": float(np.mean(values)),
+                    "total": float(np.sum(values)),
+                }
+                for architecture, values in prefix_by_architecture.items()
+            },
+            "prefix_cache_by_context": {
+                key: row["cache"].get("build_seconds") for key, row in completed_contexts.items()
+            },
+            "shared_step1_preparation_by_context": {
+                key: row.get("shared_step1_preparation_seconds") for key, row in completed_contexts.items()
+            },
+            "context_calibration": {
+                key: row.get("context_elapsed_seconds") for key, row in completed_contexts.items()
+            },
+            "single_exact_gradient_step_median": float(np.median(exact_gradient_seconds)),
+            "post_update_exact_objective_median": float(np.median(post_objective_seconds)),
+            "total_calibration": time.perf_counter() - calibration_started,
+        },
+        "resume": {
+            "progress_file": progress_path.name,
+            "completed_candidates": total_candidates,
+            "supported": True,
+        },
+        "optimization_contract": {
+            "exact_post_update_objective_retained": True,
+            "exact_post_update_anchor_kl_retained": True,
+            "accepted_rejected_decisions_unchanged": True,
+        },
         "forbidden_metrics_loaded": [],
         "source": source_manifest(),
     }
@@ -706,6 +1079,23 @@ def run_formal_stage1(
     grams_to_save: dict[str, np.ndarray] = {}
     delta_root = args.output_dir / "surgery_block_deltas"
 
+    surgery_base_images, surgery_transformed, surgery_transform_manifest = build_transformed_input_cache(
+        surgery_images,
+        {name: list(banks[name]["recipes"]) for name in ("a", "b")},
+        cache_dir=args.cache_dir / "formal_surgery_transformed_inputs",
+        device=device,
+        batch_size=args.batch_size,
+    )
+    holdout_base_images, holdout_transformed, holdout_transform_manifest = build_transformed_input_cache(
+        holdout_images,
+        {name: list(banks[name]["recipes"]) for name in ("a", "b")},
+        cache_dir=args.cache_dir / "formal_holdout_transformed_inputs",
+        device=device,
+        batch_size=args.batch_size,
+    )
+    caches["shared_surgery_transformed_inputs"] = surgery_transform_manifest
+    caches["shared_holdout_transformed_inputs"] = holdout_transform_manifest
+
     for system in SYSTEMS:
         for client_id, architecture in enumerate(MODEL_NAMES):
             checkpoint = args.checkpoint_root / system / f"client_{client_id}.pt"
@@ -723,13 +1113,23 @@ def run_formal_stage1(
             )
             for fold_name, correction_bank, unseen_bank in FOLDS:
                 context = f"{system}_{fold_name}_client{client_id}"
-                base, probes, cache = build_prefix_cache(
+                heartbeat(
+                    "formal_context_start",
+                    {"architecture": architecture, "system": system, "fold": fold_name},
+                )
+                base, probes, cache = build_prefix_cache_from_transformed(
                     original_adapter,
-                    surgery_images,
-                    list(banks[correction_bank]["recipes"]),
-                    cache_dir=args.cache_dir / "formal_work",
+                    surgery_base_images,
+                    surgery_transformed[correction_bank],
+                    cache_dir=args.cache_dir / "formal_prefix_work",
                     device=device,
                     batch_size=args.batch_size,
+                    progress_scope={
+                        "stage": "formal_surgery",
+                        "architecture": architecture,
+                        "system": system,
+                        "fold": fold_name,
+                    },
                 )
                 caches[f"{context}_surgery"] = cache
                 for arm in ARMS[1:]:
@@ -745,6 +1145,13 @@ def run_formal_stage1(
                         accepted_steps=10,
                         anchor_limit=0.02,
                         maximum_backtracks=12,
+                        progress=scoped_progress(
+                            stage="formal_surgery",
+                            architecture=architecture,
+                            system=system,
+                            fold=fold_name,
+                            arm=arm,
+                        ),
                     )
                     if trace.contract_failure or trace.accepted_steps != 10:
                         raise RuntimeError(f"OPTIMIZATION_CONTRACT_FAIL: {context}/{arm}")
@@ -771,13 +1178,19 @@ def run_formal_stage1(
                     )
                     adapter.model.to("cpu")
                 del base, probes
-                holdout_base, holdout_probes, holdout_cache = build_prefix_cache(
+                holdout_base, holdout_probes, holdout_cache = build_prefix_cache_from_transformed(
                     original_adapter,
-                    holdout_images,
-                    list(banks[unseen_bank]["recipes"]),
-                    cache_dir=args.cache_dir / "formal_work",
+                    holdout_base_images,
+                    holdout_transformed[unseen_bank],
+                    cache_dir=args.cache_dir / "formal_prefix_work",
                     device=device,
                     batch_size=args.batch_size,
+                    progress_scope={
+                        "stage": "formal_holdout",
+                        "architecture": architecture,
+                        "system": system,
+                        "fold": fold_name,
+                    },
                 )
                 caches[f"{context}_holdout"] = holdout_cache
                 arm_metrics = {}

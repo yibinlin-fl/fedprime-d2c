@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import hashlib
+import time
 from pathlib import Path
 from collections.abc import Callable, Iterable
 from typing import Literal
@@ -14,6 +15,7 @@ from torch import nn
 
 EPS = 1.0e-12
 ObjectiveName = Literal["crsf", "shared_mean", "generic_invariance", "rawspec"]
+ProgressCallback = Callable[[str, dict[str, object]], None]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -54,9 +56,33 @@ class SurgeryTrace:
     accepted_normalized_losses: tuple[float, ...]
     anchor_kl: tuple[float, ...]
     accepted_learning_rates: tuple[float, ...]
-    attempts: tuple[dict[str, float | int | bool], ...]
+    attempts: tuple[dict[str, object], ...]
     accepted_steps: int
     contract_failure: bool
+    timings_seconds: dict[str, float]
+
+
+@dataclasses.dataclass(frozen=True)
+class ExactSurgeryPreparation:
+    """Reusable exact state at the common pre-update checkpoint.
+
+    The preparation contains only quantities that are identical for learning-rate
+    candidates starting from the same checkpoint.  Post-update objective and KL
+    evaluation are deliberately *not* reusable and remain mandatory.
+    """
+
+    objective: str
+    initial_raw_loss: float
+    reference_probability: np.ndarray
+    moments: ResponseMoments | RawMoments
+    base_feature: np.ndarray | None
+    gradients: tuple[torch.Tensor, ...]
+    timings_seconds: dict[str, float]
+
+
+def _emit(progress: ProgressCallback | None, event: str, **payload: object) -> None:
+    if progress is not None:
+        progress(event, payload)
 
 
 def response_loss_from_moments(
@@ -344,7 +370,9 @@ def response_moments_from_prefix(
     *,
     device: torch.device,
     batch_size: int,
+    progress: ProgressCallback | None = None,
 ) -> tuple[ResponseMoments, np.ndarray]:
+    _emit(progress, "pass_start", pass_name="exact_response_moments", probes=len(probe_prefixes))
     base_parts = []
     for _start, _stop, feature in _feature_batches_from_prefix(
         adapter, base_prefix, device=device, batch_size=batch_size, grad=False
@@ -353,7 +381,7 @@ def response_moments_from_prefix(
     base_feature = np.concatenate(base_parts, axis=0)
     means = []
     energies = []
-    for probe in probe_prefixes:
+    for probe_id, probe in enumerate(probe_prefixes):
         total = np.zeros(base_feature.shape[1], dtype=np.float64)
         energy = 0.0
         for start, stop, feature in _feature_batches_from_prefix(
@@ -364,11 +392,20 @@ def response_moments_from_prefix(
             energy += float(np.square(delta).sum())
         means.append(total / base_feature.shape[0])
         energies.append(energy / base_feature.shape[0])
+        if probe_id == 0 or (probe_id + 1) % 8 == 0 or probe_id + 1 == len(probe_prefixes):
+            _emit(
+                progress,
+                "probe_progress",
+                pass_name="exact_response_moments",
+                probe=probe_id + 1,
+                probes=len(probe_prefixes),
+            )
     moments = ResponseMoments(
         torch.from_numpy(np.stack(means)),
         torch.from_numpy(np.asarray(energies, dtype=np.float64)),
         int(base_feature.shape[0]),
     )
+    _emit(progress, "pass_complete", pass_name="exact_response_moments", probes=len(probe_prefixes))
     return moments, base_feature
 
 
@@ -411,14 +448,18 @@ def assign_exact_response_gradient(
     normalizer: float,
     device: torch.device,
     batch_size: int,
+    base_feature: np.ndarray | None = None,
+    progress: ProgressCallback | None = None,
 ) -> float:
+    _emit(progress, "pass_start", pass_name="exact_response_gradient_vjp", probes=len(probe_prefixes))
     raw_loss, g_mean, g_energy = response_cotangents(moments, objective, normalizer=normalizer)
     parameters = adapter.trainable_parameters()
     for parameter in parameters:
         parameter.grad = None
-    base_feature = features_from_prefix_numpy(
-        adapter, base_prefix, device=device, batch_size=batch_size
-    )
+    if base_feature is None:
+        base_feature = features_from_prefix_numpy(
+            adapter, base_prefix, device=device, batch_size=batch_size
+        )
     base_cotangent = np.zeros_like(base_feature, dtype=np.float32)
     count = float(moments.count)
     for q, probe in enumerate(probe_prefixes):
@@ -433,11 +474,20 @@ def assign_exact_response_gradient(
             surrogate.backward()
             cotangent = (-gm[None] - 2.0 * ge * delta.detach()) / count
             base_cotangent[start:stop] += cotangent.cpu().numpy()
+        if q == 0 or (q + 1) % 8 == 0 or q + 1 == len(probe_prefixes):
+            _emit(
+                progress,
+                "probe_progress",
+                pass_name="exact_response_gradient_vjp",
+                probe=q + 1,
+                probes=len(probe_prefixes),
+            )
     for start, stop, feature in _feature_batches_from_prefix(
         adapter, base_prefix, device=device, batch_size=batch_size, grad=True
     ):
         cotangent = torch.from_numpy(base_cotangent[start:stop]).to(device=device)
         (feature * cotangent).sum().backward()
+    _emit(progress, "pass_complete", pass_name="exact_response_gradient_vjp", probes=len(probe_prefixes))
     return raw_loss
 
 
@@ -449,7 +499,9 @@ def assign_exact_rawspec_gradient(
     normalizer: float,
     device: torch.device,
     batch_size: int,
+    progress: ProgressCallback | None = None,
 ) -> float:
+    _emit(progress, "pass_start", pass_name="exact_rawspec_gradient_vjp", probes=0)
     raw_loss, g_mean, g_second = rawspec_cotangents(moments, normalizer=normalizer)
     for parameter in adapter.trainable_parameters():
         parameter.grad = None
@@ -461,6 +513,7 @@ def assign_exact_rawspec_gradient(
     ):
         surrogate = ((feature @ gm) + torch.einsum("nd,df,nf->n", feature, gq, feature)).sum() / count
         surrogate.backward()
+    _emit(progress, "pass_complete", pass_name="exact_rawspec_gradient_vjp", probes=0)
     return raw_loss
 
 
@@ -524,14 +577,147 @@ def evaluate_objective(
     *,
     device: torch.device,
     batch_size: int,
+    progress: ProgressCallback | None = None,
 ) -> float:
-    if objective == "rawspec":
-        moments = raw_moments_from_prefix(adapter, base_prefix, device=device, batch_size=batch_size)
-        return float(rawspec_loss_from_moments(moments.mean, moments.second))
-    moments, _ = response_moments_from_prefix(
-        adapter, base_prefix, probe_prefixes, device=device, batch_size=batch_size
+    raw, _moments, _base_feature = evaluate_objective_state(
+        adapter,
+        objective,
+        base_prefix,
+        probe_prefixes,
+        device=device,
+        batch_size=batch_size,
+        progress=progress,
     )
-    return float(response_loss_from_moments(moments.mean, moments.energy, objective))
+    return raw
+
+
+def evaluate_objective_state(
+    adapter: LateBlockAdapter,
+    objective: ObjectiveName,
+    base_prefix: np.ndarray,
+    probe_prefixes: list[np.ndarray],
+    *,
+    device: torch.device,
+    batch_size: int,
+    progress: ProgressCallback | None = None,
+) -> tuple[float, ResponseMoments | RawMoments, np.ndarray | None]:
+    """Run the mandatory exact full-carrier objective evaluation.
+
+    Returning the exact post-update moments lets the next accepted step reuse
+    them as its pre-update sufficient statistics.  The evaluation itself is
+    never skipped, so accept/rollback semantics are unchanged.
+    """
+    if objective == "rawspec":
+        _emit(progress, "pass_start", pass_name="exact_post_update_objective", probes=0)
+        moments = raw_moments_from_prefix(adapter, base_prefix, device=device, batch_size=batch_size)
+        raw = float(rawspec_loss_from_moments(moments.mean, moments.second))
+        _emit(progress, "pass_complete", pass_name="exact_post_update_objective", probes=0)
+        return raw, moments, None
+    moments, base_feature = response_moments_from_prefix(
+        adapter,
+        base_prefix,
+        probe_prefixes,
+        device=device,
+        batch_size=batch_size,
+        progress=progress,
+    )
+    raw = float(response_loss_from_moments(moments.mean, moments.energy, objective))
+    return raw, moments, base_feature
+
+
+def _capture_gradients(adapter: LateBlockAdapter) -> tuple[torch.Tensor, ...]:
+    values = []
+    for parameter in adapter.trainable_parameters():
+        if parameter.grad is None:
+            raise RuntimeError("exact preparation produced a missing gradient")
+        values.append(parameter.grad.detach().cpu().clone())
+    return tuple(values)
+
+
+def _assign_captured_gradients(adapter: LateBlockAdapter, gradients: tuple[torch.Tensor, ...]) -> None:
+    parameters = adapter.trainable_parameters()
+    if len(parameters) != len(gradients):
+        raise ValueError("captured-gradient parameter count mismatch")
+    for parameter, gradient in zip(parameters, gradients):
+        parameter.grad = gradient.to(device=parameter.device, dtype=parameter.dtype).clone()
+
+
+def prepare_exact_surgery(
+    adapter: LateBlockAdapter,
+    objective: ObjectiveName,
+    base_prefix: np.ndarray,
+    probe_prefixes: list[np.ndarray],
+    *,
+    device: torch.device,
+    batch_size: int,
+    progress: ProgressCallback | None = None,
+) -> ExactSurgeryPreparation:
+    """Compute the common step-1 exact state once for matched LR candidates."""
+
+    started = time.perf_counter()
+    anchor_started = time.perf_counter()
+    reference_probability = public_anchor_probabilities(
+        adapter, base_prefix, device=device, batch_size=batch_size
+    )
+    anchor_seconds = time.perf_counter() - anchor_started
+    _emit(progress, "pass_complete", pass_name="reference_anchor", seconds=anchor_seconds)
+
+    moments_started = time.perf_counter()
+    initial, moments, base_feature = evaluate_objective_state(
+        adapter,
+        objective,
+        base_prefix,
+        probe_prefixes,
+        device=device,
+        batch_size=batch_size,
+        progress=progress,
+    )
+    moments_seconds = time.perf_counter() - moments_started
+
+    gradient_started = time.perf_counter()
+    if objective == "rawspec":
+        assert isinstance(moments, RawMoments)
+        assign_exact_rawspec_gradient(
+            adapter,
+            base_prefix,
+            moments,
+            normalizer=initial,
+            device=device,
+            batch_size=batch_size,
+            progress=progress,
+        )
+    else:
+        assert isinstance(moments, ResponseMoments)
+        assign_exact_response_gradient(
+            adapter,
+            base_prefix,
+            probe_prefixes,
+            moments,
+            objective,
+            normalizer=initial,
+            device=device,
+            batch_size=batch_size,
+            base_feature=base_feature,
+            progress=progress,
+        )
+    gradient_seconds = time.perf_counter() - gradient_started
+    gradients = _capture_gradients(adapter)
+    for parameter in adapter.trainable_parameters():
+        parameter.grad = None
+    return ExactSurgeryPreparation(
+        objective=objective,
+        initial_raw_loss=initial,
+        reference_probability=reference_probability,
+        moments=moments,
+        base_feature=base_feature,
+        gradients=gradients,
+        timings_seconds={
+            "reference_anchor": anchor_seconds,
+            "initial_exact_moments": moments_seconds,
+            "initial_exact_gradient_vjp": gradient_seconds,
+            "total": time.perf_counter() - started,
+        },
+    )
 
 
 def run_exact_surgery(
@@ -546,67 +732,82 @@ def run_exact_surgery(
     accepted_steps: int,
     anchor_limit: float,
     maximum_backtracks: int = 12,
+    initial_preparation: ExactSurgeryPreparation | None = None,
+    progress: ProgressCallback | None = None,
 ) -> SurgeryTrace:
     if objective != "rawspec" and not probe_prefixes:
         raise ValueError("response objectives require probes")
-    reference_probability = public_anchor_probabilities(
-        adapter, base_prefix, device=device, batch_size=batch_size
+    run_started = time.perf_counter()
+    preparation = initial_preparation or prepare_exact_surgery(
+        adapter,
+        objective,
+        base_prefix,
+        probe_prefixes,
+        device=device,
+        batch_size=batch_size,
+        progress=progress,
     )
-    initial = evaluate_objective(
-        adapter, objective, base_prefix, probe_prefixes, device=device, batch_size=batch_size
-    )
+    if preparation.objective != objective:
+        raise ValueError("exact-surgery preparation objective mismatch")
+    reference_probability = preparation.reference_probability
+    initial = preparation.initial_raw_loss
+    current_moments = preparation.moments
+    current_base_feature = preparation.base_feature
+    prepared_gradients: tuple[torch.Tensor, ...] | None = preparation.gradients
     optimizer = torch.optim.Adam(adapter.trainable_parameters(), lr=float(learning_rate), weight_decay=0.0)
     accepted_raw = [initial]
     accepted_norm = [1.0]
     accepted_kl = [0.0]
     accepted_lr = []
-    attempts: list[dict[str, float | int | bool]] = []
+    attempts: list[dict[str, object]] = []
     current_lr = float(learning_rate)
     contract_failure = False
     while len(accepted_lr) < int(accepted_steps):
+        step_id = len(accepted_lr)
+        _emit(progress, "step_start", step=step_id, learning_rate=current_lr)
         accepted = False
-        for retry in range(int(maximum_backtracks) + 1):
-            for group in optimizer.param_groups:
-                group["lr"] = current_lr
-            parameter_state = _parameter_snapshot(adapter)
-            optimizer_state = _optimizer_snapshot(optimizer)
+        parameter_state = _parameter_snapshot(adapter)
+        optimizer_state = _optimizer_snapshot(optimizer)
+        gradient_started = time.perf_counter()
+        if prepared_gradients is None:
             if objective == "rawspec":
-                moments = raw_moments_from_prefix(adapter, base_prefix, device=device, batch_size=batch_size)
+                assert isinstance(current_moments, RawMoments)
                 assign_exact_rawspec_gradient(
                     adapter,
                     base_prefix,
-                    moments,
+                    current_moments,
                     normalizer=initial,
                     device=device,
                     batch_size=batch_size,
+                    progress=progress,
                 )
             else:
-                moments, _ = response_moments_from_prefix(
-                    adapter, base_prefix, probe_prefixes, device=device, batch_size=batch_size
-                )
+                assert isinstance(current_moments, ResponseMoments)
                 assign_exact_response_gradient(
                     adapter,
                     base_prefix,
                     probe_prefixes,
-                    moments,
+                    current_moments,
                     objective,
                     normalizer=initial,
                     device=device,
                     batch_size=batch_size,
+                    base_feature=current_base_feature,
+                    progress=progress,
                 )
-            finite_gradient = all(
-                parameter.grad is not None and torch.isfinite(parameter.grad).all()
-                for parameter in adapter.trainable_parameters()
-            )
-            gradient_norm = float(
-                torch.sqrt(
-                    sum(
-                        parameter.grad.detach().float().square().sum()
-                        for parameter in adapter.trainable_parameters()
-                        if parameter.grad is not None
-                    )
-                ).cpu()
-            ) if finite_gradient else float("nan")
+            prepared_gradients = _capture_gradients(adapter)
+        gradient_seconds = time.perf_counter() - gradient_started
+        finite_gradient = all(torch.isfinite(value).all() for value in prepared_gradients)
+        gradient_norm = float(
+            torch.sqrt(sum(value.detach().float().square().sum() for value in prepared_gradients)).cpu()
+        ) if finite_gradient else float("nan")
+        for retry in range(int(maximum_backtracks) + 1):
+            _restore_parameters(adapter, parameter_state)
+            optimizer.load_state_dict(optimizer_state)
+            for group in optimizer.param_groups:
+                group["lr"] = current_lr
+            _assign_captured_gradients(adapter, prepared_gradients)
+            _emit(progress, "candidate_start", step=step_id, retry=retry, learning_rate=current_lr)
             if finite_gradient:
                 optimizer.step()
                 parameter_delta_norm = float(
@@ -617,10 +818,19 @@ def run_exact_surgery(
                         )
                     ).cpu()
                 )
-                raw_after = evaluate_objective(
-                    adapter, objective, base_prefix, probe_prefixes, device=device, batch_size=batch_size
+                post_started = time.perf_counter()
+                raw_after, post_moments, post_base_feature = evaluate_objective_state(
+                    adapter,
+                    objective,
+                    base_prefix,
+                    probe_prefixes,
+                    device=device,
+                    batch_size=batch_size,
+                    progress=progress,
                 )
+                post_seconds = time.perf_counter() - post_started
                 normalized_after = raw_after / (initial + EPS)
+                anchor_started = time.perf_counter()
                 anchor = public_anchor_kl(
                     adapter,
                     base_prefix,
@@ -628,11 +838,16 @@ def run_exact_surgery(
                     device=device,
                     batch_size=batch_size,
                 )
+                anchor_seconds = time.perf_counter() - anchor_started
             else:
                 parameter_delta_norm = float("nan")
                 raw_after = float("nan")
                 normalized_after = float("nan")
                 anchor = float("nan")
+                post_moments = current_moments
+                post_base_feature = current_base_feature
+                post_seconds = 0.0
+                anchor_seconds = 0.0
             accepted = bool(
                 finite_gradient
                 and np.isfinite(raw_after)
@@ -652,18 +867,37 @@ def run_exact_surgery(
                     "gradient_norm": gradient_norm,
                     "parameter_delta_norm": parameter_delta_norm,
                     "accepted": accepted,
+                    "pre_step_exact_gradient_seconds": gradient_seconds if retry == 0 else 0.0,
+                    "post_update_exact_objective_seconds": post_seconds,
+                    "post_update_anchor_kl_seconds": anchor_seconds,
                 }
+            )
+            _emit(
+                progress,
+                "candidate_complete",
+                step=step_id,
+                retry=retry,
+                learning_rate=current_lr,
+                accepted=accepted,
+                normalized_objective=normalized_after,
+                anchor_kl=anchor,
+                gradient_seconds=gradient_seconds,
+                post_objective_seconds=post_seconds,
+                anchor_seconds=anchor_seconds,
             )
             if accepted:
                 accepted_raw.append(raw_after)
                 accepted_norm.append(normalized_after)
                 accepted_kl.append(anchor)
                 accepted_lr.append(current_lr)
+                current_moments = post_moments
+                current_base_feature = post_base_feature
+                prepared_gradients = None
                 break
-            _restore_parameters(adapter, parameter_state)
-            optimizer.load_state_dict(optimizer_state)
             current_lr *= 0.5
         if not accepted:
+            _restore_parameters(adapter, parameter_state)
+            optimizer.load_state_dict(optimizer_state)
             contract_failure = True
             break
     return SurgeryTrace(
@@ -676,6 +910,17 @@ def run_exact_surgery(
         attempts=tuple(attempts),
         accepted_steps=len(accepted_lr),
         contract_failure=contract_failure,
+        timings_seconds={
+            "preparation_total": float(preparation.timings_seconds.get("total", 0.0)),
+            "run_total": time.perf_counter() - run_started,
+            "exact_gradient_total": float(sum(float(row["pre_step_exact_gradient_seconds"]) for row in attempts)),
+            "post_update_exact_objective_total": float(
+                sum(float(row["post_update_exact_objective_seconds"]) for row in attempts)
+            ),
+            "post_update_anchor_kl_total": float(
+                sum(float(row["post_update_anchor_kl_seconds"]) for row in attempts)
+            ),
+        },
     )
 
 

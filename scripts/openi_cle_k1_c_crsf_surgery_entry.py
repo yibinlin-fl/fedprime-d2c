@@ -222,6 +222,7 @@ def main() -> None:
                 run_manifest_path,
                 output_dir / "result.json",
                 output_dir / "calibration_manifest.json",
+                output_dir / "calibration_progress.json",
                 output_dir / "independent_recomputation.json",
                 output_dir / "FINAL_REPORT_ZH.md",
                 output_dir / "artifact_manifest.json",

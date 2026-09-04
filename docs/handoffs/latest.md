@@ -2,6 +2,40 @@
 
 Updated: 2026-09-04
 
+## Latest Decision: Post-NO-GO Mechanism Audit P0 Complete
+
+The CPU-only P0 audit is complete. It used only existing K0-B, K1-B0, K1-C0 and K1-C-Minimal
+artifacts; it loaded no checkpoint, generated no PRIME view, ran no model forward/backward pass and
+used no GPU or OpenI job.
+
+The allowed mechanism diagnoses are:
+
+```text
+GLOBAL_SPECTRUM_IS_WEAK_PROXY
++ CLASS_ROUTING_REMAINS_INTACT
++ ARCHITECTURE_DEPENDENT_CONTROLLABILITY
++ SPECTRAL_REDUCTION_BY_TAIL_REDISTRIBUTION
+```
+
+CRSF preserved the class-routing vector almost exactly: H9/L9 client-binding cosines were
+`0.998579/0.998559`, rank correlations `1.000000/0.998496`, and Top-3/Top-5 overlap was 100%.
+Pooled chi-to-DSA conversion efficiency was only `0.433/0.423`. Spectrally, CRSF reduced lambda-1
+by 6.43% on average but increased tail energy by 6.21%; the principal-vector cosine remained
+`0.999693`. ResNet10 carried most of the weak effect, while MobileNetV2 barely responded. H9/L9
+client0 outputs are bit-identical and must not be counted as independent ResNet replications.
+
+```text
+report:   deliverables/post_no_go_mechanism_audit_20260904/POST_NO_GO_AUDIT.md
+inputs:   deliverables/post_no_go_mechanism_audit_20260904/ARTIFACT_AVAILABILITY.md
+analyzer: scripts/analyze_post_no_go_mechanism_p0.py
+```
+
+K1-C-Minimal remains `NO_GO_CRSF_INTERVENTION`; this audit does not authorize tuning, B-to-A,
+additional architectures, replication, full training or a new method. There is currently no paid
+experiment to run. The next step is a research decision about whether CLE should be approached at
+the class-conditional routing level or whether the representation-intervention branch should stop;
+P0 itself does not make that decision.
+
 ## Latest Decision: K1-C-Minimal Causal Intervention NO-GO
 
 The old exact K1-C-FULL route is frozen as `SUPERSEDED_BEFORE_FORMAL`. It produced no calibration or

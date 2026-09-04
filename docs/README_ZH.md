@@ -2,11 +2,22 @@
 
 Updated: 2026-09-04
 
+2026-09-04 完成 K1-C-Minimal 失败后的纯 CPU 机制审计 P0。现有产物足以确认：global
+response spectrum 是 CLE 的弱 proxy；CRSF 后 class-bound routing 的 cosine 仍高于 0.9985、
+Top-3/Top-5 完全不变；chi 降低同时包含 dominant mode 衰减与 tail energy 重分配；控制杠杆
+高度依赖架构。该结论不改变 CRSF `NO-GO`，也不授权新实验。报告、资产清单和可复现分析器：
+
+```text
+deliverables/post_no_go_mechanism_audit_20260904/POST_NO_GO_AUDIT.md
+deliverables/post_no_go_mechanism_audit_20260904/ARTIFACT_AVAILABILITY.md
+scripts/analyze_post_no_go_mechanism_p0.py
+```
+
 2026-09-04 K1-C-FULL 在没有任何 Formal 科学结果前冻结为
 `SUPERSEDED_BEFORE_FORMAL`，禁止重启旧 calibration/formal。K1-C0 的 10/10 PASS 只证明强
 CLE checkpoint 存在可测的 response-spectrum concentration，不预测 CRSF 一定成功。
 
-当前唯一活动阶段是低成本 `K1-C-Minimal Causal Intervention Gate`：H9/L9、ResNet10 与
+已经完成的低成本 `K1-C-Minimal Causal Intervention Gate` 使用 H9/L9、ResNet10 与
 MobileNetV2、A→B、Frozen/CRSF/RawSpec；用预先冻结的 512 carriers × 16 Bank-A probes 做5个
 accepted steps，仍以完整独立 2,000 × 64 Bank-B 评价，并在 taxonomy-free 结果封存后才读取
 CLE oracle/DSA。其配置、实现和 OpenI 入口为：

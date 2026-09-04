@@ -1,5 +1,20 @@
 # TODO Next
 
+## Completed - Post-NO-GO Mechanism Audit P0 - 2026-09-04
+
+The zero-GPU existing-artifact audit is complete. Do not run OpenI, rerun K0-B, revive CRSF, or
+start a new mitigation from this result. The four allowed diagnoses and all source tables are in:
+
+```text
+deliverables/post_no_go_mechanism_audit_20260904/POST_NO_GO_AUDIT.md
+deliverables/post_no_go_mechanism_audit_20260904/ARTIFACT_AVAILABILITY.md
+```
+
+Pending action is a paper-level research decision, not an experiment: either formulate a genuinely
+class-conditional routing object that does not inherit the failed global-spectrum mediation
+assumption, or stop the representation-intervention branch. Any proposal must be separately audited
+before implementation; P0 itself authorizes neither branch.
+
 ## Completed - K1-C-Minimal Formal NO-GO - 2026-09-04
 
 Do not rerun the superseded Full route:

@@ -2,6 +2,25 @@
 
 Updated: 2026-09-04
 
+## Post-NO-GO Mechanism Audit P0 - 2026-09-04
+
+K1-C-Minimal 的现有 Formal 产物完成纯 CPU 复盘；没有加载 checkpoint、生成 PRIME、运行
+forward/backward 或使用 GPU。CRSF 后 H9/L9 class-binding DSA 向量 cosine 为
+`0.998579/0.998559`，rank 为 `1.000000/0.998496`，Top-3/Top-5 完全重合，说明 class-bound
+routing 基本保留。pooled chi 降 `5.369%/5.452%` 时 DSA 仅降 `2.322%/2.308%`，转换效率仅
+`0.433/0.423`。谱分解显示 lambda-1 平均下降 6.43%，tail 反而上升 6.21%，主特征向量
+cosine 仍为 0.999693。ResNet10 的 chi/DSA 变化显著高于 MobileNetV2；H9/L9 client0 的
+K0-B response 和 K1-C-Minimal 三臂 prediction bit-identical，不能视作独立复验。
+
+最终诊断限定为 `GLOBAL_SPECTRUM_IS_WEAK_PROXY + CLASS_ROUTING_REMAINS_INTACT +
+ARCHITECTURE_DEPENDENT_CONTROLLABILITY + SPECTRAL_REDUCTION_BY_TAIL_REDISTRIBUTION`。CRSF
+维持 `NO_GO_CRSF_INTERVENTION`，P0 不提出新方法、不授权新实验。
+
+```text
+deliverables/post_no_go_mechanism_audit_20260904/POST_NO_GO_AUDIT.md
+scripts/analyze_post_no_go_mechanism_p0.py
+```
+
 ## CLE PIDR Zero-Training Hidden-Binding Gate - 2026-08-30
 
 The PIDR paper-only identifiability audit was followed by the approved zero-training gate. The new

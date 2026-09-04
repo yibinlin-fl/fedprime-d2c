@@ -2,6 +2,39 @@
 
 Updated: 2026-09-04
 
+## Latest Decision: P3-A Blocked by Missing Matched Clean Outputs
+
+The frozen P3-A Stage-0 artifact audit is complete. It used CPU file/schema/hash inspection only and
+ran no checkpoint, model inference, permutation, counterfactual, DSA recomputation, GPU or OpenI job.
+
+```text
+verdict: INSUFFICIENT_EXISTING_ARTIFACTS
+status:  STOP_BEFORE_PERMUTATION_OR_ORACLE_EVALUATION
+```
+
+Phase-A1a has the complete H0/H9/L0/L9 x four-client real-corruption probability grid but did not
+save paired clean outputs. K1-C-Minimal saved valid paired clean/corrupt probabilities only for H9/L9
+clients 0 and 3: 4/16 required contexts, zero H0/L0 controls and at most three functionally unique
+contexts because H9/L9 client0 is duplicated. K0-A cannot fill the gap because its base logits use
+different CIFAR-100 public carriers; K0-B contains generic PRIME rather than real-corruption views.
+
+All relevant probabilities are finite and strictly positive, so centered logits are recoverable
+where a clean/corrupt pair exists. A missing clean view cannot be reconstructed from corrupted views.
+Using an operator-average surrogate base or joining different carrier domains would change the
+frozen estimand and is prohibited.
+
+P2 therefore remains observationally positive; P3-A has not scientifically failed or passed. No
+targeted/random permutation was generated, and the frozen protocol forbids automatically starting
+new inference. If the user later authorizes gap filling, first design and cost a clean-logit-only
+export for the exact 1,000 CIFAR-10 sources and all 16 round-40 checkpoints; do not regenerate the
+existing 16 corruption views.
+
+```text
+report: deliverables/post_no_go_p3a_routing_identity_causal_audit_20260904/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md
+inventory: deliverables/post_no_go_p3a_routing_identity_causal_audit_20260904/artifact_availability.md
+auditor: scripts/audit_post_no_go_p3a_artifact_availability.py
+```
+
 ## Latest Decision: P2 CLE-Specific Class-Visible Routing Audit Complete
 
 P2 reused the complete K0-B round-40 H0/H9/L0/L9 response grid: four heterogeneous clients, two

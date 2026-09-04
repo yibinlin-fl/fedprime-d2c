@@ -1,0 +1,37 @@
+{
+  "protocol": "p3a_matched_routing_identity_causal_audit",
+  "verdict": "INSUFFICIENT_EXISTING_ARTIFACTS",
+  "status": "STOP_BEFORE_PERMUTATION_OR_ORACLE_EVALUATION",
+  "execution": {
+    "gpu": false,
+    "openi": false,
+    "model_inference": false,
+    "training": false,
+    "checkpoint_loaded": false,
+    "permutation_generated": false,
+    "oracle_dsa_recomputed": false
+  },
+  "coverage": {
+    "required_arm_client_contexts": 16,
+    "paired_clean_corrupt_contexts": 4,
+    "paired_fraction": 0.25,
+    "no_cle_control_contexts": 0,
+    "functionally_unique_paired_contexts_upper_bound": 3,
+    "reason_for_unique_bound": "H9/L9 client0 frozen outputs inherit the documented bit-identical ResNet10 model/output duplication."
+  },
+  "numerical_facts": {
+    "a1a_min_probability": 8.685700616571844e-23,
+    "k1_minimal_clean_min_probability": 1.0730112589029716e-20,
+    "max_k1_vs_a1a_corrupt_probability_difference": 7.152557373046875e-07,
+    "probability_to_centered_logit_recovery": "valid only where paired clean and corrupt probabilities are both available"
+  },
+  "missing_requirements": [
+    "paired clean/base outputs for all H0 clients",
+    "paired clean/base outputs for all L0 clients",
+    "paired clean/base outputs for H9 clients 1 and 2",
+    "paired clean/base outputs for L9 clients 1 and 2",
+    "at least 3/4 per-arm client coverage required by the frozen direction gate",
+    "H0/L0 controls required by the frozen no-new-DSA gate"
+  ],
+  "scientific_boundary": "Centered logits can be recovered from strictly positive softmax probabilities, but a clean-conditioned response cannot be recovered when the paired clean probabilities were never saved. Using the mean corrupted view as a surrogate base or joining K0-A CIFAR-100 base logits to Phase-A1a CIFAR-10 corruptions would change the frozen estimand."
+}

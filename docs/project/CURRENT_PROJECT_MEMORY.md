@@ -2,6 +2,26 @@
 
 Updated: 2026-09-04
 
+## P3-A Matched Routing-Identity Artifact Gate - 2026-09-04
+
+P3-A 在任何 permutation/oracle evaluation 前完成 Stage-0 资产审计。Phase-A1a round-40 有
+H0/H9/L0/L9 × 4 客户端的完整 real-corruption probabilities，但未保存相同 source 的 clean
+output。K1-C-Minimal 仅对 H9/L9 client0/client3 保存 paired clean/corrupt probabilities，故
+覆盖 4/16、H0/L0 control 为 0/8；又因 H9/L9 client0 bit-identical，functionally unique
+coverage 最多 3。K0-A 的 base logits 来自不同的 CIFAR-100 public carriers，K0-B 则是 generic
+PRIME views，均不能与 Phase-A1a CIFAR-10 DSA tensor 拼接。
+
+全部相关 softmax 概率有限且严格大于零，因此在 paired context 中可用
+`log(p)-mean_c log(p)` 恢复 centered logits；但 corrupted views 不能恢复从未保存的 clean
+view。使用 operator-average surrogate base 会改变 P3-A 的 clean-conditioned response estimand，
+因此未执行。最终 verdict 为 `INSUFFICIENT_EXISTING_ARTIFACTS`，状态
+`STOP_BEFORE_PERMUTATION_OR_ORACLE_EVALUATION`。未生成 targeted/random permutation，未重算
+DSA，未运行模型/GPU/OpenI。P2 仍是 observational positive；P3-A 尚无科学 PASS/FAIL。
+
+如用户以后授权补齐，最小新增工作只应导出 exact 1,000 CIFAR-10 clean sources × 16 个
+round-40 checkpoint 的 clean logits，复用现有 corrupt probabilities；必须先单独冻结、估时，
+不得自动运行。
+
 ## P2 CLE-Specific Class-Visible Routing Audit - 2026-09-04
 
 P2 复用 K0-B 已保存的 H0/H9/L0/L9 `1000 x 128 x 10` carrier/probe/class logit-response，覆盖

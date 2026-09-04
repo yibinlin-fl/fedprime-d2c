@@ -1,0 +1,45 @@
+{
+  "protocol": "post_no_go_p3a_routing_identity_causal_audit",
+  "created_utc": "2026-09-04T11:38:10.683284+00:00",
+  "verdict": "INSUFFICIENT_EXISTING_ARTIFACTS",
+  "status": "STOP_BEFORE_PERMUTATION_OR_ORACLE_EVALUATION",
+  "script_sha256": "350D7ABC8FAAD244CFF7E3B1F720573F026EB18CE5F4FF3348D745F15C5B43A7",
+  "files": {
+    "P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md": {
+      "bytes": 1967,
+      "sha256": "837CA41BB9A5970D671951BA5D4010518A5D91C10A558B97F2FE17B99681C0EB"
+    },
+    "artifact_availability.md": {
+      "bytes": 1887,
+      "sha256": "E59B97D8F88222764E35C99DD7819447D42B919D8173473D30AAFDB6A56DF289"
+    },
+    "artifact_inventory.csv": {
+      "bytes": 31289,
+      "sha256": "667920815A1B91375333B5934CE0B528F4AF61CAB9E74D59ADB3C3D869644526"
+    },
+    "permutation_manifest.json": {
+      "bytes": 363,
+      "sha256": "128984BE727C43C74100C7DAD9E16FC09FEC6CFBFC8B2A84754E6E6FF5975BB7"
+    },
+    "invariance_audit.csv": {
+      "bytes": 147,
+      "sha256": "CA1C04FDF86F957F92EEAD95EFA7B043B553E3584148042C734A8D8FC2ABE551"
+    },
+    "targeted_results.csv": {
+      "bytes": 147,
+      "sha256": "CA1C04FDF86F957F92EEAD95EFA7B043B553E3584148042C734A8D8FC2ABE551"
+    },
+    "random_derangement_null.csv": {
+      "bytes": 147,
+      "sha256": "CA1C04FDF86F957F92EEAD95EFA7B043B553E3584148042C734A8D8FC2ABE551"
+    },
+    "per_client_results.csv": {
+      "bytes": 5306,
+      "sha256": "8B61981CACB70D64809B259C36A796380CD82D34E53CA00C5A4727073CF802E7"
+    },
+    "oracle_gate_summary.json": {
+      "bytes": 1878,
+      "sha256": "64AFF68D3CC19C622CB5F7EE45351989C2D5A901FEB2F98B3D6F92E708510FD7"
+    }
+  }
+}

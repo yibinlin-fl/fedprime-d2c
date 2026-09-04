@@ -1,0 +1,8 @@
+{
+  "protocol": "p3a_matched_routing_identity_causal_audit",
+  "generated": false,
+  "status": "NOT_GENERATED_INSUFFICIENT_EXISTING_ARTIFACTS",
+  "reason": "Stage 0 failed before taxonomy-free intervention design; no targeted or random permutation was generated.",
+  "k0b_routing_source_available": true,
+  "oracle_or_binding_used_for_permutation": false
+}

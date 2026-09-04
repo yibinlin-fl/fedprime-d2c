@@ -3856,8 +3856,23 @@ gradient、三个学习率和每个 candidate update 后不可删除的 exact ob
 验证随机小 carrier/probe 近似的方向与效果，并要求推理额外开销为零、通信近零、内存有界、训练
 开销现实；压缩失败则 CRSF 不能成为最终主方法。
 
-截至 2026-09-04，禁止再次直接启动完整 calibration。下一步只能先实现一个小型 OpenI platform
-benchmark，范围冻结为一个 bounded context（ResNet10 / H9 / Bank A），输出 PRIME preprocessing、
-prefix cache、exact moments、exact gradient、post-update evaluation、anchor KL、峰值存储以及由
-实测外推的完整 calibration ETA/GPU-hours。benchmark 本身不产生科学结论；用户确认成本后才可
-决定是否运行 full calibration。
+截至 2026-09-04，旧版 K1-C-FULL 已在任何 Formal 科学结果产生前冻结为
+`SUPERSEDED_BEFORE_FORMAL`。其规范和实现只保留 provenance，禁止重启 calibration/formal；这不是
+看结果改协议，因为没有产生 K1-C 科学结果。
+
+新的 K1-C-Minimal Causal Intervention Gate 只检验 `chi_response下降是否导致DSA下降`。Formal
+primary 冻结为 H9/L9、ResNet10(client0)/MobileNetV2(client3)、A-to-B、Frozen/CRSF/RawSpec。
+Correction 从原 D_surgery 池预先固定512 carriers和Bank A的16 probes，固定初始LR 1e-4，运行5个
+accepted steps，保留exact post-update objective、KL<=0.02、rollback与确定性LR halving；不再单独
+做三学习率calibration。最终taxonomy-free评价不缩水，仍使用完整独立D_holdout 2,000 carriers ×
+Bank B 64 probes，封存并hash后才允许读取CLE oracle并计算DSA。
+
+实现入口为 `scripts/openi_cle_k1_c_minimal_entry.py`，预注册配置为
+`configs/cle_k1_c_minimal_seed0.json`。聚焦测试14/14 PASS；真实H9/ResNet10 CUDA smoke完整通过，
+确认选择hash、三arm路径、CRSF/RawSpec各一个accepted exact step、unseen流式评价、无磁盘变换缓存
+及oracle隔离，verdict仅为`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`。
+
+下一步唯一允许的OpenI动作是Minimal `--mode=benchmark`：只测H9/ResNet10/Bank A，并外推Minimal
+Formal的ETA/GPU-hours。用户审阅成本前不得运行Formal。Minimal失败即`NO_GO_CRSF_INTERVENTION`；
+通过也只允许B-to-A与其余两个架构replication，不允许直接完整训练。K0-B在当前论文方案中固定为
+离线审计，不进入训练决策闭环；K1-C-Minimal本身也不是最终训练算法。

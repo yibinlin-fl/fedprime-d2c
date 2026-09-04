@@ -2,33 +2,36 @@
 
 Last updated: 2026-09-04
 
-## Current Implementation State: K1-C CRSF Cost Gate - 2026-09-04
+## Current Implementation State: K1-C-Minimal Cost Gate - 2026-09-04
 
 ```text
 K0-B taxonomy-free offline audit:        FORMAL GO; complete
 K1-A head-only SDMN:                     FORMAL NO-GO; frozen
 K1-B0 shared nuisance routing:           FORMAL NO-GO; frozen
 K1-C0 response-spectrum mechanism gate:  FORMAL GO; 10/10 gates
-K1-C CRSF implementation:                INSPECT/gradient/smoke PASS
-K1-C calibration:                        NO SCIENTIFIC RESULT
-K1-C formal:                             LOCKED / NOT RUN
-next paid action:                        small platform benchmark only
+K1-C-FULL:                               SUPERSEDED_BEFORE_FORMAL
+K1-C-Minimal implementation:             TESTS + CUDA SMOKE PASS
+K1-C-Minimal benchmark:                  READY / NOT RUN
+K1-C-Minimal formal:                     LOCKED / NOT RUN
+next paid action:                        Minimal platform benchmark only
 ```
 
-K1-C0 only observed a CLE-associated response-spectrum concentration in frozen models. K1-C is the
-causal late-block checkpoint intervention that tests whether reducing that concentration lowers
-unseen concentration and DSA while preserving WCCA/CFG/accuracy. The exact validator is deliberately
-strict and expensive; it is not the proposed per-round training algorithm.
+K1-C0 only observed a CLE-associated response-spectrum concentration in frozen models. It was not a
+prediction that an intervention would succeed. The superseded Full validator produced no scientific
+result. K1-C-Minimal now tests the causal arrow with H9/L9, two architectures, A-to-B, three arms,
+prespecified 512x16 correction and full independent 2,000x64 Bank-B evaluation.
 
 The first OpenI calibration execution made no useful calibration progress for about two hours and
 showed near-zero accelerator utilization. It exposed an execution/caching bottleneck and produced no
 scientific verdict. Commit `a64d292` optimized reuse, heartbeat, timing and resume while retaining the
 mandatory post-update exact objective and anchor-KL check, but another full paid run is not authorized.
 
-The current CLI has no dedicated `benchmark` mode. The next implementation task is to add a bounded
-platform benchmark for ResNet10/H9/Bank-A and locally verify that it cannot expand into full
-calibration. It must provide stage timings, storage/memory peaks and projected full ETA/GPU-hours.
-Only after user review may calibration be reconsidered. Formal and 40-round integration remain locked.
+The Minimal runner and OpenI entry have dedicated smoke/benchmark/formal modes; Formal additionally
+requires `--confirm-formal`. Focused tests are 14/14 PASS. A real H9/ResNet10 CUDA smoke verified the
+frozen selection, bounded no-disk-cache execution, both active arms, unseen streaming and oracle
+isolation. Its verdict is execution-only. The next action is one bounded OpenI benchmark; only after
+the user reviews its ETA/GPU-hour estimate may Minimal Formal be considered. Full training remains
+locked.
 
 ## Baseline Fidelity Repair Prepared - 2026-08-09
 

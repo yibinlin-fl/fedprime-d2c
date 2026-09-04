@@ -1,33 +1,32 @@
 # TODO Next
 
-## Immediate - K1-C Platform Benchmark Before Any Paid Calibration - 2026-09-04
+## Immediate - Run K1-C-Minimal Platform Benchmark Only - 2026-09-04
 
-Do not rerun:
+Do not rerun the superseded Full route:
 
 ```text
 python scripts/openi_cle_k1_c_crsf_surgery_entry.py --mode=calibration
 ```
 
 The previous approximately two-hour OpenI attempt produced no calibration verdict and is an
-execution-cost failure only. K1-C0 already passed its observational 10/10 gate; the unproven arrow is
-whether exact CRSF intervention lowers unseen spectrum concentration and real CLE DSA.
+execution-cost failure only. K1-C-FULL is now `SUPERSEDED_BEFORE_FORMAL`; do not reconsider it.
+K1-C0 already passed its observational 10/10 gate, while the causal intervention remains unproven.
 
-Next implementation scope only:
+K1-C-Minimal is implemented and its focused tests plus real-checkpoint CUDA smoke pass. The only next
+paid command is:
 
-1. add a dedicated bounded `benchmark` mode to the K1-C runner and OpenI entry;
-2. force exactly one context: ResNet10 / H9 / Bank A, with no H9-BA/L9 or other architectures;
-3. preserve the exact K1-C mathematics for the measured step, including required post-update exact
-   objective and anchor-KL evaluation;
-4. print and save PRIME preprocessing, prefix construction, exact moments, exact gradient,
-   post-update objective, anchor-KL, peak storage/memory and total timing;
-5. extrapolate full calibration wall time and GPU-hours from explicit multiplicities;
-6. run a tiny local correctness check, then one OpenI benchmark only;
-7. stop and ask the user to review cost before any full calibration.
+```text
+python scripts/openi_cle_k1_c_minimal_entry.py --mode=benchmark
+```
 
-The benchmark cannot read holdout, unseen bank, labels, CLE binding, DSA, WCCA or CFG and cannot
-produce a scientific GO/NO-GO. K0-B currently remains an offline audit. Exact `2,000 x 64` K1-C is a
-one-time causal validator, not a final training loop. If it later passes, the next mandatory gate is
-CRSF compression/efficiency; no 40-round training integration is authorized now.
+It measures H9/ResNet10/Bank-A only, cannot load oracle/evaluation assets, and reports stage timings,
+memory/storage and projected Minimal Formal wall time/GPU-hours. Stop after the benchmark and obtain
+the user's explicit cost decision. Do not run `--mode=formal --confirm-formal` yet.
+
+If later authorized, Minimal Formal uses H9/L9, ResNet10/MobileNetV2, A-to-B, Frozen/CRSF/RawSpec,
+512x16 correction, five accepted steps and full independent 2,000x64 Bank-B evaluation. Failure ends
+CRSF; pass only authorizes replication. K0-B is an offline audit and no exact probe routine is
+authorized for the eventual training loop.
 
 ## Immediate - Review And Run Fidelity-Repaired Baselines - 2026-08-09
 

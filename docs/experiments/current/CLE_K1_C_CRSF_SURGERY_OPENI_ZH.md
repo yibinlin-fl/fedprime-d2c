@@ -1,5 +1,10 @@
 # CLE K1-C CRSF Checkpoint Surgery（冻结协议）
 
+> **Status: `SUPERSEDED_BEFORE_FORMAL` (2026-09-04).** 本协议未产生任何 Formal 科学结果，
+> 因计算成本在结果前被 K1-C-Minimal 取代。禁止继续 calibration/formal；旧规范和实现仅保留
+> provenance。当前协议见
+> `docs/experiments/current/CLE_K1_C_MINIMAL_CAUSAL_GATE_OPENI_ZH.md`。
+
 ## 目的
 
 K1-C0 已观察到：强 CLE 的 H9/L9 checkpoint 对 64 个通用 PRIME 扰动的表征响应，

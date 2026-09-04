@@ -2,34 +2,29 @@
 
 Updated: 2026-09-04
 
-2026-09-04 算力止损：K1-C0 是零训练的观察性机制门控，证明强 CLE 模型存在显著的通用
-干预响应谱集中，为 CRSF 提供被测对象；它不预测 K1-C 一定成功。K1-C 才通过修改冻结
-checkpoint 的 late block 检验 `chi下降是否导致DSA下降`。第一次 OpenI calibration 约两小时
-仍未进入有效校准，判定为执行路径 NO-GO，不是 CRSF 科学 NO-GO。
+2026-09-04 K1-C-FULL 在没有任何 Formal 科学结果前冻结为
+`SUPERSEDED_BEFORE_FORMAL`，禁止重启旧 calibration/formal。K1-C0 的 10/10 PASS 只证明强
+CLE checkpoint 存在可测的 response-spectrum concentration，不预测 CRSF 一定成功。
 
-当前禁止直接重启完整 calibration。下一步先实现并本地核对一个受限平台 benchmark，仅运行
-`ResNet10 / H9 / Bank A`，逐项报告 PRIME 生成、prefix、exact moments/gradient、post-update
-objective、anchor KL、存储峰值以及完整 calibration 的 ETA/GPU-hours，由用户确认成本后才能
-决定是否正式运行。K0-B 当前只作离线审计；exact `2000x64` K1-C 只作一次性因果验证，不能
-原样进入最终训练循环。若机制通过，仍须另过 CRSF 压缩与效率门。
-
-2026-09-03 K1-C0 response-spectrum gate 已强通过 10/10 冻结门槛，当前唯一活动阶段是
-K1-C CRSF late-block checkpoint surgery。它只使用 H9/L9 round-40 checkpoint，冻结分类头、
-早期 backbone 与全部 BN，通过全 `D_surgery × 64 probes` 的两遍精确矩梯度，比较 CRSF、
-SharedMean、Generic Invariance、RawSpec 和 Frozen。执行规范与入口：
+当前唯一活动阶段是低成本 `K1-C-Minimal Causal Intervention Gate`：H9/L9、ResNet10 与
+MobileNetV2、A→B、Frozen/CRSF/RawSpec；用预先冻结的 512 carriers × 16 Bank-A probes 做5个
+accepted steps，仍以完整独立 2,000 × 64 Bank-B 评价，并在 taxonomy-free 结果封存后才读取
+CLE oracle/DSA。其配置、实现和 OpenI 入口为：
 
 ```text
-docs/experiments/current/CLE_K1_C_CRSF_SURGERY_OPENI_ZH.md
+docs/experiments/current/CLE_K1_C_MINIMAL_CAUSAL_GATE_OPENI_ZH.md
+configs/cle_k1_c_minimal_seed0.json
 fedprime/engine/cle_crsf_surgery.py
-scripts/run_cle_k1_c_crsf_surgery.py
-scripts/openi_cle_k1_c_crsf_surgery_entry.py
-tests/test_cle_crsf_surgery.py
+scripts/run_cle_k1_c_minimal.py
+scripts/openi_cle_k1_c_minimal_entry.py
+tests/test_cle_k1_c_minimal.py
 ```
 
-本地真实模型 INSPECT 和 tiny smoke 已通过，精确梯度与 direct full-graph autograd 一致，
-smoke 17/17 检查 PASS。原定直接运行盲数值校准的动作已被 2026-09-04 算力止损决定取代；
-当前先做 bounded benchmark，Formal 继续被校准 manifest 锁住。即使最终 GO，也不能自动进入
-40-round 训练。
+聚焦回归 14/14 PASS；真实 checkpoint CUDA smoke 已完整通过，且没有加载 oracle/evaluation。
+下一步只允许 OpenI `--mode=benchmark`，先取得 Minimal Formal 的实测 ETA/GPU-hours，再由用户
+决定是否运行 `--mode=formal --confirm-formal`。K0-B 永久定位为当前论文方案中的离线审计；
+K1-C-Minimal 也只是一次 checkpoint 因果验证，不能原样进入训练循环。即使 Minimal 通过，仍须
+另过 stochastic CRSF 压缩/效率门。
 
 2026-09-02 K1-A head-only SDMN formal 已冻结为 `NO_GO_DIRECTIONAL_SURGERY`。当前唯一活动阶段是
 零训练 K1-B0 CDR-SNR shared-representation localization：复用 K0-B high-risk probes，检查

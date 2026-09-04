@@ -1,0 +1,55 @@
+{
+  "protocol": "cle_k1_c_minimal_causal_gate_v1",
+  "status": "FROZEN_BEFORE_FORMAL",
+  "selection": {
+    "full_surgery_pool_sha256": "B5441E50539085299F81CD1291636C84A18BA2894BA57D8CB2631D6DF905334A",
+    "holdout_pool_sha256": "321C0910E8AA376B10D04D1319F24917EE91EABD25BCC8C31A0BDE66F8E240EE",
+    "carrier_selection_algorithm": "numpy.default_rng(seed).choice(2000,size=512,replace=False)",
+    "carrier_seed": 20260913,
+    "carrier_count": 512,
+    "carrier_position_sha256": "7FAFB79463ACB011753010654E1FBF2E90338E3D8641B523114EB4F85D950162",
+    "carrier_global_index_sha256": "E88CCC2FCFE839AA42BBF46DC5794F096252F894CA5254B34C6C29AF23C0989F",
+    "probe_selection_algorithm": "numpy.default_rng(seed).choice(64,size=16,replace=False)",
+    "probe_seed": 20260914,
+    "probe_ids": [21, 46, 10, 31, 41, 35, 51, 54, 61, 50, 17, 36, 44, 0, 23, 48],
+    "probe_ids_sha256": "9F26865A210587F973B03A37DA638F6219E7B35C08E5B4ABCE3A2FDC670CDF95",
+    "correction_bank": "A",
+    "unseen_bank": "B",
+    "bank_a_sha256": "6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01",
+    "bank_b_sha256": "4A53497EC5DB6EC05C312E6166109FA4B52A5CC402CCE74E6EDB1253D913BF4E"
+  },
+  "formal": {
+    "systems": ["h9", "l9"],
+    "clients": [
+      {"client": 0, "architecture": "ResNet10"},
+      {"client": 3, "architecture": "Mobilenetv2"}
+    ],
+    "fold": "A_TO_B_ONLY",
+    "arms": ["frozen", "crsf", "rawspec"],
+    "accepted_steps": 5,
+    "initial_learning_rate": 0.0001,
+    "anchor_kl_limit": 0.02,
+    "maximum_backtracks_per_step": 12,
+    "optimizer": "Adam defaults except fixed initial LR and weight_decay=0",
+    "independent_learning_rate_calibration": false,
+    "unseen_carriers": 2000,
+    "unseen_probes": 64
+  },
+  "gates": {
+    "per_system_unseen_chi_reduction_min": 0.15,
+    "positive_selected_clients_required": 2,
+    "per_system_response_energy_retention_min": 0.5,
+    "per_system_crsf_minus_rawspec_chi_advantage_min": 0.1,
+    "per_system_dsa_absolute_reduction_min": 0.05,
+    "per_system_dsa_relative_reduction_min": 0.25,
+    "dsa_absolute_or_relative": true,
+    "per_system_crsf_minus_rawspec_dsa_advantage_min": 0.02,
+    "task_metrics_report_only": ["avg_acc", "worst_acc", "wcca", "cfg", "clean_avg", "clean_worst"]
+  },
+  "sequential_rule": {
+    "failure_verdict": "NO_GO_CRSF_INTERVENTION",
+    "pass_verdict": "GO_TO_K1_C_MINIMAL_REPLICATION",
+    "pass_only_authorizes": "B-to-A plus ResNet12 and ShuffleNet replication",
+    "full_training_authorized": false
+  }
+}

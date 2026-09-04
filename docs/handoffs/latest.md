@@ -2,69 +2,45 @@
 
 Updated: 2026-09-04
 
-## Current Objective: K1-C CRSF Checkpoint Surgery
+## Current Objective: K1-C-Minimal Causal Intervention Gate
 
-### Cost stop and immediate next action
+The old exact K1-C-FULL route is frozen as `SUPERSEDED_BEFORE_FORMAL`. It produced no calibration or
+formal scientific result and must not be restarted. Its specification and implementation remain only
+for provenance. K1-C0 remains a 10/10 observational GO: it established a CLE-associated generic
+response-spectrum concentration, not that CRSF surgery works.
 
-K1-C0 was an observational prerequisite, not a prediction that K1-C will work. It established that
-strong-CLE H9/L9 checkpoints have a reproducible concentration of generic-intervention response
-directions, thereby giving CRSF a measured target. K1-C is the separate causal test: after changing
-late-backbone parameters to reduce that concentration, do unseen concentration and real CLE metrics
-also improve?
-
-The exact K1-C protocol (`2,000 carriers x 64 probes`, exact two-pass full-carrier gradients and
-mandatory post-update rescoring) is only a one-time mechanism validator. It is not an acceptable
-training-loop implementation of the final method. K0-B remains a current offline audit component;
-this is a present method-design choice, not a permanent prohibition on every future lightweight
-detector. The immediate efficiency concern is exact K1-C and any future CRSF training integration.
-
-The first OpenI calibration attempt spent roughly two hours with near-zero accelerator utilization
-and did not reach a scientific calibration result. Do not restart full calibration. The only next
-OpenI action is a small platform benchmark, after its dedicated benchmark mode is implemented and
-locally checked. It must run one bounded context (ResNet10 / H9 / Bank A) and report PRIME generation,
-prefix construction, exact moments, exact gradient, post-update objective, anchor-KL, peak storage,
-projected full-calibration wall time and GPU-hours. The user must review that estimate before any
-paid full calibration starts.
-
-No formal K1-C result exists. No CRSF training integration is authorized. If the causal experiment
-eventually passes, a separate compression/efficiency gate must show that a stochastic CRSF
-approximation has zero inference overhead, approximately zero communication overhead, bounded memory,
-and acceptable training overhead. The exact `2,000 x 64` routine must never be inserted per round.
-
-K1-C0 has formally passed all 10 response-spectrum gates. Strong-CLE H9/L9 checkpoints show a
-large response-spectrum concentration increase relative to H0/L0 without comparable clean-feature
-collapse. The frozen next question is causal: does selectively flattening this generic intervention-
-response spectrum reduce unseen concentration and the real CLE shortcut?
+K1-C-Minimal is now implemented to test only the missing causal arrow:
 
 ```text
-spec:    docs/experiments/current/CLE_K1_C_CRSF_SURGERY_OPENI_ZH.md
-engine:  fedprime/engine/cle_crsf_surgery.py
-runner:  scripts/run_cle_k1_c_crsf_surgery.py
-OpenI:   scripts/openi_cle_k1_c_crsf_surgery_entry.py
-tests:   tests/test_cle_crsf_surgery.py
+reduce response-spectrum concentration -> does real CLE DSA decrease?
 ```
 
-The real model graph was inspected. ResNet10/12 expose only `layer4`, ShuffleNet only `layer3`, and
-MobileNetV2 only its last inverted-residual block (`layers.16`); all normalization parameters and
-statistics, early backbone parameters, classifier and projector remain frozen. The four exact
-two-pass moment gradients (CRSF, SharedMean, Generic Invariance, RawSpec) match direct tiny full-
-graph autograd under the frozen `1e-5 / 0.99999` tolerances. Local H9-client0 AB smoke passed all
-17 execution checks with verdict `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`. Only late-block deltas were
-written; the frozen-prefix cache is local scratch and is never packaged.
+The preregistered primary uses H9/L9, ResNet10/client0 and MobileNetV2/client3, A-to-B only, and
+Frozen/CRSF/RawSpec. Correction uses 512 prespecified D_surgery carriers and 16 prespecified Bank-A
+probes for five accepted steps at initial LR 1e-4. Every step retains exact post-update objective,
+anchor-KL <= 0.02, rollback and deterministic LR halving. There is no separate LR calibration.
+Evaluation remains full and independent: D_holdout 2,000 x all 64 Bank-B probes, sealed before CLE
+binding and DSA are opened.
 
-The first OpenI calibration implementation was judged unsuitable after showing near-zero accelerator
-utilization and no useful progress for roughly two hours; the user should stop that old task if it is
-still running. This is an execution NO-GO, not a scientific CRSF result.
-The exact protocol is unchanged, but the runner now precomputes model-independent PRIME inputs once,
-uses one overwrite-style prefix workspace, shares the common step-1 exact state across LR candidates,
-carries every accepted post-update moment into the next exact VJP, emits scoped heartbeats, records
-timings, and atomically checkpoints LR/context progress for resume. The mandatory full-carrier
-post-update objective and anchor-KL evaluations remain intact for every accept/rollback decision.
+```text
+spec:    docs/experiments/current/CLE_K1_C_MINIMAL_CAUSAL_GATE_OPENI_ZH.md
+config:  configs/cle_k1_c_minimal_seed0.json
+runner:  scripts/run_cle_k1_c_minimal.py
+OpenI:   scripts/openi_cle_k1_c_minimal_entry.py
+tests:   tests/test_cle_k1_c_minimal.py
+```
 
-The former instruction to rerun full calibration is superseded by the 2026-09-04 cost stop above.
-First implement and verify the bounded platform benchmark; do not invoke calibration yet. Formal
-remains locked. Do not run full training, change communication, widen the trainable block, or tune
-any scientific gate.
+Focused regression is 14/14 PASS. A real-checkpoint CUDA smoke completed with verdict
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`: frozen selection hashes verified, both CRSF and RawSpec accepted
+one exact step, all metrics were finite, bounded in-memory streaming wrote no transformed-input disk
+cache, and no oracle/evaluation assets were loaded. This is execution evidence only.
+
+The only next paid action is `--mode=benchmark`. It runs one H9/ResNet10 bounded context, cannot load
+oracle assets, and reports measured stage timings plus projected Minimal Formal wall time/GPU-hours.
+Do not run Formal until the user reviews that estimate. A failed Minimal A-to-B gate ends CRSF; a
+pass only authorizes B-to-A plus the remaining two architectures. It never directly authorizes full
+training. K0-B is an offline audit, and neither its 1,000x64 detector nor exact K1-C surgery may enter
+the eventual training loop unchanged.
 
 ## Previous Objective: K1-B0 CDR-SNR Shared Representation Localization
 

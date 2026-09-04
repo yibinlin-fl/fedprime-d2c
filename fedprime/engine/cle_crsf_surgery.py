@@ -912,6 +912,11 @@ def run_exact_surgery(
         contract_failure=contract_failure,
         timings_seconds={
             "preparation_total": float(preparation.timings_seconds.get("total", 0.0)),
+            "preparation_reference_anchor": float(preparation.timings_seconds.get("reference_anchor", 0.0)),
+            "preparation_exact_moments": float(preparation.timings_seconds.get("initial_exact_moments", 0.0)),
+            "preparation_exact_gradient_vjp": float(
+                preparation.timings_seconds.get("initial_exact_gradient_vjp", 0.0)
+            ),
             "run_total": time.perf_counter() - run_started,
             "exact_gradient_total": float(sum(float(row["pre_step_exact_gradient_seconds"]) for row in attempts)),
             "post_update_exact_objective_total": float(

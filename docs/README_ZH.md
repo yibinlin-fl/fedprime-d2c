@@ -28,9 +28,17 @@ OpenI benchmark 已独立审计：Minimal Formal 线性外推约14.91分钟/0.24
 deliverables/cle_k1_c_minimal_benchmark_20260904/RESULT_SUMMARY_ZH.md
 ```
 
-下一步等待用户成本确认；确认后才允许运行 `--mode=formal --confirm-formal`。K0-B 永久定位为当前论文方案中的离线审计；
-K1-C-Minimal 也只是一次 checkpoint 因果验证，不能原样进入训练循环。即使 Minimal 通过，仍须
-另过 stochastic CRSF 压缩/效率门。
+K1-C-Minimal Formal 随后完成并独立审计，正式 verdict 为 `NO_GO_CRSF_INTERVENTION`。H9/L9
+未见chi仅下降`5.369%/5.452%`，DSA仅下降`0.005237/0.005193`，远低于冻结门槛；效果主要来自
+ResNet10，MobileNetV2近乎无效。全部artifact/seal hash、moments/Gram、DSA与任务指标均独立
+重算一致，8条轨迹均完成5个accepted steps且KL合规。因此停止CRSF，不做B→A、剩余架构、调参、
+replication或完整训练。正式报告：
+
+```text
+deliverables/cle_k1_c_minimal_formal_20260904/RESULT_SUMMARY_ZH.md
+```
+
+K1-C0仅保留为观察性机制发现，K0-B仅保留为离线审计。
 
 2026-09-02 K1-A head-only SDMN formal 已冻结为 `NO_GO_DIRECTIONAL_SURGERY`。当前唯一活动阶段是
 零训练 K1-B0 CDR-SNR shared-representation localization：复用 K0-B high-risk probes，检查

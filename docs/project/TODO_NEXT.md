@@ -1,6 +1,6 @@
 # TODO Next
 
-## Immediate - Review Cost And Optionally Run K1-C-Minimal Formal - 2026-09-04
+## Completed - K1-C-Minimal Formal NO-GO - 2026-09-04
 
 Do not rerun the superseded Full route:
 
@@ -23,17 +23,24 @@ prefix RAM:           544 MiB
 peak CUDA allocated:  341.9 MiB
 ```
 
-The benchmark loaded no oracle/evaluation assets and makes no scientific claim. Wait for the user's
-explicit cost decision. If approved, run exactly:
+The benchmark loaded no oracle/evaluation assets and made no scientific claim. The subsequently
+authorized Minimal Formal completed and returned `NO_GO_CRSF_INTERVENTION`. Independent audit found
+no integrity or protocol failure.
+
+Cancel for CRSF:
 
 ```text
-python scripts/openi_cle_k1_c_minimal_entry.py --mode=formal --confirm-formal
+B-to-A replication
+ResNet12 / ShuffleNet expansion
+learning-rate / step / probe tuning
+K1-C-FULL revival
+stochastic CRSF training integration
+40-round federated training
 ```
 
-If later authorized, Minimal Formal uses H9/L9, ResNet10/MobileNetV2, A-to-B, Frozen/CRSF/RawSpec,
-512x16 correction, five accepted steps and full independent 2,000x64 Bank-B evaluation. Failure ends
-CRSF; pass only authorizes replication. K0-B is an offline audit and no exact probe routine is
-authorized for the eventual training loop.
+Retain K1-C0 only as observational mechanism evidence and K0-B only as an offline audit. Any next
+method discussion must start from the fact that response-spectrum concentration was measurable but
+was not a sufficiently strong causal intervention target under the preregistered test.
 
 ## Immediate - Review And Run Fidelity-Repaired Baselines - 2026-08-09
 

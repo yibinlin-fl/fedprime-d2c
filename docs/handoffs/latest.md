@@ -2,7 +2,7 @@
 
 Updated: 2026-09-04
 
-## Current Objective: K1-C-Minimal Causal Intervention Gate
+## Latest Decision: K1-C-Minimal Causal Intervention NO-GO
 
 The old exact K1-C-FULL route is frozen as `SUPERSEDED_BEFORE_FORMAL`. It produced no calibration or
 formal scientific result and must not be restarted. Its specification and implementation remain only
@@ -35,19 +35,29 @@ Focused regression is 14/14 PASS. A real-checkpoint CUDA smoke completed with ve
 one exact step, all metrics were finite, bounded in-memory streaming wrote no transformed-input disk
 cache, and no oracle/evaluation assets were loaded. This is execution evidence only.
 
-The OpenI benchmark is complete and independently audited. It ran one H9/ResNet10 context without
+The OpenI benchmark completed and independently passed the engineering cost gate. It ran one H9/ResNet10 context without
 oracle/evaluation assets, used 544 MiB bounded prefix arrays and 341.9 MiB peak CUDA allocation, and
 projected Minimal Formal at 894.39 seconds / 0.2484 single-GPU hours. Allow 30--45 minutes as a
 conservative 2--3x envelope because MobileNetV2 was not directly timed and oracle cost was proxied.
-This passes the engineering cost gate but is not scientific evidence. The next action is user review;
-only explicit approval permits `--mode=formal --confirm-formal`. A failed Minimal A-to-B gate ends CRSF; a
-pass only authorizes B-to-A plus the remaining two architectures. It never directly authorizes full
-training. K0-B is an offline audit, and neither its 1,000x64 detector nor exact K1-C surgery may enter
-the eventual training loop unchanged.
+This was not scientific evidence.
+
+Minimal Formal has now completed and was independently recomputed from the sealed response moments and
+oracle predictions. Verdict: `NO_GO_CRSF_INTERVENTION`. H9/L9 CRSF unseen-chi reductions were only
+`5.369%/5.452%` versus the frozen 15% gate; CRSF-minus-RawSpec advantages were only
+`3.838/3.959 pp` versus 10 pp. DSA reductions were `0.005237/0.005193` (`2.322%/2.308%`) versus the
+`0.05 or 25%` gate, with only `0.00549/0.00590` advantage over RawSpec versus 0.02. ResNet10 carried
+most of the weak effect; MobileNetV2 chi and DSA changes were near zero.
+
+All 31 artifact hashes and 18 pre-oracle seal hashes matched. Raw moments/Gram and all six prediction
+files reproduced chi, DSA and reporting metrics exactly. All eight intervention traces completed five
+accepted monotone steps; maximum final KL was 0.019646. This is a scientific method failure, not an
+execution failure. Stop CRSF: no B-to-A, remaining architectures, tuning, replication or full training.
+K1-C0 remains an observational mechanism result only; K0-B remains offline audit only.
 
 ```text
 benchmark archive sha256: D16E82F85FFA636DBEE50086BF6A083F932BB1F8833F3F7E366F5E90AF24F2D4
-report: deliverables/cle_k1_c_minimal_benchmark_20260904/RESULT_SUMMARY_ZH.md
+formal archive sha256:    E07B9E75E2AEDDE0C1B3A4FF018CE0B4FD90EAA6CB88144D6E0D98588E43D4CA
+report: deliverables/cle_k1_c_minimal_formal_20260904/RESULT_SUMMARY_ZH.md
 ```
 
 ## Previous Objective: K1-B0 CDR-SNR Shared Representation Localization

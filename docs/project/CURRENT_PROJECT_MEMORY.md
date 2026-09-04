@@ -3884,3 +3884,17 @@ K1-C-Minimal OpenI benchmark 随后完成并独立核验。原始包19,398 bytes
 阶段为代理估计，实际按30--45分钟预算。prefix常驻数组544 MiB、CUDA峰值341.9 MiB、磁盘变换
 cache为0。所有artifact/source hash复核一致，evaluation未解压、标签/binding未加载。成本门通过，
 但该结果仍为`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`；必须由用户明确确认后才能运行Formal。
+
+用户确认后，K1-C-Minimal Formal于2026-09-04完成。原始包58,124,491 bytes，SHA256为
+`E07B9E75E2AEDDE0C1B3A4FF018CE0B4FD90EAA6CB88144D6E0D98588E43D4CA`。正式verdict为
+`NO_GO_CRSF_INTERVENTION`：H9/L9 mean unseen-chi reduction仅`5.369%/5.452%`，低于15%；
+CRSF相对RawSpec优势仅`3.838/3.959pp`，低于10pp。DSA reduction仅`0.005237/0.005193`
+（相对`2.322%/2.308%`），低于absolute 0.05或relative 25%；相对RawSpec DSA优势仅
+`0.005487/0.005903`，低于0.02。两个client方向均为正且energy retention约94--95%，但效果主要
+来自ResNet10；MobileNetV2的chi reduction仅约2.2--2.4%，DSA reduction约0.001。
+
+独立审计确认31项artifact hash、18项primary seal hash全部一致；72组moments/Gram重算chi/energy
+误差为0；6组predictions重算DSA和任务指标误差为0；8条优化轨迹均完成5个accepted steps，目标
+单调且最大最终KL为0.019646。失败不是代码或封存错误。按预注册规则，停止CRSF，不做B-to-A、
+剩余架构、调参、replication或完整训练。K1-C0只保留“CLE模型存在响应谱集中”的观察性发现，
+不能再解释为该集中度是足够强的因果杠杆。

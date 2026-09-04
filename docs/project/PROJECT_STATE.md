@@ -12,8 +12,9 @@ K1-C0 response-spectrum mechanism gate:  FORMAL GO; 10/10 gates
 K1-C-FULL:                               SUPERSEDED_BEFORE_FORMAL
 K1-C-Minimal implementation:             TESTS + CUDA SMOKE PASS
 K1-C-Minimal benchmark:                  COST PASS / COMPLETE
-K1-C-Minimal formal:                     LOCKED / NOT RUN
-next paid action:                        user-approved Minimal Formal only
+K1-C-Minimal formal:                     NO_GO_CRSF_INTERVENTION
+CRSF replication/full training:          BLOCKED
+next paid action:                        NONE FOR CRSF
 ```
 
 K1-C0 only observed a CLE-associated response-spectrum concentration in frozen models. It was not a
@@ -26,14 +27,12 @@ showed near-zero accelerator utilization. It exposed an execution/caching bottle
 scientific verdict. Commit `a64d292` optimized reuse, heartbeat, timing and resume while retaining the
 mandatory post-update exact objective and anchor-KL check, but another full paid run is not authorized.
 
-The Minimal runner and OpenI entry have dedicated smoke/benchmark/formal modes; Formal additionally
-requires `--confirm-formal`. Focused tests are 14/14 PASS. A real H9/ResNet10 CUDA smoke verified the
-frozen selection, bounded no-disk-cache execution, both active arms, unseen streaming and oracle
-isolation. Its verdict is execution-only. The bounded OpenI benchmark then projected Minimal Formal
-at 894.39 seconds / 0.2484 single-GPU hours, with 544 MiB resident prefix arrays and 341.9 MiB peak
-CUDA allocation. Use 30--45 minutes as a conservative envelope. The cost gate passes, but Formal
-still requires explicit user approval and remains the first scientific intervention test. Full
-training remains locked.
+The Minimal implementation, CUDA smoke and bounded benchmark all passed their execution/cost checks.
+Formal then failed both scientific stages. H9/L9 unseen-chi reductions were 5.369%/5.452% rather than
+15%; DSA reductions were 0.005237/0.005193 (about 2.3%) rather than 0.05 or 25%. Relative advantages
+over RawSpec also failed. Independent recomputation from all sealed moments and predictions matched
+exactly, and all optimization traces obeyed the five-step/KL contract. This is a valid CRSF scientific
+NO-GO. Do not run B-to-A, ResNet12/ShuffleNet, tune the intervention, or integrate it into training.
 
 ## Baseline Fidelity Repair Prepared - 2026-08-09
 

@@ -5,7 +5,8 @@ Updated: 2026-09-04
 Implementation status: focused regression `14/14 PASS`; real H9/ResNet10 CUDA smoke completed with
 `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`. OpenI benchmark independently passed the engineering cost gate:
 projected Minimal Formal `14.91 min / 0.2484 single-GPU hours`, with a conservative 30--45 minute
-budget. This is still `BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`; no Formal scientific result exists.
+budget. Formal is now complete and independently audited: `NO_GO_CRSF_INTERVENTION`. Do not run
+B-to-A, remaining architectures, tuning, replication or training integration.
 
 ## 状态与目的
 

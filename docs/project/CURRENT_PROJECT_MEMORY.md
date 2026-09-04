@@ -2,6 +2,25 @@
 
 Updated: 2026-09-04
 
+## P4 Routing Targetability Gap Audit - 2026-09-04
+
+P4 用现有 K0-B/P2、Phase-A1a、P3-A clean-base 与 frozen permutation/null 做纯 CPU post-hoc
+解释。`M_harm[a,b]` 定义为 family `binding_i(a)` 的 corruption response 在 DSA 同口径 valid
+sources 上对 output class `b` 的均值；`g_harm[a]` 为同一 support 上 class `a` 的正向 response。
+P2 `g_generic` 的 160 个值与旧封存表完全一致。
+
+H9 mean cosine/Pearson/Spearman 为 `0.8496/0.8536/0.7091`，L9 为
+`0.8459/0.8811/0.4667`，两者 Top-3 overlap 均 `0.8333`。因此否定
+`GENERIC_ROUTING_DECOUPLES_FROM_HARMFUL_ROUTING_IN_HFL`。H9 并未丢失 marginal class
+alignment。相反 frozen rank-reversal 对 full `M_harm` 的 signed destructive percentile 仅
+`42.5%`（energy `74.8%`），L9 为 `100.0%`（energy `99.7%`）。random destructive score
+与 DSA reduction 的 Pearson 在 H9/L9 为 `0.721/0.677`，支持 matrix-action 解释。
+
+最终 verdict：`GENERIC_ROUTING_ALIGNS_WITH_HARMFUL_ROUTING_BUT_TARGET_RULE_FAILED`；仅允许
+`INFORMATION_MAY_EXIST_IDENTIFIABILITY_AUDIT_REQUIRED`，不产生 METHOD_GO。科学边界是：
+generic class marginal salience 不足以决定 pairwise routing intervention。不得使用 oracle
+`M_harm` 设计 loss、调整 P3-A permutation、进入 P3-B 或训练。
+
 ## P3-A Clean Completion + Routing-Identity Causal Audit - 2026-09-04
 
 用户授权只补 Phase-A1a 同一 1000 张 CIFAR-10 clean source × H0/H9/L0/L9 四臂四客户端

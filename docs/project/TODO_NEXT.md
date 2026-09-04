@@ -1,5 +1,25 @@
 # TODO Next
 
+## Completed - P4 Routing Targetability Gap Audit - 2026-09-04
+
+P4 rejected the proposed HFL decoupling explanation. H9 has strong generic/harmful marginal alignment,
+but its frozen rank-reversal destructive score is ordinary under the null. L9's rank reversal is nearly
+maximally destructive. The result is:
+
+```text
+GENERIC_ROUTING_ALIGNS_WITH_HARMFUL_ROUTING_BUT_TARGET_RULE_FAILED
+METHOD_GO = false
+```
+
+Do not tune/search permutations, revive P2, enter P3-B, use oracle `M_harm` as a loss, or train. If
+the user requests continuation, first perform a paper-only identifiability audit: can any permitted
+taxonomy-free observable determine pairwise nuisance-to-class routing, or is only the marginal profile
+identifiable? No GPU/OpenI action is authorized.
+
+```text
+deliverables/post_no_go_p4_routing_targetability_gap_20260904/P4_ROUTING_TARGETABILITY_GAP_AUDIT.md
+```
+
 ## Completed - P3-A Routing-Identity Causal Audit - 2026-09-04
 
 The missing clean base was completed with clean-only local inference and matched sealed references.

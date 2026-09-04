@@ -2,6 +2,21 @@
 
 Updated: 2026-09-04
 
+2026-09-04 完成 P4 Routing Targetability Gap 纯离线解释审计。网页端提出的“HFL 使
+generic profile 与真实 harmful routing 解耦”未获支持：H9 generic-vs-harmful 的 mean
+cosine/Spearman 为 `0.8496/0.7091`，并不弱于 L9 的 `0.8459/0.4667`。真正失败的是用一维
+class marginal 排序做 rank reversal：H9 destructive percentile 仅 `42.5%`，L9 为
+`100.0%`。结论为 `GENERIC_ROUTING_ALIGNS_WITH_HARMFUL_ROUTING_BUT_TARGET_RULE_FAILED`，仍然
+`METHOD_GO=false`。只能先做 pairwise information 的独立可识别性审计，不能设计 loss、重搜
+permutation 或训练。报告与分析器：
+
+```text
+docs/research/status/P4_ROUTING_TARGETABILITY_GAP_AUDIT_2026_09_04_ZH.md
+deliverables/post_no_go_p4_routing_targetability_gap_20260904/P4_ROUTING_TARGETABILITY_GAP_AUDIT.md
+scripts/analyze_post_no_go_p4_routing_targetability_gap.py
+tests/test_p4_routing_targetability_gap.py
+```
+
 2026-09-04 已完成 P3-A clean-base completion 与 Matched Routing-Identity Causal Audit。仅新增
 Phase-A1a 同一 1000 张 clean source × 16 个 round-40 checkpoints 的 clean forward；本地
 benchmark 三倍保守估时 3.05 分钟，实际正式导出约 21 秒。clean output 与封存 V100 参考最大

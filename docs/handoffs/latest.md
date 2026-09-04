@@ -2,6 +2,34 @@
 
 Updated: 2026-09-04
 
+## Latest Decision: P4 Rejects HFL Decoupling; Marginal Profile Cannot Specify Pairwise Action
+
+P4 used only sealed K0-B/P2, Phase-A1a, P3-A clean-base and P3-A permutation/null outputs. It ran no
+model inference, GPU/OpenI, PRIME, training or permutation search. The harmful matrix uses exactly the
+original DSA binding-family and valid-source condition, only for post-hoc explanation.
+
+```text
+verdict: GENERIC_ROUTING_ALIGNS_WITH_HARMFUL_ROUTING_BUT_TARGET_RULE_FAILED
+recommendation: INFORMATION_MAY_EXIST_IDENTIFIABILITY_AUDIT_REQUIRED
+method_go: false
+```
+
+The proposed HFL-vs-Local decoupling hypothesis is false: H9 mean generic/harmful cosine/Spearman is
+`0.8496/0.7091`, versus L9 `0.8459/0.4667`; both have Top-3 overlap `0.8333`. The split instead comes
+from how the fixed rank reversal acts on the full pairwise harmful-routing matrix. H9 targeted signed
+destructive percentile is only `42.5%`, while L9 is `100.0%`; this matches the P3-A DSA split of
+`60.1%` versus `0.0%` (lower DSA percentile is better).
+
+Generic probes therefore recover class marginal salience but have not identified the pairwise map
+needed for intervention. P2/P3-A remain NO-GO. Do not search a better permutation, use oracle M_harm
+as a loss, start P3-B or train. If the user continues, the only permitted next step is a paper-level
+identifiability audit of whether taxonomy-free observables can determine the missing pairwise map.
+
+```text
+report: deliverables/post_no_go_p4_routing_targetability_gap_20260904/P4_ROUTING_TARGETABILITY_GAP_AUDIT.md
+analyzer: scripts/analyze_post_no_go_p4_routing_targetability_gap.py
+```
+
 ## Latest Decision: P3-A Complete / Generic Profile Not a Valid HFL Targeter
 
 The user authorized the exact missing-data completion: the same 1,000 Phase-A1a CIFAR-10 clean

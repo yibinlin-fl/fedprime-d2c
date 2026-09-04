@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04
 
-## Current Implementation State: P3-A Complete / No Method Promotion - 2026-09-04
+## Current Implementation State: P4 Complete / Identifiability Boundary Pending - 2026-09-04
 
 ```text
 K0-B taxonomy-free offline audit:        FORMAL GO; complete
@@ -22,8 +22,15 @@ P2 class-visible routing:              OBSERVATIONAL POSITIVE
 P3-A clean-base completion:            COMPLETE / 16 OF 16 CONTEXTS
 P3-A routing-identity causal audit:    NO_GO_TO_METHOD
 P3-B routing-strength audit:           BLOCKED
+P4 targetability-gap explanation:      COMPLETE
+P4 HFL decoupling hypothesis:          REJECTED
+pairwise routing identifiability:       PAPER AUDIT ONLY / NOT STARTED
 new mitigation implementation:          NOT AUTHORIZED
 ```
+
+P4 found strong H9 generic-vs-harmful marginal alignment (`0.8496` cosine, `0.7091` Spearman), so
+communication/HFL decoupling does not explain P3-A. The frozen rank reversal fails because marginal
+class salience does not specify the full pairwise routing action. No method or experiment is active.
 
 P3-A now has complete matched clean/corrupt output artifacts. The clean-only RTX 3050 export matched
 sealed V100 references within `5.36e-7`. The subsequent CPU-only causal audit preserved all frozen

@@ -74,6 +74,19 @@ Worst_baseline - Worst_cvrs <= 1 pp
 
 ## 入口
 
+OpenI 当前只运行平台 benchmark：
+
+```text
+启动文件：scripts/openi_cle_cvrs_m0_entry.py
+运行参数：mode = benchmark
+数据集文件：cle_cvrs_m0_seed0_inputs.tar.gz
+```
+
+不要添加 `confirm-formal`。输入包固定为 `172255488` bytes，SHA256 为
+`215FFCB34ECF44C7E83F130AE2F19CEBFB2AED3F8CE0DBBE66B5BB8C46900C4E`。
+
+本地入口：
+
 ```bash
 python scripts/run_cle_cvrs_m0.py --mode=smoke --device=cuda
 python scripts/run_cle_cvrs_m0.py --mode=benchmark --device=cuda

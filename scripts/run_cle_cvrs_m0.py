@@ -132,10 +132,19 @@ def load_banks(config: dict[str, object]) -> tuple[dict[str, object], dict[str, 
 
 
 def frozen_public_split(public_root: Path, config: dict[str, object]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    images = cifar100_train_images_from_tar(public_root)
-    indices = np.random.default_rng(K0B_PUBLIC_SEED).choice(
-        images.shape[0], size=1000, replace=False
-    ).astype(np.int64)
+    compact_images = public_root / "k0b_public_images.npy"
+    compact_indices = public_root / "k0b_public_indices.npy"
+    if compact_images.is_file() and compact_indices.is_file():
+        selected_images = np.load(compact_images, allow_pickle=False)
+        indices = np.load(compact_indices, allow_pickle=False).astype(np.int64, copy=False)
+        if selected_images.shape != (1000, 32, 32, 3) or selected_images.dtype != np.uint8:
+            raise ValueError("compact K0-B public images have an unexpected shape or dtype")
+    else:
+        images = cifar100_train_images_from_tar(public_root)
+        indices = np.random.default_rng(K0B_PUBLIC_SEED).choice(
+            images.shape[0], size=1000, replace=False
+        ).astype(np.int64)
+        selected_images = images[indices]
     if sha256_array(indices) != K0B_PUBLIC_HASH:
         raise ValueError("K0-B public carrier identity mismatch")
     train_indices = indices[:500]
@@ -146,7 +155,7 @@ def frozen_public_split(public_root: Path, config: dict[str, object]) -> tuple[n
         raise ValueError("CVRS held-out carrier hash mismatch")
     if np.intersect1d(train_indices, heldout_indices).size:
         raise ValueError("public training and held-out carriers overlap")
-    return images[train_indices], images[heldout_indices], indices
+    return selected_images[:500], selected_images[500:756], indices
 
 
 def raw_batch(images: np.ndarray, *, device: torch.device) -> torch.Tensor:

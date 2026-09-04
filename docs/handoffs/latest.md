@@ -27,15 +27,23 @@ were identical across arms. Smoke verdict is `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`
 The 8-private-step benchmark also preserved matched traces and returned
 `BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. On the local RTX 3050 it projected `7786.66 s / 2.163
 single-GPU hours` for the six-arm 3-epoch training portion, excluding final held-out routing and DSA
-evaluation. MobileNetV2 dominates the cost. Do not start Formal from this estimate. The next action is
-to decide whether to prepare a combined OpenI input and run only an OpenI V100 platform benchmark;
-Formal remains locked behind explicit user cost approval.
+evaluation. MobileNetV2 dominates the cost. Do not start Formal from this estimate. A compact combined
+OpenI input and platform entry are now prepared. The next action is to upload
+`local_runs/cle_cvrs_m0_openi_input/cle_cvrs_m0_seed0_inputs.tar.gz` and run only the V100 platform
+benchmark. Formal remains locked behind explicit user cost approval.
+
+The compact archive is `172255488` bytes with SHA256
+`215FFCB34ECF44C7E83F130AE2F19CEBFB2AED3F8CE0DBBE66B5BB8C46900C4E`. A local end-to-end OpenI-entry
+smoke verified archive discovery, 33 non-oracle file hashes, selective extraction, platform path
+rewriting, all six smoke arms, matched private traces and result packaging.
 
 ```text
 spec:   docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
 config: configs/cle_cvrs_m0_seed0.json
 method: fedprime/methods/cvrs.py
 runner: scripts/run_cle_cvrs_m0.py
+OpenI:  scripts/openi_cle_cvrs_m0_entry.py
+packer: scripts/prepare_cle_cvrs_m0_openi_input.py
 tests:  tests/test_cvrs.py
 ```
 

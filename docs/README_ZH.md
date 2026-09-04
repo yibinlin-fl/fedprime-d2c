@@ -498,10 +498,13 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
 configs/cle_cvrs_m0_seed0.json
 scripts/run_cle_cvrs_m0.py
+scripts/openi_cle_cvrs_m0_entry.py
+scripts/prepare_cle_cvrs_m0_openi_input.py
 ```
 
-本地真实 checkpoint smoke 与 wall-clock benchmark 已完成；下一决策是是否只做 OpenI V100
-平台 benchmark。不得把 smoke/benchmark 当科学结果，也不得未经成本确认直接启动 Formal。
+本地真实 checkpoint smoke 与 wall-clock benchmark 已完成，紧凑 OpenI 输入包也已生成；
+下一步只做 OpenI V100 平台 benchmark。不得把 smoke/benchmark 当科学结果，也不得未经
+成本确认直接启动 Formal。
 
 当前论文证据补全总入口：
 

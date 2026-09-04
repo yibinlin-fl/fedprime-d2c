@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.utils.data as torch_data
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,11 +22,12 @@ from fedprime.augmentations.frozen_prime import (  # noqa: E402
     load_frozen_prime_bank,
 )
 from fedprime.data.loaders import (  # noqa: E402
+    TwoViewTransform,
+    _rahfl_augmix_view_transforms,
     cifar100_train_images_from_tar,
     dataset_stats,
     normalize_batch,
 )
-from fedprime.data.strict_fit_audit import build_strict_fit_audit_loaders  # noqa: E402
 from fedprime.engine.cle_shortcut_alignment import (  # noqa: E402
     OPERATOR_FAMILY_IDS,
     compute_dsa,
@@ -42,6 +44,7 @@ from fedprime.methods.cvrs import (  # noqa: E402
     pairwise_public_jsd_loss,
 )
 from fedprime.models.factory import build_models, forward_logits  # noqa: E402
+from fedprime.utils.env import add_vendor_paths  # noqa: E402
 
 
 PROTOCOL = "cle_cvrs_m0_cheap_method_gate_v1"
@@ -227,24 +230,65 @@ def build_model(architecture: str, checkpoint: Path, device: torch.device) -> to
     return model.to(device)
 
 
+class ImageLabelClientDataset(torch_data.Dataset):
+    """M0-private dataset that never opens corruption metadata files."""
+
+    def __init__(self, root: Path, client_id: int, transform) -> None:
+        client_root = root / f"client_{int(client_id)}"
+        self.images = np.load(client_root / "train_images.npy", allow_pickle=False)
+        self.labels = np.load(client_root / "train_labels.npy", allow_pickle=False)
+        self.transform = transform
+
+    def __len__(self) -> int:
+        return int(self.labels.shape[0])
+
+    def __getitem__(self, index: int):
+        image = self.images[int(index)]
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, int(self.labels[int(index)])
+
+
 def build_private_loader(config: dict[str, object], *, batch_size: int, client_id: int):
     private = config["private_training"]
-    loaders, _test, _splits, _counts = build_strict_fit_audit_loaders(
-        root=resolve_path(config["paths"]["private_root"]),
-        num_clients=4,
-        train_batch_size=int(batch_size),
-        test_batch_size=512,
-        num_workers=int(private["num_workers"]),
-        split_path=resolve_path(config["paths"]["split_path"]),
-        audit_ratio=0.15,
-        min_audit_per_class=5,
-        min_fit_per_class=2,
-        seed=0,
-        num_classes=10,
-        augmix_module="jsd",
-        loader_seed=20260830,
+    root = resolve_path(config["paths"]["private_root"])
+    split_path = resolve_path(config["paths"]["split_path"])
+    with np.load(split_path, allow_pickle=False) as archive:
+        fit_indices = np.asarray(archive[f"client_{int(client_id)}_fit"], dtype=np.int64)
+        audit_indices = np.asarray(archive[f"client_{int(client_id)}_audit"], dtype=np.int64)
+    labels = np.load(root / f"client_{int(client_id)}/train_labels.npy", allow_pickle=False)
+    if np.intersect1d(fit_indices, audit_indices).size:
+        raise ValueError("fixed fit/audit split overlaps")
+    if not np.array_equal(
+        np.sort(np.concatenate([fit_indices, audit_indices])),
+        np.arange(labels.shape[0], dtype=np.int64),
+    ):
+        raise ValueError("fixed fit/audit split does not cover the client data")
+    base, weak, preprocess = _rahfl_augmix_view_transforms("cifar10")
+    add_vendor_paths()
+    from Dataset.dataaug import AugMixDataset
+
+    dataset = ImageLabelClientDataset(root, client_id, TwoViewTransform(base, weak))
+    fit_dataset = AugMixDataset(
+        torch_data.Subset(dataset, fit_indices.tolist()),
+        preprocess,
+        jsd_or_nojsd="jsd",
     )
-    return loaders[int(client_id)]
+    generator = torch.Generator().manual_seed(20260830 * 1009 + int(client_id))
+    print(
+        f"[setup] metadata-free private loader client={client_id} "
+        f"fit={fit_indices.size} audit={audit_indices.size}",
+        flush=True,
+    )
+    return torch_data.DataLoader(
+        fit_dataset,
+        batch_size=int(batch_size),
+        shuffle=True,
+        drop_last=True,
+        num_workers=int(private["num_workers"]),
+        pin_memory=torch.cuda.is_available(),
+        generator=generator,
+    )
 
 
 def calibrate_lambda(

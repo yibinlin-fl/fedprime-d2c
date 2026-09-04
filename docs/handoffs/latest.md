@@ -29,13 +29,15 @@ The 8-private-step benchmark also preserved matched traces and returned
 single-GPU hours` for the six-arm 3-epoch training portion, excluding final held-out routing and DSA
 evaluation. MobileNetV2 dominates the cost. Do not start Formal from this estimate. A compact combined
 OpenI input and platform entry are now prepared. The next action is to upload
-`local_runs/cle_cvrs_m0_openi_input/cle_cvrs_m0_seed0_inputs.tar.gz` and run only the V100 platform
+`local_runs/cle_cvrs_m0_openi_input_v2/cle_cvrs_m0_seed0_inputs.tar.gz` and run only the V100 platform
 benchmark. Formal remains locked behind explicit user cost approval.
 
-The compact archive is `172255488` bytes with SHA256
-`215FFCB34ECF44C7E83F130AE2F19CEBFB2AED3F8CE0DBBE66B5BB8C46900C4E`. A local end-to-end OpenI-entry
-smoke verified archive discovery, 33 non-oracle file hashes, selective extraction, platform path
-rewriting, all six smoke arms, matched private traces and result packaging.
+The final compact archive is `109142359` bytes with SHA256
+`E9427A55DBE2545AF9D5A1EBD8BEA5B18C41C84D7FE89D06674165F4109E3818`. It contains only private
+images/labels for clients 0/3 and no private corruption IDs, methods, severities or source metadata.
+The M0-specific loader never opens such metadata. A local smoke verified all six arms and matched
+private traces after this tightening. The older 172255488-byte package is superseded and must not be
+uploaded.
 
 ```text
 spec:   docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md

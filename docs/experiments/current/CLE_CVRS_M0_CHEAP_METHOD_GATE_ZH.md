@@ -82,8 +82,9 @@ OpenI 当前只运行平台 benchmark：
 数据集文件：cle_cvrs_m0_seed0_inputs.tar.gz
 ```
 
-不要添加 `confirm-formal`。输入包固定为 `172255488` bytes，SHA256 为
-`215FFCB34ECF44C7E83F130AE2F19CEBFB2AED3F8CE0DBBE66B5BB8C46900C4E`。
+不要添加 `confirm-formal`。最终输入包固定为 `109142359` bytes，SHA256 为
+`E9427A55DBE2545AF9D5A1EBD8BEA5B18C41C84D7FE89D06674165F4109E3818`。包内只保留
+client 0/3 的 private image/label；不包含 private corruption id/type/severity/source metadata。
 
 本地入口：
 

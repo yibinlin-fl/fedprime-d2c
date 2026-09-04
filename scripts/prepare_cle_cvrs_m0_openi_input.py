@@ -71,29 +71,14 @@ def main() -> None:
     rows: list[dict[str, object]] = []
 
     private_source = source_root / "data/gamma09"
-    for client_id in range(4):
-        for name in (
-            "train_images.npy",
-            "train_labels.npy",
-            "train_corruption_ids.npy",
-            "train_corruption_method_ids.npy",
-            "train_severity_ids.npy",
-            "train_source_indices.npy",
-        ):
+    for client_id in (0, 3):
+        for name in ("train_images.npy", "train_labels.npy"):
             copy_file(
                 private_source / f"client_{client_id}" / name,
                 input_root / "private" / f"client_{client_id}" / name,
                 rows,
                 input_root,
             )
-    copy_file(private_source / "metadata.json", input_root / "private/metadata.json", rows, input_root)
-    for name in ("test_images.npy", "test_labels.npy", "test_corruption_ids.npy"):
-        copy_file(
-            private_source / "test_balanced" / name,
-            input_root / "private/test_balanced" / name,
-            rows,
-            input_root,
-        )
     copy_file(
         source_root / "splits/strict_cle_v1_alpha05_gamma_pair_seed0_split0.npz",
         input_root / "splits/strict_cle_v1_alpha05_gamma_pair_seed0_split0.npz",
@@ -137,6 +122,8 @@ def main() -> None:
         "protocol": "cle_cvrs_m0_openi_input_v1",
         "input_directory": INPUT_DIRECTORY,
         "contains_only_h9_clients": [0, 3],
+        "private_files": "images_and_labels_only",
+        "private_corruption_metadata_included": False,
         "public_labels_included": False,
         "k0b_public_indices_sha256": K0B_PUBLIC_HASH,
         "files": sorted(rows, key=lambda row: str(row["path"])),

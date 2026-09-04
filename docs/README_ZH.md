@@ -492,6 +492,17 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前已进入 CVRS Method Phase，但尚未获准运行 M0 Formal：
+
+```text
+docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+configs/cle_cvrs_m0_seed0.json
+scripts/run_cle_cvrs_m0.py
+```
+
+本地真实 checkpoint smoke 与 wall-clock benchmark 已完成；下一决策是是否只做 OpenI V100
+平台 benchmark。不得把 smoke/benchmark 当科学结果，也不得未经成本确认直接启动 Formal。
+
 当前论文证据补全总入口：
 
 ```text

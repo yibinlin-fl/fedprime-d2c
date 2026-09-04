@@ -1,6 +1,50 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-04
+Updated: 2026-09-05
+
+## Current Objective: CVRS Method Phase / M0 Cost Approval Pending
+
+The user explicitly ended the open-ended P5/P6/P7 mechanism-audit loop and authorized implementation
+of one working method candidate:
+
+```text
+CVRS = Class-Visible Routing Suppression
+```
+
+For unlabeled public carriers and frozen generic probes, CVRS penalizes normalized persistent
+class-directional logit response, `mean_q ||mean_u delta_q(u)||^2 / stopgrad(E_q)`. It does not infer
+corruption taxonomy or a private CLE binding. M0 is a cheap matched local-adaptation kill test from
+the existing H9 round-40 ResNet10/client0 and MobileNetV2/client3 checkpoints with three arms:
+unchanged private AugMix/JSD/DCL only, plus ordinary public JSD, or plus CVRS. The historical artifacts
+contain no optimizer state, so all arms use a fresh matched Adam and the experiment must be described
+as short adaptation rather than seamless round-41 continuation.
+
+Implementation, focused unit tests, a real-checkpoint CUDA tiny smoke and a local CUDA benchmark are
+complete. Unit tests are 7/7 PASS, including one-batch numerical equality with the original RAHFL
+private loss. Smoke passed both architectures and all three arms; private batch/AugMix trace hashes
+were identical across arms. Smoke verdict is `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
+
+The 8-private-step benchmark also preserved matched traces and returned
+`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. On the local RTX 3050 it projected `7786.66 s / 2.163
+single-GPU hours` for the six-arm 3-epoch training portion, excluding final held-out routing and DSA
+evaluation. MobileNetV2 dominates the cost. Do not start Formal from this estimate. The next action is
+to decide whether to prepare a combined OpenI input and run only an OpenI V100 platform benchmark;
+Formal remains locked behind explicit user cost approval.
+
+```text
+spec:   docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+config: configs/cle_cvrs_m0_seed0.json
+method: fedprime/methods/cvrs.py
+runner: scripts/run_cle_cvrs_m0.py
+tests:  tests/test_cvrs.py
+```
+
+Frozen M0 details: public training uses only K0-B Ua (500 unlabeled CIFAR-100 carriers) with Bank A;
+held-out routing uses disjoint Ub positions 500:756 with Bank-B probes 0:15. Public steps freeze BN
+running statistics. Lambda is set once per regularized arm to 10% of the initial exact private-loss
+gradient norm and is then frozen. Formal, if later approved, must seal all taxonomy-free training and
+held-out outputs before opening the existing DSA oracle. Do not modify communication, add detector
+triggering, revive CRSF, or run a lambda grid.
 
 ## Latest Decision: P4 Rejects HFL Decoupling; Marginal Profile Cannot Specify Pairwise Action
 

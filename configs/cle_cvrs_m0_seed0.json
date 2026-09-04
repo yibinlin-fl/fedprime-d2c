@@ -1,0 +1,76 @@
+{
+  "protocol": "cle_cvrs_m0_cheap_method_gate_v1",
+  "status": "FROZEN_BEFORE_FORMAL",
+  "seed": 0,
+  "paths": {
+    "private_root": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/data/gamma09",
+    "split_path": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/splits/strict_cle_v1_alpha05_gamma_pair_seed0_split0.npz",
+    "evaluation_root": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/evaluation",
+    "public_root": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/public",
+    "checkpoint_root": "local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/h9"
+  },
+  "contexts": [
+    {"client": 0, "architecture": "ResNet10"},
+    {"client": 3, "architecture": "Mobilenetv2"}
+  ],
+  "arms": ["baseline", "jsd", "cvrs"],
+  "private_training": {
+    "epochs": 3,
+    "batch_size": 64,
+    "num_workers": 0,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "max_grad_norm": 5.0,
+    "objective": "unchanged AugMix/JSD/DCL",
+    "lambda_jsd": 12.0,
+    "fresh_optimizer_reason": "round-40 artifacts contain model weights but no Adam state"
+  },
+  "public_training": {
+    "labels_read": false,
+    "carrier_source": "K0-B frozen 1000 CIFAR-100 carriers",
+    "train_carrier_slice": "Ua positions [0,500)",
+    "train_carrier_count": 500,
+    "train_carrier_indices_sha256": "F74CAF6980472F759E2DA915532FB422949CD160EB3BC935EA2FC9A341D5403C",
+    "regularization_interval_private_steps": 4,
+    "batch_size": 64,
+    "probe_bank": "A",
+    "probe_bank_sha256": "6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01",
+    "probes_per_update": 4,
+    "probe_schedule_seed": 20260905,
+    "probe_schedule": "shuffle without replacement; one 64-probe cycle per 16 updates",
+    "batchnorm_during_public_step": "frozen running statistics via eval mode",
+    "lambda_initial_gradient_ratio": 0.1,
+    "lambda_calibration": "one taxonomy-free initial batch, then frozen"
+  },
+  "heldout_routing": {
+    "carrier_slice": "Ub positions [500,756)",
+    "carrier_count": 256,
+    "carrier_indices_sha256": "AFCC9A4D96F4B781F2669FADCBC775C5C578F4DE75996F2E6F24A3ED89E03499",
+    "probe_bank": "B",
+    "probe_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  },
+  "evaluation": {
+    "dsa": "original Phase-A0 paired 1000-source x 16-corruption oracle",
+    "avg_acc": "mean top-1 accuracy over all source/operator pairs per architecture",
+    "worst_acc": "minimum top-1 accuracy over the 16 operators per architecture",
+    "oracle_opened_only_after_training": true
+  },
+  "gates": {
+    "per_architecture_cvrs_dsa_relative_reduction_min": 0.2,
+    "per_architecture_jsd_minus_cvrs_dsa_min": 0.02,
+    "per_architecture_avg_accuracy_drop_max_pp": 1.0,
+    "per_architecture_worst_accuracy_drop_max_pp": 1.0,
+    "all_architectures_must_pass": true,
+    "pass_verdict": "GO_TO_FULL_HFL_INTEGRATION",
+    "failure_verdict": "NO_GO_CVRS"
+  },
+  "forbidden": [
+    "communication changes",
+    "CIFAR-100 labels",
+    "private corruption type/family/severity/binding during training",
+    "detector trigger",
+    "CRSF",
+    "lambda grid search"
+  ]
+}

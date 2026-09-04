@@ -1,6 +1,6 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-08-30
+Updated: 2026-09-04
 
 ## CLE PIDR Zero-Training Hidden-Binding Gate - 2026-08-30
 
@@ -3684,3 +3684,180 @@ archive: cle_pew_loo_12round_seed0_outputs.tar.gz
 guide: docs/experiments/archive/CLE_PEW_LOO_OPENI_RUN_ZH.md
 report: deliverables/cle_pew_loo_20260809/RESULT_SUMMARY_ZH.md
 ```
+
+## CLE Local-First Shortcut -> PIDR -> PNCB-SCDW - 2026-08-30/31
+
+Phase-A0 established a directional shortcut rather than generic degradation: historical RAHFL
+`gamma=0.9` minus `gamma=0` pooled DSA was `+0.2016229552`, paired CI95
+`[0.1964123272, 0.2072188988]`, with 4/4 clients positive and binding-permutation
+`p=0.000999001`.
+
+Phase-A1a then trained matched H0/H9/L0/L9 arms for 40 rounds. HFL and Local CLE effects were
+`+0.2027476596` and `+0.2043658778`; communication difference-in-differences was
+`-0.0016182182`, CI95 `[-0.0033365882, 0.0001283891]`, with only 1/4 positive clients. Verdict:
+`NO_GO_FL_SPECIFIC_AMPLIFICATION`. The supported mechanism is local-first; do not revive bad-teacher,
+routing-amplification, D2C/Oracle-D2C or communication-rescue narratives.
+
+A paper-only identifiability audit showed that one already-corrupted image plus its task label and
+i.i.d. AugMix views cannot distinguish a semantic predictor from a predictor using a persistent base
+degradation. A zero-training oracle PIDR gate then showed that valid interventions make the hidden
+direction observable: round-40 H0/H9 mAP was `0.441855/0.844847`, L0/L9 was
+`0.430622/0.865557`, with 4/4 positive clients and null `p=0.000999`.
+
+The conditional method is Public Nuisance Canonicalization Bridge (PNCB) plus Signed
+Class-Directional Withdrawal (SCDW). PNCB learns public AugMix-to-source reconstruction on CIFAR-100
+with labels ignored. Frozen PNCB gives paired endpoint `C(X)`. SCDW penalizes only statistically
+credible positive wrong-class withdrawal `p(c|X)-p(c|C(X))`, with canonical probability and standard-
+error threshold stop-gradient. The future local target keeps AugMix/JSD/DCL and adds canonical-view
+CE plus SCDW; AsymHFL communication remains unchanged. Full classifier integration has not started.
+
+Phase-B0 is bridge-only. The 535,256,689-byte input archive has SHA256
+`DFB766F6494A5F61AA16F45666EC250A30501066AB54D89C984CD2324293B9BC` and contains 1,000 balanced
+CIFAR-10 evaluation sources, CIFAR-100 public tar, and 16 final H0/H9/L0/L9 round-40 checkpoints.
+The OpenI smoke completed on CUDA with 19/19 manifest files, 16/16 classifiers, one PNCB epoch/two
+batches and 20x16 evaluation. Returned caches were finite with maximum probability-sum error
+`2.38e-7`. Result archive bytes/SHA256 were `3344564` /
+`C57D3A9BE84E04FDDBB35402DF011B59294D78B532951346476182A891E81E54`; verdict was
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
+
+The smoke PNCB had poor bridge metrics, as expected after only two batches; these are explicitly
+non-scientific. The frozen formal run then completed with 50,000 public images, 10 epochs, 1,000x16
+evaluation and all 16 classifiers. Formal archive bytes/SHA256 are `31788115` /
+`8F824A6EF21AFDF8E8CF089530786882FE684504079C17160DFD2205D140BE2C`.
+
+Formal verdict: `NO_GO_PNCB_BRIDGE`. G1/G4/G6/G7 passed; G2/G3/G5 failed. Worst semantic delta was
+only `-0.5875pp`, but within-source cross-operator variance contraction was `-12.2267%` versus the
+required `+25%`, and family-separability relative reduction was only `9.4729%` versus `30%`. Local
+gamma9 retrieval was mAP `0.593924`, hit `0.65`. PNCB loss decreased normally across all ten epochs,
+so this is a scientific bridge failure, not an execution failure. Stop the current PNCB-SCDW route;
+do not implement Phase-B1 and do not rescue it by SCDW-weight or epoch/channel/loss-only tuning.
+
+Full external-discussion handoff:
+
+```text
+docs/research/status/CLE_PNCB_SCDW_CURRENT_RESEARCH_HANDOFF_FOR_GPTWEB_2026_08_31_ZH.md
+deliverables/cle_public_canonicalization_phase_b0_20260831/RESULT_SUMMARY_ZH.md
+```
+
+## CLE Public-Carrier K0-A Transfer Oracle - 2026-09-01
+
+PNCB bridge NO-GO 后，K0-A 不训练新模型，而是复用16个冻结 round-40 H0/H9/L0/L9
+checkpoint，在1,000个固定 CIFAR-100 train 公共载体（标签未使用）上施加16个 severity-3
+oracle operators，检验类别条件方向矩是否跨语义载体迁移。所有response在打开CLE binding
+与operator-family真值前保存并哈希。
+
+正式归档 `cle_public_carrier_k0a_seed0_formal_outputs.tar.gz` 为48,651,705 bytes，SHA256
+`AA260672FED05C991DDEF2308342BD88150CA8A36FD8366EF9A9E85B2E523168`。16/16 response hash
+匹配，1,000公共索引唯一；独立复算response mean、1,000 permutation与1,000 paired
+bootstrap均与返回结果一致。
+
+HFL H0/H9 mAP为`0.406176/0.796627`，delta `+0.390451`；Local L0/L9为
+`0.411342/0.811235`，delta `+0.399894`。两者均4/4客户端同向，hit为`0.80/0.85`，
+class-map和probe-identity null均为`p=0.000999001`。HFL directional-strength delta CI95
+`[8.745423,9.236294]`、coherence delta CI95 `[0.310375,0.322847]`；Local分别为
+`[10.606721,11.241361]`与`[0.254255,0.266638]`。HFL与Local各10/10冻结门槛通过，
+判定`GO_TO_K0_B`。
+
+解释边界：H0/L0 split cosine本身已高达`0.963/0.976`，所以普通corruption也能形成
+跨载体稳定方向；CLE特有证据是方向强度/coherence大幅增加且能恢复隐藏binding。K0-A
+仍使用真实operator bank，是oracle机制审计，不证明taxonomy-free probes、训练修复或跨场景
+泛化。下一步仅设计K0-B generic-probe gate；不得直接进入DME/K1。
+
+```text
+deliverables/cle_public_carrier_k0a_20260901/RESULT_SUMMARY_ZH.md
+```
+
+## CLE K0-B v2 Taxonomy-Free Generic Probe Implementation - 2026-09-01
+
+K0-B针对K0-A控制臂split cosine也很高的关键问题，将主对象收紧为
+`carrier-stable + class-selective`方向响应。它复用同一16个冻结checkpoint和同一1,000张
+CIFAR-100公共载体，不使用标签、真实operator/type/family/severity、CLE binding或private
+corruption metadata。Ua/Ub固定为前后两个500-image disjoint halves。
+
+新增冻结PRIME实现先采样完整recipe state再确定性应用，禁止逐carrier重采样。Bank A/B
+各64 recipes，seeds为20260902/20260903，canonical hashes分别为
+`6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01`与
+`4A53497EC5DB6EC05C312E6166109FA4B52A5CC402CCE74E6EDB1253D913BF4E`。约5 MiB完整state与
+manifest已版本化，包含composition/depth、谱系数、位移场、color coefficients、filter
+kernel、strength和mixing参数及逐数组/逐recipe hash。
+
+主统计为cross-fit kappa、class selectivity与`rho=kappa*[selectivity]+`；每个client仅保留
+energy不低于该bank内median的active probes，R为active rho的top-20% CVaR。Combined bank
+在128 probes上重新计算。正式门槛同时要求HFL/Local的Dcf/K/R增量、3/4客户端同向、两个
+独立bank replication；若只有S增加而K/R失败，强制
+`NO_GO_GENERIC_DIRECTIONAL_SIGNAL`。
+
+聚焦K0-B及K0-A回归14/14通过。真实资产本地OpenI路径smoke验证19个输入文件，严格加载
+H0/H9 client0，输出有限`(8,4,10)`响应；重复运行的blind和primary manifest hash完全一致。
+Smoke archive为4,466,207 bytes，SHA256
+`83442136ECC2D168F54E3E7283CA37135D084924632BE5B70C34A209B32DA543`，判定仅为
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`。下一步先OpenI smoke审计，再由用户批准formal；不训练。
+
+## CLE K0-B Formal GO 与 K1-A Head-only SDMN - 2026-09-02
+
+K0-B formal archive为234,888,047 bytes，SHA256
+`1E02A16C765D8AB976A692D444FA9DAEBE38C30F8279CD6DCCFC49D1BFF88608`。16份response、primary
+manifest、1,000公共index和两套frozen bank均通过完整性审计；从原始tensor独立重算S/Dcf/K/R
+最大绝对误差`5.56e-17`，verdict一致为`GO_TO_K1_CHECKPOINT_SURGERY`。
+
+HFL K delta `+0.252727`、R ratio `4.901569`、4/4客户端同向；Local K delta
+`+0.232752`、R ratio `4.385780`、4/4同向。Bank A/B ratio分别为HFL
+`5.739226/4.317300`、Local `5.166668/4.094945`；generic-fragility kill未触发。结论仅是
+taxonomy-free detectability成立，不是纠正方法GO。
+
+K1-A内部方法为CDR检测器加Selective Directional Moment Neutralization（SDMN）。它冻结
+backbone/BN/dropout，只更新`model.linear`；在K0-B discover集上冻结high-rho probe方向，在
+互斥surgery集上精确计算full-carrier directional moment，并受公共行为anchor KL约束。对照为
+Direction-Sham、sensitivity-matched Random-Probe和Generic Invariance。Bank A/B做AB/BA
+cross-fit，最终先看unseen-bank R，再封存primary后才允许DSA/WCCA/CFG oracle评价。
+
+INSPECT确认16/16 checkpoint、两套bank、公共tar和CLE evaluator资产可复用；四种异构模型均有
+`backbone + linear`接口。聚焦K1/K0回归20/20通过。本地H9 client0、A->B tiny smoke覆盖全部
+五臂，所有2步objective下降、anchor KL低于0.003；第二次运行的split、probe selection、feature
+hash、metrics和traces完全相同。Smoke只判
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`。
+
+Public split在结果前固定：K0-B discover seed 20260901保持不变；排除完整1,000 discover后，
+surgery/holdout使用seed 20260906各抽2,000张；sham base seed为20260907。Formal仍被代码锁定，
+因为网页handoff未冻结maximum surgery steps及完整optimizer/backtracking contract。下一步先
+OpenI smoke，再运行只看public surgery loss/anchor KL的calibration；审计后再冻结formal。
+
+## CLE K1-A / K1-B0 / K1-C0 / K1-C Progress - 2026-09-02/04
+
+K1-A head-only SDMN formal 已冻结为 `NO_GO_DIRECTIONAL_SURGERY`。它说明只修改 classifier
+head 不能把 K0-B 的检测信号变成真实 CLE 改善；禁止靠学习率、步数或 head-only 变体复活。
+
+K1-B0 随后检验 high-risk probes 是否定位一个跨 bank、相对 energy-matched low probes 特异的
+共享表征 nuisance subspace。正式结果为 `NO_GO_SHARED_NUISANCE_ROUTING`。该失败不得通过降低
+1.20 specificity gate 或重新选择 probe 挽救，但它暴露了另一条现象：强 CLE 模型的许多
+generic intervention response 可能共同集中到少数表征方向。
+
+K1-C0 因而被设计为零训练、零参数修改的观察性 response-spectrum gate。对冻结 H0/H9/L0/L9
+round-40 checkpoint 和 2,000 张无标签 CIFAR-100 carriers，使用两套各 64 个冻结 PRIME banks，
+计算归一化跨 carrier 表征响应矩阵的 Gram 谱集中度 `chi`，并以 clean-feature spectrum 排除一般
+feature collapse。HFL 与 Local 的 10/10 预注册门槛全部通过，verdict 为
+`GO_TO_K1_C_CRSF_SURGERY`。该 GO 只证明“存在值得干预的响应谱集中对象”，不预测压平它一定
+降低 CLE，也不是训练方法 GO。
+
+K1-C 的候选干预是 Cross-Carrier Response Spectrum Flattening (CRSF)。它只在 H9/L9 的
+late backbone block 上做 checkpoint surgery，冻结 early backbone、全部 normalization、classifier
+和 projector；比较 Frozen、CRSF、SharedMean、Generic Invariance 与 RawSpec。AB/BA 使用独立
+PRIME correction/evaluation banks。当前真实模型 INSPECT、四类精确矩梯度对 direct full-graph
+autograd 的数值等价检查、以及 H9 client0 AB tiny smoke 均通过；正式 CLE 结论尚不存在。
+
+Exact K1-C calibration 规定 2,000 carriers x 64 probes、两遍 full-carrier sufficient-statistic
+gradient、三个学习率和每个 candidate update 后不可删除的 exact objective + anchor-KL 复评。
+第一次 OpenI 尝试约两小时仍主要停留在 transformed-input/cache 路径，accelerator utilization
+接近零，未产生 calibration verdict。它是执行/工程 NO-GO，不是 `NO_GO_CRSF_INTERVENTION`。
+
+成本定位现冻结如下：K0-B 当前作为训练前后可选的离线论文审计，不进入常规训练决策闭环；这
+是当前设计选择而非永久禁止未来轻量 detector。Exact K1-C 只是一轮机制上界/因果验证器，绝不
+允许原样放入每轮客户端训练。若 K1-C 最终通过，必须先经过 CRSF compression/efficiency gate，
+验证随机小 carrier/probe 近似的方向与效果，并要求推理额外开销为零、通信近零、内存有界、训练
+开销现实；压缩失败则 CRSF 不能成为最终主方法。
+
+截至 2026-09-04，禁止再次直接启动完整 calibration。下一步只能先实现一个小型 OpenI platform
+benchmark，范围冻结为一个 bounded context（ResNet10 / H9 / Bank A），输出 PRIME preprocessing、
+prefix cache、exact moments、exact gradient、post-update evaluation、anchor KL、峰值存储以及由
+实测外推的完整 calibration ETA/GPU-hours。benchmark 本身不产生科学结论；用户确认成本后才可
+决定是否运行 full calibration。

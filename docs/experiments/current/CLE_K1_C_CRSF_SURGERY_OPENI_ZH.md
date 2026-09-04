@@ -123,11 +123,21 @@ NO_GO_CRSF_INTERVENTION
   `cosine >=0.99999`；
 - 本地 tiny smoke：17/17 检查通过，verdict 为
   `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`；
-- blind calibration：尚未运行；
+- blind calibration：第一次 OpenI 执行约两小时仍未进入有效校准，未产生科学 verdict；
 - Formal：被校准 manifest 锁住，尚未运行。
 
-下一步只运行 OpenI `--mode=calibration`。不要跳过校准直接 formal，也不要依据 smoke
-效果量改学习率、步数、开放层或门槛。
+该次运行仅构成执行路径 NO-GO，不构成 CRSF 科学失败。当前禁止直接重启 OpenI
+`--mode=calibration`，也不要跳过校准直接 formal，或依据 smoke 效果量改学习率、步数、开放层
+和门槛。
+
+下一步先新增并验证一个独立、强制限界的平台 `benchmark` 模式，只测
+`ResNet10 / H9 / Bank A` 一个 context，逐项输出 PRIME preprocessing、prefix construction、
+exact moments、exact gradient、post-update exact objective、anchor KL、峰值存储/内存和由显式
+倍数外推的完整 calibration ETA/GPU-hours。benchmark 不得读取 holdout、unseen bank、DSA、
+WCCA、CFG、binding 或标签，不作科学判断。由用户确认成本后才能决定是否恢复 full calibration。
+
+K0-B 当前只作为离线审计；exact `D_surgery x 64` K1-C 只作为一次性机制验证器，不能原样进入
+最终训练循环。若 K1-C 将来通过，仍需单独通过 stochastic CRSF 压缩与效率门。
 
 ## 等价优化验收与运行可观测性
 

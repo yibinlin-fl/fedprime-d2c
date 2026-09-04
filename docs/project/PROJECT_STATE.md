@@ -1,6 +1,34 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-08-09
+Last updated: 2026-09-04
+
+## Current Implementation State: K1-C CRSF Cost Gate - 2026-09-04
+
+```text
+K0-B taxonomy-free offline audit:        FORMAL GO; complete
+K1-A head-only SDMN:                     FORMAL NO-GO; frozen
+K1-B0 shared nuisance routing:           FORMAL NO-GO; frozen
+K1-C0 response-spectrum mechanism gate:  FORMAL GO; 10/10 gates
+K1-C CRSF implementation:                INSPECT/gradient/smoke PASS
+K1-C calibration:                        NO SCIENTIFIC RESULT
+K1-C formal:                             LOCKED / NOT RUN
+next paid action:                        small platform benchmark only
+```
+
+K1-C0 only observed a CLE-associated response-spectrum concentration in frozen models. K1-C is the
+causal late-block checkpoint intervention that tests whether reducing that concentration lowers
+unseen concentration and DSA while preserving WCCA/CFG/accuracy. The exact validator is deliberately
+strict and expensive; it is not the proposed per-round training algorithm.
+
+The first OpenI calibration execution made no useful calibration progress for about two hours and
+showed near-zero accelerator utilization. It exposed an execution/caching bottleneck and produced no
+scientific verdict. Commit `a64d292` optimized reuse, heartbeat, timing and resume while retaining the
+mandatory post-update exact objective and anchor-KL check, but another full paid run is not authorized.
+
+The current CLI has no dedicated `benchmark` mode. The next implementation task is to add a bounded
+platform benchmark for ResNet10/H9/Bank-A and locally verify that it cannot expand into full
+calibration. It must provide stage timings, storage/memory peaks and projected full ETA/GPU-hours.
+Only after user review may calibration be reconsidered. Formal and 40-round integration remain locked.
 
 ## Baseline Fidelity Repair Prepared - 2026-08-09
 
@@ -2001,3 +2029,66 @@ anchors exactly reproduced historical A0/A1. None of the three new baselines
 qualified for 40-round promotion.
 
 Report: `deliverables/cle_remaining_baselines_20260809/RESULT_SUMMARY_ZH.md`.
+
+## 2026-09-01 K0-A Public-Carrier Oracle Implementation
+
+The current CLE method candidate tests whether a corruption-induced class-direction moment transfers
+from task-domain CIFAR-10 carriers to task-label-disjoint CIFAR-100 public carriers. This is a frozen,
+zero-training oracle gate and does not revive PNCB or modify communication.
+
+```text
+spec:             docs/experiments/current/CLE_PUBLIC_CARRIER_K0A_OPENI_ZH.md
+engine/analyzer:  implemented
+OpenI entry:      implemented; default smoke
+focused tests:    12/12 PASS including PIDR/DSA regressions
+local E2E smoke:  PASS; SMOKE_ONLY_NO_SCIENTIFIC_DECISION
+OpenI smoke:      NOT STARTED
+formal K0-A:      NOT STARTED
+```
+
+The analyzer saves and hashes blind logits/responses before locally importing operator-family and
+client-class binding truth. Formal mode is frozen to 1,000 CIFAR-100 carriers, 16 operators,
+severity 3, 16 classifiers, 1,000 bootstraps and 1,000 binding permutations.
+
+## 2026-08-31 Current Implementation State: CLE PNCB-SCDW Phase-B0
+
+```text
+paper candidate:   PNCB + SCDW (CONDITIONAL GO)
+communication:     unchanged AsymHFL
+classifier method: not integrated or trained
+bridge model:      implemented
+SCDW engine:       implemented and focused-tested
+OpenI input/entry: implemented
+OpenI smoke:       PASS (execution only)
+OpenI formal:      COMPLETE; NO_GO_PNCB_BRIDGE
+```
+
+Current files:
+
+```text
+fedprime/models/public_canonicalizer.py
+fedprime/engine/cle_directional_withdrawal.py
+scripts/train_cle_public_canonicalizer_phase_b0.py
+scripts/analyze_cle_public_canonicalization_phase_b0.py
+scripts/prepare_cle_public_canonicalization_phase_b0_input.py
+scripts/openi_cle_public_canonicalization_phase_b0_entry.py
+tests/test_cle_directional_withdrawal.py
+```
+
+Focused tests are `7/7`; all 16 final H0/H9/L0/L9 checkpoints strict-load. GitHub `main` includes
+PIDR commit `bd37fc6` and Phase-B0 commit `84a93f8`. The smoke independently verified 12 probability
+tensors at `(4,20,16,10)`, all finite. Do not treat its two-batch bridge metrics as formal evidence.
+
+Formal entry used:
+
+```text
+python scripts/openi_cle_public_canonicalization_phase_b0_entry.py --mode=formal
+```
+
+Formal G1/G4/G6/G7 passed and G2/G3/G5 failed. PNCB preserved semantics but increased cross-operator
+variance by 12.23%; it did not provide the required nuisance-neutral endpoint. Do not implement
+classifier SCDW integration or Phase-B1. Full report:
+
+```text
+deliverables/cle_public_canonicalization_phase_b0_20260831/RESULT_SUMMARY_ZH.md
+```

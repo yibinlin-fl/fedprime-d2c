@@ -1,5 +1,34 @@
 # TODO Next
 
+## Immediate - K1-C Platform Benchmark Before Any Paid Calibration - 2026-09-04
+
+Do not rerun:
+
+```text
+python scripts/openi_cle_k1_c_crsf_surgery_entry.py --mode=calibration
+```
+
+The previous approximately two-hour OpenI attempt produced no calibration verdict and is an
+execution-cost failure only. K1-C0 already passed its observational 10/10 gate; the unproven arrow is
+whether exact CRSF intervention lowers unseen spectrum concentration and real CLE DSA.
+
+Next implementation scope only:
+
+1. add a dedicated bounded `benchmark` mode to the K1-C runner and OpenI entry;
+2. force exactly one context: ResNet10 / H9 / Bank A, with no H9-BA/L9 or other architectures;
+3. preserve the exact K1-C mathematics for the measured step, including required post-update exact
+   objective and anchor-KL evaluation;
+4. print and save PRIME preprocessing, prefix construction, exact moments, exact gradient,
+   post-update objective, anchor-KL, peak storage/memory and total timing;
+5. extrapolate full calibration wall time and GPU-hours from explicit multiplicities;
+6. run a tiny local correctness check, then one OpenI benchmark only;
+7. stop and ask the user to review cost before any full calibration.
+
+The benchmark cannot read holdout, unseen bank, labels, CLE binding, DSA, WCCA or CFG and cannot
+produce a scientific GO/NO-GO. K0-B currently remains an offline audit. Exact `2,000 x 64` K1-C is a
+one-time causal validator, not a final training loop. If it later passes, the next mandatory gate is
+CRSF compression/efficiency; no 40-round training integration is authorized now.
+
 ## Immediate - Review And Run Fidelity-Repaired Baselines - 2026-08-09
 
 The historical baseline adapters are preserved. New `aughfl_fidelity`,
@@ -2291,3 +2320,49 @@ Tell Codex:
 ```text
 读取 docs/project/PROJECT_STATE.md 和 docs/project/TODO_NEXT.md，继续推进 FedPRIME-D2C 项目。先检查 git 状态，然后准备数据和跑一个 debug smoke training。
 ```
+
+## 2026-08-31 Completed Gate: PNCB Phase-B0 Formal NO-GO
+
+The old PRAC/D2C TODO above is historical. The formal command completed:
+
+```text
+run or wait for:
+python scripts/openi_cle_public_canonicalization_phase_b0_entry.py --mode=formal
+```
+
+The returned result was audited as follows:
+
+```text
+archive bytes/sha256: 31788115 / 8F824A6EF21AFDF8E8CF089530786882FE684504079C17160DFD2205D140BE2C
+integrity: 10 epochs, 50k public images, 16 checkpoints, 1000x16, severity 3, finite caches PASS
+gates: G1/G4/G6/G7 PASS; G2/G3/G5 FAIL
+verdict: NO_GO_PNCB_BRIDGE
+```
+
+Current scientific status:
+
+```text
+CLE directional shortcut: verified
+communication amplification: NO-GO
+local-first mechanism: supported
+PIDR observability: GO
+PNCB bridge: NO-GO
+PNCB+SCDW classifier method: not yet trained
+```
+
+Immediate rule: do not implement or run Phase-B1, and do not tune SCDW weights or only bridge
+epochs/channels/reconstruction-loss weights to rescue this result. The next research action is a
+paper-level reassessment after archiving the failed bridge, not another paid experiment.
+
+## 2026-09-01 Active Next Step: K0-A OpenI Smoke
+
+K0-A implementation and local end-to-end smoke are complete. Reuse the existing OpenI dataset that
+contains `cle_public_canonicalization_phase_b0_seed0_inputs.tar.gz`; do not upload another dataset.
+
+```bash
+python scripts/openi_cle_public_carrier_k0a_entry.py --mode=smoke
+```
+
+Download `cle_public_carrier_k0a_seed0_smoke_outputs.tar.gz` and audit its manifest/result. Smoke is
+execution-only. Run `--mode=formal` only after the smoke artifact passes review. Do not implement
+K0-B or train DME before a formal K0-A `GO_TO_K0_B`.

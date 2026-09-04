@@ -1,6 +1,119 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-08-30
+Updated: 2026-09-04
+
+2026-09-04 算力止损：K1-C0 是零训练的观察性机制门控，证明强 CLE 模型存在显著的通用
+干预响应谱集中，为 CRSF 提供被测对象；它不预测 K1-C 一定成功。K1-C 才通过修改冻结
+checkpoint 的 late block 检验 `chi下降是否导致DSA下降`。第一次 OpenI calibration 约两小时
+仍未进入有效校准，判定为执行路径 NO-GO，不是 CRSF 科学 NO-GO。
+
+当前禁止直接重启完整 calibration。下一步先实现并本地核对一个受限平台 benchmark，仅运行
+`ResNet10 / H9 / Bank A`，逐项报告 PRIME 生成、prefix、exact moments/gradient、post-update
+objective、anchor KL、存储峰值以及完整 calibration 的 ETA/GPU-hours，由用户确认成本后才能
+决定是否正式运行。K0-B 当前只作离线审计；exact `2000x64` K1-C 只作一次性因果验证，不能
+原样进入最终训练循环。若机制通过，仍须另过 CRSF 压缩与效率门。
+
+2026-09-03 K1-C0 response-spectrum gate 已强通过 10/10 冻结门槛，当前唯一活动阶段是
+K1-C CRSF late-block checkpoint surgery。它只使用 H9/L9 round-40 checkpoint，冻结分类头、
+早期 backbone 与全部 BN，通过全 `D_surgery × 64 probes` 的两遍精确矩梯度，比较 CRSF、
+SharedMean、Generic Invariance、RawSpec 和 Frozen。执行规范与入口：
+
+```text
+docs/experiments/current/CLE_K1_C_CRSF_SURGERY_OPENI_ZH.md
+fedprime/engine/cle_crsf_surgery.py
+scripts/run_cle_k1_c_crsf_surgery.py
+scripts/openi_cle_k1_c_crsf_surgery_entry.py
+tests/test_cle_crsf_surgery.py
+```
+
+本地真实模型 INSPECT 和 tiny smoke 已通过，精确梯度与 direct full-graph autograd 一致，
+smoke 17/17 检查 PASS。原定直接运行盲数值校准的动作已被 2026-09-04 算力止损决定取代；
+当前先做 bounded benchmark，Formal 继续被校准 manifest 锁住。即使最终 GO，也不能自动进入
+40-round 训练。
+
+2026-09-02 K1-A head-only SDMN formal 已冻结为 `NO_GO_DIRECTIONAL_SURGERY`。当前唯一活动阶段是
+零训练 K1-B0 CDR-SNR shared-representation localization：复用 K0-B high-risk probes，检查
+penultimate representation 中的 carrier-stable、matched-low-specific、cross-bank transferable
+nuisance subspace。入口与冻结 20-gate 协议：
+
+```text
+docs/experiments/current/CLE_K1_B0_CDR_SNR_OPENI_ZH.md
+scripts/openi_cle_k1_b0_cdr_snr_entry.py --mode=formal
+```
+
+本地 INSPECT/tiny smoke 已通过；继续使用原 Phase-B0 510.46 MiB OpenI 数据集，不重新上传，
+不读取标签/evaluation assets，不训练、不写 checkpoint。正式结果出来后停止并独立复算。
+
+2026-09-02 K0-B v2 formal已强通过，并启动K1-A head-only SDMN checkpoint surgery：
+
+```text
+docs/experiments/current/CLE_K1_SDMN_HEADONLY_OPENI_ZH.md
+fedprime/engine/cle_sdmn_headonly.py
+scripts/run_cle_k1_sdmn_headonly.py
+scripts/openi_cle_k1_sdmn_headonly_entry.py
+tests/test_cle_sdmn_headonly.py
+```
+
+K1-A复用冻结checkpoint、PRIME Bank A/B和K0-B风险，在互斥discover/surgery/holdout公共
+载体上只修改分类头，并包含Direction-Sham、sensitivity-matched Random-Probe与Generic
+Invariance对照。INSPECT通过，聚焦测试20/20通过，本地tiny smoke两次确定性一致，判定仅为
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`。Formal入口保持锁定；下一步先OpenI smoke，再运行
+不读取DSA/WCCA/CFG的数值calibration。
+
+K0-B v2入口与结果：
+
+```text
+docs/experiments/current/CLE_GENERIC_PROBE_K0B_OPENI_ZH.md
+fedprime/augmentations/frozen_prime.py
+fedprime/engine/cle_generic_probe_gate.py
+scripts/analyze_cle_generic_probe_k0b.py
+scripts/openi_cle_generic_probe_k0b_entry.py
+tests/test_cle_generic_probe_k0b.py
+```
+
+K0-B 冻结两套各64个 PRIME recipe 的完整state，检测跨500/500公共载体稳定且类别选择性的
+方向风险；primary不读取corruption taxonomy、severity、family、binding或公共标签。聚焦
+K0-B+K0-A regression为14/14 PASS。正式OpenI及独立response重算均为
+`GO_TO_K1_CHECKPOINT_SURGERY`：HFL/Local R ratio为`4.90/4.39`，各4/4客户端同向，两套bank
+均独立复现。该结果只授权K1-A最小机制手术，不授权完整训练。
+
+2026-09-01 CLE-HFL 的当前唯一活动门槛是零训练 K0-A public-carrier transfer oracle：
+
+```text
+docs/experiments/current/CLE_PUBLIC_CARRIER_K0A_OPENI_ZH.md
+```
+
+它复用 H0/H9/L0/L9 的16个 round-40 checkpoint，在不使用 CIFAR-100 标签的1,000个固定
+公共载体上施加16个 oracle operators，检验跨载体类别方向矩能否恢复隐藏binding。正式
+结果为 `GO_TO_K0_B`：HFL 与 Local 各10/10冻结门槛通过，报告位于：
+
+```text
+deliverables/cle_public_carrier_k0a_20260901/RESULT_SUMMARY_ZH.md
+```
+
+K0-A 不训练模型、不修改通信，也不复活已失败的 PNCB bridge；它只允许下一步设计
+taxonomy-free K0-B generic probes，不允许直接进入DME/K1训练。
+
+2026-08-31 Phase-B0 formal 已完成，当前 PNCB bridge 正式 `NO-GO`：
+
+```text
+deliverables/cle_public_canonicalization_phase_b0_20260831/RESULT_SUMMARY_ZH.md
+```
+
+G1/G4/G6/G7通过，G2/G3/G5失败。PNCB保住语义，但同源跨operator方差反而增加12.23%，
+family可分性仅下降9.47%，Local retrieval也未达门槛。禁止进入Phase-B1分类器/SCDW训练，
+禁止用SCDW权重或仅调epoch/channel/loss救当前bridge。
+
+2026-08-31 生成供 GPT Web 讨论的 CLE-PNCB-SCDW 当前课题完整交接稿：
+
+```text
+docs/research/status/CLE_PNCB_SCDW_CURRENT_RESEARCH_HANDOFF_FOR_GPTWEB_2026_08_31_ZH.md
+```
+
+该文档自包含地记录了课题定义、RAHFL/PEW转向原因、Phase-A0/A1a/PIDR证据、PNCB与SCDW
+数学设计、最弱假设、Phase-B0数据与七项冻结门槛、Smoke结果、Phase-B1条件计划、论文边界
+和建议外部AI重点攻击的八个问题。正式Phase-B0结果返回前，当前状态仍为
+`PNCB-SCDW CONDITIONAL GO / NOT YET EVALUATED`。
 
 2026-08-30 完成 PIDR 之后的最小干预桥与训练目标纸面设计：
 
@@ -29,7 +142,8 @@ scripts/openi_cle_public_canonicalization_phase_b0_entry.py
 
 Phase-B0 当前 focused tests 为 `7/7`，4图/1-batch CPU 训练器运行 smoke 已通过。Phase-A1a
 的 H0/H9/L0/L9 四臂16个 round-40 最终 checkpoint 已严格加载，并连同1000张冻结评估源图
-和 CIFAR-100 公共 tar 打成单一瘦身输入包；OpenI 端到端 smoke 与正式运行均尚未启动。
+和 CIFAR-100 公共 tar 打成单一瘦身输入包。OpenI 端到端 smoke 已于2026-08-30通过，判定
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`；正式 bridge-only 运行仍未启动，等待用户批准。
 
 2026-08-30 完成 CLE local-first directional shortcut 的定义、不可识别性反例、最弱干预
 假设与 2024--2026 方法碰撞审计：

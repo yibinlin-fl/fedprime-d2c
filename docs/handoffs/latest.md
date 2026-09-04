@@ -1,6 +1,256 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-08-30
+Updated: 2026-09-04
+
+## Current Objective: K1-C CRSF Checkpoint Surgery
+
+### Cost stop and immediate next action
+
+K1-C0 was an observational prerequisite, not a prediction that K1-C will work. It established that
+strong-CLE H9/L9 checkpoints have a reproducible concentration of generic-intervention response
+directions, thereby giving CRSF a measured target. K1-C is the separate causal test: after changing
+late-backbone parameters to reduce that concentration, do unseen concentration and real CLE metrics
+also improve?
+
+The exact K1-C protocol (`2,000 carriers x 64 probes`, exact two-pass full-carrier gradients and
+mandatory post-update rescoring) is only a one-time mechanism validator. It is not an acceptable
+training-loop implementation of the final method. K0-B remains a current offline audit component;
+this is a present method-design choice, not a permanent prohibition on every future lightweight
+detector. The immediate efficiency concern is exact K1-C and any future CRSF training integration.
+
+The first OpenI calibration attempt spent roughly two hours with near-zero accelerator utilization
+and did not reach a scientific calibration result. Do not restart full calibration. The only next
+OpenI action is a small platform benchmark, after its dedicated benchmark mode is implemented and
+locally checked. It must run one bounded context (ResNet10 / H9 / Bank A) and report PRIME generation,
+prefix construction, exact moments, exact gradient, post-update objective, anchor-KL, peak storage,
+projected full-calibration wall time and GPU-hours. The user must review that estimate before any
+paid full calibration starts.
+
+No formal K1-C result exists. No CRSF training integration is authorized. If the causal experiment
+eventually passes, a separate compression/efficiency gate must show that a stochastic CRSF
+approximation has zero inference overhead, approximately zero communication overhead, bounded memory,
+and acceptable training overhead. The exact `2,000 x 64` routine must never be inserted per round.
+
+K1-C0 has formally passed all 10 response-spectrum gates. Strong-CLE H9/L9 checkpoints show a
+large response-spectrum concentration increase relative to H0/L0 without comparable clean-feature
+collapse. The frozen next question is causal: does selectively flattening this generic intervention-
+response spectrum reduce unseen concentration and the real CLE shortcut?
+
+```text
+spec:    docs/experiments/current/CLE_K1_C_CRSF_SURGERY_OPENI_ZH.md
+engine:  fedprime/engine/cle_crsf_surgery.py
+runner:  scripts/run_cle_k1_c_crsf_surgery.py
+OpenI:   scripts/openi_cle_k1_c_crsf_surgery_entry.py
+tests:   tests/test_cle_crsf_surgery.py
+```
+
+The real model graph was inspected. ResNet10/12 expose only `layer4`, ShuffleNet only `layer3`, and
+MobileNetV2 only its last inverted-residual block (`layers.16`); all normalization parameters and
+statistics, early backbone parameters, classifier and projector remain frozen. The four exact
+two-pass moment gradients (CRSF, SharedMean, Generic Invariance, RawSpec) match direct tiny full-
+graph autograd under the frozen `1e-5 / 0.99999` tolerances. Local H9-client0 AB smoke passed all
+17 execution checks with verdict `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`. Only late-block deltas were
+written; the frozen-prefix cache is local scratch and is never packaged.
+
+The first OpenI calibration implementation was judged unsuitable after showing near-zero accelerator
+utilization and no useful progress for roughly two hours; the user should stop that old task if it is
+still running. This is an execution NO-GO, not a scientific CRSF result.
+The exact protocol is unchanged, but the runner now precomputes model-independent PRIME inputs once,
+uses one overwrite-style prefix workspace, shares the common step-1 exact state across LR candidates,
+carries every accepted post-update moment into the next exact VJP, emits scoped heartbeats, records
+timings, and atomically checkpoints LR/context progress for resume. The mandatory full-carrier
+post-update objective and anchor-KL evaluations remain intact for every accept/rollback decision.
+
+The former instruction to rerun full calibration is superseded by the 2026-09-04 cost stop above.
+First implement and verify the bounded platform benchmark; do not invoke calibration yet. Formal
+remains locked. Do not run full training, change communication, widen the trainable block, or tune
+any scientific gate.
+
+## Previous Objective: K1-B0 CDR-SNR Shared Representation Localization
+
+## Current Objective: K1-B0 CDR-SNR Shared Representation Localization
+
+K1-A head-only SDMN formal is now frozen as `NO_GO_DIRECTIONAL_SURGERY`; do not tune or revive it.
+K0-B's taxonomy-free detector remains valid, but changing only the classifier head did not close the
+detect -> intervene -> CLE reduction loop.
+
+The active stage is the zero-training K1-B0 localization gate. It asks whether the frozen K0-B
+high-risk PRIME probes expose a carrier-stable, high-vs-energy-matched-specific and cross-bank
+transferable nuisance subspace in the penultimate representations of H9/L9, stronger than matched
+H0/L0. It does not yet perform SNR surgery or full FL training.
+
+```text
+spec:      docs/experiments/current/CLE_K1_B0_CDR_SNR_OPENI_ZH.md
+engine:    fedprime/engine/cle_shared_nuisance_routing.py
+analyzer:  scripts/analyze_cle_k1_b0_cdr_snr.py
+OpenI:     scripts/openi_cle_k1_b0_cdr_snr_entry.py --mode=formal
+selection: fedprime/augmentations/assets/cle_k1_b0/selection_manifest.json
+tests:     tests/test_cle_shared_nuisance_routing.py
+```
+
+The selection manifest was reconstructed from the independently audited K0-B formal archive
+`1E02A16C...88608`; it freezes H9/L9 active probes, top-20% rho probes and weights for both 64-recipe
+banks. Local INSPECT verified all 16 frozen checkpoints, both bank hashes, D_select hash
+`731B8CFF...F6CA`, and D_rep hash `321C0910...40EE`. The tiny local smoke passed with verdict
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`; no labels/evaluation assets were read and no optimizer,
+backward, training or checkpoint write occurred.
+
+Next action: run the unchanged 535,256,689-byte Phase-B0 OpenI dataset with
+`scripts/openi_cle_k1_b0_cdr_snr_entry.py --mode=formal`. Download the compact
+`cle_k1_b0_cdr_snr_seed0_formal_outputs.tar.gz`, audit all 20 frozen gates, and stop. A GO only
+authorizes design of cross-bank SNR surgery; it does not authorize starting it automatically.
+
+## Latest Formal Gate: K0-B v2 Taxonomy-Free Generic Probe
+
+K0-A formally passed and K0-B v2 is now implemented without training or checkpoint writes. Its
+primary object is carrier-stable plus class-selective response, not ordinary split-direction
+reproducibility:
+
+```text
+spec:       docs/experiments/current/CLE_GENERIC_PROBE_K0B_OPENI_ZH.md
+bank code:  fedprime/augmentations/frozen_prime.py
+statistics: fedprime/engine/cle_generic_probe_gate.py
+analyzer:   scripts/analyze_cle_generic_probe_k0b.py
+OpenI:      scripts/openi_cle_generic_probe_k0b_entry.py --mode=smoke
+tests:      tests/test_cle_generic_probe_k0b.py
+```
+
+Two complete 64-recipe PRIME banks are versioned under
+`fedprime/augmentations/assets/cle_generic_probe_k0b/`. Their preregistered canonical hashes are
+`6CAE529D...3DC01` and `4A53497E...BF4E`. Every primitive composition, spectral state,
+displacement field, color coefficient, filter kernel, strength, mixture weight and depth is fixed
+before inference and reused for every carrier.
+
+The formal OpenI result was independently verified from all 16 raw response tensors and is
+`GO_TO_K1_CHECKPOINT_SURGERY`. HFL and Local each passed all eight frozen gates; generic-fragility
+kill was false. HFL K delta was `+0.252727`, combined R ratio `4.901569`, and both bank ratios were
+`5.739226/4.317300`. Local K delta was `+0.232752`, combined R ratio `4.385780`, and both bank ratios
+were `5.166668/4.094945`. Both systems had 4/4 positive-R clients. Manual S/Dcf/K/R recomputation
+matched the returned metrics to maximum absolute error `5.56e-17`.
+
+```text
+result:  cle_generic_probe_k0b_seed0_formal_outputs.tar.gz
+bytes:   234888047
+sha256:  1E02A16C765D8AB976A692D444FA9DAEBE38C30F8279CD6DCCFC49D1BFF88608
+report:  deliverables/cle_generic_probe_k0b_20260902/RESULT_SUMMARY_ZH.md
+```
+
+K1-A head-only SDMN is now implemented through INSPECT, smoke and numerical-calibration modes:
+
+```text
+spec:    docs/experiments/current/CLE_K1_SDMN_HEADONLY_OPENI_ZH.md
+engine:  fedprime/engine/cle_sdmn_headonly.py
+runner:  scripts/run_cle_k1_sdmn_headonly.py
+OpenI:   scripts/openi_cle_k1_sdmn_headonly_entry.py --mode=smoke
+tests:   tests/test_cle_sdmn_headonly.py
+```
+
+INSPECT verified all 16 checkpoints, both frozen banks, CIFAR-100 and the existing CLE evaluator
+assets. Focused K1/K0 regression is 20/20 PASS. The local H9-client0/A-to-B tiny smoke ran Frozen,
+Targeted, Direction-Sham, Random-Probe and Generic-Invariance, wrote full checkpoints/traces/hashes,
+kept every anchor KL below 0.003, and reproduced identical split/selection/features/metrics/traces in
+a second run. Its verdict is only `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
+
+The OpenI smoke is now independently audited and passed: archive/manifest hashes matched, public
+split overlap was zero, all four surgery objectives decreased, maximum anchor KL was `0.002898`,
+all checkpoints changed only `linear.weight/bias`, and raw unseen responses reproduced reported
+S/Dcf/K/R exactly. Verdict remains `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
+
+The OpenI calibration artifact was independently audited. All 16 client/fold cases passed at
+`1e-4`, two passed at `3e-4`, and none passed at `1e-3`. The raw result had a JSON naming collision
+where the per-step LR trace overwrote the candidate scalar; the underlying traces are complete and
+the scalar is unambiguously recoverable, so no rerun is required. The corrected schema and frozen
+per-client/fold LR values are versioned in
+`configs/cle_k1_sdmn_headonly_calibration_seed0.json`.
+
+Formal K1-A is now implemented with Adam, 10 steps, anchor KL `<=0.02`, backtracking factor `0.5`
+and at most 12 rollbacks. Its 2,000-image surgery pool preserves the exact calibration hash after
+adding a disjoint 2,000-image holdout. It runs Frozen/Targeted/Direction-Sham/Random-Probe/Generic-
+Invariance for H9/L9 and both A-to-B/B-to-A folds. Taxonomy-free unseen-bank artifacts are written
+and hashed before the CLE binding, true corruption grid, DSA/WCCA/CFG or task labels are opened.
+
+Next action: run the unchanged Phase-B0 OpenI dataset with
+`scripts/openi_cle_k1_sdmn_headonly_entry.py --mode=formal`. Stop when K1-A returns one of its three
+frozen verdicts; do not start full training, modify communication, or revive PNCB/PEW/BER.
+
+## Latest Formal Gate: K0-A Public-Carrier Transfer Oracle
+
+The CLE-HFL topic remains active, but PNCB-SCDW remains stopped. The only current method-candidate
+gate is a zero-training test of the cross-carrier directional moment:
+
+```text
+spec:     docs/experiments/current/CLE_PUBLIC_CARRIER_K0A_OPENI_ZH.md
+engine:   fedprime/engine/cle_public_carrier_moment.py
+analyzer: scripts/analyze_cle_public_carrier_k0a.py
+OpenI:    scripts/openi_cle_public_carrier_k0a_entry.py --mode=smoke
+tests:    tests/test_cle_public_carrier_k0a.py
+```
+
+K0-A reuses the existing 535,256,689-byte Phase-B0 input archive containing CIFAR-100 and all 16
+frozen round-40 H0/H9/L0/L9 checkpoints. It selects 1,000 CIFAR-100 train images with seed 20260901,
+does not use their labels, and applies the existing 16 operators at severity 3 only as an oracle
+mechanism audit. Blind centered class-vs-rest logit responses are saved and hashed before client-class
+binding and operator-family truth are opened for scoring.
+
+Focused regression and local smoke passed. The formal OpenI result was independently recomputed and
+is `GO_TO_K0_B`: HFL and Local each passed all 10 preregistered gates. H9/H0 mAP was
+`0.796627/0.406176` (delta `+0.390451`); L9/L0 was `0.811235/0.411342` (delta
+`+0.399894`). Both systems had 4/4 positive clients and both null tests at `p=0.000999001`.
+Directional-strength and coherence bootstrap CI95 lower bounds were strictly positive.
+
+```text
+result:  cle_public_carrier_k0a_seed0_formal_outputs.tar.gz
+bytes:   48651705
+sha256:  AA260672FED05C991DDEF2308342BD88150CA8A36FD8366EF9A9E85B2E523168
+report:  deliverables/cle_public_carrier_k0a_20260901/RESULT_SUMMARY_ZH.md
+```
+
+The next action is K0-B taxonomy-free generic-probe design. K0-A used the true operator bank and
+binding only for oracle scoring, so it does not authorize DME/K1 training. Preserve the local-first
+interpretation; the result does not support communication amplification.
+
+Full self-contained handoff for GPT Web discussion:
+
+```text
+docs/research/status/CLE_PNCB_SCDW_CURRENT_RESEARCH_HANDOFF_FOR_GPTWEB_2026_08_31_ZH.md
+```
+
+It records the problem, evidence chain, PNCB/SCDW mathematics, weakest assumptions, Phase-B0 data
+and gates, smoke audit, conditional Phase-B1 design, claim boundaries and eight external-review
+questions. A formal-result addendum now supersedes its earlier pending status.
+
+## Latest Formal Result: PNCB Bridge NO-GO
+
+The frozen Phase-B0 formal run completed and was independently checked from its returned probability
+cache:
+
+```text
+result:  cle_public_canonicalization_phase_b0_seed0_formal_outputs.tar.gz
+bytes:   31788115
+sha256:  8F824A6EF21AFDF8E8CF089530786882FE684504079C17160DFD2205D140BE2C
+verdict: NO_GO_PNCB_BRIDGE
+
+PASS: G1 semantic preservation, G4 HFL retrieval,
+      G6 relative overlay margin, G7 clean artifact null
+FAIL: G2 old-nuisance contraction, G3 family separability reduction,
+      G5 Local retrieval
+```
+
+The PNCB completed all 10 epochs and its training loss decreased by 18.77%, so the failure is not an
+execution failure. It preserved semantics (worst canonical accuracy delta `-0.5875pp`) but increased
+within-source cross-operator variance by `12.2267%` instead of contracting it by at least `25%`.
+Family separability fell by only `9.4729%` versus the frozen `30%` requirement. Local gamma9
+retrieval was mAP `0.593924`, hit `0.65`; both missed their gates. G6 passed only because overlay was
+even more dispersive; it cannot override absolute G2 failure.
+
+Decision: stop the current PNCB-SCDW route. Do not implement or run Phase-B1 classifier/SCDW A/B/C,
+do not tune SCDW weights, and do not rescue the bridge by epoch/channel/loss-only tuning. SCDW as an
+abstract object was not directly trained, but its required contraction bridge is absent. Any future
+bridge must be a new paper candidate with a new pre-result argument and gate, not a renamed revival.
+
+```text
+report: deliverables/cle_public_canonicalization_phase_b0_20260831/RESULT_SUMMARY_ZH.md
+```
 
 ## Latest Paper Design: Public Canonicalization + Signed Directional Withdrawal
 
@@ -75,9 +325,25 @@ entry:  scripts/openi_cle_public_canonicalization_phase_b0_entry.py --mode=smoke
 It contains only the frozen 1,000-source evaluation arrays, CIFAR-100 public tar, 16 final
 checkpoints and a per-file hash manifest; private Phase-A1a training arrays and round-12 duplicate
 weights are excluded. The OpenI entry defaults to smoke and verifies both the archive hash and every
-manifest file before execution. The next action is one OpenI end-to-end smoke. It is execution-only;
-do not interpret its metrics. A formal `--mode=formal` run still requires the smoke to pass and the
-user to approve it. No Phase-A1a retrain is required.
+manifest file before execution.
+
+The OpenI end-to-end smoke passed on 2026-08-30:
+
+```text
+result:  cle_public_canonicalization_phase_b0_seed0_smoke_outputs.tar.gz
+bytes:   3344564
+sha256:  C57D3A9BE84E04FDDBB35402DF011B59294D78B532951346476182A891E81E54
+verdict: SMOKE_ONLY_NO_SCIENTIFIC_DECISION
+```
+
+All 19 manifest files verified, all 16 classifiers ran on CUDA, the temporary PNCB completed exactly
+one epoch/two batches, and the analyzer used 20 balanced sources, all 16 operators and severity 3.
+Independent NPZ inspection found all 12 probability tensors at shape `(4,20,16,10)`, all values
+finite and maximum probability-sum error `2.38e-7`. Smoke bridge metrics are not scientific evidence:
+the temporary two-batch PNCB showed semantic loss and no nuisance contraction, which is expected to
+remain uninterpretable under the frozen smoke rule. The next action is user approval for one formal
+`--mode=formal` bridge-only run. Do not alter the seven gates or start classifier/SCDW training. No
+Phase-A1a retrain is required.
 
 ## Latest Zero-Training Gate: PIDR Recovers Hidden Binding Under Oracle Probes
 

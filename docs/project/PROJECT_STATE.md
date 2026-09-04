@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04
 
-## Current Implementation State: Post-NO-GO P1 Complete - 2026-09-04
+## Current Implementation State: P3-A Complete / No Method Promotion - 2026-09-04
 
 ```text
 K0-B taxonomy-free offline audit:        FORMAL GO; complete
@@ -18,8 +18,18 @@ next paid action:                        NONE FOR CRSF
 Post-NO-GO P0 CPU audit:                COMPLETE
 Post-NO-GO P1 class-readout audit:      COMPLETE
 P1 mechanism status:                   CANDIDATE_MECHANISM_FOR_NEXT_AUDIT
+P2 class-visible routing:              OBSERVATIONAL POSITIVE
+P3-A clean-base completion:            COMPLETE / 16 OF 16 CONTEXTS
+P3-A routing-identity causal audit:    NO_GO_TO_METHOD
+P3-B routing-strength audit:           BLOCKED
 new mitigation implementation:          NOT AUTHORIZED
 ```
+
+P3-A now has complete matched clean/corrupt output artifacts. The clean-only RTX 3050 export matched
+sealed V100 references within `5.36e-7`. The subsequent CPU-only causal audit preserved all frozen
+geometry and K0-B-risk invariants but failed the decisive HFL targeting gate: H9 targeted percentile
+was `60.1%` against 1000 random derangements (required `<=10%`). L9 alone passed. Do not promote P2
+to a method, start P3-B, tune class permutations or run training.
 
 P1 adds a CPU-only state-dict/linear-algebra analyzer. It validates the frozen classifier and saved
 representation dimensions, then computes readout-weighted response components and explicit

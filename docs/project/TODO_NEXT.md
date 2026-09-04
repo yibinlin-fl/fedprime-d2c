@@ -1,5 +1,25 @@
 # TODO Next
 
+## Completed - P3-A Routing-Identity Causal Audit - 2026-09-04
+
+The missing clean base was completed with clean-only local inference and matched sealed references.
+The full 1000-derangement P3-A audit then returned:
+
+```text
+CLASS_IDENTITY_CAUSAL_BUT_GENERIC_PROFILE_NOT_TARGETING
+status: NO_GO_TO_METHOD
+```
+
+H9 failed the decisive targeted-vs-random gate (`60.1%` percentile, required bottom 10%), although
+all invariance, reduction, client-direction and control gates passed. L9 alone cannot promote an HFL
+method. Do not run P3-B, tune the routing profile/permutation, add seeds, or start training. The next
+work, if requested, is a paper-level decision using existing evidence; there is no authorized GPU or
+OpenI experiment.
+
+```text
+deliverables/post_no_go_p3a_routing_identity_causal_audit_after_clean_completion_20260904/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md
+```
+
 ## Completed - Post-NO-GO Class-Readout Audit P1 - 2026-09-04
 
 P1 supports `READOUT_WEIGHTED_GEOMETRY_TRACKS_DSA` only as a candidate mechanism. Do not translate

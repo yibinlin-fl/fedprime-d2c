@@ -1,0 +1,12 @@
+{
+  "stage": "TAXONOMY_FREE_INTERVENTION_SEALED_BEFORE_ORACLE",
+  "created_utc": "2026-09-04T12:48:47.229403+00:00",
+  "definition": "z_counterfactual = z_clean + P_pi P_C(z_corrupt-z_clean)",
+  "identity_reconstruction_max_abs_probability_error": 2.331539372679714e-07,
+  "random_outputs": "deterministically regenerated in chunks from sealed clean/response/permutations",
+  "targeted_output_sha256": "5F7E5FDE2127CDB9C32F64E1717CBE249270EEC1F41BCA11A73E4175855EB782",
+  "invariance_csv_sha256": "BC32389D27B33BDDCB8F929F0D4A583BA8BDEDA6D75F0AC015B47A7A0B823062",
+  "permutation_manifest_sha256": "F00FFC02AAB4F7DEB9E8B38F5C214FE645E3AF274E1CAC00676882A8031C977A",
+  "binding_read_before_seal": false,
+  "dsa_read_before_seal": false
+}

@@ -2,37 +2,37 @@
 
 Updated: 2026-09-04
 
-## Latest Decision: P3-A Blocked by Missing Matched Clean Outputs
+## Latest Decision: P3-A Complete / Generic Profile Not a Valid HFL Targeter
 
-The frozen P3-A Stage-0 artifact audit is complete. It used CPU file/schema/hash inspection only and
-ran no checkpoint, model inference, permutation, counterfactual, DSA recomputation, GPU or OpenI job.
+The user authorized the exact missing-data completion: the same 1,000 Phase-A1a CIFAR-10 clean
+sources were forwarded through all 16 H0/H9/L0/L9 round-40 checkpoints. This was clean-only local
+RTX 3050 inference: no training, backward, corruption/PRIME generation or checkpoint modification.
+Disabling Ampere TF32 matched the sealed V100 reference within `5.36e-7` maximum probability error,
+with 100% argmax agreement. The output is `4 x 4 x 1000 x 10`, SHA256
+`4D24CFC...0A7A7F`.
+
+The original frozen P3-A then ran as a pure CPU output-space counterfactual. K0-B Bank-A + carrier
+half Ua alone defined each arm/client rank-reversal class permutation. Seed `20260904` generated
+1,000 unique random derangements per arm/client before binding, corruption family or DSA were read.
+All response magnitude/geometry/K0-B-risk invariants passed; maximum error was `3.64e-10`.
 
 ```text
-verdict: INSUFFICIENT_EXISTING_ARTIFACTS
-status:  STOP_BEFORE_PERMUTATION_OR_ORACLE_EVALUATION
+verdict: CLASS_IDENTITY_CAUSAL_BUT_GENERIC_PROFILE_NOT_TARGETING
+status:  NO_GO_TO_METHOD
 ```
 
-Phase-A1a has the complete H0/H9/L0/L9 x four-client real-corruption probability grid but did not
-save paired clean outputs. K1-C-Minimal saved valid paired clean/corrupt probabilities only for H9/L9
-clients 0 and 3: 4/16 required contexts, zero H0/L0 controls and at most three functionally unique
-contexts because H9/L9 client0 is duplicated. K0-A cannot fill the gap because its base logits use
-different CIFAR-100 public carriers; K0-B contains generic PRIME rather than real-corruption views.
-
-All relevant probabilities are finite and strictly positive, so centered logits are recoverable
-where a clean/corrupt pair exists. A missing clean view cannot be reconstructed from corrupted views.
-Using an operator-average surrogate base or joining different carrier domains would change the
-frozen estimand and is prohibited.
-
-P2 therefore remains observationally positive; P3-A has not scientifically failed or passed. No
-targeted/random permutation was generated, and the frozen protocol forbids automatically starting
-new inference. If the user later authorizes gap filling, first design and cost a clean-logit-only
-export for the exact 1,000 CIFAR-10 sources and all 16 round-40 checkpoints; do not regenerate the
-existing 16 corruption views.
+H9 DSA changed `0.204270 -> -0.013220` and L9 `0.205189 -> -0.061513`, with 4/4 clients positive.
+However, the decisive HFL targeting gate failed: H9 targeted was at random-null percentile `60.1%`,
+not the required bottom 10%. L9 alone was at `0.0%`. Thus changing class identity strongly changes
+signed DSA, but the P2 taxonomy-free profile does not identify a specifically harmful HFL routing
+assignment better than random. P2 remains an observational descriptor only. Do not run P3-B, tune
+the permutation/profile, design a routing loss or start training.
 
 ```text
-report: deliverables/post_no_go_p3a_routing_identity_causal_audit_20260904/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md
-inventory: deliverables/post_no_go_p3a_routing_identity_causal_audit_20260904/artifact_availability.md
-auditor: scripts/audit_post_no_go_p3a_artifact_availability.py
+spec: docs/experiments/archive/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT_ZH.md
+clean exporter: scripts/run_p3a_clean_base_completion.py
+analyzer: scripts/analyze_post_no_go_p3a_routing_identity.py
+report: deliverables/post_no_go_p3a_routing_identity_causal_audit_after_clean_completion_20260904/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md
 ```
 
 ## Latest Decision: P2 CLE-Specific Class-Visible Routing Audit Complete

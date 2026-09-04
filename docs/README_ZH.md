@@ -2,6 +2,23 @@
 
 Updated: 2026-09-04
 
+2026-09-04 已完成 P3-A clean-base completion 与 Matched Routing-Identity Causal Audit。仅新增
+Phase-A1a 同一 1000 张 clean source × 16 个 round-40 checkpoints 的 clean forward；本地
+benchmark 三倍保守估时 3.05 分钟，实际正式导出约 21 秒。clean output 与封存 V100 参考最大
+差 `5.36e-7`、argmax 全一致。随后纯 CPU P3-A 保持 response norm/Gram/spectrum/chi/energy
+及 K0-B risk 不变，只置换 class coordinate。H9/L9 DSA 虽下降 `0.21749/0.26670`，但 H9
+targeted 仅处于 random-null 第 `60.1%` 百分位，未通过底部 10% targeting gate。正式结论：
+`CLASS_IDENTITY_CAUSAL_BUT_GENERIC_PROFILE_NOT_TARGETING / NO_GO_TO_METHOD`。不进入 P3-B，
+不设计 routing loss，不训练。入口与报告：
+
+```text
+docs/experiments/archive/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT_ZH.md
+scripts/run_p3a_clean_base_completion.py
+scripts/analyze_post_no_go_p3a_routing_identity.py
+tests/test_p3a_routing_identity.py
+deliverables/post_no_go_p3a_routing_identity_causal_audit_after_clean_completion_20260904/P3A_ROUTING_IDENTITY_CAUSAL_AUDIT.md
+```
+
 2026-09-04 完成 P1 Class-Readout Routing 纯离线审计。现有 classifier hash、特征维度和
 K1-C-Minimal moments/Gram 全部严格匹配。CRSF 后 `Wc` 读取方向和 class×probe routing
 几乎不旋转，但 exploratory readout-weighted chi 对 DSA 的变化方向明显比 global chi 更一致；

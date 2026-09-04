@@ -2,6 +2,29 @@
 
 Updated: 2026-09-04
 
+## P3-A Clean Completion + Routing-Identity Causal Audit - 2026-09-04
+
+用户授权只补 Phase-A1a 同一 1000 张 CIFAR-10 clean source × H0/H9/L0/L9 四臂四客户端
+round-40 checkpoints 的 clean pre-softmax output。实现先验证输入/checkpoint hash 和 source
+顺序，再关闭 RTX 3050 TF32 以匹配原 V100 数值。32-image smoke 与封存参考最大概率差
+`2.98e-7`；正式输出 shape `4x4x1000x10`，SHA256
+`4D24CFC1E6A610F721C473CFAED879FAD1751D7151DAC0BF11FE70F7AB0A7A7F`，四个现有参考的最大差
+`5.36e-7`、argmax agreement 全为 1。未训练、未生成 corruption/PRIME、未改 checkpoint。
+
+缺口解除后执行冻结 P3-A。targeted permutation 仅由 K0-B Bank-A + Ua 的 P2 `g_c` 做
+rank reversal；seed `20260904` 为每个 arm/client 预生成 1000 个 unique derangements，并在
+读取 binding/family/DSA 前封存。output-space intervention 保持 norm、pairwise Gram、singular
+spectrum、chi、raw energy 和 K0-B risk；最大不变量误差 `3.64e-10`，random K0-B 误差
+`1.67e-16`。
+
+H9 DSA `0.204270 -> -0.013220`（reduction `0.217490`, 4/4 clients），但 targeted 只处于
+random-null 第 `60.1%` 百分位，失败 frozen bottom-10% gate。L9 `0.205189 -> -0.061513`
+（reduction `0.266702`, 4/4），targeted percentile `0.0%`，单独通过。H0/L0 control 无新增
+`>0.02` DSA。最终 verdict：`CLASS_IDENTITY_CAUSAL_BUT_GENERIC_PROFILE_NOT_TARGETING`，状态
+`NO_GO_TO_METHOD`。这说明 class identity 会改变 signed DSA，但 P2 generic profile 没有在
+HFL 中提供优于随机的有害路由定位。P2 保留为 observational descriptor；禁止进入 P3-B、
+调 permutation、设计 routing-strength loss 或启动训练。
+
 ## P3-A Matched Routing-Identity Artifact Gate - 2026-09-04
 
 P3-A 在任何 permutation/oracle evaluation 前完成 Stage-0 资产审计。Phase-A1a round-40 有

@@ -1,0 +1,140 @@
+{
+  "files": {
+    "invariance_audit.csv": {
+      "bytes": 3254,
+      "sha256": "BC32389D27B33BDDCB8F929F0D4A583BA8BDEDA6D75F0AC015B47A7A0B823062"
+    },
+    "oracle_gate_summary.json": {
+      "bytes": 3521,
+      "sha256": "EFDEDDC54ADAB27F8FD10BBFE0593F035336FDAABE55A4F689E57859C4C08575"
+    },
+    "per_client_results.csv": {
+      "bytes": 2173,
+      "sha256": "CDED54B52DBA9830C7F825A7157E52FAA61D3D7F12F6EB31E1F7DDFFCBA7419A"
+    },
+    "permutation_manifest.json": {
+      "bytes": 2635,
+      "sha256": "F00FFC02AAB4F7DEB9E8B38F5C214FE645E3AF274E1CAC00676882A8031C977A"
+    },
+    "permutations.npz": {
+      "bytes": 114682,
+      "sha256": "6B6362316ADAACC4FEBB585D60CCC3D9AA95740F4AA6C5E256D841146DE277A9"
+    },
+    "random_derangement_null.csv": {
+      "bytes": 465243,
+      "sha256": "244C8ADD9DA80AEA6B3F09BED13089CB65E4656521A4FA5021D15590270DE4B1"
+    },
+    "targeted_counterfactual_probabilities.npz": {
+      "bytes": 9684589,
+      "sha256": "5F7E5FDE2127CDB9C32F64E1717CBE249270EEC1F41BCA11A73E4175855EB782"
+    },
+    "targeted_results.csv": {
+      "bytes": 1309,
+      "sha256": "7A0EAFCCEA0B2BC20696FBEA482B9225503D25468BFBED97DF4B6C349FE87C81"
+    },
+    "taxonomy_free_intervention_manifest.json": {
+      "bytes": 747,
+      "sha256": "CCC38A16273269B2E99324FF749E70F287515043DEE05B20060A2DAD2D43DF0A"
+    },
+    "taxonomy_free_routing_profiles.csv": {
+      "bytes": 5555,
+      "sha256": "3560685ECB2655A63140AC01A7736AEA19E3B398E1ACFC4D2470E9E47DAA4457"
+    }
+  },
+  "summary": {
+    "protocol": "p3a_matched_routing_identity_v1",
+    "mode": "formal",
+    "verdict": "CLASS_IDENTITY_CAUSAL_BUT_GENERIC_PROFILE_NOT_TARGETING",
+    "status": "NO_GO_TO_METHOD",
+    "random_seed": 20260904,
+    "random_count": 1000,
+    "identity_reconstruction_max_abs_probability_error": 2.331539372679714e-07,
+    "maximum_invariance_error": 3.637978807091713e-10,
+    "maximum_random_k0b_metric_error": 1.6653345369377348e-16,
+    "arms": {
+      "h0": {
+        "identity_dsa": 0.0015228341478486312,
+        "targeted_dsa": 0.00015119924444920206,
+        "absolute_reduction": 0.001371634903399429,
+        "relative_reduction": 0.9007119418989131,
+        "positive_clients": 3,
+        "random_mean": -3.607459962201251e-05,
+        "random_std": 0.0018802550730844245,
+        "targeted_percentile": 0.537,
+        "q05": -0.00307034998976287,
+        "q10": -0.002442511429945921,
+        "q25": -0.0014532178436912988,
+        "q50": -3.820844548860779e-05,
+        "q75": 0.001325605573576404,
+        "q90": 0.0024423713549774394,
+        "q95": 0.0029143754518317407
+      },
+      "h9": {
+        "identity_dsa": 0.20427049371638853,
+        "targeted_dsa": -0.013219992835095182,
+        "absolute_reduction": 0.2174904865514837,
+        "relative_reduction": 1.064718073538243,
+        "positive_clients": 4,
+        "random_mean": -0.014649572390302285,
+        "random_std": 0.01518692608339786,
+        "targeted_percentile": 0.601,
+        "q05": -0.036009975021187836,
+        "q10": -0.032511865459383435,
+        "q25": -0.025837545428525684,
+        "q50": -0.016644649813668734,
+        "q75": -0.005634057514027447,
+        "q90": 0.005725830964085987,
+        "q95": 0.012981754570565458
+      },
+      "l0": {
+        "identity_dsa": 0.0008234009655557642,
+        "targeted_dsa": -0.0007876135808001334,
+        "absolute_reduction": 0.0016110145463558976,
+        "relative_reduction": 1.9565371086393943,
+        "positive_clients": 2,
+        "random_mean": -0.0002491484201305853,
+        "random_std": 0.0036032608115970735,
+        "targeted_percentile": 0.443,
+        "q05": -0.00641836642256688,
+        "q10": -0.004906726549463869,
+        "q25": -0.002766191594359107,
+        "q50": -0.000121096726561661,
+        "q75": 0.0023401687396397003,
+        "q90": 0.004439725356948444,
+        "q95": 0.005444858372729424
+      },
+      "l9": {
+        "identity_dsa": 0.20518927877331875,
+        "targeted_dsa": -0.061512646710550775,
+        "absolute_reduction": 0.2667019254838695,
+        "relative_reduction": 1.299784896545236,
+        "positive_clients": 4,
+        "random_mean": -0.01837057034552469,
+        "random_std": 0.01671969491955301,
+        "targeted_percentile": 0.0,
+        "q05": -0.04252683227250807,
+        "q10": -0.0386796563036223,
+        "q25": -0.03028361766583789,
+        "q50": -0.020119794878926074,
+        "q75": -0.008442715153435743,
+        "q90": 0.00475525042815829,
+        "q95": 0.010884840913318417
+      }
+    },
+    "gates": {
+      "A_invariance_le_1e_8": true,
+      "B_h9_targeted_reduction_ge_0_05": true,
+      "C_l9_targeted_reduction_ge_0_05": true,
+      "D_h9_positive_clients_ge_3": true,
+      "D_l9_positive_clients_ge_3": true,
+      "E_h9_targeted_le_random_q10": false,
+      "E_l9_targeted_le_random_q10": true,
+      "F_h0_no_new_dsa_gt_0_02": true,
+      "F_l0_no_new_dsa_gt_0_02": true
+    },
+    "notes": [
+      "H9/L9 ResNet10 checkpoints are bit-identical and are not independent replications.",
+      "This is output-space mechanism evidence, not a mitigation method or training result."
+    ]
+  }
+}

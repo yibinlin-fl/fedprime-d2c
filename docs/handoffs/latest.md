@@ -2,6 +2,45 @@
 
 Updated: 2026-09-04
 
+## Latest Decision: P2 CLE-Specific Class-Visible Routing Audit Complete
+
+P2 reused the complete K0-B round-40 H0/H9/L0/L9 response grid: four heterogeneous clients, two
+independent 64-recipe PRIME banks and two disjoint 500-carrier halves. It ran pure NumPy analysis
+only: no checkpoint load, model inference, PRIME generation, training, GPU or OpenI. All 16 response
+hashes and their Phase-B0 final-round checkpoint lineage matched. Taxonomy-free outputs were written
+and SHA256-sealed before Phase-A1a DSA and original K0-B risk were opened.
+
+```text
+CLE_SPECIFIC_CLASS_VISIBLE_ROUTING
++ CLASS_ROUTING_EXCEEDS_GENERIC_FRAGILITY
+status: CANDIDATE_MECHANISM_FOR_CAUSAL_AUDIT
+```
+
+Across all eight system/bank/half pooled slices, the mean-client H9/H0 or L9/L0 ratios were
+`1.596--2.008x` for output-spectrum concentration, `4.178--5.262x` for normalized positive
+class-routing strength and `2.176--2.614x` for class-profile concentration. Every slice had 4/4
+positive-chi clients. Strong-CLE class profiles were highly stable: minimum cross-half cosine
+`0.997664`, minimum cross-bank cosine `0.975400`. Raw centered-response energy increased only
+`2.154--3.187x`, so the normalized structural contrast is not just uniform generic fragility.
+
+The new object does not obviously reduce to K0-B R. Across all 16 observations, positive routing
+strength correlates with DSA at Pearson/Spearman `0.9810/0.8969`, compared with K0-B R at
+`0.8648/0.8616`; its residual Pearson association after K0-B R is `0.9305`. More importantly, across
+the eight matched CLE effects, positive routing-strength delta tracks DSA delta at
+`0.9459/0.9524`, while `chi_out` delta does not (`-0.0030/0.1667`). Therefore the candidate is the
+explicit stable nuisance-to-class routing profile/strength, not another scalar spectrum detector.
+
+This is still observational, single-seed and retrospective. It does not revive CRSF and does not
+authorize training or a new loss. The next permitted step is a paper-only causal-routing audit
+design that must isolate routing identity/strength from raw response magnitude and K0-B detection;
+no paid experiment is currently authorized.
+
+```text
+report:   deliverables/post_no_go_cle_specific_routing_audit_20260904/P2_CLE_SPECIFIC_ROUTING_AUDIT.md
+seal:     deliverables/post_no_go_cle_specific_routing_audit_20260904/primary_taxonomy_free_manifest.json
+analyzer: scripts/analyze_post_no_go_cle_specific_routing_p2.py
+```
+
 ## Latest Decision: Post-NO-GO Class-Readout Audit P1 Complete
 
 The final zero-cost representation audit loaded only CPU state dictionaries and existing

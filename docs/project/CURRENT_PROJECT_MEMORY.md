@@ -2,6 +2,32 @@
 
 Updated: 2026-09-04
 
+## P2 CLE-Specific Class-Visible Routing Audit - 2026-09-04
+
+P2 复用 K0-B 已保存的 H0/H9/L0/L9 `1000 x 128 x 10` carrier/probe/class logit-response，覆盖
+四个异构客户端、两套独立 64-probe Bank 和两个互斥 500-carrier half。全过程为纯 NumPy
+离线分析：未加载 checkpoint、未 forward/backward、未生成 PRIME、未训练、未使用 GPU/OpenI。
+16 个 response hash 与 Phase-B0 的 final-round-40 checkpoint lineage 全部匹配。B--E 的
+taxonomy-free 表先写入并 SHA256 封存，之后才读取 Phase-A1a round-40 DSA 和 K0-B `R_i`。
+
+对 `z_q=E[delta_q]/sqrt(E||delta_q||^2)` 构造 `Z in R^(10x64)`。八个
+system/bank/half pooled slice 中，mean-client `chi_out` 比为 `1.596--2.008x`，normalized
+positive class-routing strength 为 `4.178--5.262x`，class-profile concentration 为
+`2.176--2.614x`；每个 slice 均 4/4 客户端的 chi 同向。strong-CLE profile 最低 cross-half
+cosine `0.997664`、最低 cross-bank cosine `0.975400`。raw centered-response energy 只增加
+`2.154--3.187x`，因此强信号不能仅由“所有扰动响应整体变大”解释。
+
+incremental audit 未发现新对象明显退化为 K0-B detector。16 个 observation 上，positive
+routing strength 对 DSA 的 Pearson/Spearman 为 `0.9810/0.8969`，K0-B R 为
+`0.8648/0.8616`，在剔除 R 的线性关系后 residual Pearson 仍为 `0.9305`。八个 matched CLE
+effect 上，routing-strength delta 对 DSA delta 为 `0.9459/0.9524`；相反 `chi_out` delta
+仅 `-0.0030/0.1667`，所以不应再次把单一 spectrum scalar 当机制。
+
+允许诊断：`CLE_SPECIFIC_CLASS_VISIBLE_ROUTING + CLASS_ROUTING_EXCEEDS_GENERIC_FRAGILITY`；
+状态仅为 `CANDIDATE_MECHANISM_FOR_CAUSAL_AUDIT`。这是 single-seed retrospective association，
+不是 causal mediation 或方法 GO，不复活 CRSF，不授权训练/新 loss。下一步只能先做纸面的
+causal-routing audit 设计，分离 routing identity/strength、raw magnitude 与 K0-B detection。
+
 ## Post-NO-GO Class-Readout Routing Audit P1 - 2026-09-04
 
 P1 用 CPU 读取四个 H9/L9 client0/client3 state dict 的 `linear.weight/bias`，并与

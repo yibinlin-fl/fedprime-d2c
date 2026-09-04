@@ -1,0 +1,199 @@
+{
+  "protocol": "post_no_go_cle_specific_routing_audit_p2_taxonomy_free",
+  "created_utc": "2026-09-04T10:51:16.829378+00:00",
+  "stage": "taxonomy_free_sealed_before_oracle_association",
+  "training_performed": false,
+  "model_inference_performed": false,
+  "prime_generation_performed": false,
+  "gpu_or_openi_used": false,
+  "binding_or_oracle_read": false,
+  "dimensions": {
+    "arms": 4,
+    "clients": 4,
+    "banks": 2,
+    "carrier_halves": 2,
+    "probes_per_bank": 64,
+    "classes": 10
+  },
+  "source_inventory": {
+    "k0b_root": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal",
+    "blind_manifest": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/blind_response_manifest.json",
+    "blind_manifest_sha256": "6D4F2E40D76DCE98CFFE7809D0E3718C851FAC8747A72FFC7ED10D325457668D",
+    "config_sha256": "BF712AE98F829112A1FC7624111297DD7312D9156794BBC7E34A474D866E0461",
+    "k0b_metrics_sha256": "642C20D7460FD8C0828FC0B42FD0A1693AE79A56D34420953B58F9943F0D0350",
+    "phase_b0_manifest": "C:/Users/asus/Desktop/FedPRIME-D2C/local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/manifest.json",
+    "phase_b0_manifest_sha256": "BFA24FFAF3FAA496125E40F56ED8C24C5E5F7A6769C584939977A9790690ACD5",
+    "checkpoint_kind": "final_round_40_only",
+    "bank_a_sha256": "6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01",
+    "bank_b_sha256": "4A53497EC5DB6EC05C312E6166109FA4B52A5CC402CCE74E6EDB1253D913BF4E",
+    "public_indices_sha256": "731B8CFFDCBD241474D33B261E323F9EC11C2EA59BC7705261140A3B8572F6CA",
+    "response_records": [
+      {
+        "arm": "h0",
+        "client": 0,
+        "model": "ResNet10",
+        "checkpoint_sha256": "BA6C70B9B13F406A0FE143CFE709E192AA9B07E19F3CE5090E8257DD8638D032",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h0_client0.npz",
+        "response_bytes": 14357912,
+        "response_sha256": "3F87BBB92B409DBA6D61CDFCB8DD83D4B845B7AC69A6F84B8B9A38820763B888"
+      },
+      {
+        "arm": "h0",
+        "client": 1,
+        "model": "ResNet12",
+        "checkpoint_sha256": "80DDA5586BC06B79886106A561D18D9F606AE79970C4626E472CD2A47D3DE309",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h0_client1.npz",
+        "response_bytes": 14359680,
+        "response_sha256": "4C22DCFEBE484C5656816D65265646D708AA6A8DFAC1F2986342D0516EA1E71E"
+      },
+      {
+        "arm": "h0",
+        "client": 2,
+        "model": "ShuffleNet",
+        "checkpoint_sha256": "6B9ACB46E6331F2F11B78C42B7BA74EC093474423315C83B688FEB7F94A91C60",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h0_client2.npz",
+        "response_bytes": 14410593,
+        "response_sha256": "6935EDE3FB9B1CE40A52E8FA5F9682669881BC536EA37E998F1766809D232B81"
+      },
+      {
+        "arm": "h0",
+        "client": 3,
+        "model": "Mobilenetv2",
+        "checkpoint_sha256": "F9EADCE30078C72E61650A291B8BF007CFC4EBB795DA8D222E8435F7298DC9C5",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h0_client3.npz",
+        "response_bytes": 14393759,
+        "response_sha256": "CDC8A02C8F47B1A1866EF55D56B1F7BF46DE10462B86F533709CF5D6F3D1E899"
+      },
+      {
+        "arm": "h9",
+        "client": 0,
+        "model": "ResNet10",
+        "checkpoint_sha256": "1C1298E5B7ADBAC8DA611B039FF09031C48AA87DD7D4FB8A9AC345F1C6743D7D",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h9_client0.npz",
+        "response_bytes": 14409000,
+        "response_sha256": "CA3A80F4192F04924300FA303525AA11B2513AB247F2E1F011B514336AE47C1B"
+      },
+      {
+        "arm": "h9",
+        "client": 1,
+        "model": "ResNet12",
+        "checkpoint_sha256": "F1112290795968E21821CB4C90B940E8D1D9A82BE97287EDCC95446A37165130",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h9_client1.npz",
+        "response_bytes": 14388478,
+        "response_sha256": "7DCB3C582271E841C07B1F41B31092BDD73F749BFC95CFFA2E8A1B929D81819C"
+      },
+      {
+        "arm": "h9",
+        "client": 2,
+        "model": "ShuffleNet",
+        "checkpoint_sha256": "DEC428F808560623561C6F70180229E3CDA89337E70138D65D05B7C4BA8301B4",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h9_client2.npz",
+        "response_bytes": 14397981,
+        "response_sha256": "AC860560337A25DC7C7B3C572DC1D1E4699B090F58518F4351F97D1B3138A02B"
+      },
+      {
+        "arm": "h9",
+        "client": 3,
+        "model": "Mobilenetv2",
+        "checkpoint_sha256": "38686AE7779D618447415194DB2F9193FF05A6B27008FC746626C01B79CCF6B0",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/h9_client3.npz",
+        "response_bytes": 14402613,
+        "response_sha256": "A7ABC8727FD1FD107AB1A5F3B3BE5C909DD865FD5D2840100281A34503BBF316"
+      },
+      {
+        "arm": "l0",
+        "client": 0,
+        "model": "ResNet10",
+        "checkpoint_sha256": "BECE6F1308396EA549CB0BB8D6B99C5642370530596619E841E4015462B03A27",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l0_client0.npz",
+        "response_bytes": 14413866,
+        "response_sha256": "28130E3133A587E757143D6CA700150BA1728E4BFC1EECA6C83585A6AB16B9F1"
+      },
+      {
+        "arm": "l0",
+        "client": 1,
+        "model": "ResNet12",
+        "checkpoint_sha256": "45AEB11C3F9A87CFB6B127A77EB30609C0D9FB9A2721B58B2D50AC9781699C2A",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l0_client1.npz",
+        "response_bytes": 14402183,
+        "response_sha256": "B416E4ED0B517EB1A7F5952168B5985E79184596E64F5892091545D9FB4DA030"
+      },
+      {
+        "arm": "l0",
+        "client": 2,
+        "model": "ShuffleNet",
+        "checkpoint_sha256": "880FDA8ECB85CE9ADEB196B4052712E5EDBB0253D958C8C47C0D88071FD629B1",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l0_client2.npz",
+        "response_bytes": 14424434,
+        "response_sha256": "BB12920C45E34FDC37B027948459C4E2DA2E97FF63C9D2974E431117132FB5EC"
+      },
+      {
+        "arm": "l0",
+        "client": 3,
+        "model": "Mobilenetv2",
+        "checkpoint_sha256": "05AF1EA7A160CB6FE404549B13B59E6668F2149E1BDBB0B9B600B8B20362CAFC",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l0_client3.npz",
+        "response_bytes": 14387143,
+        "response_sha256": "3CA74289487145372A098C0DD376F52B2460A101D987906A009D1A6259E69B38"
+      },
+      {
+        "arm": "l9",
+        "client": 0,
+        "model": "ResNet10",
+        "checkpoint_sha256": "C18E9A3600FCF32ECA4C87B64B009561473CFC33E391A7076D6ABB822D7811C9",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l9_client0.npz",
+        "response_bytes": 14409000,
+        "response_sha256": "CA3A80F4192F04924300FA303525AA11B2513AB247F2E1F011B514336AE47C1B"
+      },
+      {
+        "arm": "l9",
+        "client": 1,
+        "model": "ResNet12",
+        "checkpoint_sha256": "2E9CCBAFBBC865C06A0FCD9DD75A21ADBE338336B9FAC73AE6D5EB733C94465A",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l9_client1.npz",
+        "response_bytes": 14402583,
+        "response_sha256": "DFB1E723E0A91948ED858AA7BFBB0DA4AC70CD4A0EA3E63CB8BC592C12B9CA03"
+      },
+      {
+        "arm": "l9",
+        "client": 2,
+        "model": "ShuffleNet",
+        "checkpoint_sha256": "809654B173F7DA0B3E93B9DB30DA8663A09BE3A64491BA6881926850C4ABD474",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l9_client2.npz",
+        "response_bytes": 14406216,
+        "response_sha256": "76BD9ACA3418FECC3BD19735E50A616322130E204EABCB60C2DDACA241436B97"
+      },
+      {
+        "arm": "l9",
+        "client": 3,
+        "model": "Mobilenetv2",
+        "checkpoint_sha256": "39B74BEA704C3103BE44E5301A3E646318B29F53D01FA0F442453A26CA9498B8",
+        "response_file": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/responses/l9_client3.npz",
+        "response_bytes": 14381239,
+        "response_sha256": "9A1E57990A51D68CE39B54D05D92AAE2984B8BFA5913C8D04601356847FE2F6B"
+      }
+    ]
+  },
+  "sealed_outputs": {
+    "routing_spectrum.csv": {
+      "bytes": 35958,
+      "sha256": "97B128C4152484D1A6E8457050D4C67CCFF75C91AF7BEF1101C2ECEFDDFA000C"
+    },
+    "class_routing_profiles.csv": {
+      "bytes": 116359,
+      "sha256": "2789B21E7822D4A965968281A8CD033AEA72F28A3E2EA55562341F3D18F7443E"
+    },
+    "probe_routing_assignments.csv": {
+      "bytes": 260173,
+      "sha256": "4159C39F6BE9D952579507C212F4338EC72C29D6A208D1118911EFAEFEF9C34C"
+    },
+    "cle_specificity.csv": {
+      "bytes": 42865,
+      "sha256": "350539EC0A4F3987DD01998A88D990A0B20C69FC3459D6F1BFB9884D08D3D1A7"
+    },
+    "generic_fragility_controls.csv": {
+      "bytes": 10846,
+      "sha256": "B37B2A37CD3440E66CA599C0932F9EFBA4B667A398649A98832187D9C494B75B"
+    }
+  }
+}

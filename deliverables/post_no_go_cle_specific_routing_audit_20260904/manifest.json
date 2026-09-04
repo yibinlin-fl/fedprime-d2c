@@ -1,0 +1,83 @@
+{
+  "protocol": "post_no_go_cle_specific_routing_audit_p2",
+  "created_utc": "2026-09-04T10:51:16.874407+00:00",
+  "execution": {
+    "training": false,
+    "model_inference": false,
+    "checkpoint_loaded": false,
+    "prime_generated": false,
+    "gpu_or_openi": false,
+    "cpu_numpy_only": true
+  },
+  "primary_taxonomy_free_seal_sha256": "C3A95C59ACC2D374C7A12F345E81385D5C6A929231D91FAD4796134A0AD96414",
+  "oracle_sources": {
+    "dsa_csv": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_shortcut_amplification_phase_a1a_seed0/extracted/outputs/cle_shortcut_amplification_phase_a1a_seed0_analysis/cle_shortcut_phase_a1a_per_client.csv",
+    "dsa_csv_sha256": "8D6C8DE23A3BB3FB2ABA581D9AB0A0928BE8D65ACC4F51D87FCC21201FE3F5D6",
+    "k0b_metrics_csv": "C:/Users/asus/Desktop/FedPRIME-D2C/outputs/openi_downloads/cle_generic_probe_k0b_seed0/formal_extracted/outputs/cle_generic_probe_k0b_seed0_formal/metrics/per_client_metrics.csv",
+    "k0b_metrics_sha256": "642C20D7460FD8C0828FC0B42FD0A1693AE79A56D34420953B58F9943F0D0350"
+  },
+  "decision": {
+    "diagnoses": [
+      "CLE_SPECIFIC_CLASS_VISIBLE_ROUTING",
+      "CLASS_ROUTING_EXCEEDS_GENERIC_FRAGILITY"
+    ],
+    "status": "CANDIDATE_MECHANISM_FOR_CAUSAL_AUDIT",
+    "operational_checks": {
+      "min_pooled_chi_out_ratio": 1.596044706671,
+      "min_pooled_positive_routing_strength_ratio": 4.178280701337259,
+      "min_pooled_positive_class_concentration_ratio": 2.175964109202415,
+      "min_high_cle_cross_half_profile_cosine": 0.9976642133660681,
+      "min_high_cle_cross_bank_profile_cosine": 0.9753997934061708,
+      "all_slices_at_least_3_of_4_positive_chi_clients": true,
+      "all_slices_at_least_3_of_4_positive_routing_clients": true,
+      "k0b_R_dsa_pearson": 0.8648001719316651,
+      "k0b_R_dsa_spearman": 0.8615611192930782,
+      "best_new_dsa_metric": "positive_routing_strength",
+      "best_new_dsa_pearson": 0.981010898018314,
+      "best_new_dsa_spearman": 0.8969072164948455,
+      "redundant_new_metrics": []
+    }
+  },
+  "files": {
+    "P2_CLE_SPECIFIC_ROUTING_AUDIT.md": {
+      "bytes": 6063,
+      "sha256": "396848DF67D424AB62CF42DFBCE497ADE7C7BEB033222DDA56D20E6F97F37C62"
+    },
+    "artifact_availability.md": {
+      "bytes": 1340,
+      "sha256": "A4BF3C51CADA9B48D0BD5D61A363D06A3C77DF681133DE948D9FD6D7B76261B9"
+    },
+    "routing_spectrum.csv": {
+      "bytes": 35958,
+      "sha256": "97B128C4152484D1A6E8457050D4C67CCFF75C91AF7BEF1101C2ECEFDDFA000C"
+    },
+    "class_routing_profiles.csv": {
+      "bytes": 116359,
+      "sha256": "2789B21E7822D4A965968281A8CD033AEA72F28A3E2EA55562341F3D18F7443E"
+    },
+    "probe_routing_assignments.csv": {
+      "bytes": 260173,
+      "sha256": "4159C39F6BE9D952579507C212F4338EC72C29D6A208D1118911EFAEFEF9C34C"
+    },
+    "cle_specificity.csv": {
+      "bytes": 42865,
+      "sha256": "350539EC0A4F3987DD01998A88D990A0B20C69FC3459D6F1BFB9884D08D3D1A7"
+    },
+    "generic_fragility_controls.csv": {
+      "bytes": 10846,
+      "sha256": "B37B2A37CD3440E66CA599C0932F9EFBA4B667A398649A98832187D9C494B75B"
+    },
+    "oracle_association.csv": {
+      "bytes": 6619,
+      "sha256": "10FC7ED6C26AF749D56B2C66853930842CE37BA74D3B439053388D3E27496D41"
+    },
+    "incremental_value_vs_k0b.csv": {
+      "bytes": 1827,
+      "sha256": "CE9BEA816A398962B7D51F13CF54AE84147B7535C2903FFBCBF4F67ED0037D1C"
+    },
+    "primary_taxonomy_free_manifest.json": {
+      "bytes": 11026,
+      "sha256": "C3A95C59ACC2D374C7A12F345E81385D5C6A929231D91FAD4796134A0AD96414"
+    }
+  }
+}

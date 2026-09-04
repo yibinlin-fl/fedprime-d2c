@@ -2,6 +2,17 @@
 
 Updated: 2026-09-04
 
+2026-09-04 完成 P1 Class-Readout Routing 纯离线审计。现有 classifier hash、特征维度和
+K1-C-Minimal moments/Gram 全部严格匹配。CRSF 后 `Wc` 读取方向和 class×probe routing
+几乎不旋转，但 exploratory readout-weighted chi 对 DSA 的变化方向明显比 global chi 更一致；
+仅可判为 `CANDIDATE_MECHANISM_FOR_NEXT_AUDIT`，不是方法 GO，也不复活 CRSF。入口：
+
+```text
+deliverables/post_no_go_class_readout_audit_20260904/P1_CLASS_READOUT_ROUTING_AUDIT.md
+deliverables/post_no_go_class_readout_audit_20260904/ARTIFACT_AVAILABILITY.md
+scripts/analyze_post_no_go_class_readout_p1.py
+```
+
 2026-09-04 完成 K1-C-Minimal 失败后的纯 CPU 机制审计 P0。现有产物足以确认：global
 response spectrum 是 CLE 的弱 proxy；CRSF 后 class-bound routing 的 cosine 仍高于 0.9985、
 Top-3/Top-5 完全不变；chi 降低同时包含 dominant mode 衰减与 tail energy 重分配；控制杠杆

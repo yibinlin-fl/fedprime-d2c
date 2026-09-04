@@ -1,0 +1,17 @@
+scope,predictor,n,pearson,spearman
+all,relative_delta_chi,8,0.9684263184792997,0.7317073170731707
+all,relative_delta_chi_rw,8,0.9988043552036164,0.926829268292683
+all_functionally_unique,relative_delta_chi,6,0.9643157142120972,0.7142857142857143
+all_functionally_unique,relative_delta_chi_rw,6,0.998001733196971,0.9428571428571428
+crsf,relative_delta_chi,4,0.9994559555750299,0.7777777777777779
+crsf,relative_delta_chi_rw,4,0.9999967514412385,1.0000000000000002
+crsf_functionally_unique,relative_delta_chi,3,0.9991840755552078,0.4999999999999999
+crsf_functionally_unique,relative_delta_chi_rw,3,0.9999951278193187,0.9999999999999998
+rawspec,relative_delta_chi,4,-0.33699241390848045,0.3333333333333334
+rawspec,relative_delta_chi_rw,4,0.8183602166243384,0.3333333333333334
+rawspec_functionally_unique,relative_delta_chi,3,-0.27177305793618256,0.4999999999999999
+rawspec_functionally_unique,relative_delta_chi_rw,3,0.8373411734668907,0.4999999999999999
+resnet10,relative_delta_chi,4,1.0,1.0
+resnet10,relative_delta_chi_rw,4,1.0,1.0
+mobilenetv2,relative_delta_chi,4,0.8873064825082468,0.7999999999999998
+mobilenetv2,relative_delta_chi_rw,4,0.9736136995871298,0.9999999999999998

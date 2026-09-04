@@ -2,6 +2,37 @@
 
 Updated: 2026-09-04
 
+## Latest Decision: Post-NO-GO Class-Readout Audit P1 Complete
+
+The final zero-cost representation audit loaded only CPU state dictionaries and existing
+K1-C-Minimal moments/Grams/DSA. It ran no model inference, PRIME generation, optimization, GPU or
+OpenI job. All checkpoint/classifier hashes and representation dimensions matched; all 24 response
+matrices reconstructed their saved Grams with maximum error `9.55e-13`.
+
+```text
+READOUT_COUPLING_REMAINS_INTACT
++ GLOBAL_CHI_MISSES_CLASS_VISIBLE_GEOMETRY
++ READOUT_WEIGHTED_GEOMETRY_TRACKS_DSA
+status: CANDIDATE_MECHANISM_FOR_NEXT_AUDIT
+```
+
+CRSF's class/probe routing-matrix cosine is `0.995453` for ResNet10 and at least `0.999689` for
+MobileNetV2; dominant-mode readout-coupling cosine is at least `0.997850`; Top-3/Top-5 class-norm
+sets remain unchanged. Yet the exploratory readout-weighted chi tracks DSA changes better than
+global chi: after removing the functionally duplicated L9/ResNet rows, descriptive Pearson/Spearman
+are `0.9980/0.9429` versus `0.9643/0.7143`. RawSpec supplies sign counterexamples where global chi
+falls while readout-weighted chi and DSA worsen.
+
+This is not a method GO and does not revive CRSF. H0/L0 feature-space responses, independent seeds
+and full client/architecture coverage are missing, so CLE specificity and causal mediation remain
+unproven. No new training or paid experiment is authorized.
+
+```text
+report:   deliverables/post_no_go_class_readout_audit_20260904/P1_CLASS_READOUT_ROUTING_AUDIT.md
+assets:   deliverables/post_no_go_class_readout_audit_20260904/ARTIFACT_AVAILABILITY.md
+analyzer: scripts/analyze_post_no_go_class_readout_p1.py
+```
+
 ## Latest Decision: Post-NO-GO Mechanism Audit P0 Complete
 
 The CPU-only P0 audit is complete. It used only existing K0-B, K1-B0, K1-C0 and K1-C-Minimal

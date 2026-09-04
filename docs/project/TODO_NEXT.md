@@ -1,5 +1,19 @@
 # TODO Next
 
+## Completed - Post-NO-GO Class-Readout Audit P1 - 2026-09-04
+
+P1 supports `READOUT_WEIGHTED_GEOMETRY_TRACKS_DSA` only as a candidate mechanism. Do not translate
+`chi_RW` into a loss, method name or method GO. CRSF remains frozen.
+
+The next permitted task is paper-level audit design: first ask whether readout-weighted geometry is
+CLE-specific rather than merely intervention-correlated, preferably from already saved H0/H9/L0/L9
+artifacts. Current K1-C0 Grams do not retain feature-space `U`, so any claim requiring new model
+inference must stop for a separately frozen low-cost protocol and explicit user approval.
+
+```text
+deliverables/post_no_go_class_readout_audit_20260904/P1_CLASS_READOUT_ROUTING_AUDIT.md
+```
+
 ## Completed - Post-NO-GO Mechanism Audit P0 - 2026-09-04
 
 The zero-GPU existing-artifact audit is complete. Do not run OpenI, rerun K0-B, revive CRSF, or

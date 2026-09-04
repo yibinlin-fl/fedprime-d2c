@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04
 
-## Current Implementation State: Post-NO-GO P0 Complete - 2026-09-04
+## Current Implementation State: Post-NO-GO P1 Complete - 2026-09-04
 
 ```text
 K0-B taxonomy-free offline audit:        FORMAL GO; complete
@@ -16,8 +16,15 @@ K1-C-Minimal formal:                     NO_GO_CRSF_INTERVENTION
 CRSF replication/full training:          BLOCKED
 next paid action:                        NONE FOR CRSF
 Post-NO-GO P0 CPU audit:                COMPLETE
+Post-NO-GO P1 class-readout audit:      COMPLETE
+P1 mechanism status:                   CANDIDATE_MECHANISM_FOR_NEXT_AUDIT
 new mitigation implementation:          NOT AUTHORIZED
 ```
+
+P1 adds a CPU-only state-dict/linear-algebra analyzer. It validates the frozen classifier and saved
+representation dimensions, then computes readout-weighted response components and explicit
+class-by-probe routing matrices. It does not instantiate a network or execute inference. There is
+still no active training or paid inference job.
 
 P0 adds one NumPy-only analyzer and a frozen deliverable set. It reconstructs additive class/binding
 DSA, chi--DSA coupling, aligned Gram spectra and architecture leverage exclusively from returned

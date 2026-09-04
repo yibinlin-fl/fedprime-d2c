@@ -2,6 +2,25 @@
 
 Updated: 2026-09-04
 
+## Post-NO-GO Class-Readout Routing Audit P1 - 2026-09-04
+
+P1 用 CPU 读取四个 H9/L9 client0/client3 state dict 的 `linear.weight/bias`，并与
+K1-C-Minimal 封存 classifier hash、checkpoint hash 和 512/1280 维 response moments 严格
+核对；未运行模型或 GPU。构造 `Wc=P_CW`、mode gain、exploratory `chi_RW` 及 `R=WcS`。
+
+CRSF routing-matrix cosine 为 ResNet10 `0.995453`、MobileNetV2 `0.999689/0.999720`；dominant
+mode readout-coupling cosine 至少 `0.997850`，Top-3/Top-5 class norm 不变，说明 readout
+coupling 基本保留。另一方面，ResNet/Mobile 的 chi_RW 分别下降 `11.056%` 与
+`1.562--1.733%`，DSA 同方向下降 `3.577%` 与 `0.506--0.550%`；三条 functionally unique
+CRSF 记录的转换比稳定在 `0.317--0.324`。删除 bit-identical L9/ResNet 重复后，chi_RW 对
+DSA 的描述性 Pearson/Spearman 为 `0.9980/0.9429`，优于 global chi 的
+`0.9643/0.7143`。RawSpec 还出现 global chi 降低但 chi_RW 与 DSA 同时恶化的反例。
+
+允许诊断为 `READOUT_COUPLING_REMAINS_INTACT + GLOBAL_CHI_MISSES_CLASS_VISIBLE_GEOMETRY +
+READOUT_WEIGHTED_GEOMETRY_TRACKS_DSA`，状态仅 `CANDIDATE_MECHANISM_FOR_NEXT_AUDIT`。缺少 H0/L0
+feature response 和独立复验，不能声称 CLE specificity/causal mediation，不能设计 loss、
+启动训练或复活 CRSF。
+
 ## Post-NO-GO Mechanism Audit P0 - 2026-09-04
 
 K1-C-Minimal 的现有 Formal 产物完成纯 CPU 复盘；没有加载 checkpoint、生成 PRIME、运行

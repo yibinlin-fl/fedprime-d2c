@@ -1,0 +1,124 @@
+[
+  {
+    "checkpoint": "C:/Users/asus/Desktop/FedPRIME-D2C/local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/h9/client_0.pt",
+    "checkpoint_sha256": "1C1298E5B7ADBAC8DA611B039FF09031C48AA87DD7D4FB8A9AC345F1C6743D7D",
+    "classifier_keys": [
+      "linear.bias",
+      "linear.weight"
+    ],
+    "classifier_sha256": "FB40BC172185997C458C619D2DDE0E08E81D614F9F76E8F4CB6F8A34BFA477B6",
+    "weight_shape": [
+      10,
+      512
+    ],
+    "bias_shape": [
+      10
+    ],
+    "bias_used_in_response": false,
+    "system": "h9",
+    "client": 0,
+    "architecture": "ResNet10",
+    "feature_dimension": 512,
+    "centered_weight_row_sum_max_abs": 8.326672684688674e-17,
+    "intervention_parameter_names": [
+      [
+        "layer4.0.conv1.weight",
+        "layer4.0.conv2.weight",
+        "layer4.0.shortcut.0.weight"
+      ]
+    ],
+    "classifier_unchanged_across_arms": true
+  },
+  {
+    "checkpoint": "C:/Users/asus/Desktop/FedPRIME-D2C/local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/h9/client_3.pt",
+    "checkpoint_sha256": "38686AE7779D618447415194DB2F9193FF05A6B27008FC746626C01B79CCF6B0",
+    "classifier_keys": [
+      "linear.bias",
+      "linear.weight"
+    ],
+    "classifier_sha256": "5EB27C13205D5982864D32AFEFFBCC14C257E2633950520801EC28710ACFC571",
+    "weight_shape": [
+      10,
+      1280
+    ],
+    "bias_shape": [
+      10
+    ],
+    "bias_used_in_response": false,
+    "system": "h9",
+    "client": 3,
+    "architecture": "Mobilenetv2",
+    "feature_dimension": 1280,
+    "centered_weight_row_sum_max_abs": 8.326672684688674e-17,
+    "intervention_parameter_names": [
+      [
+        "layers.16.conv1.weight",
+        "layers.16.conv2.weight",
+        "layers.16.conv3.weight",
+        "layers.16.shortcut.0.weight"
+      ]
+    ],
+    "classifier_unchanged_across_arms": true
+  },
+  {
+    "checkpoint": "C:/Users/asus/Desktop/FedPRIME-D2C/local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/l9/client_0.pt",
+    "checkpoint_sha256": "C18E9A3600FCF32ECA4C87B64B009561473CFC33E391A7076D6ABB822D7811C9",
+    "classifier_keys": [
+      "linear.bias",
+      "linear.weight"
+    ],
+    "classifier_sha256": "FB40BC172185997C458C619D2DDE0E08E81D614F9F76E8F4CB6F8A34BFA477B6",
+    "weight_shape": [
+      10,
+      512
+    ],
+    "bias_shape": [
+      10
+    ],
+    "bias_used_in_response": false,
+    "system": "l9",
+    "client": 0,
+    "architecture": "ResNet10",
+    "feature_dimension": 512,
+    "centered_weight_row_sum_max_abs": 8.326672684688674e-17,
+    "intervention_parameter_names": [
+      [
+        "layer4.0.conv1.weight",
+        "layer4.0.conv2.weight",
+        "layer4.0.shortcut.0.weight"
+      ]
+    ],
+    "classifier_unchanged_across_arms": true
+  },
+  {
+    "checkpoint": "C:/Users/asus/Desktop/FedPRIME-D2C/local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/l9/client_3.pt",
+    "checkpoint_sha256": "39B74BEA704C3103BE44E5301A3E646318B29F53D01FA0F442453A26CA9498B8",
+    "classifier_keys": [
+      "linear.bias",
+      "linear.weight"
+    ],
+    "classifier_sha256": "BC7BC0975424EEDB2329F080A8FE098CFD7B7A39FF7A4BD1322D7EE817C718F4",
+    "weight_shape": [
+      10,
+      1280
+    ],
+    "bias_shape": [
+      10
+    ],
+    "bias_used_in_response": false,
+    "system": "l9",
+    "client": 3,
+    "architecture": "Mobilenetv2",
+    "feature_dimension": 1280,
+    "centered_weight_row_sum_max_abs": 5.551115123125783e-17,
+    "intervention_parameter_names": [
+      [
+        "layers.16.conv1.weight",
+        "layers.16.conv2.weight",
+        "layers.16.conv3.weight",
+        "layers.16.shortcut.0.weight"
+      ]
+    ],
+    "classifier_unchanged_across_arms": true
+  }
+]

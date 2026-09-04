@@ -21,8 +21,14 @@ tests/test_cle_k1_c_minimal.py
 ```
 
 聚焦回归 14/14 PASS；真实 checkpoint CUDA smoke 已完整通过，且没有加载 oracle/evaluation。
-下一步只允许 OpenI `--mode=benchmark`，先取得 Minimal Formal 的实测 ETA/GPU-hours，再由用户
-决定是否运行 `--mode=formal --confirm-formal`。K0-B 永久定位为当前论文方案中的离线审计；
+OpenI benchmark 已独立审计：Minimal Formal 线性外推约14.91分钟/0.2484单卡GPU-hours，保守
+预留30--45分钟；成本门通过，但不构成科学结果。报告位于：
+
+```text
+deliverables/cle_k1_c_minimal_benchmark_20260904/RESULT_SUMMARY_ZH.md
+```
+
+下一步等待用户成本确认；确认后才允许运行 `--mode=formal --confirm-formal`。K0-B 永久定位为当前论文方案中的离线审计；
 K1-C-Minimal 也只是一次 checkpoint 因果验证，不能原样进入训练循环。即使 Minimal 通过，仍须
 另过 stochastic CRSF 压缩/效率门。
 

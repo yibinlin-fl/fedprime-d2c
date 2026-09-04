@@ -3876,3 +3876,11 @@ Bank B 64 probes，封存并hash后才允许读取CLE oracle并计算DSA。
 Formal的ETA/GPU-hours。用户审阅成本前不得运行Formal。Minimal失败即`NO_GO_CRSF_INTERVENTION`；
 通过也只允许B-to-A与其余两个架构replication，不允许直接完整训练。K0-B在当前论文方案中固定为
 离线审计，不进入训练决策闭环；K1-C-Minimal本身也不是最终训练算法。
+
+K1-C-Minimal OpenI benchmark 随后完成并独立核验。原始包19,398 bytes，SHA256为
+`D16E82F85FFA636DBEE50086BF6A083F932BB1F8833F3F7E366F5E90AF24F2D4`。实测H9/ResNet10的
+512x16 prefix为6.9237秒，两条arm各一步总计11.7909秒，128x8 unseen三arm为1.3286秒；线性
+外推四context Minimal Formal为894.39秒/0.2484单卡GPU-hours。考虑MobileNet未直接计时和oracle
+阶段为代理估计，实际按30--45分钟预算。prefix常驻数组544 MiB、CUDA峰值341.9 MiB、磁盘变换
+cache为0。所有artifact/source hash复核一致，evaluation未解压、标签/binding未加载。成本门通过，
+但该结果仍为`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`；必须由用户明确确认后才能运行Formal。

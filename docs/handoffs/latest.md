@@ -35,12 +35,20 @@ Focused regression is 14/14 PASS. A real-checkpoint CUDA smoke completed with ve
 one exact step, all metrics were finite, bounded in-memory streaming wrote no transformed-input disk
 cache, and no oracle/evaluation assets were loaded. This is execution evidence only.
 
-The only next paid action is `--mode=benchmark`. It runs one H9/ResNet10 bounded context, cannot load
-oracle assets, and reports measured stage timings plus projected Minimal Formal wall time/GPU-hours.
-Do not run Formal until the user reviews that estimate. A failed Minimal A-to-B gate ends CRSF; a
+The OpenI benchmark is complete and independently audited. It ran one H9/ResNet10 context without
+oracle/evaluation assets, used 544 MiB bounded prefix arrays and 341.9 MiB peak CUDA allocation, and
+projected Minimal Formal at 894.39 seconds / 0.2484 single-GPU hours. Allow 30--45 minutes as a
+conservative 2--3x envelope because MobileNetV2 was not directly timed and oracle cost was proxied.
+This passes the engineering cost gate but is not scientific evidence. The next action is user review;
+only explicit approval permits `--mode=formal --confirm-formal`. A failed Minimal A-to-B gate ends CRSF; a
 pass only authorizes B-to-A plus the remaining two architectures. It never directly authorizes full
 training. K0-B is an offline audit, and neither its 1,000x64 detector nor exact K1-C surgery may enter
 the eventual training loop unchanged.
+
+```text
+benchmark archive sha256: D16E82F85FFA636DBEE50086BF6A083F932BB1F8833F3F7E366F5E90AF24F2D4
+report: deliverables/cle_k1_c_minimal_benchmark_20260904/RESULT_SUMMARY_ZH.md
+```
 
 ## Previous Objective: K1-B0 CDR-SNR Shared Representation Localization
 

@@ -11,9 +11,9 @@ K1-B0 shared nuisance routing:           FORMAL NO-GO; frozen
 K1-C0 response-spectrum mechanism gate:  FORMAL GO; 10/10 gates
 K1-C-FULL:                               SUPERSEDED_BEFORE_FORMAL
 K1-C-Minimal implementation:             TESTS + CUDA SMOKE PASS
-K1-C-Minimal benchmark:                  READY / NOT RUN
+K1-C-Minimal benchmark:                  COST PASS / COMPLETE
 K1-C-Minimal formal:                     LOCKED / NOT RUN
-next paid action:                        Minimal platform benchmark only
+next paid action:                        user-approved Minimal Formal only
 ```
 
 K1-C0 only observed a CLE-associated response-spectrum concentration in frozen models. It was not a
@@ -29,9 +29,11 @@ mandatory post-update exact objective and anchor-KL check, but another full paid
 The Minimal runner and OpenI entry have dedicated smoke/benchmark/formal modes; Formal additionally
 requires `--confirm-formal`. Focused tests are 14/14 PASS. A real H9/ResNet10 CUDA smoke verified the
 frozen selection, bounded no-disk-cache execution, both active arms, unseen streaming and oracle
-isolation. Its verdict is execution-only. The next action is one bounded OpenI benchmark; only after
-the user reviews its ETA/GPU-hour estimate may Minimal Formal be considered. Full training remains
-locked.
+isolation. Its verdict is execution-only. The bounded OpenI benchmark then projected Minimal Formal
+at 894.39 seconds / 0.2484 single-GPU hours, with 544 MiB resident prefix arrays and 341.9 MiB peak
+CUDA allocation. Use 30--45 minutes as a conservative envelope. The cost gate passes, but Formal
+still requires explicit user approval and remains the first scientific intervention test. Full
+training remains locked.
 
 ## Baseline Fidelity Repair Prepared - 2026-08-09
 

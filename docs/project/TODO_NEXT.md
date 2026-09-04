@@ -1,6 +1,6 @@
 # TODO Next
 
-## Immediate - Run K1-C-Minimal Platform Benchmark Only - 2026-09-04
+## Immediate - Review Cost And Optionally Run K1-C-Minimal Formal - 2026-09-04
 
 Do not rerun the superseded Full route:
 
@@ -12,16 +12,23 @@ The previous approximately two-hour OpenI attempt produced no calibration verdic
 execution-cost failure only. K1-C-FULL is now `SUPERSEDED_BEFORE_FORMAL`; do not reconsider it.
 K1-C0 already passed its observational 10/10 gate, while the causal intervention remains unproven.
 
-K1-C-Minimal is implemented and its focused tests plus real-checkpoint CUDA smoke pass. The only next
-paid command is:
+K1-C-Minimal is implemented and its focused tests plus real-checkpoint CUDA smoke pass. The bounded
+OpenI benchmark is also complete:
 
 ```text
-python scripts/openi_cle_k1_c_minimal_entry.py --mode=benchmark
+projected wall:       894.39 seconds (14.91 minutes)
+projected GPU-hours:  0.2484 single V100 hours
+conservative budget: 30--45 minutes
+prefix RAM:           544 MiB
+peak CUDA allocated:  341.9 MiB
 ```
 
-It measures H9/ResNet10/Bank-A only, cannot load oracle/evaluation assets, and reports stage timings,
-memory/storage and projected Minimal Formal wall time/GPU-hours. Stop after the benchmark and obtain
-the user's explicit cost decision. Do not run `--mode=formal --confirm-formal` yet.
+The benchmark loaded no oracle/evaluation assets and makes no scientific claim. Wait for the user's
+explicit cost decision. If approved, run exactly:
+
+```text
+python scripts/openi_cle_k1_c_minimal_entry.py --mode=formal --confirm-formal
+```
 
 If later authorized, Minimal Formal uses H9/L9, ResNet10/MobileNetV2, A-to-B, Frozen/CRSF/RawSpec,
 512x16 correction, five accepted steps and full independent 2,000x64 Bank-B evaluation. Failure ends

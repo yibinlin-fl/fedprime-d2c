@@ -55,6 +55,17 @@ ARMS = ("frozen", "crsf", "rawspec")
 OBJECTIVE_BY_ARM = {"crsf": "crsf", "rawspec": "rawspec"}
 
 
+def parse_bool(value: str | bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise argparse.ArgumentTypeError(f"expected a boolean value, got {value!r}")
+
+
 def heartbeat(event: str, **payload: object) -> None:
     fields = " ".join(f"{key}={value}" for key, value in payload.items())
     print(f"[heartbeat] event={event}{(' ' + fields) if fields else ''}", flush=True)
@@ -76,7 +87,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--confirm-formal", action="store_true")
+    parser.add_argument(
+        "--confirm-formal",
+        nargs="?",
+        const=True,
+        default=False,
+        type=parse_bool,
+        help="Formal cost approval; accepts a bare flag or an explicit true value for OpenI forms.",
+    )
     return parser.parse_args()
 
 

@@ -13,7 +13,9 @@ from scripts.run_cle_k1_c_minimal import (
     decide,
     freeze_selection,
     load_config,
+    parse_bool as parse_runner_bool,
 )
+from scripts.openi_cle_k1_c_minimal_entry import parse_bool as parse_openi_bool
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,3 +116,12 @@ def test_full_protocol_is_retained_but_superseded() -> None:
     assert '"calibration"' not in entry
     assert CONFIG_PATH.is_file()
     assert ARMS == ("frozen", "crsf", "rawspec")
+
+
+def test_confirm_formal_accepts_openi_explicit_boolean_values() -> None:
+    for parser in (parse_runner_bool, parse_openi_bool):
+        assert parser(True) is True
+        assert parser("true") is True
+        assert parser("1") is True
+        assert parser("false") is False
+        assert parser("0") is False

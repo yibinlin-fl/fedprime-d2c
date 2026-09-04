@@ -30,13 +30,31 @@ from scripts.openi_cle_k1_c_crsf_surgery_entry import (  # noqa: E402
 )
 
 
+def parse_bool(value: str | bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise argparse.ArgumentTypeError(f"expected a boolean value, got {value!r}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="OpenI K1-C-Minimal causal intervention gate.")
     parser.add_argument("--mode", choices=("smoke", "benchmark", "formal"), default="smoke")
     parser.add_argument("--data-source", default="")
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--confirm-formal", action="store_true")
+    parser.add_argument(
+        "--confirm-formal",
+        nargs="?",
+        const=True,
+        default=False,
+        type=parse_bool,
+        help="Formal cost approval; accepts a bare flag or an explicit true value for OpenI forms.",
+    )
     parser.add_argument("--skip-install", action="store_true")
     parser.add_argument("--no-upload", action="store_true")
     return parser.parse_args()

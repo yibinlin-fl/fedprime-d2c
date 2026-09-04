@@ -108,6 +108,15 @@ python scripts/openi_cle_k1_c_minimal_entry.py --mode=benchmark
 python scripts/openi_cle_k1_c_minimal_entry.py --mode=formal --confirm-formal
 ```
 
+OpenI 的键值运行参数界面必须填写：
+
+```text
+mode             formal
+confirm-formal   true
+```
+
+CLI 裸开关与 OpenI 显式布尔值两种形式均受支持。
+
 Benchmark 只运行 `H9 / ResNet10 / Bank A`，测一小步 CRSF/RawSpec 和受限 Bank B 流式前向，
 输出阶段计时、GPU峰值显存、内存数组峰值估计、正式 correction/unseen/oracle 的 ETA 和单卡
 GPU-hours。它不能读取 evaluation、标签、binding、DSA/WCCA/CFG，verdict 固定为

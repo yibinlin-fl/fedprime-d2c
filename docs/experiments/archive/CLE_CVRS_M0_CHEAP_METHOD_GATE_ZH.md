@@ -1,6 +1,6 @@
 # CLE-HFL CVRS M0 低成本方法生死实验
 
-状态：`BENCHMARK_COMPLETE_FORMAL_COST_APPROVAL_PENDING`。OpenI V100S benchmark 已完成；未经用户确认不得运行 Formal。
+状态：`COMPLETED_NO_GO_CVRS`。OpenI V100S Formal 已完成；不得调参、补种子或进入完整 HFL。
 
 ## 研究问题
 
@@ -119,4 +119,34 @@ verdict: BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION
 
 该投影不含 held-out routing 与最终 DSA/accuracy evaluation，因此不能把 328 秒当作整项
 Formal 的承诺耗时；但训练部分的成本已明显低于本地 RTX 3050 的 2.163 GPU-hour 投影。
-下一步只能由用户决定是否授权运行一次 seed-0 Formal。
+该 benchmark 后续用于授权一次 seed-0 Formal；正式结果如下。
+
+## OpenI Formal 结果（2026-09-05）
+
+输入、checkpoint、Bank-A/B 与 pre-oracle seal 均通过哈希核验，两个架构内三臂的
+private batch/AugMix trace 完全一致。训练完成并封存 taxonomy-free 输出后才打开 oracle。
+
+```text
+ResNet10:
+  DSA baseline / JSD / CVRS = 0.293632 / 0.255995 / 0.219023
+  CVRS relative reduction   = 25.409%                         PASS
+  JSD - CVRS                = +0.036972 (threshold +0.02)     PASS
+  Avg CVRS - baseline       = +0.500 pp                       PASS
+  Worst CVRS - baseline     = +2.800 pp                       PASS
+
+MobileNetV2:
+  DSA baseline / JSD / CVRS = 0.172066 / 0.116098 / 0.129098
+  CVRS relative reduction   = 24.972%                         PASS
+  JSD - CVRS                = -0.013000 (threshold +0.02)     FAIL
+  Avg CVRS - baseline       = +1.4375 pp                      PASS
+  Worst CVRS - baseline     = +6.100 pp                       PASS
+
+verdict: NO_GO_CVRS
+full_hfl_training_authorized: false
+archive SHA256: 5916858CC71A7AFF1F18B4EEB90F7D3D0C9A13E0B695BFD2F7F7B278861DAB27
+```
+
+CVRS 在两个架构上都相对 baseline 降低约 25% DSA，并保住/提高了准确率；但它没有跨架构
+稳定优于普通 Public-JSD。MobileNetV2 上 CVRS 的 taxonomy-free routing strength 比 JSD 更低，
+真实 DSA 却更高，说明该 proxy 不能稳定标识真正有害的 CLE 路由。因此按预注册门槛冻结为
+方法 NO-GO，不允许用 pooled 均值、改阈值或调 lambda 覆盖该失败。

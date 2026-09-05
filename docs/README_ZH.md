@@ -495,16 +495,16 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 当前已进入 CVRS Method Phase，但尚未获准运行 M0 Formal：
 
 ```text
-docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+docs/experiments/archive/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
 configs/cle_cvrs_m0_seed0.json
 scripts/run_cle_cvrs_m0.py
 scripts/openi_cle_cvrs_m0_entry.py
 scripts/prepare_cle_cvrs_m0_openi_input.py
 ```
 
-本地真实 checkpoint smoke 与 wall-clock benchmark 已完成，紧凑 OpenI 输入包也已生成；
-下一步只做 OpenI V100 平台 benchmark。不得把 smoke/benchmark 当科学结果，也不得未经
-成本确认直接启动 Formal。
+OpenI V100S benchmark 与 seed-0 Formal 均已完成。Formal 判定 `NO_GO_CVRS`：ResNet10
+四项通过，但 MobileNetV2 上普通 Public-JSD 的 DSA 优于 CVRS，CVRS-vs-JSD 关键门槛失败。
+不得调参、补种子或启动完整 HFL；详见归档协议和当前 handoff。
 
 当前论文证据补全总入口：
 

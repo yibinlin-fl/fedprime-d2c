@@ -2,7 +2,7 @@
 
 Updated: 2026-09-05
 
-## Current Objective: CVRS Method Phase / M0 Formal Approval Pending
+## Current Objective: CVRS M0 Formal Complete / NO-GO
 
 The user explicitly ended the open-ended P5/P6/P7 mechanism-audit loop and authorized implementation
 of one working method candidate:
@@ -28,7 +28,7 @@ The local 8-private-step benchmark also preserved matched traces and returned
 `BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. On the RTX 3050 it projected `7786.66 s / 2.163
 single-GPU hours` for the six-arm 3-epoch training portion, excluding final held-out routing and DSA
 evaluation. That local estimate has now been superseded for cost planning by the completed OpenI
-V100S benchmark below. Formal remains locked behind explicit user cost approval.
+V100S benchmark below.
 
 The final compact archive is `109142359` bytes with SHA256
 `E9427A55DBE2545AF9D5A1EBD8BEA5B18C41C84D7FE89D06674165F4109E3818`. It contains only private
@@ -44,15 +44,14 @@ The projected six-arm, three-epoch training portion is `328.047 s / 0.091124 sin
 excluding held-out routing and final DSA/accuracy evaluation. This is about `23.74x` faster than the
 local RTX 3050 projection. Archive SHA256 is
 `570BC2B57E8012750DCCD575E617A675E3C492A3E429F6BD25FA202700E6AE7D`; verdict remains
-`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. The next action is a user decision on whether to authorize
-one seed-0 Formal run; do not infer CVRS efficacy from this benchmark.
+`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`.
 
 ```text
 raw: outputs/openi_downloads/cle_cvrs_m0_seed0_benchmark/cle_cvrs_m0_seed0_benchmark_outputs.tar.gz
 ```
 
 ```text
-spec:   docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+spec:   docs/experiments/archive/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
 config: configs/cle_cvrs_m0_seed0.json
 method: fedprime/methods/cvrs.py
 runner: scripts/run_cle_cvrs_m0.py
@@ -63,10 +62,30 @@ tests:  tests/test_cvrs.py
 
 Frozen M0 details: public training uses only K0-B Ua (500 unlabeled CIFAR-100 carriers) with Bank A;
 held-out routing uses disjoint Ub positions 500:756 with Bank-B probes 0:15. Public steps freeze BN
-running statistics. Lambda is set once per regularized arm to 10% of the initial exact private-loss
-gradient norm and is then frozen. Formal, if later approved, must seal all taxonomy-free training and
-held-out outputs before opening the existing DSA oracle. Do not modify communication, add detector
-triggering, revive CRSF, or run a lambda grid.
+running statistics. Lambda was set once per regularized arm to 10% of the initial exact private-loss
+gradient norm and then frozen. Formal sealed all taxonomy-free training and held-out outputs before
+opening the existing DSA oracle. Communication was not modified and no detector trigger, CRSF or
+lambda grid was used.
+
+The seed-0 Formal is now complete and independently checked at the artifact/gate-arithmetic level.
+Archive SHA256 is `5916858CC71A7AFF1F18B4EEB90F7D3D0C9A13E0B695BFD2F7F7B278861DAB27`.
+The taxonomy-free result seal and all six output checkpoint hashes matched. ResNet10 passed all four
+gates: CVRS reduced DSA `0.293632 -> 0.219023` (`25.409%`), beat JSD by `0.036972`, and improved
+Avg/Worst by `0.500/2.800 pp`. MobileNetV2 reduced DSA `0.172066 -> 0.129098` (`24.972%`) and
+improved Avg/Worst by `1.4375/6.100 pp`, but failed the decisive CVRS-vs-JSD gate: JSD DSA was
+`0.116098`, so `DSA_JSD - DSA_CVRS = -0.013000`, below the frozen `+0.02` threshold.
+
+```text
+verdict: NO_GO_CVRS
+full_hfl_training_authorized: false
+report: deliverables/cle_cvrs_m0_formal_20260905/RESULT_SUMMARY_ZH.md
+raw: outputs/openi_downloads/cle_cvrs_m0_seed0_formal/cle_cvrs_m0_seed0_formal_outputs.tar.gz
+```
+
+CVRS lowered its taxonomy-free routing proxy more than JSD on MobileNetV2, yet had worse oracle DSA;
+the proxy-to-harm link is therefore not architecture-stable. Do not tune lambda, alter the gate, use
+pooled means to override the per-architecture contract, add seeds, or start full HFL. CVRS is frozen
+as a negative method result.
 
 ## Latest Decision: P4 Rejects HFL Decoupling; Marginal Profile Cannot Specify Pairwise Action
 

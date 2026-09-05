@@ -1,6 +1,6 @@
 # CLE-HFL CVRS M0 低成本方法生死实验
 
-状态：`FROZEN_BEFORE_FORMAL`。当前只允许实现、单元测试、tiny smoke 与 wall-clock benchmark；未经用户确认不得运行 Formal。
+状态：`BENCHMARK_COMPLETE_FORMAL_COST_APPROVAL_PENDING`。OpenI V100S benchmark 已完成；未经用户确认不得运行 Formal。
 
 ## 研究问题
 
@@ -100,3 +100,23 @@ python scripts/run_cle_cvrs_m0.py --mode=formal --confirm-formal --device=cuda
 ```
 
 Smoke 只验证执行，benchmark 只估算成本；二者都不是科学证据。
+
+## OpenI V100S benchmark 结果（2026-09-05）
+
+输入包大小与 SHA256、两个起始 checkpoint、两套 PRIME bank 和所有冻结输入均核验通过。
+ResNet10 与 MobileNetV2 各自三臂的 private batch/AugMix trace hash 完全一致；benchmark
+没有解压 evaluation 资产，也没有修改通信或解锁 Formal。
+
+```text
+hardware: Tesla V100S-PCIE-32GB
+mean private step: 0.117390 s
+mean public step:  0.124062 s
+projected six-arm 3-epoch training: 328.047 s
+projected training GPU-hours:       0.091124
+archive SHA256: 570BC2B57E8012750DCCD575E617A675E3C492A3E429F6BD25FA202700E6AE7D
+verdict: BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION
+```
+
+该投影不含 held-out routing 与最终 DSA/accuracy evaluation，因此不能把 328 秒当作整项
+Formal 的承诺耗时；但训练部分的成本已明显低于本地 RTX 3050 的 2.163 GPU-hour 投影。
+下一步只能由用户决定是否授权运行一次 seed-0 Formal。

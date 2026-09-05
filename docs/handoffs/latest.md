@@ -2,7 +2,7 @@
 
 Updated: 2026-09-05
 
-## Current Objective: CVRS Method Phase / M0 Cost Approval Pending
+## Current Objective: CVRS Method Phase / M0 Formal Approval Pending
 
 The user explicitly ended the open-ended P5/P6/P7 mechanism-audit loop and authorized implementation
 of one working method candidate:
@@ -24,13 +24,11 @@ complete. Unit tests are 7/7 PASS, including one-batch numerical equality with t
 private loss. Smoke passed both architectures and all three arms; private batch/AugMix trace hashes
 were identical across arms. Smoke verdict is `SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
 
-The 8-private-step benchmark also preserved matched traces and returned
-`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. On the local RTX 3050 it projected `7786.66 s / 2.163
+The local 8-private-step benchmark also preserved matched traces and returned
+`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. On the RTX 3050 it projected `7786.66 s / 2.163
 single-GPU hours` for the six-arm 3-epoch training portion, excluding final held-out routing and DSA
-evaluation. MobileNetV2 dominates the cost. Do not start Formal from this estimate. A compact combined
-OpenI input and platform entry are now prepared. The next action is to upload
-`local_runs/cle_cvrs_m0_openi_input_v2/cle_cvrs_m0_seed0_inputs.tar.gz` and run only the V100 platform
-benchmark. Formal remains locked behind explicit user cost approval.
+evaluation. That local estimate has now been superseded for cost planning by the completed OpenI
+V100S benchmark below. Formal remains locked behind explicit user cost approval.
 
 The final compact archive is `109142359` bytes with SHA256
 `E9427A55DBE2545AF9D5A1EBD8BEA5B18C41C84D7FE89D06674165F4109E3818`. It contains only private
@@ -38,6 +36,20 @@ images/labels for clients 0/3 and no private corruption IDs, methods, severities
 The M0-specific loader never opens such metadata. A local smoke verified all six arms and matched
 private traces after this tightening. The older 172255488-byte package is superseded and must not be
 uploaded.
+
+The OpenI benchmark is now complete on `Tesla V100S-PCIE-32GB`. All frozen input, checkpoint and
+Bank-A/B hashes matched; evaluation assets were not extracted; and each architecture's three arms
+used an identical private batch/AugMix trace. Mean private/public step times were `0.117390/0.124062 s`.
+The projected six-arm, three-epoch training portion is `328.047 s / 0.091124 single-GPU hours`,
+excluding held-out routing and final DSA/accuracy evaluation. This is about `23.74x` faster than the
+local RTX 3050 projection. Archive SHA256 is
+`570BC2B57E8012750DCCD575E617A675E3C492A3E429F6BD25FA202700E6AE7D`; verdict remains
+`BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`. The next action is a user decision on whether to authorize
+one seed-0 Formal run; do not infer CVRS efficacy from this benchmark.
+
+```text
+raw: outputs/openi_downloads/cle_cvrs_m0_seed0_benchmark/cle_cvrs_m0_seed0_benchmark_outputs.tar.gz
+```
 
 ```text
 spec:   docs/experiments/current/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md

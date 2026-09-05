@@ -2,7 +2,7 @@
 
 Updated: 2026-09-05
 
-## Current Objective: CVRS M0 Formal Complete / NO-GO
+## Current Objective: Post-CVRS Research Decision / No Active Experiment
 
 The user explicitly ended the open-ended P5/P6/P7 mechanism-audit loop and authorized implementation
 of one working method candidate:
@@ -80,12 +80,31 @@ verdict: NO_GO_CVRS
 full_hfl_training_authorized: false
 report: deliverables/cle_cvrs_m0_formal_20260905/RESULT_SUMMARY_ZH.md
 raw: outputs/openi_downloads/cle_cvrs_m0_seed0_formal/cle_cvrs_m0_seed0_formal_outputs.tar.gz
+new-session prompt: deliverables/cle_cvrs_m0_formal_20260905/NEW_SESSION_PROMPT_ZH.md
 ```
 
 CVRS lowered its taxonomy-free routing proxy more than JSD on MobileNetV2, yet had worse oracle DSA;
 the proxy-to-harm link is therefore not architecture-stable. Do not tune lambda, alter the gate, use
 pooled means to override the per-architecture contract, add seeds, or start full HFL. CVRS is frozen
 as a negative method result.
+
+## Immediate Next Action
+
+There is no active training, OpenI task or implementation candidate. The CLE-HFL scenario remains
+empirically established, but the latest taxonomy-free mitigation is not a method GO. The next session
+must first make a research-level decision using the existing evidence; it must not restart an old
+negative route merely because a new chat has less context.
+
+Any new method proposal must confront the latest counterexample: a generic public-response proxy can
+fall substantially while the true class-corruption DSA is worse than ordinary Public-JSD on another
+architecture. A proposal therefore needs either an identifiable signal that is closer to harmful
+pairwise class routing, an explicitly justified additional observable, or a narrower claim. Do not
+implement or run anything until that proposal has a frozen mathematical objective, distinction from
+Public-JSD/PEW/CRSF/CVRS, a minimal attribution design, and a cheap kill gate.
+
+If a later implementation reaches OpenI readiness, follow the required launch card in `AGENTS.md`:
+state commit/push status, dataset reuse or upload, exact file path/bytes/SHA256, startup file, every
+parameter/value, GPU/cost, expected archive, download folder, metrics and frozen gates.
 
 ## Latest Decision: P4 Rejects HFL Decoupling; Marginal Profile Cannot Specify Pairwise Action
 

@@ -1,5 +1,32 @@
 # TODO Next
 
+## Current - Post-CVRS Research Decision - 2026-09-05
+
+CVRS M0 completed with a valid `NO_GO_CVRS`. Do not run another OpenI task, add seeds, tune lambda,
+change the per-architecture gate, or integrate CVRS into full HFL. The latest counterexample is that
+MobileNetV2's CVRS taxonomy-free routing proxy is much lower than Public-JSD, while its true DSA is
+higher. Generic proxy reduction is therefore not a reliable method target across architectures.
+
+The next action is discussion/design only. Before any implementation, a new candidate must provide:
+
+```text
+1. a frozen mathematical object and optimization objective;
+2. an explanation of what observable identifies harmful CLE routing;
+3. a clear distinction from Public-JSD, PEW/BER, CRSF and CVRS;
+4. a minimal matched attribution experiment with a cheap kill gate;
+5. an explicit OpenI cost plan and user approval before Formal.
+```
+
+The CLE-HFL scenario itself remains supported by Phase-A0 directional-shortcut evidence. What failed
+is the latest taxonomy-free mitigation, not the existence of CLE. PEW+BER remains a strong
+taxonomy-assisted baseline, not the preferred paper core. There is currently no active method or paid
+experiment.
+
+```text
+latest report: deliverables/cle_cvrs_m0_formal_20260905/RESULT_SUMMARY_ZH.md
+latest spec: docs/experiments/archive/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+```
+
 ## Completed - P4 Routing Targetability Gap Audit - 2026-09-04
 
 P4 rejected the proposed HFL decoupling explanation. H9 has strong generic/harmful marginal alignment,

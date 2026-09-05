@@ -1,6 +1,52 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-09-04
+Updated: 2026-09-05
+
+## CVRS M0 Formal - 2026-09-05
+
+用户结束开放式 P5/P6/P7 审计后，冻结并实现 taxonomy-free 本地候选 CVRS（Class-Visible
+Routing Suppression）。它在无标签 CIFAR-100 public carriers 上，用固定 PRIME probes 处罚
+跨 carrier 持续存在的归一化类别方向响应：
+
+```text
+delta_q(u) = P_C[z(A_q(u)) - z(u)]
+mu_q       = mean_u delta_q(u)
+E_q        = mean_u ||delta_q(u)||^2
+L_CVRS     = mean_q ||mu_q||^2 / (stopgrad(E_q) + eps)
+```
+
+M0 从既有 H9 round-40 client0/ResNet10 与 client3/MobileNetV2 checkpoint 出发，做三臂
+matched short adaptation：原 private AugMix/JSD/DCL baseline、baseline + Public-JSD、baseline
++ CVRS。三臂均用 fresh matched Adam 和完全相同的 private batch/AugMix 路径，训练 3 local
+epochs；不是完整四客户端 HFL，也不是 round-41 无缝续训。训练只读取 client0/3 的 private
+image/label 和固定 split，不打包、不读取 corruption id/family/severity/binding。公共数据是
+固定 1000 张无标签 CIFAR-100：Ua 500 用于 regularization，Ub 256 + Bank-B 16 probes 用于
+盲测。taxonomy-free 输出和六个 checkpoint 先封存，之后才打开 Phase-A0 DSA oracle。
+
+最终 v2 OpenI 输入包为 `109142359` bytes，SHA256
+`E9427A55DBE2545AF9D5A1EBD8BEA5B18C41C84D7FE89D06674165F4109E3818`；旧
+`172255488`-byte 包永久作废。V100S benchmark 投影六臂 3-epoch 训练为 `328.047 s / 0.091124
+GPU-hour`，只用于成本审批。
+
+Formal 原始包为 `146448795` bytes，SHA256
+`5916858CC71A7AFF1F18B4EEB90F7D3D0C9A13E0B695BFD2F7F7B278861DAB27`。taxonomy-free seal、
+六个输出 checkpoint hash 和匹配随机路径全部通过。ResNet10 四门全过：DSA
+`0.293632 -> 0.219023`（`25.409%`），相对 JSD 优势 `+0.036972`，Avg/Worst
+`+0.500/+2.800 pp`。MobileNetV2 的 CVRS 也将 DSA `0.172066 -> 0.129098`（`24.972%`），
+Avg/Worst `+1.4375/+6.100 pp`，但普通 Public-JSD DSA 为 `0.116098`，故
+`DSA_JSD - DSA_CVRS = -0.013000`，失败冻结的 `>=+0.02` 独特性门槛。
+
+最终 verdict 为 `NO_GO_CVRS`，`full_hfl_training_authorized=false`。特别重要的反例是：
+MobileNetV2 上 CVRS routing proxy `0.155208` 低于 JSD 的 `0.244061`，真实 DSA 却更高；
+generic public-response proxy 的下降不保证真实 CLE harm 同步下降。不得用 pooled 均值、改
+阈值、调 lambda、补 seed 或完整 HFL 训练救回 CVRS。当前没有活动实验；下一步是研究决策，
+不是继续跑 GPU。
+
+```text
+report: deliverables/cle_cvrs_m0_formal_20260905/RESULT_SUMMARY_ZH.md
+spec: docs/experiments/archive/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md
+raw: outputs/openi_downloads/cle_cvrs_m0_seed0_formal/cle_cvrs_m0_seed0_formal_outputs.tar.gz
+```
 
 ## P4 Routing Targetability Gap Audit - 2026-09-04
 

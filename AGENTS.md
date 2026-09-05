@@ -216,6 +216,31 @@ delete or cleanup commands.
 - Prefer focused unit tests, one-round smoke tests, and analyzer dry-runs. Do
   not default to full test suites or long training jobs.
 
+## OpenI User Handoff
+
+After an OpenI-capable implementation is complete and locally verified, always
+give the user one self-contained launch card before asking them to create a
+task. It must state:
+
+```text
+git commit and whether it has been pushed
+whether an existing dataset is reused or a new upload is required
+dataset display name
+exact absolute local upload-file path, byte size, and SHA256
+OpenI startup file
+every parameter name and exact value (including boolean values)
+recommended GPU type/count and whether the run is smoke/benchmark/formal
+expected runtime or a benchmark-first requirement
+expected output archive name
+exact absolute local folder where the downloaded result must be placed
+metrics, frozen gates, and what the run is allowed to prove
+```
+
+Explicitly warn about obsolete input packages when more than one similarly
+named archive exists. Do not say an OpenI run is ready until the entry, input
+integrity checks, and a focused smoke have passed. A benchmark is never method
+evidence, and Formal remains subject to the experiment-approval rules above.
+
 ## Working Tree And Git
 
 - Inspect the relevant Git status before editing. Existing dirty files belong

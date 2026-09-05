@@ -492,7 +492,7 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
-当前已进入 CVRS Method Phase，但尚未获准运行 M0 Formal：
+最新 CVRS Method Phase 已完成并归档：
 
 ```text
 docs/experiments/archive/CLE_CVRS_M0_CHEAP_METHOD_GATE_ZH.md

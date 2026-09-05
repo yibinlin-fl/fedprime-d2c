@@ -1,10 +1,16 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
-## Current Implementation State: P4 Complete / Identifiability Boundary Pending - 2026-09-04
+## Current Implementation State: CVRS M0 Formal NO-GO / No Active Experiment - 2026-09-05
 
 ```text
+CVRS implementation/tests/CUDA smoke:     COMPLETE / PASS
+CVRS taxonomy-free OpenI v2 input:        COMPLETE / VERIFIED
+CVRS V100S benchmark:                     COST PASS / COMPLETE
+CVRS M0 seed-0 formal:                    NO_GO_CVRS
+CVRS full HFL / additional seeds:         NOT AUTHORIZED
+current paid action:                      NONE
 K0-B taxonomy-free offline audit:        FORMAL GO; complete
 K1-A head-only SDMN:                     FORMAL NO-GO; frozen
 K1-B0 shared nuisance routing:           FORMAL NO-GO; frozen
@@ -27,6 +33,13 @@ P4 HFL decoupling hypothesis:          REJECTED
 pairwise routing identifiability:       PAPER AUDIT ONLY / NOT STARTED
 new mitigation implementation:          NOT AUTHORIZED
 ```
+
+CVRS M0 is a valid scientific NO-GO, not an execution failure. ResNet10 passed all four frozen gates,
+and both architectures showed about 25% DSA reduction versus matched baseline while retaining task
+accuracy. MobileNetV2 failed the decisive method-distinction gate because Public-JSD achieved lower
+DSA (`0.116098`) than CVRS (`0.129098`); required `DSA_JSD-DSA_CVRS>=0.02`, observed `-0.013000`.
+The taxonomy-free proxy also ranked CVRS better than JSD on MobileNetV2 while oracle DSA ranked it
+worse. Stop CVRS: no tuning, seeds, threshold changes or full HFL integration. No experiment is active.
 
 P4 found strong H9 generic-vs-harmful marginal alignment (`0.8496` cosine, `0.7091` Spearman), so
 communication/HFL decoupling does not explain P3-A. The frozen rank reversal fails because marginal

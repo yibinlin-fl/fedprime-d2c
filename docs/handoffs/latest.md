@@ -1,6 +1,43 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-05
+Updated: 2026-09-06
+
+## Current Objective: LCRE M0 Implemented / Local Benchmark Complete / Formal Locked
+
+The user authorized a new cheap method gate for Label-Conditioned Response Equalization (LCRE).
+LCRE penalizes the class-balanced between-label component of centered PRIME logit responses,
+`mean_q Var_c(E[delta_q|Y=c]) / stopgrad(E_q_bal)`. It uses only private fit images and task labels;
+it does not read public CIFAR-100 carriers, corruption metadata, severity, CLE binding or DSA during
+training. It is a method hypothesis, not an identification, novelty or causal-mechanism claim.
+
+Implementation is isolated from CVRS history:
+
+```text
+method: fedprime/methods/lcre.py
+runner: scripts/run_cle_lcre_m0.py
+OpenI:  scripts/openi_cle_lcre_m0_entry.py
+config: configs/cle_lcre_m0_seed0.json
+spec:   docs/experiments/current/CLE_LCRE_M0_CHEAP_METHOD_GATE_ZH.md
+tests:  tests/test_lcre.py
+```
+
+Focused tests are `13/13 PASS`. The real-checkpoint CUDA smoke completed on RTX 3050 for
+ResNet10/client0 and MobileNetV2/client3 with Baseline/Private-PRIME-JSD/LCRE. All output checkpoints
+strict-loaded; private/AugMix traces matched across all three arms per architecture; JSD/LCRE probe
+traces matched; BN running-stat audits passed; taxonomy/public/oracle assets were not opened. LCRE
+active-class counts were 6 and 7 in smoke, with zero skips. Verdict:
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`.
+
+The corrected 8-step local benchmark also passed all integrity checks. LCRE active-class counts were
+`{5:1,6:1}` for ResNet10 and `{7:2}` for MobileNetV2; skip rate was zero. The wall-clock projection
+for the complete six-arm, three-epoch training portion is `8150.01 s / 2.2639 RTX-3050 GPU-hours`,
+excluding final Phase-A0 evaluation. This local number cannot establish the frozen `<=1 V100
+GPU-hour` cost gate. Verdict: `BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION`.
+
+No Formal has started. The next permitted action requires user direction: either stop, or run an
+OpenI V100 benchmark using the existing 109142359-byte CVRS M0 v2 archive to obtain a platform-valid
+cost estimate. Formal remains locked behind a later explicit user approval and
+`--mode=formal --confirm-formal`. Do not tune lambda, active-class rules, probes, epochs or gates.
 
 ## Current Objective: Post-CVRS Research Decision / No Active Experiment
 

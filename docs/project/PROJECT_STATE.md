@@ -1,6 +1,29 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-09-05
+Last updated: 2026-09-06
+
+## Current Implementation State: LCRE M0 Ready Through Local Benchmark - 2026-09-06
+
+```text
+LCRE method/config/spec/runner/OpenI entry: COMPLETE
+focused tests:                          13/13 PASS
+real-checkpoint six-arm CUDA smoke:     PASS / SMOKE_ONLY_NO_SCIENTIFIC_DECISION
+active-class feasibility:               PASS; zero skips in smoke and benchmark
+private/AugMix three-arm matching:      PASS for both architectures
+JSD/LCRE PRIME trace matching:          PASS for both architectures
+BN running-stat isolation:              PASS
+taxonomy/public/oracle training reads:  NONE
+local 8-step benchmark:                 PASS / BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION
+local projected six-arm training:       8150.01 s / 2.2639 RTX-3050 GPU-hours
+OpenI V100 benchmark:                   NOT STARTED
+Formal:                                 LOCKED / NOT STARTED
+```
+
+The implementation lives in `fedprime/methods/lcre.py`, `scripts/run_cle_lcre_m0.py`,
+`scripts/openi_cle_lcre_m0_entry.py`, `configs/cle_lcre_m0_seed0.json` and `tests/test_lcre.py`.
+It reuses the historical metadata-free private loader, original AugMix/JSD/DCL loss, frozen Bank A
+and Phase-A0 evaluator without modifying CVRS history. The next action is a user decision about a
+V100 benchmark; do not run Formal, tune lambda, change the active-class rule or modify gates.
 
 ## Current Implementation State: CVRS M0 Formal NO-GO / No Active Experiment - 2026-09-05
 

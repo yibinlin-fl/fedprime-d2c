@@ -1,0 +1,70 @@
+{
+  "protocol": "cle_lcre_m0_cheap_method_gate_v1",
+  "status": "FROZEN_BEFORE_FORMAL",
+  "seed": 0,
+  "paths": {
+    "private_root": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/data/gamma09",
+    "split_path": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/splits/strict_cle_v1_alpha05_gamma_pair_seed0_split0.npz",
+    "evaluation_root": "local_runs/cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0/evaluation",
+    "checkpoint_root": "local_runs/cle_public_canonicalization_phase_b0/cle_public_canonicalization_phase_b0_seed0_inputs/checkpoints/h9"
+  },
+  "contexts": [
+    {"client": 0, "architecture": "ResNet10"},
+    {"client": 3, "architecture": "Mobilenetv2"}
+  ],
+  "arms": ["baseline", "jsd", "lcre"],
+  "private_training": {
+    "epochs": 3,
+    "batch_size": 64,
+    "num_workers": 0,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "max_grad_norm": 5.0,
+    "objective": "unchanged AugMix/JSD/DCL plus optional in-step private PRIME regularizer",
+    "lambda_jsd": 12.0,
+    "fresh_optimizer_reason": "round-40 artifacts contain model weights but no Adam state"
+  },
+  "private_probe_regularization": {
+    "input": "private fit image and private task label only",
+    "regularization_interval_private_steps": 4,
+    "probe_bank": "A",
+    "probe_bank_sha256": "6CAE529D4240715162B19B3968D47FA037A940B4D52D688FF52B859C5523DC01",
+    "probes_per_update": 4,
+    "probe_schedule_seed": 20260905,
+    "probe_schedule": "shuffle without replacement; one 64-probe cycle per 16 regularized steps",
+    "same_recipe_for_entire_batch": true,
+    "batchnorm_during_auxiliary_forward": "freeze running statistics; retain affine gradients",
+    "lambda_initial_gradient_ratio": 0.1,
+    "lambda_calibration": "first regularized private step before its update, once per architecture and arm, then frozen",
+    "active_class_min_count": 2,
+    "minimum_active_classes": 2,
+    "epsilon": 1e-8
+  },
+  "evaluation": {
+    "dsa": "original Phase-A0 paired 1000-source x 16-corruption oracle",
+    "avg_acc": "mean top-1 accuracy over all source/operator pairs per architecture",
+    "worst_acc": "minimum top-1 accuracy over the 16 operators per architecture",
+    "oracle_opened_only_after_training": true
+  },
+  "gates": {
+    "per_architecture_lcre_dsa_relative_reduction_min": 0.2,
+    "per_architecture_jsd_minus_lcre_dsa_min": 0.02,
+    "per_architecture_avg_accuracy_drop_max_pp": 1.0,
+    "per_architecture_worst_accuracy_drop_max_pp": 1.0,
+    "all_architectures_must_pass": true,
+    "pass_verdict": "GO_TO_FULL_HFL_INTEGRATION",
+    "failure_verdict": "NO_GO_LCRE"
+  },
+  "forbidden": [
+    "communication changes",
+    "public CIFAR-100 carriers during training",
+    "private corruption type/family/severity/binding during training",
+    "detector trigger",
+    "K0-B guided targeting",
+    "CRSF or CVRS-v2",
+    "BNR or nuisance swapping",
+    "lambda grid search",
+    "post-oracle tuning"
+  ]
+}

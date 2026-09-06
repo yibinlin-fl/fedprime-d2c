@@ -1,5 +1,17 @@
 # TODO Next
 
+## Current - LCRE M0 Cost Decision - 2026-09-06
+
+LCRE M0 is implemented and verified through a real-checkpoint six-arm smoke and local 8-step
+benchmark. The local RTX 3050 projection is `8150.01 s / 2.2639 GPU-hours`, excluding final oracle,
+so it cannot certify the frozen `<=1 V100 GPU-hour` cost gate. `FORMAL_NOT_STARTED`.
+
+Wait for the user to choose whether to run an OpenI V100 benchmark using the existing valid
+109142359-byte `cle_cvrs_m0_seed0_inputs.tar.gz`. If approved, run benchmark only, download and audit
+its artifact, report the V100 cost, and stop again. Formal requires a separate later explicit
+approval. Do not tune lambda, probes, epochs, active-class handling or gates; do not run DSA during
+benchmark; do not start full HFL even if M0 later passes.
+
 ## Current - Post-CVRS Research Decision - 2026-09-05
 
 CVRS M0 completed with a valid `NO_GO_CVRS`. Do not run another OpenI task, add seeds, tune lambda,

@@ -1,6 +1,23 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-04
+Updated: 2026-09-06
+
+2026-09-06 新候选 LCRE（Label-Conditioned Response Equalization）M0 已完成隔离实现、13/13
+聚焦测试、两架构六臂真实 checkpoint CUDA smoke 和本地 8-step benchmark。LCRE 处罚
+`Var_Y(E[delta|Y])`，区别于 JSD 的逐样本 consistency 和 CVRS 的全局 `||E delta||^2`；训练
+只读 private fit image/task label，不读 public carriers、taxonomy、binding 或 DSA。Smoke 的
+LCRE active-class skip rate 为 0；本地 RTX 3050 外推完整六臂三 epoch 为
+`8150.01 s / 2.2639 GPU-hours`，不能代替 V100 成本门。Formal 未启动，下一步需用户决定是否先
+运行 OpenI V100 benchmark。入口：
+
+```text
+docs/experiments/current/CLE_LCRE_M0_CHEAP_METHOD_GATE_ZH.md
+configs/cle_lcre_m0_seed0.json
+fedprime/methods/lcre.py
+scripts/run_cle_lcre_m0.py
+scripts/openi_cle_lcre_m0_entry.py
+tests/test_lcre.py
+```
 
 2026-09-04 完成 P4 Routing Targetability Gap 纯离线解释审计。网页端提出的“HFL 使
 generic profile 与真实 harmful routing 解耦”未获支持：H9 generic-vs-harmful 的 mean

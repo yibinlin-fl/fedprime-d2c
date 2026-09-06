@@ -1,6 +1,25 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-09-05
+Updated: 2026-09-06
+
+## LCRE M0 Implementation and Local Cost Gate - 2026-09-06
+
+用户在 CVRS `NO_GO` 后明确授权 LCRE（Label-Conditioned Response Equalization）cheap M0。
+冻结对象是 class-balanced `Var_c(E[delta_q|Y=c]) / stopgrad(E_q_bal)`，active class 要求 batch
+计数至少2且至少两个 active classes；它只约束 label-conditioned first moment dependence，不
+声称识别真实 nuisance、恢复 harmful routing 或保证独立性。三臂为原 AugMix/JSD/DCL baseline、
+compute-matched Private-PRIME-JSD 和 LCRE；每第4个 private step 在同一 task step 内单次
+backward/Adam step。JSD/LCRE 使用固定 Bank A、每次4 probes、seed 20260905，并各自在首次
+regularized step 以全参数梯度范数做一次 10% lambda matching 后永久冻结。
+
+实现、13/13 tests 和真实 H9 round-40 ResNet10/client0、MobileNetV2/client3 CUDA smoke 已通过。
+六臂 private/AugMix trace 按架构一致，JSD/LCRE probe trace 一致，BN running stats 未改变，输出
+checkpoint 可严格重载，训练未读取 public carriers、taxonomy、binding 或 oracle。Smoke LCRE
+active classes 为6/7且 skip rate 0。8-step 本地 benchmark 同样完整性通过，LCRE active-class
+分布为 ResNet10 `{5:1,6:1}`、MobileNetV2 `{7:2}`，skip rate 0；完整六臂三 epoch 外推为
+`8150.01 s / 2.2639 RTX-3050 GPU-hours`，不含最终 oracle。该结果只用于本地成本规划，不能证明
+V100 `<=1 GPU-hour`。Formal 未启动；需用户先决定是否运行 OpenI V100 benchmark，再另行明确
+授权 Formal。
 
 ## CVRS M0 Formal - 2026-09-05
 

@@ -1,0 +1,8 @@
+arm,corrected_name,last5_avg,last5_worst,wcca,cfg,interpretation
+A0,RAHFL control,30.0853,25.0427,0.8500,30.4400,"AugMix/JSD/DCL plus strict AsymHFL-val"
+A1,Calibrated hard PEW + hard BER,34.6320,29.4280,7.2500,24.6400,"exact final method; historical report called this BER-only"
+A2,CDep only,30.4070,24.7707,1.1500,30.7750,"no stable independent benefit"
+A3,PEW + BER + CDep,34.0230,28.9467,5.9000,24.1200,"historical full system; not the exact final method"
+A4,Fixed-threshold PEW + BER,33.5820,28.6040,5.0500,27.0700,"threshold 0.55; weaker PEW diagnostic accuracy"
+A5,Shuffled PEW labels + BER,31.5437,26.0147,2.5500,37.3750,"breaks sample-environment correspondence"
+A6,Oracle family + BER,35.1200,30.7253,7.7000,20.6900,"private metadata analysis-only upper bound; not deployable"

@@ -1,0 +1,4 @@
+method,last5_avg,last5_worst,wcca,cfg,scope
+RAHFL,30.0853,25.0427,0.8500,30.4400,"matched control"
+Standard PEW+BER,34.6320,29.4280,7.2500,24.6400,"public PEW uses full operator pools"
+Strict-LOO PEW+BER,34.9880,31.2973,5.4500,24.3300,"holds out impulse_noise; zoom_blur; fog; pixelate from public PEW train/val and private fit"

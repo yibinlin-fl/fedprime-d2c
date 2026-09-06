@@ -1,0 +1,11 @@
+method,last5_avg,last5_worst,wcca,cfg,protocol_note
+PEW+BER,34.6320,29.4280,7.2500,24.6400,"exact final method; seed0; 12 rounds; strict fit/audit"
+Local-only,30.4367,25.7573,0.3000,30.8350,"matched CLE-HFL v2 screen"
+RAHFL,30.0853,25.0427,0.8500,30.4400,"matched communication control"
+AugHFL,26.6993,20.5587,0.0000,34.7150,"matched CLE-HFL v2 screen"
+FedProto,24.1250,20.5493,0.7000,37.5850,"matched CLE-HFL v2 screen"
+FedDF,23.6607,19.2507,0.3500,38.3950,"matched CLE-HFL v2 screen"
+KT-pFL,23.6587,19.5467,0.3500,38.7300,"matched CLE-HFL v2 screen"
+FCCL,23.3163,19.2280,0.7000,37.4000,"matched CLE-HFL v2 screen"
+FedMD,23.2023,19.1293,0.4000,39.0150,"matched CLE-HFL v2 screen"
+RHFL,17.1053,14.9800,0.0000,36.4550,"matched CLE-HFL v2 screen"

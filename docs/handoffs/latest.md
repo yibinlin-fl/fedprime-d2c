@@ -2,6 +2,32 @@
 
 Updated: 2026-09-06
 
+## Current Objective: PEW Paper Convergence / Web Draft Handoff Ready
+
+The user has frozen LCRE/CVRS and authorized a conservative small-paper convergence path. The exact
+final method is `calibrated hard PEW + hard BER + AugMix/JSD/DCL + strict AsymHFL-val`, with CDep
+removed. A zero-GPU static code/evidence audit is complete. The original implementation and entries
+remain present; private corruption metadata is diagnostic-only, while training uses hard PEW
+pseudo-environments and fit-only client-local class-by-environment counts.
+
+The paper package is:
+
+```text
+deliverables/pew_paper_convergence_20260906/PEW_PAPER_WEB_HANDOFF_ZH.md
+deliverables/pew_paper_convergence_20260906/PEW_CODE_AUDIT_ZH.md
+deliverables/pew_paper_convergence_20260906/EVIDENCE_LEDGER_ZH.md
+deliverables/pew_paper_convergence_20260906/TABLE1_MAIN_BASELINES.csv
+deliverables/pew_paper_convergence_20260906/TABLE2_ABLATIONS.csv
+deliverables/pew_paper_convergence_20260906/TABLE3_OPERATOR_LOO.csv
+```
+
+Primary exact-method evidence is fixed-scenario, training-seed-0, 12-round main comparison,
+ablation, operator-level LOO and efficiency. Historical three-seed and 40-round positive packages
+included CDep and must remain supporting early-system evidence, never exact PEW+BER evidence. The
+paper must be framed as a controlled CLE-HFL benchmark plus taxonomy-assisted empirical mitigation,
+not taxonomy-free method novelty or universal SOTA. No experiment is active or authorized. The next
+action is a web-GPT manuscript draft followed by a sentence-level evidence audit in this repository.
+
 ## Current Objective: LCRE M0 Implemented / Local Benchmark Complete / Formal Locked
 
 The user authorized a new cheap method gate for Label-Conditioned Response Equalization (LCRE).

@@ -1,0 +1,48 @@
+{
+  "phase": "WEC-BER Phase-0 Witness Error Transfer Gate",
+  "seed": 0,
+  "training_authorized": false,
+  "device": "cpu",
+  "source_archive": "outputs/cle_pew_loo_12round_seed0_outputs.tar.gz",
+  "pew_checkpoint_member": "outputs/pew_checkpoints/cle_pew_loo_standard_seed0.pt",
+  "pew_report_member": "outputs/cle_pew_loo_standard_pew_ber_seed0_12round/pew_private_report.json",
+  "pew_prediction_prefix": "outputs/cle_pew_loo_standard_pew_ber_seed0_12round/pew_predictions",
+  "public_root": "RAHFL-master/Dataset/cifar_100",
+  "private_root": "RAHFL-master/Dataset/cifar_10_cle_v2/alpha05_gamma09_seed0_split0",
+  "public_size": 5000,
+  "validation_fraction": 0.2,
+  "samples_per_operator": 250,
+  "operator_audit_seed": 20260907,
+  "latent_environment_names": ["clean", "noise", "blur", "weather", "digital"],
+  "observed_environment_names": ["clean", "noise", "blur", "weather", "digital", "unknown"],
+  "primary_channel_shape": [6, 5],
+  "protocol_corrections": {
+    "unknown": "kept as an observed row but not treated as a latent base family",
+    "operator_crossfit": "each held-out operator scores only its true-family channel column"
+  },
+  "lambda_candidates": [0.0, 0.0001, 0.001, 0.01, 0.1],
+  "strict_fit_audit": {
+    "audit_ratio": 0.15,
+    "min_audit_per_class": 5,
+    "min_fit_per_class": 2,
+    "seed": 0
+  },
+  "gates": {
+    "g1_rank": 5,
+    "g1_min_singular_value": 0.05,
+    "g1_max_condition_number": 20.0,
+    "g2_median_l1": 0.25,
+    "g2_p75_l1": 0.35,
+    "g2_dominant_confusion_preservation": 0.60,
+    "g3_median_relative_reduction": 0.20,
+    "g3_operator_improvement_fraction": 0.75,
+    "g4_support_relative_error": 0.80,
+    "g4_risk_relative_error": 0.85,
+    "g4_min_improved_clients": 3,
+    "severity_max_frobenius": 0.25,
+    "severity_max_diagonal_range": 0.15,
+    "unknown_rate_warning": 0.15
+  },
+  "private_risk_checkpoint": null,
+  "private_risk_policy": "NOT_EVALUABLE unless an exact-method fixed classifier checkpoint is available"
+}

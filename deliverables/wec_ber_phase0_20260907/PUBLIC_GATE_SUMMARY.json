@@ -1,0 +1,94 @@
+{
+  "channel": {
+    "singular_values": [
+      0.9870419311234006,
+      0.8242652221666265,
+      0.5936593956471632,
+      0.444065955915517,
+      0.2588200778763523
+    ],
+    "rank": 5,
+    "condition_number": 3.8136219539928664,
+    "min_singular_value": 0.2588200778763523,
+    "off_diagonal_mass": 0.3960176033475219
+  },
+  "lambda": 0.0,
+  "lambda_selection": [
+    {
+      "lambda": 0.0,
+      "median_l1": 0.12319260944152256,
+      "mean_l1": 0.34213457495978394
+    },
+    {
+      "lambda": 0.0001,
+      "median_l1": 0.12364033455653886,
+      "mean_l1": 0.34242937298035403
+    },
+    {
+      "lambda": 0.001,
+      "median_l1": 0.12765008729544014,
+      "mean_l1": 0.3450616880619553
+    },
+    {
+      "lambda": 0.01,
+      "median_l1": 0.17009363412749137,
+      "mean_l1": 0.3700534016152086
+    },
+    {
+      "lambda": 0.1,
+      "median_l1": 0.48909442173189444,
+      "mean_l1": 0.6151737595588986
+    }
+  ],
+  "crossfit": {
+    "median_l1": 0.30933333333333335,
+    "p75_l1": 0.5266666666666666,
+    "dominant_confusion_preservation": 0.6875,
+    "worst_operators": [
+      {
+        "operator": "jpeg_compression",
+        "family": "digital",
+        "column_l1": 0.7973333333333332
+      },
+      {
+        "operator": "spatter",
+        "family": "weather",
+        "column_l1": 0.7306666666666666
+      },
+      {
+        "operator": "contrast",
+        "family": "digital",
+        "column_l1": 0.6026666666666667
+      },
+      {
+        "operator": "snow",
+        "family": "weather",
+        "column_l1": 0.5466666666666666
+      },
+      {
+        "operator": "brightness",
+        "family": "digital",
+        "column_l1": 0.52
+      }
+    ]
+  },
+  "recovery": {
+    "median_relative_error_reduction": 0.6599718910478978,
+    "operator_improvement_fraction": 0.8125
+  },
+  "severity": {
+    "status": "SEVERITY_DEPENDENCE_HIGH",
+    "max_frobenius": 0.6497738067974116,
+    "max_diagonal_recall_range": 0.575
+  },
+  "gates": {
+    "G1": true,
+    "G2": false,
+    "G3": true
+  },
+  "validation_indices_sha256": "80A9407721B44FA3358C1F8B52BE735CFF695988CBC7ADDC84B21D51E2C03038",
+  "protocol": {
+    "unknown": "kept as an observed row but not treated as a latent base family",
+    "operator_crossfit": "each held-out operator scores only its true-family channel column"
+  }
+}

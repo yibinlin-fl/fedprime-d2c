@@ -1,0 +1,25 @@
+{
+  "phase": "WEC-BER Phase-0 Witness Error Transfer Gate",
+  "verdict": "NO_GO_WEC_BER_ERROR_TRANSFER",
+  "gates": {
+    "G1": true,
+    "G2": false,
+    "G3": true,
+    "G4_support": null,
+    "G4_risk": null
+  },
+  "public_frozen_lambda_pi": 0.0,
+  "public_frozen_lambda_v": 0.0,
+  "primary_channel_shape": [
+    6,
+    5
+  ],
+  "protocol_corrections": {
+    "unknown": "kept as an observed row but not treated as a latent base family",
+    "operator_crossfit": "each held-out operator scores only its true-family channel column"
+  },
+  "public_seal_sha256": "8F792073C0A81959C15DE7F28FF19BD27C2272E890006D89DFA71974135F2571",
+  "private": null,
+  "training_started": false,
+  "full_hfl_training_authorized": false
+}

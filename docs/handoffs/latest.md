@@ -1,6 +1,42 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-06
+Updated: 2026-09-07
+
+## Latest Decision: WEC-BER Phase-0 Fails Public Error Transfer
+
+The zero-training, CPU-only WEC-BER witness-error transfer gate is complete. The primary channel was
+corrected before execution to a `6 observed x 5 latent` matrix: PEW unknown remains an observable
+outcome but is not treated as a base corruption family. Each operator cross-fit scores only its true
+family column. Public outputs were sealed before any private oracle could be opened.
+
+```text
+G1 numerical identifiability: PASS
+G2 operator error transfer:   FAIL
+G3 public recovery:           PASS
+G4 private support/risk:      NOT OPENED
+verdict:                      NO_GO_WEC_BER_ERROR_TRANSFER
+TRAINING_NOT_STARTED
+```
+
+The pooled public Q is full rank with min singular value `0.258820` and condition number `3.813622`,
+but operator cross-fit median/p75 column L1 are `0.309333/0.526667`, above the frozen `0.25/0.35`
+limits. Dominant-confusion preservation is `68.75%`. Severity dependence is also high (max
+Frobenius `0.649774`, maximum diagonal-recall range `57.50 pp`). Therefore pooled invertibility does
+not establish a transferable PEW error channel. G3 cannot override the mandatory G2 failure.
+
+Private oracle, DSA and GPU were not opened/used. The exact PEW+BER archive also lacks a classifier
+checkpoint (`save_final=false`), so private risk recovery was independently unavailable. Do not
+revive WEC-BER by deleting hard operators, selecting families, tuning lambda/threshold/gates, adding
+seeds, or implementing severity-aware training. Full evidence:
+
+```text
+deliverables/wec_ber_phase0_20260907/RESULT_SUMMARY_ZH.md
+deliverables/wec_ber_phase0_20260907/PHASE0_MANIFEST.json
+scripts/analyze_wec_ber_phase0.py
+fedprime/methods/witness_error_correction.py
+configs/wec_ber_phase0_seed0.json
+tests/test_witness_error_correction.py
+```
 
 ## Current Objective: PEW Paper Convergence / Web Draft Handoff Ready
 

@@ -1,6 +1,19 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-07
+Updated: 2026-09-08
+
+## Latest Artifact: CLE-HFL / DSA / Local-First / PEW+BER Web Discussion Handoff
+
+A self-contained GPT Web discussion document now records the complete four-stage research chain,
+exact mathematical objects and results, RAHFL inheritance, PEW+BER evidence limits, frozen negative
+routes, and the mandatory questions for any proposed plugin extension. It explicitly separates the
+CLE-v1 Phase-A0/A1a mechanism evidence from the CLE-HFL v2 PEW+BER method evidence and does not
+authorize implementation or experiments:
+
+```text
+deliverables/cle_hfl_pew_ber_plugin_discussion_20260908/
+  CLE_HFL_PEW_BER_GPTWEB_HANDOFF_ZH.md
+```
 
 ## Latest Decision: WEC-BER Phase-0 Fails Public Error Transfer
 

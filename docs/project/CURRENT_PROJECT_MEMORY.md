@@ -4089,3 +4089,32 @@ CRSF相对RawSpec优势仅`3.838/3.959pp`，低于10pp。DSA reduction仅`0.0052
 单调且最大最终KL为0.019646。失败不是代码或封存错误。按预注册规则，停止CRSF，不做B-to-A、
 剩余架构、调参、replication或完整训练。K1-C0只保留“CLE模型存在响应谱集中”的观察性发现，
 不能再解释为该集中度是足够强的因果杠杆。
+
+## OpenI 大文件命令行上传记录 - 2026-09-09
+
+OpenI 网页端单文件上传上限为 512 MB；超过该限制时，先在网页创建空数据集，再从本地
+PowerShell 使用官方 `openi` CLI 上传。2026-09-09 使用 `openi==3.0.1` 成功上传 CLE-v2
+factorial 正式输入：
+
+```text
+repo_id: chujiu/CLE_v2_Factorial_Seed0_PEW_20260909
+file: cle_hfl_v2_paired_factorial_seed0_split0_with_pew.tar.gz
+bytes: 694118746
+sha256: B6C802DA0BC2A95183DB91D2855E35D9A807B39441F2A24CF88514EB1CAD69AA
+CLI result: 100%, 662.0 MiB, 2.6 MiB/s, 00:05:49
+```
+
+Windows 复用流程：
+
+```powershell
+& "D:\anaconda3\envs\pytorch\python.exe" -m pip install -U openi -i https://pypi.tuna.tsinghua.edu.cn/simple
+& "D:\anaconda3\envs\pytorch\Scripts\openi.exe" login --token "<OPENI_TOKEN>"
+& "D:\anaconda3\envs\pytorch\Scripts\openi.exe" whoami
+& "D:\anaconda3\envs\pytorch\Scripts\openi.exe" dataset upload "<owner/dataset>" "<absolute-file-path>" --upload_name "<remote-file-name>" --max_workers 10
+```
+
+Token 只从 `https://openi.pcl.ac.cn/user/settings/applications` 获取，CLI 登录后保存在本机
+`C:\Users\asus\.openi\token.json`。**禁止把 Token 明文写入仓库、实验配置、启动卡、日志或
+提交历史。** 2026-09-09 使用的 Token 曾在聊天中明文出现，应撤销并轮换；项目记忆只记录
+凭据位置和安全流程，不保存凭据值。单文件上传可重复执行同一命令进行断点续传；上传前后
+必须核对本地 byte size 与 SHA256，并确保 repo_id 是目标数据集。

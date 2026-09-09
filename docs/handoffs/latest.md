@@ -15,6 +15,11 @@ scripts/openi_cle_v2_factorial_entry.py
 
 本阶段没有产生科学结果；本地 smoke 准确率禁止引用。
 
+2026-09-09 正式输入包已通过 `openi==3.0.1` 命令行上传至
+`chujiu/CLE_v2_Factorial_Seed0_PEW_20260909`，CLI 返回 100%。由于上传使用的 Token 曾在聊天
+中明文出现，必须撤销并轮换；仓库只记录 CLI 流程与本机凭据路径，不保存 Token。下一步仍仅
+允许创建 `mode=benchmark, confirm_formal=false` 的 OpenI 任务。
+
 ## Latest Artifact: CLE-HFL / DSA / Local-First / PEW+BER Web Discussion Handoff
 
 A self-contained GPT Web discussion document now records the complete four-stage research chain,

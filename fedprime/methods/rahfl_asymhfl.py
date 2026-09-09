@@ -192,6 +192,11 @@ class AsymHFLExperiment:
                             "_fedease_environment_annotations",
                             None,
                         ),
+                        loader_seed=(
+                            int(strict_cfg["loader_seed"])
+                            if strict_cfg.get("loader_seed") is not None
+                            else None
+                        ),
                     )
                 pretrain_loaders = private_loaders
                 print(
@@ -1283,8 +1288,18 @@ class AsymHFLExperiment:
     ) -> float:
         losses = []
         fedease_diagnostics = []
+        paired_rng_cfg = method_cfg.get("paired_local_rng", {})
         for client_id, loader in enumerate(private_loaders):
-            for _ in range(int(train_cfg.get("local_epochs", 1))):
+            for local_epoch in range(int(train_cfg.get("local_epochs", 1))):
+                if bool(paired_rng_cfg.get("enabled", False)):
+                    paired_seed = (
+                        int(paired_rng_cfg.get("base_seed", 20_260_909))
+                        + 1_000_003 * int(self.config.get("seed", 0))
+                        + 10_007 * int(round_idx)
+                        + 101 * int(client_id)
+                        + int(local_epoch)
+                    )
+                    seed_everything(paired_seed)
                 cl_module = str(method_cfg.get("cl_module", "dcl")).lower()
                 if cl_module == "fedease":
                     fedease_cfg = method_cfg.get("fedease", {})
@@ -1307,6 +1322,14 @@ class AsymHFLExperiment:
                         log_interval=train_cfg.get("local_log_interval"),
                         context=f"FedEASE local phase, round={round_idx}, client={client_id}",
                         diagnostics=epoch_diagnostics,
+                        batch_trace_fn=(
+                            self._build_local_batch_trace_fn(
+                                round_idx=round_idx,
+                                client_id=client_id,
+                            )
+                            if bool(method_cfg.get("record_local_batch_trace", False))
+                            else None
+                        ),
                     )
                     fedease_diagnostics.append(epoch_diagnostics)
                 elif use_prime:

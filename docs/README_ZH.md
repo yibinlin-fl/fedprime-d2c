@@ -1,6 +1,20 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-06
+Updated: 2026-09-09
+
+## 当前 CLE-v2 × PEW+BER 八臂闭环
+
+统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 配对协议、正式数据、冻结公共 PEW、审计/分析器与 OpenI 入口已完成；当前仅允许先跑 benchmark，Formal 尚未授权：
+
+```text
+docs/experiments/current/CLE_V2_PEW_BER_FACTORIAL_CLOSURE_OPENI_ZH.md
+scripts/prepare_cle_v2_factorial_data.py
+scripts/prepare_cle_v2_factorial_pew.py
+scripts/audit_cle_v2_factorial.py
+scripts/run_cle_v2_factorial.py
+scripts/analyze_cle_v2_factorial.py
+scripts/openi_cle_v2_factorial_entry.py
+```
 
 2026-09-06 新候选 LCRE（Label-Conditioned Response Equalization）M0 已完成隔离实现、13/13
 聚焦测试、两架构六臂真实 checkpoint CUDA smoke 和本地 8-step benchmark。LCRE 处罚

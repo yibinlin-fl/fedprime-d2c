@@ -30,6 +30,7 @@ def train_local_fedease_epoch(
     log_interval: int | None = None,
     context: str = "PEW+BER local phase",
     diagnostics: dict[str, float] | None = None,
+    batch_trace_fn=None,
 ) -> float:
     """Train one PEW+BER local epoch with AugMix/JSD and optional DCL."""
 
@@ -76,6 +77,8 @@ def train_local_fedease_epoch(
                 "PEW+BER requires (views, labels, environment_ids) or "
                 "(views, labels, environment_ids, environment_features, confidence)"
             )
+        if batch_trace_fn is not None:
+            batch_trace_fn(batch_idx=batch_idx, images=images, labels=labels)
         if not isinstance(images, (tuple, list)) or len(images) < 4:
             raise ValueError("PEW+BER requires clean/strong/second-strong/weak AugMix views")
 

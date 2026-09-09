@@ -140,6 +140,7 @@ def build_fedease_fit_augmix_loaders(
     num_workers: int,
     augmix_module: str = "jsd",
     environment_annotations: dict[int, dict[str, np.ndarray]] | None = None,
+    loader_seed: int | None = None,
 ) -> list[data.DataLoader]:
     """Build FedEASE loaders restricted to a persisted client-local fit split."""
 
@@ -168,6 +169,10 @@ def build_fedease_fit_augmix_loaders(
             environment_probabilities=None if annotation is None else annotation.get("environment_probabilities"),
         )
         fit_dataset = data.Subset(annotated, split.fit_indices.tolist())
+        loader_generator = None
+        if loader_seed is not None:
+            loader_generator = torch.Generator()
+            loader_generator.manual_seed(int(loader_seed) * 1009 + int(client_id))
         loaders.append(data.DataLoader(
             fit_dataset,
             batch_size=int(train_batch_size),
@@ -175,6 +180,7 @@ def build_fedease_fit_augmix_loaders(
             drop_last=True,
             num_workers=int(num_workers),
             pin_memory=torch.cuda.is_available(),
+            generator=loader_generator,
         ))
     return loaders
 

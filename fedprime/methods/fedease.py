@@ -117,6 +117,10 @@ class FedEASEExperiment(AsymHFLExperiment):
         train_cfg = self.config["train"]
         fedease_cfg = self.config["method"]["fedease"]
         pew_cfg = fedease_cfg.get("pew", fedease_cfg.get("environment_witness", {}))
+        annotation_root = pew_cfg.get("annotation_root")
+        if annotation_root:
+            self._load_frozen_environment_annotations(Path(annotation_root))
+            return
         label_mode = str(pew_cfg.get("label_mode", "hard")).lower()
         if label_mode not in {"hard", "multi_label"}:
             raise ValueError("PEW label_mode must be hard or multi_label")
@@ -266,6 +270,51 @@ class FedEASEExperiment(AsymHFLExperiment):
         }
         (self.output_dir / "pew_private_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
+        )
+
+    def _load_frozen_environment_annotations(self, root: Path) -> None:
+        """Load one audited PEW annotation cache shared by matched factorial arms."""
+
+        root = root.resolve()
+        manifest_path = root / "manifest.json"
+        if not manifest_path.is_file():
+            raise FileNotFoundError(manifest_path)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("protocol") != "cle_v2_factorial_frozen_pew_annotations_v1":
+            raise ValueError("Unexpected frozen PEW annotation protocol")
+        private_root = Path(self.config["data"]["private_root"]).resolve()
+        annotations = {}
+        for client_id in range(len(self.config["models"]["names"])):
+            path = root / f"client_{client_id}.npz"
+            if not path.is_file():
+                raise FileNotFoundError(path)
+            expected = manifest.get("clients", {}).get(str(client_id), {})
+            if int(path.stat().st_size) != int(expected.get("bytes", -1)):
+                raise ValueError(f"Frozen PEW annotation size mismatch: {path}")
+            import hashlib
+
+            digest = hashlib.sha256(path.read_bytes()).hexdigest().upper()
+            if digest != str(expected.get("sha256", "")).upper():
+                raise ValueError(f"Frozen PEW annotation SHA256 mismatch: {path}")
+            payload = {
+                key: np.asarray(value)
+                for key, value in np.load(path, allow_pickle=False).items()
+            }
+            image_count = int(
+                np.load(
+                    private_root / f"client_{client_id}" / "train_labels.npy",
+                    allow_pickle=False,
+                ).size
+            )
+            if payload.get("environment_ids", np.empty(0)).shape != (image_count,):
+                raise ValueError(
+                    f"Frozen PEW annotation length mismatch for client {client_id}"
+                )
+            annotations[client_id] = payload
+        self._fedease_environment_annotations = annotations
+        print(
+            f"[setup] loaded audited frozen PEW annotations from {root}",
+            flush=True,
         )
 
     def _diagnostic_environment_ids(

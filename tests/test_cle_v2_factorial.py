@@ -100,6 +100,7 @@ def test_arm_configs_share_data_and_only_plugin_uses_annotations(tmp_path):
     assert configs["h9_p"]["method"]["fedease"]["ber"]["enabled"] is True
     assert configs["l9_p"]["method"]["communication"] == "none"
     assert all(config["method"]["paired_local_rng"]["enabled"] for config in configs.values())
+    assert all(config["num_workers"] == 0 for config in configs.values())
 
     benchmark = arm_config(
         "h9_p",
@@ -114,3 +115,4 @@ def test_arm_configs_share_data_and_only_plugin_uses_annotations(tmp_path):
     assert benchmark["train"]["batch_size"] == 64
     assert benchmark["train"]["max_local_batches"] == 8
     assert benchmark["train"]["max_test_batches"] == 1
+    assert benchmark["num_workers"] == 0

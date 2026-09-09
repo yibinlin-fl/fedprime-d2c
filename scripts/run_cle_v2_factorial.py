@@ -157,7 +157,11 @@ def arm_config(
         "method_name": "fedease" if plugin else "rahfl",
         "seed": int(train_seed),
         "device": device,
-        "num_workers": 0 if smoke else 2,
+        # The AugMix view transform contains torchvision Lambda closures.  They
+        # are not spawn-pickleable on Windows and have also proved unstable in
+        # the constrained OpenI worker process.  Worker count only affects data
+        # loading throughput, so keep it at zero for every factorial mode.
+        "num_workers": 0,
         "output_root": str(output_root),
         "data": {
             "scenario": "cle_hfl_v2",

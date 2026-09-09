@@ -2,7 +2,7 @@
 
 Updated: 2026-09-09
 
-## CLE-v2 × PEW+BER 八臂配对闭环已实现，等待 OpenI Benchmark
+## CLE-v2 × PEW+BER 八臂配对闭环已实现，等待重跑 OpenI Benchmark
 
 用户已批准完成统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 八臂实现、正式数据与公共 PEW 准备，但未批准 OpenI Formal。正式包、静态审计、5/5 单元测试以及八臂一批次 CUDA smoke 均已完成；同一 gamma 下四臂的 source/AugMix 首批轨迹完全一致。PEW 只在公共 CIFAR-100 上训练一次并冻结；真实 corruption metadata 仍为报告/DSA 专用。
 
@@ -14,6 +14,13 @@ scripts/openi_cle_v2_factorial_entry.py
 ```
 
 本阶段没有产生科学结果；本地 smoke 准确率禁止引用。
+
+首次 OpenI benchmark 在首臂 `h0_b` 的 local phase 以 `SIGABRT` 退出。复现审计发现
+benchmark/formal 原配置启用了 `num_workers=2`，而 AugMix 数据变换含局部 Lambda；该路径在
+Windows 明确触发不可序列化错误，并在 OpenI worker 进程中不稳定。现已将八臂所有模式固定为
+`num_workers=0`；这只改变加载吞吐，不改变样本、batch、随机种子、损失、轮数或八臂协议。
+修复后原失败臂已按完整 benchmark 设置（每客户端 8 batches）本地 CUDA 跑通，5/5 聚焦测试
+通过。下一步仍只允许重跑 benchmark，失败任务不构成科学结果。
 
 2026-09-09 正式输入包已通过 `openi==3.0.1` 命令行上传至
 `chujiu/CLE_v2_Factorial_Seed0_PEW_20260909`，CLI 返回 100%。由于上传使用的 Token 曾在聊天

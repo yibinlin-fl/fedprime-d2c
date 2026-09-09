@@ -1,6 +1,7 @@
 # CLE-HFL v2 × PEW+BER 八臂配对闭环
 
-状态：实现、正式输入、静态审计和本地 smoke 已完成；OpenI benchmark 尚未启动；Formal 锁定。
+状态：实现、正式输入、静态审计和本地 smoke 已完成；首次 OpenI benchmark 因 DataLoader
+worker 崩溃，稳定性修复后等待重跑；Formal 锁定。
 
 ## 研究问题
 
@@ -72,6 +73,10 @@ CI 使用 source-paired bootstrap 2,000 次。binding-specificity 使用保持�
 ## OpenI 顺序
 
 必须先运行 `mode=benchmark`：正式 batch size 64，每 arm 1 round、每客户端 8 个 local batches，并限制评价批数；仅用于估时和检查 V100S 链路。下载 benchmark 并确认成本后，用户再次明确批准，才可运行 `mode=formal --confirm_formal=true`。
+
+运行稳定性约束：所有模式固定 `num_workers=0`。AugMix 变换含局部 Lambda，启用 worker
+不会改变科学协议但会引入跨平台序列化/worker 崩溃风险。2026-09-09 修复后，首臂 `h0_b`
+已按完整 benchmark 设置在本地 CUDA 跑通。
 
 ```text
 入口：scripts/openi_cle_v2_factorial_entry.py

@@ -2,6 +2,22 @@
 
 Updated: 2026-09-09
 
+## CLE-v2 Mechanism Stage-1 已实现，等待 OpenI Benchmark
+
+用户批准先验证 gamma0/gamma0.9 × HFL/Local 的 operator-level机制，不立即运行 PEW+BER。
+独立 Stage-1 固定四个 baseline 臂 `h0_b/h9_b/l0_b/l9_b`；Formal 为12 rounds、每客户端
+每轮16 local batches、最终 checkpoint 一次完整 paired DSA。PEW/BER/CDep 均不训练、加载
+或审计。L0学习门、M1/M2/M3机制门及一次性32-batch undertraining promotion 规则已经冻结：
+
+```text
+docs/experiments/current/CLE_V2_MECHANISM_STAGE1_OPENI_ZH.md
+scripts/openi_cle_v2_mechanism_stage1_entry.py
+```
+
+10/10聚焦测试、机制范围输入审计、四臂一批次CUDA smoke、小型平衡source最终DSA分析链和
+gamma内HFL/Local轨迹匹配均通过。当前只允许用原数据集运行 `mode=benchmark`；Formal仍被
+`confirm_formal=true` 锁定，未获授权。Stage-1下载包排除checkpoint，benchmark不是科学证据。
+
 ## CLE-v2 × PEW+BER 八臂 OpenI Benchmark 已通过，Formal 因成本未授权
 
 用户已批准完成统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 八臂实现、正式数据与公共 PEW 准备，但未批准 OpenI Formal。正式包、静态审计、5/5 单元测试以及八臂一批次 CUDA smoke 均已完成；同一 gamma 下四臂的 source/AugMix 首批轨迹完全一致。PEW 只在公共 CIFAR-100 上训练一次并冻结；真实 corruption metadata 仍为报告/DSA 专用。

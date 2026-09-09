@@ -4,6 +4,16 @@ Updated: 2026-09-09
 
 ## 当前 CLE-v2 × PEW+BER 八臂闭环
 
+当前先执行不使用 PEW/BER 的四臂 CLE-v2 Mechanism Stage-1。冻结协议、门槛和独立 OpenI
+入口为：
+
+```text
+docs/experiments/current/CLE_V2_MECHANISM_STAGE1_OPENI_ZH.md
+scripts/run_cle_v2_mechanism_stage1.py
+scripts/analyze_cle_v2_mechanism_stage1.py
+scripts/openi_cle_v2_mechanism_stage1_entry.py
+```
+
 统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 配对协议、正式数据、冻结公共 PEW、
 审计/分析器与 OpenI 入口已完成。OpenI benchmark 已通过，但一阶 Formal 成本约 78.45
 V100 GPU-hours，因此 Formal 尚未授权：

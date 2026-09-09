@@ -28,6 +28,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--outputs-root", type=Path)
     parser.add_argument("--train-seed", type=int, default=0)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--skip-pew",
+        action="store_true",
+        help="Audit only assets used by the baseline-only mechanism stage.",
+    )
     return parser.parse_args()
 
 
@@ -157,32 +162,34 @@ def main() -> None:
         record = manifest["initialization"]["models"][str(client_id)]
         require_file(package_root / "initial_states" / f"client_{client_id}.pt", record)
 
-    pew_manifest_path = package_root / "pew_standard/manifest.json"
-    require_file(pew_manifest_path)
-    pew = json.loads(pew_manifest_path.read_text(encoding="utf-8"))
-    if pew.get("protocol") != PEW_PROTOCOL or pew.get("max_batches") is not None:
-        raise ValueError("PEW is not the standard full preparation protocol")
-    checkpoint = package_root / "pew_standard/pew_standard.pt"
-    require_file(
-        checkpoint,
-        {"bytes": pew["checkpoint_bytes"], "sha256": pew["checkpoint_sha256"]},
-    )
-    for condition in ("gamma00", "gamma09"):
-        annotation_root = package_root / "pew_standard/annotations" / condition
-        annotation_manifest_path = annotation_root / "manifest.json"
-        require_file(annotation_manifest_path)
-        annotation_manifest = json.loads(annotation_manifest_path.read_text(encoding="utf-8"))
-        if annotation_manifest.get("protocol") != ANNOTATION_PROTOCOL:
-            raise ValueError("Unexpected frozen annotation protocol")
-        if annotation_manifest.get("pew_checkpoint_sha256") != pew["checkpoint_sha256"]:
-            raise ValueError("Annotation/checkpoint lineage mismatch")
-        for client_id in range(4):
-            record = annotation_manifest["clients"][str(client_id)]
-            path = annotation_root / f"client_{client_id}.npz"
-            require_file(path, record)
-            payload = np.load(path, allow_pickle=False)
-            if payload["environment_ids"].shape != (int(args.samples_per_client),):
-                raise ValueError("Frozen annotation length mismatch")
+    pew = None
+    if not args.skip_pew:
+        pew_manifest_path = package_root / "pew_standard/manifest.json"
+        require_file(pew_manifest_path)
+        pew = json.loads(pew_manifest_path.read_text(encoding="utf-8"))
+        if pew.get("protocol") != PEW_PROTOCOL or pew.get("max_batches") is not None:
+            raise ValueError("PEW is not the standard full preparation protocol")
+        checkpoint = package_root / "pew_standard/pew_standard.pt"
+        require_file(
+            checkpoint,
+            {"bytes": pew["checkpoint_bytes"], "sha256": pew["checkpoint_sha256"]},
+        )
+        for condition in ("gamma00", "gamma09"):
+            annotation_root = package_root / "pew_standard/annotations" / condition
+            annotation_manifest_path = annotation_root / "manifest.json"
+            require_file(annotation_manifest_path)
+            annotation_manifest = json.loads(annotation_manifest_path.read_text(encoding="utf-8"))
+            if annotation_manifest.get("protocol") != ANNOTATION_PROTOCOL:
+                raise ValueError("Unexpected frozen annotation protocol")
+            if annotation_manifest.get("pew_checkpoint_sha256") != pew["checkpoint_sha256"]:
+                raise ValueError("Annotation/checkpoint lineage mismatch")
+            for client_id in range(4):
+                record = annotation_manifest["clients"][str(client_id)]
+                path = annotation_root / f"client_{client_id}.npz"
+                require_file(path, record)
+                payload = np.load(path, allow_pickle=False)
+                if payload["environment_ids"].shape != (int(args.samples_per_client),):
+                    raise ValueError("Frozen annotation length mismatch")
 
     trace_audit = None
     if args.outputs_root is not None:
@@ -213,7 +220,8 @@ def main() -> None:
         "private_samples": int(concatenated.size),
         "dsa_sources": int(args.test_sources),
         "dsa_operators": len(operators),
-        "pew_checkpoint_sha256": pew["checkpoint_sha256"],
+        "pew_audited": not args.skip_pew,
+        "pew_checkpoint_sha256": None if pew is None else pew["checkpoint_sha256"],
         "paired_local_traces": trace_audit,
         "scientific_evidence": False,
     }

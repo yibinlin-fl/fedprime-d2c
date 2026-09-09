@@ -2,30 +2,36 @@
 
 Updated: 2026-09-09
 
-## CLE-v2 × PEW+BER 八臂配对闭环已实现，等待重跑 OpenI Benchmark
+## CLE-v2 × PEW+BER 八臂 OpenI Benchmark 已通过，Formal 因成本未授权
 
 用户已批准完成统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 八臂实现、正式数据与公共 PEW 准备，但未批准 OpenI Formal。正式包、静态审计、5/5 单元测试以及八臂一批次 CUDA smoke 均已完成；同一 gamma 下四臂的 source/AugMix 首批轨迹完全一致。PEW 只在公共 CIFAR-100 上训练一次并冻结；真实 corruption metadata 仍为报告/DSA 专用。
 
-当前唯一允许的下一实验是 OpenI V100S `mode=benchmark` 成本测试。Formal 被 `--confirm_formal=true` 锁定，且必须在 benchmark 下载、估时和用户再次明确批准后才能启动。完整协议与冻结六门槛见：
+OpenI V100S `mode=benchmark` 已完成。结果包 SHA256 为
+`3D3112775B69A794729F4391E8A45EFA3B31F738332D2EA3D90520BDA11194E4`；输入 lineage、
+八臂配置及 gamma00/gamma09 内配对训练轨迹均通过完整性审计。八臂实际运行耗时
+`1550.4681 s`，峰值显存 `5394.32 MB`。完整协议与冻结六门槛见：
 
 ```text
 docs/experiments/current/CLE_V2_PEW_BER_FACTORIAL_CLOSURE_OPENI_ZH.md
 scripts/openi_cle_v2_factorial_entry.py
 ```
 
-本阶段没有产生科学结果；本地 smoke 准确率禁止引用。
+benchmark 每客户端只执行 8 个 local batches；Formal 为 132 batches、12 rounds。一阶
+换算约 `78.45 V100 GPU-hours`，且未计准完整 audit/test/DSA 扩展开销。因此当前判定为
+`BENCHMARK_PASS / FORMAL_NOT_AUTHORIZED`。本阶段没有产生科学结果；benchmark 准确率禁止引用。
+精确审计见 `deliverables/cle_v2_factorial_benchmark_20260909/RESULT_SUMMARY_ZH.md`。
 
 首次 OpenI benchmark 在首臂 `h0_b` 的 local phase 以 `SIGABRT` 退出。复现审计发现
 benchmark/formal 原配置启用了 `num_workers=2`，而 AugMix 数据变换含局部 Lambda；该路径在
 Windows 明确触发不可序列化错误，并在 OpenI worker 进程中不稳定。现已将八臂所有模式固定为
 `num_workers=0`；这只改变加载吞吐，不改变样本、batch、随机种子、损失、轮数或八臂协议。
 修复后原失败臂已按完整 benchmark 设置（每客户端 8 batches）本地 CUDA 跑通，5/5 聚焦测试
-通过。下一步仍只允许重跑 benchmark，失败任务不构成科学结果。
+通过。失败任务不构成科学结果；成功 benchmark 也只用于链路和成本判断。
 
 2026-09-09 正式输入包已通过 `openi==3.0.1` 命令行上传至
 `chujiu/CLE_v2_Factorial_Seed0_PEW_20260909`，CLI 返回 100%。由于上传使用的 Token 曾在聊天
-中明文出现，必须撤销并轮换；仓库只记录 CLI 流程与本机凭据路径，不保存 Token。下一步仍仅
-允许创建 `mode=benchmark, confirm_formal=false` 的 OpenI 任务。
+中明文出现，必须撤销并轮换；仓库只记录 CLI 流程与本机凭据路径，不保存 Token。当前不允许
+创建 Formal、付费长任务或多种子任务；下一步先讨论降本或代表性 full-round 成本测试。
 
 ## Latest Artifact: CLE-HFL / DSA / Local-First / PEW+BER Web Discussion Handoff
 

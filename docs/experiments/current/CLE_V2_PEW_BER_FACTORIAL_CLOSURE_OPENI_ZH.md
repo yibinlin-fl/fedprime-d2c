@@ -1,7 +1,7 @@
 # CLE-HFL v2 × PEW+BER 八臂配对闭环
 
-状态：实现、正式输入、静态审计和本地 smoke 已完成；首次 OpenI benchmark 因 DataLoader
-worker 崩溃，稳定性修复后等待重跑；Formal 锁定。
+状态：OpenI benchmark 已通过完整性审计；一阶 Formal 成本约 78.45 V100 GPU-hours，
+Formal 因成本未授权。
 
 ## 研究问题
 
@@ -86,3 +86,9 @@ formal 输出：cle_v2_factorial_seed0_formal_outputs.tar.gz
 ```
 
 Formal 会自动运行八臂、完整 paired DSA 分析、冻结门槛判定并封装结果。benchmark/smoke 不作科学判定。
+
+2026-09-09 benchmark 结果：八臂耗时 `1550.4681 s`，峰值显存 `5394.32 MB`，gamma00
+和 gamma09 各自的四臂训练轨迹完全匹配，审计 `PASS`。正式 fit 为 132 batches/客户端，
+相对 benchmark 的 8 batches 放大 16.5 倍；按 12 rounds 一阶换算约 78.45 GPU-hours，
+且 Formal 还会打开完整 audit/test/DSA。判定为 `BENCHMARK_PASS / FORMAL_NOT_AUTHORIZED`。
+详见 `deliverables/cle_v2_factorial_benchmark_20260909/RESULT_SUMMARY_ZH.md`。

@@ -4118,3 +4118,58 @@ Token 只从 `https://openi.pcl.ac.cn/user/settings/applications` 获取，CLI �
 提交历史。** 2026-09-09 使用的 Token 曾在聊天中明文出现，应撤销并轮换；项目记忆只记录
 凭据位置和安全流程，不保存凭据值。单文件上传可重复执行同一命令进行断点续传；上传前后
 必须核对本地 byte size 与 SHA256，并确保 repo_id 是目标数据集。
+
+## CLE-v2 Mechanism Stage-1 Formal GO - 2026-09-10
+
+固定 `seed0_split0` CLE-v2 场景完成不使用 PEW/BER/CDep 的四臂 Formal：
+
+```text
+h0_b = gamma0   + HFL   + AugMix/JSD/DCL baseline
+h9_b = gamma0.9 + HFL   + AugMix/JSD/DCL baseline
+l0_b = gamma0   + Local + AugMix/JSD/DCL baseline
+l9_b = gamma0.9 + Local + AugMix/JSD/DCL baseline
+```
+
+协议为 training seed 0、12 rounds、每客户端每轮最多16 local batches、batch size 64，最终
+checkpoint 在完整1,000 source × 15 operator × 4 client grid上计算operator-level paired DSA。
+输入审计 PASS，四臂均完成，gamma内HFL/Local本地batch/AugMix轨迹匹配；PEW未审计或加载，
+BER/CDep未启用。结果包8,979,168 bytes，SHA256为
+`A23312C97A1B9FE2A4DAA8341BB83CD326553A550726CE626097FF68AF4FF4B2`。
+
+独立复算概率张量形状为 `[4,4,1000,15,10]`，所有值有限，概率和最大误差`2.09e-7`，复算
+DSA/accuracy与正式汇总差为0：
+
+```text
+arm    operator-grid acc    pooled DSA
+h0_b   24.9300              -0.000245
+h9_b   21.4367               0.119644
+l0_b   25.5683              -0.001914
+l9_b   22.4233               0.106046
+```
+
+冻结estimand与检验：
+
+```text
+HFL CLE effect       = 0.119889, source-bootstrap CI95 [0.118050, 0.121562]
+Local CLE effect     = 0.107960, source-bootstrap CI95 [0.106145, 0.109678]
+communication add-on = 0.011929, source-bootstrap CI95 [0.011115, 0.012712]
+Local/HFL share      = 90.05%
+h9 observed DSA      = 0.119644
+shuffled null p95    = 0.029559, permutation p=0.000999
+```
+
+L0/M1/M2/M3 全部通过，正式 verdict 为 `GO_CLE_V2_MECHANISM_STAGE1`，32-batch undertraining
+promotion不触发。结论是固定CLE-v2场景中存在binding-specific directional shortcut，且绝大部分
+HFL CLE效应在Local训练中已经出现。通信pooled附加效应为正但客户端差值
+`[+0.00668,-0.02547,+0.06984,-0.00333]`，所以只能表述为平均上的次级放大，不能声称每个客户端
+均被通信放大。
+
+本轮训练15,634.70秒，分析91.68秒，总计15,726.38秒（约4小时22分），峰值显存约5.4GB。
+40,000是可用私有数据集总规模，不代表每个模型完整遍历全部40,000个唯一样本。source-paired
+bootstrap只覆盖固定训练结果下的source不确定性，不覆盖训练seed或新CLE mapping；本结果也不
+证明PEW+BER有效。
+
+论文资产：`deliverables/cle_v2_mechanism_stage1_20260910/`。下一科学优先级是同预算、同场景的
+`h9 Base vs h9 Base+PEW+BER`纯插件A/B，然后才是PEW family/Oracle family/Oracle operator/random
+grouping粒度消融和其他HFL底座。旧三seed正式正结果的candidate包含`PEW/BER+CDep`，只能作为
+插件组合的训练seed稳定性证据，不得冒充PEW+BER-only归因。

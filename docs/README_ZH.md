@@ -1,17 +1,22 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 
 ## 当前 CLE-v2 × PEW+BER 八臂闭环
 
-当前先执行不使用 PEW/BER 的四臂 CLE-v2 Mechanism Stage-1。冻结协议、门槛和独立 OpenI
-入口为：
+不使用 PEW/BER 的四臂 CLE-v2 Mechanism Stage-1 已于2026-09-10完成 seed-0、12-round
+Formal；L0/M1/M2/M3 全部通过，verdict 为 `GO_CLE_V2_MECHANISM_STAGE1`。冻结协议、正式结果、
+论文机制表/图和独立复算报告为：
 
 ```text
 docs/experiments/current/CLE_V2_MECHANISM_STAGE1_OPENI_ZH.md
 scripts/run_cle_v2_mechanism_stage1.py
 scripts/analyze_cle_v2_mechanism_stage1.py
 scripts/openi_cle_v2_mechanism_stage1_entry.py
+deliverables/cle_v2_mechanism_stage1_20260910/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_mechanism_stage1_20260910/MECHANISM_TABLE.csv
+deliverables/cle_v2_mechanism_stage1_20260910/MECHANISM_FIGURE.svg
+deliverables/cle_v2_mechanism_stage1_20260910/MECHANISM_FIGURE.png
 ```
 
 统一的 `HFL/Local × gamma0/gamma0.9 × baseline/plugin` 配对协议、正式数据、冻结公共 PEW、

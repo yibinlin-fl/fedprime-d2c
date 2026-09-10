@@ -1,22 +1,38 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 
-## CLE-v2 Mechanism Stage-1 已实现，等待 OpenI Benchmark
+## CLE-v2 Mechanism Stage-1 Formal：四门全过，正式 GO
 
-用户批准先验证 gamma0/gamma0.9 × HFL/Local 的 operator-level机制，不立即运行 PEW+BER。
-独立 Stage-1 固定四个 baseline 臂 `h0_b/h9_b/l0_b/l9_b`；Formal 为12 rounds、每客户端
-每轮16 local batches、最终 checkpoint 一次完整 paired DSA。PEW/BER/CDep 均不训练、加载
-或审计。L0学习门、M1/M2/M3机制门及一次性32-batch undertraining promotion 规则已经冻结：
+2026-09-10 完成固定 `gamma0/gamma0.9 × HFL/Local` 四臂、training seed 0、12 rounds Formal。
+输入审计 PASS，四臂均完成，gamma 内 HFL/Local 本地轨迹匹配；PEW/BER/CDep 均未使用。
+结果包 SHA256 为 `A23312C97A1B9FE2A4DAA8341BB83CD326553A550726CE626097FF68AF4FF4B2`。
+
+```text
+pooled DSA: h0_b -0.000245, h9_b 0.119644, l0_b -0.001914, l9_b 0.106046
+HFL CLE effect:   0.119889, source-bootstrap CI95 [0.118050, 0.121562]
+Local CLE effect: 0.107960, source-bootstrap CI95 [0.106145, 0.109678]
+communication add-on: 0.011929
+Local/HFL share: 90.05%
+h9 shuffled-binding: null p95 0.029559, p=0.000999
+```
+
+L0/M1/M2/M3 全部通过，verdict 为 `GO_CLE_V2_MECHANISM_STAGE1`；不触发32-batch补跑。
+该结果证明固定 CLE-v2 场景中存在 binding-specific directional shortcut，且机制主要
+local-first；通信仅在 pooled 平均上形成较小附加效应，客户端通信差值并非全为正。它不证明
+PEW+BER 有效，也不证明跨训练 seed 或跨 CLE 场景成立。40,000 是可用私有数据集规模，不代表
+每个模型完整遍历全部40,000个唯一样本。
+
+论文机制表、图和独立复算报告位于：
 
 ```text
 docs/experiments/current/CLE_V2_MECHANISM_STAGE1_OPENI_ZH.md
-scripts/openi_cle_v2_mechanism_stage1_entry.py
+deliverables/cle_v2_mechanism_stage1_20260910/
 ```
 
-10/10聚焦测试、机制范围输入审计、四臂一批次CUDA smoke、小型平衡source最终DSA分析链和
-gamma内HFL/Local轨迹匹配均通过。当前只允许用原数据集运行 `mode=benchmark`；Formal仍被
-`confirm_formal=true` 锁定，未获授权。Stage-1下载包排除checkpoint，benchmark不是科学证据。
+下一研究动作优先讨论同预算、同固定场景的 `h9 Base vs h9 Base+PEW+BER` 纯插件A/B；不得把
+旧三seed `PEW/BER+CDep` 结果写成纯 PEW+BER-only 归因。PEW粒度消融可排在插件是否有效之后，
+再补一个代表性异构联邦底座。未经用户另行批准，不启动新的付费或Formal任务。
 
 ## CLE-v2 × PEW+BER 八臂 OpenI Benchmark 已通过，Formal 因成本未授权
 

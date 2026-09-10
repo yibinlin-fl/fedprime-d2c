@@ -1,0 +1,5 @@
+arm,training_scope,cle_gamma,rounds,train_seed,operator_grid_accuracy_percent,pooled_dsa
+h0_b,HFL,0.0,12,0,24.930000,-0.0002450674
+h9_b,HFL,0.9,12,0,21.436667,0.1196442241
+l0_b,Local,0.0,12,0,25.568333,-0.0019143519
+l9_b,Local,0.9,12,0,22.423333,0.1060461036

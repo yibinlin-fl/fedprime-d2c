@@ -1,6 +1,6 @@
 # CLE-v2 Mechanism Stage-1 OpenI 运行说明
 
-状态：实现和本地 smoke 已完成；只允许先运行 OpenI benchmark；Formal 锁定。
+状态：2026-09-10 seed-0、12-round Formal 已完成；四项冻结门槛全部通过，正式 GO。
 
 ## 目标与边界
 
@@ -64,17 +64,44 @@ L0通过但任一机制门失败                -> NO_GO_CLE_V2_MECHANISM_STAGE1
 - 四臂最终 checkpoint 的小型平衡 source DSA/ bootstrap/shuffle 分析链执行完成。
 - smoke 数值不得作为科学结果。
 
-## OpenI 启动顺序
+## Formal 结果（2026-09-10）
 
-首次只允许：
+结果包 `cle_v2_mechanism_stage1_seed0_formal_outputs.tar.gz` 为8,979,168 bytes，SHA256：
+`A23312C97A1B9FE2A4DAA8341BB83CD326553A550726CE626097FF68AF4FF4B2`。四臂均完成12轮，
+输入审计与配对轨迹审计通过，独立从 `STAGE1_PREDICTIONS.npz` 复算得到：
+
+```text
+arm    pooled operator-grid acc    pooled DSA
+h0_b   24.9300                     -0.000245
+h9_b   21.4367                      0.119644
+l0_b   25.5683                     -0.001914
+l9_b   22.4233                      0.106046
+
+HFL CLE effect       0.119889  CI95 [0.118050, 0.121562]
+Local CLE effect     0.107960  CI95 [0.106145, 0.109678]
+communication add-on 0.011929
+Local/HFL share      90.05%
+h9 shuffled null p95 0.029559  p=0.000999
+```
+
+L0/M1/M2/M3 全部 PASS，verdict 为 `GO_CLE_V2_MECHANISM_STAGE1`，不允许也不需要触发32-batch
+欠训练补跑。总实测时间15,726.38秒（约4小时22分），其中分析91.68秒；峰值显存约5.4GB。
+
+该 Formal 是 fixed CLE scenario、training seed 0 的机制证据。source-paired bootstrap 不覆盖
+训练随机性，结果不自动外推到其他训练 seed 或 CLE mapping。40,000 是输入审计中的可用私有样本
+总数；由于每轮每客户端最多16×64次取样，不能写成每个模型完整遍历了40,000个唯一样本。
+
+## 已完成的 OpenI 启动记录
+
+本次完成的 Formal 使用：
 
 ```text
 启动文件：scripts/openi_cle_v2_mechanism_stage1_entry.py
-参数：mode=benchmark
+参数：mode=formal, confirm_formal=true
 ```
 
-`confirm_formal` 保持默认 `false`，无需填写。benchmark 下载分析并重新获得用户明确批准后，
-才允许 `mode=formal, confirm_formal=true`。
+此前本地smoke与OpenI成本评估只用于执行验证；用户明确批准后才解锁上述Formal。Stage-1现已
+得到正式GO，不需要重复运行benchmark、Formal或32-batch版本。
 
 ```text
 benchmark 输出：cle_v2_mechanism_stage1_seed0_benchmark_outputs.tar.gz
@@ -83,4 +110,3 @@ formal 输出：cle_v2_mechanism_stage1_seed0_formal_outputs.tar.gz
 
 下载包保存配置、指标、配对轨迹、完整 final operator probabilities、DSA 和审计，但主动排除
 checkpoint，避免数百MB冗余。benchmark 不是科学证据。
-

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="600" viewBox="0 0 1400 600">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#202124}.title{font-size:27px;font-weight:700}.panel{font-size:18px;font-weight:700}.axis{font-size:15px}.small{font-size:13px;fill:#555}.value{font-size:15px;font-weight:700}.grid{stroke:#e5e7eb;stroke-width:1}.base{stroke:#333;stroke-width:1.3}</style>
+<text x="700" y="39" text-anchor="middle" class="title">CLE-HFL v2 mechanism evidence</text>
+<text x="80" y="78" class="panel">(a) Binding-aligned shortcut emerges under CLE</text>
+<text x="760" y="78" class="panel">(b) Most of the HFL effect is already local</text>
+<line x1="80" y1="436.9" x2="670" y2="436.9" class="grid"/>
+<text x="69" y="441.9" text-anchor="end" class="axis">0.00</text>
+<line x1="80" y1="343.4" x2="670" y2="343.4" class="grid"/>
+<text x="69" y="348.4" text-anchor="end" class="axis">0.04</text>
+<line x1="80" y1="249.9" x2="670" y2="249.9" class="grid"/>
+<text x="69" y="254.9" text-anchor="end" class="axis">0.08</text>
+<line x1="80" y1="156.4" x2="670" y2="156.4" class="grid"/>
+<text x="69" y="161.4" text-anchor="end" class="axis">0.12</text>
+<line x1="80" y1="436.9" x2="670" y2="436.9" class="base"/>
+<line x1="80" y1="367.9" x2="670" y2="367.9" stroke="#777" stroke-width="1.5" stroke-dasharray="7 6"/>
+<text x="660" y="359.9" text-anchor="end" class="small">H9 shuffled null p95 = 0.030</text>
+<text transform="translate(22 290) rotate(-90)" text-anchor="middle" class="axis">Directional Shortcut Alignment (DSA)</text>
+<rect x="190.0" y="436.9" width="72" height="1.2" rx="2" fill="#3568B8"/>
+<text x="226" y="455.5" text-anchor="middle" class="value">-0.000</text>
+<rect x="270.0" y="436.9" width="72" height="4.5" rx="2" fill="#E58B3A"/>
+<text x="306" y="459.4" text-anchor="middle" class="value">-0.002</text>
+<rect x="470.0" y="157.3" width="72" height="279.7" rx="2" fill="#3568B8"/>
+<text x="506" y="148.3" text-anchor="middle" class="value">0.120</text>
+<rect x="550.0" y="189.0" width="72" height="247.9" rx="2" fill="#E58B3A"/>
+<text x="586" y="180.0" text-anchor="middle" class="value">0.106</text>
+<text x="266" y="502" text-anchor="middle" class="axis">No CLE (gamma=0)</text>
+<text x="546" y="502" text-anchor="middle" class="axis">Strong CLE (gamma=0.9)</text>
+<rect x="164" y="527" width="18" height="18" fill="#3568B8"/><text x="191" y="541" class="axis">HFL</text>
+<rect x="248" y="527" width="18" height="18" fill="#E58B3A"/><text x="275" y="541" class="axis">Local</text>
+<line x1="770" y1="465.0" x2="1330" y2="465.0" class="grid"/>
+<text x="759" y="470.0" text-anchor="end" class="axis">0.00</text>
+<line x1="770" y1="363.6" x2="1330" y2="363.6" class="grid"/>
+<text x="759" y="368.6" text-anchor="end" class="axis">0.04</text>
+<line x1="770" y1="262.2" x2="1330" y2="262.2" class="grid"/>
+<text x="759" y="267.2" text-anchor="end" class="axis">0.08</text>
+<line x1="770" y1="160.8" x2="1330" y2="160.8" class="grid"/>
+<text x="759" y="165.8" text-anchor="end" class="axis">0.12</text>
+<line x1="770" y1="465" x2="1330" y2="465" class="base"/>
+<text transform="translate(712 290) rotate(-90)" text-anchor="middle" class="axis">Delta DSA: gamma=0.9 - gamma=0</text>
+<rect x="875" y="161.1" width="100" height="303.9" rx="2" fill="#3568B8"/>
+<line x1="925" y1="156.8" x2="925" y2="165.7" stroke="#222" stroke-width="2"/>
+<line x1="915" y1="156.8" x2="935" y2="156.8" stroke="#222" stroke-width="2"/>
+<line x1="915" y1="165.7" x2="935" y2="165.7" stroke="#222" stroke-width="2"/>
+<text x="925" y="148.1" text-anchor="middle" class="value">0.120</text>
+<text x="925" y="502" text-anchor="middle" class="axis">HFL CLE effect</text>
+<rect x="1095" y="191.3" width="100" height="273.7" rx="2" fill="#E58B3A"/>
+<line x1="1145" y1="186.9" x2="1145" y2="195.9" stroke="#222" stroke-width="2"/>
+<line x1="1135" y1="186.9" x2="1155" y2="186.9" stroke="#222" stroke-width="2"/>
+<line x1="1135" y1="195.9" x2="1155" y2="195.9" stroke="#222" stroke-width="2"/>
+<text x="1145" y="178.3" text-anchor="middle" class="value">0.108</text>
+<text x="1145" y="502" text-anchor="middle" class="axis">Local CLE effect</text>
+<rect x="1160" y="313" width="165" height="72" rx="8" fill="white" stroke="#777"/>
+<text x="1242" y="340" text-anchor="middle" class="axis">Local/HFL = 90.05%</text>
+<text x="1242" y="368" text-anchor="middle" class="axis">Pooled add-on = 0.0119</text>
+<text x="700" y="582" text-anchor="middle" class="small">Fixed CLE-v2 scenario | training seed 0 | 12 rounds | 1,000 sources x 15 operators x 4 clients</text>
+</svg>

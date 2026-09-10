@@ -4202,3 +4202,30 @@ Matplotlib savefig路径复现Windows原生`0xC06D007F` DLL入口点/延迟加�
 confirm_formal=true`。复用已上传数据集`CLE_v2_Factorial_Seed0_PEW_20260909`，不上传新包；
 预估2.5--3.5 V100 GPU-hours。Formal结果出来前不运行粒度消融、多seed、40轮、跨scenario或
 其他底座。
+
+## Pure PEW+BER Stage-2 Formal and Zero-Training Attribution - 2026-09-10
+
+固定CLE-v2 `seed0_split0/gamma0.9`、training seed 0、12 rounds、每客户端每轮16 batches的
+纯插件Formal完成。两臂48条local batch/AugMix trace完全匹配，CDep未使用。结果包4,454,630
+bytes，SHA256为`1719D2C3801986FCA7BAAEF9CC89AFCCD5D7818470C94AA67C4139FFC993CD79`。
+
+```text
+pooled DSA: base 0.119644, plugin 0.041252
+reduction: 0.078392 (65.52%), source-bootstrap CI95 [0.077191, 0.079601]
+client reductions: [0.111312, 0.011317, 0.115762, 0.075178]
+last-5 delta: Avg +1.7323, Worst -0.3760, WCCA +0.3500, CFG -9.2600
+gates: I0 PASS, L0 PASS, P1 PASS, P2 FAIL
+formal verdict: NO_GO_PEW_BER_STAGE2_SEED0
+```
+
+P2仅因预注册`Worst>=+1.0`失败；不得事后删除该门槛覆盖Formal verdict。论文核心目标可另作
+事后双层解释：`CLE mitigation efficacy: GO`，`architecture-uniform utility: NOT ESTABLISHED`。
+
+基于冻结预测、fit划分、真实operator reporting metadata和PEW annotations完成零训练归因。
+client2/ShuffleNet的operator-grid accuracy下降5.1733，但其DSA仍下降0.115762。伤害不是均匀
+容量下降，而是类别选择性预测重分配：automobile、ship、truck召回及预测占比均降为0，
+airplane/horse准确率分别提升29.60/21.20。PEW误分不足以单独解释（automobile的PEW family
+accuracy约79.97%仍坍缩），BER全局极端权重也不足以解释（client2最大样本乘数73.52，为四客户端
+最低）。架构与非IID客户端数据固定绑定，所以不得把结果写成“小模型容量导致伤害”。当前最强
+描述是`ShuffleNet/client2 pair上的类别决策重分配`；需要架构×客户端数据交叉Kill Test才能区分
+架构和数据原因。证据位于`deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/`。

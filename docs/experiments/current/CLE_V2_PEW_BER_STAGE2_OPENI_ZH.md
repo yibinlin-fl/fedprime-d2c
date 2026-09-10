@@ -1,7 +1,39 @@
 # CLE-v2 Pure PEW+BER Stage-2 OpenI 运行说明
 
-状态：实现、输入审计、聚焦测试和本地CUDA smoke已通过；seed-0、12-round Formal已获用户批准，
-等待OpenI执行。
+状态：seed-0、12-round Formal已完成；I0/L0/P1通过、P2失败，冻结判定为
+`NO_GO_PEW_BER_STAGE2_SEED0`。后续零训练架构归因已完成，未启动新训练。
+
+## Formal结果（2026-09-10）
+
+结果包为`cle_v2_plugin_stage2_seed0_formal_outputs.tar.gz`，4,454,630 bytes，SHA256：
+
+```text
+1719D2C3801986FCA7BAAEF9CC89AFCCD5D7818470C94AA67C4139FFC993CD79
+```
+
+输入审计PASS，两臂48条local batch/AugMix trace完全匹配，CDep未使用。独立复算的主要结果：
+
+```text
+pooled DSA: base 0.119644, plugin 0.041252
+DSA reduction: 0.078392 (65.52%)
+source-bootstrap CI95: [0.077191, 0.079601]
+client DSA reductions: [0.111312, 0.011317, 0.115762, 0.075178]
+
+last-5 plugin-minus-base:
+Avg +1.7323, Worst -0.3760, WCCA +0.3500, CFG -9.2600
+```
+
+`Worst>=+1.0`是P2唯一失败项，故不得事后把正式总判定改成GO。按论文核心目标可另外记录
+`CLE mitigation efficacy: GO`，但跨架构效用一致性尚未建立。零训练归因显示client2/ShuffleNet
+发生类别选择性预测重分配；由于架构与非IID客户端划分固定绑定，不能归因为模型容量。完整归因：
+
+```text
+scripts/analyze_cle_v2_plugin_architecture_attribution.py
+deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/
+```
+
+Formal训练8,074.75秒、分析41.77秒，总计8,116.51秒（约2小时15分）。source bootstrap不覆盖
+训练seed不确定性。当前不允许通过调BER权重、改门槛或补seed翻案。
 
 ## 目标与边界
 

@@ -2,11 +2,16 @@
 
 Updated: 2026-09-10
 
-## 当前 CLE-v2 × PEW+BER 八臂闭环
+## 当前 CLE-v2 × PEW+BER Stage-2结果与归因
 
-Stage-1机制GO后，当前唯一待运行实验是固定gamma0.9、seed-0、12-round的纯PEW+BER两臂
-Stage-2。它显式排除CDep，先验证`Base vs Base+PEW+BER`的DSA与效用，再考虑粒度消融和其他
-底座：
+固定gamma0.9、seed-0、12-round的纯PEW+BER两臂Stage-2 Formal已完成。纯插件将DSA
+`0.119644 -> 0.041252`（下降65.52%），并取得last-5 `Avg +1.7323 / WCCA +0.3500 /
+CFG -9.2600`；但`Worst -0.3760`未达到预注册`+1.0`，所以原四门正式判定保持
+`NO_GO_PEW_BER_STAGE2_SEED0`。可将论文目标下的事后解释分为`CLE mitigation efficacy: GO`和
+`architecture-uniform utility: NOT ESTABLISHED`，不得用它改写原门槛。
+
+零训练归因进一步定位到ShuffleNet/client2上的类别选择性预测重分配，但架构与非IID客户端划分
+固定绑定，不能声称已证明“小模型容量导致伤害”。当前入口与证据：
 
 ```text
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
@@ -14,6 +19,9 @@ scripts/run_cle_v2_plugin_stage2.py
 scripts/analyze_cle_v2_plugin_stage2.py
 scripts/openi_cle_v2_plugin_stage2_entry.py
 tests/test_cle_v2_plugin_stage2.py
+scripts/analyze_cle_v2_plugin_architecture_attribution.py
+deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/ATTRIBUTION_REPORT_ZH.md
+deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/ATTRIBUTION_SUMMARY.json
 ```
 
 不使用 PEW/BER 的四臂 CLE-v2 Mechanism Stage-1 已于2026-09-10完成 seed-0、12-round

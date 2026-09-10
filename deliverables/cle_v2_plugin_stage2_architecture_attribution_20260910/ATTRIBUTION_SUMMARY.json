@@ -1,0 +1,432 @@
+{
+  "protocol": "cle_v2_plugin_architecture_attribution_v1",
+  "analysis_type": "zero_training_existing_artifacts_only",
+  "result_root": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\outputs\\openi_downloads\\cle_v2_plugin_stage2_seed0_formal\\extracted",
+  "package_root": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\local_runs\\cle_v2_factorial\\cle_hfl_v2_paired_factorial_seed0_split0",
+  "clients": [
+    {
+      "client": 0,
+      "model": "ResNet10",
+      "base_grid_acc": 19.62,
+      "plugin_grid_acc": 21.773333333333333,
+      "grid_acc_delta": 2.1533333333333324,
+      "base_dsa": 0.15317849148404566,
+      "plugin_dsa": 0.04186683874306445,
+      "dsa_reduction": 0.11131165274098122,
+      "pew_family_accuracy": 59.82584137444105,
+      "pew_unknown_rate": 11.367380560131796,
+      "pew_mean_confidence": 0.607141416527771,
+      "fit_valid_classes_for_ber": 7,
+      "ber_valid_groups": 36,
+      "ber_effective_groups_per_class": 4.850935553157716,
+      "ber_multiplier_p95": 4.18763056266514,
+      "ber_multiplier_max": 134.88888888888889
+    },
+    {
+      "client": 1,
+      "model": "ResNet12",
+      "base_grid_acc": 22.54,
+      "plugin_grid_acc": 28.62,
+      "grid_acc_delta": 6.080000000000002,
+      "base_dsa": 0.03602262609335051,
+      "plugin_dsa": 0.02470586085868519,
+      "dsa_reduction": 0.011316765234665321,
+      "pew_family_accuracy": 59.27058823529412,
+      "pew_unknown_rate": 5.011764705882353,
+      "pew_mean_confidence": 0.5487009648628095,
+      "fit_valid_classes_for_ber": 9,
+      "ber_valid_groups": 49,
+      "ber_effective_groups_per_class": 4.957078469321264,
+      "ber_multiplier_p95": 2.713920817369093,
+      "ber_multiplier_max": 314.8148148148148
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "base_grid_acc": 20.926666666666666,
+      "plugin_grid_acc": 15.753333333333334,
+      "grid_acc_delta": -5.173333333333332,
+      "base_dsa": 0.1742765284655706,
+      "plugin_dsa": 0.058514748363037085,
+      "dsa_reduction": 0.11576178010253352,
+      "pew_family_accuracy": 52.48852806212495,
+      "pew_unknown_rate": 3.0944817037298504,
+      "pew_mean_confidence": 0.5656188356499768,
+      "fit_valid_classes_for_ber": 8,
+      "ber_valid_groups": 44,
+      "ber_effective_groups_per_class": 5.136368094292818,
+      "ber_multiplier_p95": 4.642828168642058,
+      "ber_multiplier_max": 73.52335749645451
+    },
+    {
+      "client": 3,
+      "model": "Mobilenetv2",
+      "base_grid_acc": 22.66,
+      "plugin_grid_acc": 21.16,
+      "grid_acc_delta": -1.5,
+      "base_dsa": 0.11509925053826313,
+      "plugin_dsa": 0.03992126863513332,
+      "dsa_reduction": 0.07517798190312981,
+      "pew_family_accuracy": 76.6976579969401,
+      "pew_unknown_rate": 2.0595504295633753,
+      "pew_mean_confidence": 0.642237728620552,
+      "fit_valid_classes_for_ber": 10,
+      "ber_valid_groups": 54,
+      "ber_effective_groups_per_class": 4.983768558182612,
+      "ber_multiplier_p95": 4.970932210232672,
+      "ber_multiplier_max": 106.2125
+    }
+  ],
+  "client_details": {
+    "0": {
+      "model": "ResNet10",
+      "class_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.4334410620831244,
+        "accuracy_delta_vs_unknown_rate": 0.30599765229885745,
+        "accuracy_delta_vs_effective_groups": -0.03428385730599335,
+        "accuracy_delta_vs_max_multiplier": 0.08295787978712207
+      },
+      "operator_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.266282128224026,
+        "accuracy_delta_vs_unknown_rate": 0.7156229427887638,
+        "accuracy_delta_vs_fit_support": 0.47565262416225157
+      }
+    },
+    "1": {
+      "model": "ResNet12",
+      "class_correlations": {
+        "accuracy_delta_vs_pew_accuracy": -0.9007581005413208,
+        "accuracy_delta_vs_unknown_rate": -0.1632804385287525,
+        "accuracy_delta_vs_effective_groups": -0.1834326649602668,
+        "accuracy_delta_vs_max_multiplier": -0.007680015231688724
+      },
+      "operator_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.3338543681266743,
+        "accuracy_delta_vs_unknown_rate": 0.5015558701884314,
+        "accuracy_delta_vs_fit_support": -0.10939622960263821
+      }
+    },
+    "2": {
+      "model": "ShuffleNet",
+      "class_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.3711225881796408,
+        "accuracy_delta_vs_unknown_rate": 0.3324451676066947,
+        "accuracy_delta_vs_effective_groups": -0.30134699532128956,
+        "accuracy_delta_vs_max_multiplier": 0.24804653010673033
+      },
+      "operator_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.5596527616553805,
+        "accuracy_delta_vs_unknown_rate": 0.70336086659901,
+        "accuracy_delta_vs_fit_support": 0.13284756324610886
+      }
+    },
+    "3": {
+      "model": "Mobilenetv2",
+      "class_correlations": {
+        "accuracy_delta_vs_pew_accuracy": -0.2859302639169783,
+        "accuracy_delta_vs_unknown_rate": -0.41457824541300464,
+        "accuracy_delta_vs_effective_groups": -0.11843684629115973,
+        "accuracy_delta_vs_max_multiplier": 0.11991730278560037
+      },
+      "operator_correlations": {
+        "accuracy_delta_vs_pew_accuracy": 0.5992926934503247,
+        "accuracy_delta_vs_unknown_rate": 0.33443165201315306,
+        "accuracy_delta_vs_fit_support": 0.09956358898135935
+      }
+    }
+  },
+  "most_harmed_client": {
+    "client": 2,
+    "model": "ShuffleNet",
+    "base_grid_acc": 20.926666666666666,
+    "plugin_grid_acc": 15.753333333333334,
+    "grid_acc_delta": -5.173333333333332,
+    "base_dsa": 0.1742765284655706,
+    "plugin_dsa": 0.058514748363037085,
+    "dsa_reduction": 0.11576178010253352,
+    "pew_family_accuracy": 52.48852806212495,
+    "pew_unknown_rate": 3.0944817037298504,
+    "pew_mean_confidence": 0.5656188356499768,
+    "fit_valid_classes_for_ber": 8,
+    "ber_valid_groups": 44,
+    "ber_effective_groups_per_class": 5.136368094292818,
+    "ber_multiplier_p95": 4.642828168642058,
+    "ber_multiplier_max": 73.52335749645451
+  },
+  "most_harmed_client_bottom_operators": [
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "operator": "elastic_transform",
+      "family": "digital",
+      "split": "seen",
+      "bound_classes": "9",
+      "fit_support": 1635,
+      "pew_family_accuracy": 0.42813455657492355,
+      "pew_unknown_rate": 0.672782874617737,
+      "base_grid_acc": 26.700000000000003,
+      "plugin_grid_acc": 16.8,
+      "grid_acc_delta": -9.900000000000002,
+      "base_dsa": 0.0795246680252363,
+      "plugin_dsa": -0.00013366616069144537,
+      "dsa_reduction": 0.07965833418592776
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "operator": "glass_blur",
+      "family": "blur",
+      "split": "seen",
+      "bound_classes": "",
+      "fit_support": 81,
+      "pew_family_accuracy": 67.90123456790124,
+      "pew_unknown_rate": 1.2345679012345678,
+      "base_grid_acc": 26.3,
+      "plugin_grid_acc": 16.400000000000002,
+      "grid_acc_delta": -9.899999999999999,
+      "base_dsa": null,
+      "plugin_dsa": null,
+      "dsa_reduction": null
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "operator": "zoom_blur",
+      "family": "blur",
+      "split": "unseen",
+      "bound_classes": "",
+      "fit_support": 0,
+      "pew_family_accuracy": null,
+      "pew_unknown_rate": null,
+      "base_grid_acc": 26.3,
+      "plugin_grid_acc": 16.8,
+      "grid_acc_delta": -9.5,
+      "base_dsa": null,
+      "plugin_dsa": null,
+      "dsa_reduction": null
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "operator": "defocus_blur",
+      "family": "blur",
+      "split": "seen",
+      "bound_classes": "5",
+      "fit_support": 83,
+      "pew_family_accuracy": 71.08433734939759,
+      "pew_unknown_rate": 3.614457831325301,
+      "base_grid_acc": 25.7,
+      "plugin_grid_acc": 16.400000000000002,
+      "grid_acc_delta": -9.299999999999997,
+      "base_dsa": 0.006117347672982476,
+      "plugin_dsa": -0.0015066715283543121,
+      "dsa_reduction": 0.007624019201336788
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "operator": "jpeg_compression",
+      "family": "digital",
+      "split": "seen",
+      "bound_classes": "2",
+      "fit_support": 111,
+      "pew_family_accuracy": 3.6036036036036037,
+      "pew_unknown_rate": 0.9009009009009009,
+      "base_grid_acc": 25.2,
+      "plugin_grid_acc": 16.900000000000002,
+      "grid_acc_delta": -8.299999999999997,
+      "base_dsa": 0.001921398484819157,
+      "plugin_dsa": 0.014238545499217237,
+      "dsa_reduction": -0.01231714701439808
+    }
+  ],
+  "most_harmed_client_bottom_classes": [
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "class_id": 9,
+      "class_name": "truck",
+      "fit_support": 1744,
+      "fit_fraction": 20.520061183668666,
+      "pew_family_accuracy": 6.192660550458716,
+      "pew_unknown_rate": 0.6307339449541285,
+      "ber_effective_groups": 5.804049674352168,
+      "ber_multiplier_max": 10.611239408516289,
+      "base_grid_acc": 37.266666666666666,
+      "plugin_grid_acc": 0.0,
+      "grid_acc_delta": -37.266666666666666,
+      "base_prediction_share": 12.24,
+      "plugin_prediction_share": 0.0,
+      "prediction_share_delta": -12.24
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "class_id": 1,
+      "class_name": "automobile",
+      "fit_support": 1578,
+      "fit_fraction": 18.566890222379104,
+      "pew_family_accuracy": 79.97465145754119,
+      "pew_unknown_rate": 0.9505703422053232,
+      "ber_effective_groups": 5.868236446015888,
+      "ber_multiplier_max": 9.245550626185027,
+      "base_grid_acc": 36.13333333333333,
+      "plugin_grid_acc": 0.0,
+      "grid_acc_delta": -36.13333333333333,
+      "base_prediction_share": 14.826666666666666,
+      "plugin_prediction_share": 0.0,
+      "prediction_share_delta": -14.826666666666666
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "class_id": 8,
+      "class_name": "ship",
+      "fit_support": 2231,
+      "fit_fraction": 26.250147076126602,
+      "pew_family_accuracy": 38.05468399820708,
+      "pew_unknown_rate": 0.9412819363514119,
+      "ber_effective_groups": 5.968119491360854,
+      "ber_multiplier_max": 7.05358903291283,
+      "base_grid_acc": 34.2,
+      "plugin_grid_acc": 0.0,
+      "grid_acc_delta": -34.2,
+      "base_prediction_share": 9.646666666666667,
+      "plugin_prediction_share": 0.0,
+      "prediction_share_delta": -9.646666666666667
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "class_id": 3,
+      "class_name": "cat",
+      "fit_support": 791,
+      "fit_fraction": 9.306977291446053,
+      "pew_family_accuracy": 81.16308470290771,
+      "pew_unknown_rate": 14.538558786346398,
+      "ber_effective_groups": 5.44059135743936,
+      "ber_multiplier_max": 23.710548763286308,
+      "base_grid_acc": 14.6,
+      "plugin_grid_acc": 12.0,
+      "grid_acc_delta": -2.5999999999999996,
+      "base_prediction_share": 13.726666666666668,
+      "plugin_prediction_share": 7.720000000000001,
+      "prediction_share_delta": -6.006666666666668
+    },
+    {
+      "client": 2,
+      "model": "ShuffleNet",
+      "class_id": 5,
+      "class_name": "dog",
+      "fit_support": 1,
+      "fit_fraction": 0.011766090128250382,
+      "pew_family_accuracy": 100.0,
+      "pew_unknown_rate": 0.0,
+      "ber_effective_groups": null,
+      "ber_multiplier_max": 0.0,
+      "base_grid_acc": 0.0,
+      "plugin_grid_acc": 0.0,
+      "grid_acc_delta": 0.0,
+      "base_prediction_share": 0.0,
+      "plugin_prediction_share": 0.0,
+      "prediction_share_delta": 0.0
+    }
+  ],
+  "most_harmed_client_family_summary": [
+    {
+      "family": "blur",
+      "mean_grid_acc_delta": -8.825,
+      "mean_pew_family_accuracy_seen": 73.9155048927472
+    },
+    {
+      "family": "digital",
+      "mean_grid_acc_delta": -7.379999999999998,
+      "mean_pew_family_accuracy_seen": 21.684844956888647
+    },
+    {
+      "family": "noise",
+      "mean_grid_acc_delta": 2.6333333333333333,
+      "mean_pew_family_accuracy_seen": 87.76050853880025
+    },
+    {
+      "family": "weather",
+      "mean_grid_acc_delta": -4.433333333333334,
+      "mean_pew_family_accuracy_seen": 77.07188918079771
+    }
+  ],
+  "evidence_assessment": {
+    "collapsed_classes": [
+      "truck",
+      "automobile",
+      "ship"
+    ],
+    "largest_class_gains": [
+      {
+        "client": 2,
+        "model": "ShuffleNet",
+        "class_id": 0,
+        "class_name": "airplane",
+        "fit_support": 787,
+        "fit_fraction": 9.259912930933051,
+        "pew_family_accuracy": 83.35451080050827,
+        "pew_unknown_rate": 6.099110546378653,
+        "ber_effective_groups": 5.518562069723563,
+        "ber_multiplier_max": 19.461127436320268,
+        "base_grid_acc": 32.666666666666664,
+        "plugin_grid_acc": 62.26666666666667,
+        "grid_acc_delta": 29.60000000000001,
+        "base_prediction_share": 12.22,
+        "plugin_prediction_share": 24.759999999999998,
+        "prediction_share_delta": 12.539999999999997
+      },
+      {
+        "client": 2,
+        "model": "ShuffleNet",
+        "class_id": 7,
+        "class_name": "horse",
+        "fit_support": 1211,
+        "fit_fraction": 14.248735145311214,
+        "pew_family_accuracy": 68.78612716763006,
+        "pew_unknown_rate": 3.05532617671346,
+        "ber_effective_groups": 5.962549593553477,
+        "ber_multiplier_max": 7.197431969314964,
+        "base_grid_acc": 54.400000000000006,
+        "plugin_grid_acc": 75.6,
+        "grid_acc_delta": 21.19999999999999,
+        "base_prediction_share": 37.34,
+        "plugin_prediction_share": 57.006666666666675,
+        "prediction_share_delta": 19.66666666666667
+      },
+      {
+        "client": 2,
+        "model": "ShuffleNet",
+        "class_id": 2,
+        "class_name": "bird",
+        "fit_support": 32,
+        "fit_fraction": 0.37651488410401224,
+        "pew_family_accuracy": 9.375,
+        "pew_unknown_rate": 3.125,
+        "ber_effective_groups": 3.367544416561231,
+        "ber_multiplier_max": 73.52335749645451,
+        "base_grid_acc": 0.0,
+        "plugin_grid_acc": 6.266666666666667,
+        "grid_acc_delta": 6.266666666666667,
+        "base_prediction_share": 0.0,
+        "plugin_prediction_share": 9.126666666666667,
+        "prediction_share_delta": 9.126666666666667
+      }
+    ],
+    "pew_only_explanation_supported": false,
+    "reason_pew_only_is_insufficient": "automobile collapses despite high PEW family accuracy, while truck has low PEW accuracy",
+    "globally_extreme_ber_weight_explanation_supported": false,
+    "reason_global_weight_is_insufficient": "the harmed client has the lowest maximum BER multiplier and not the highest p95 multiplier",
+    "architecture_cause_identified": false,
+    "reason_architecture_is_not_identified": "each architecture is bound to a different non-IID client partition",
+    "strongest_current_description": "class-selective decision reallocation on the ShuffleNet/client-2 pair"
+  },
+  "interpretation_limits": [
+    "Descriptive attribution does not prove that PEW error or BER weighting caused accuracy loss.",
+    "Four architectures are insufficient for an across-model correlation claim.",
+    "No new training, checkpoint selection, or test-label tuning was performed."
+  ]
+}

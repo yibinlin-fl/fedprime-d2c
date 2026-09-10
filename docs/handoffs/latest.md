@@ -2,25 +2,43 @@
 
 Updated: 2026-09-10
 
-## Pure PEW+BER Stage-2 已实现并通过本地CUDA Smoke，等待OpenI Formal
+## Pure PEW+BER Stage-2 Formal完成：CLE抑制有效，原四门总判定NO-GO
 
-Stage-1 GO后，用户批准先验证纯插件是否有效，再做PEW粒度消融和其他HFL底座。Stage-2冻结为
-固定`seed0_split0` gamma0.9、training seed 0、12 rounds、每客户端每轮16 batches的两臂A/B：
+固定`seed0_split0` gamma0.9、training seed 0、12 rounds、每客户端每轮16 batches的纯插件A/B
+已完成：
 
 ```text
 h9_b = AugMix/JSD/DCL + strict AsymHFL-val
 h9_p = h9_b + frozen public PEW + hard BER
 ```
 
-CDep显式禁止，真实operator/binding仅用于最终paired DSA报告。I0配对完整性、L0学习门、P1 DSA
-下降门和P2 last-5效用门已在结果前冻结。9/9聚焦测试、正式输入/PEW审计、两臂真实RTX 3050
-CUDA一批次训练、8个最终checkpoint、匹配local trace及20-source最终DSA分析链均通过；smoke数值
-不是科学证据。当前唯一入口与完整启动卡：
+CDep未使用，48条local trace完全匹配。正式结果为：
+
+```text
+DSA 0.119644 -> 0.041252, reduction 0.078392 (65.52%)
+source-bootstrap CI95 [0.077191, 0.079601], 4/4 clients positive
+last-5 delta: Avg +1.7323, Worst -0.3760, WCCA +0.3500, CFG -9.2600
+gates: I0 PASS, L0 PASS, P1 PASS, P2 FAIL
+frozen verdict: NO_GO_PEW_BER_STAGE2_SEED0
+```
+
+P2仅因预注册`Worst>=+1.0`失败；WCCA通过。事后论文解释可记为`CLE mitigation efficacy: GO / architecture-uniform
+utility: NOT ESTABLISHED`，但不得覆盖原Formal verdict。结果包4,454,630 bytes，SHA256为
+`1719D2C3801986FCA7BAAEF9CC89AFCCD5D7818470C94AA67C4139FFC993CD79`。协议、结果与归因为：
 
 ```text
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 scripts/openi_cle_v2_plugin_stage2_entry.py
+scripts/analyze_cle_v2_plugin_architecture_attribution.py
+deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/
 ```
+
+零训练归因发现client2/ShuffleNet的operator-grid accuracy下降5.1733，但不能归因为“小模型容量”，
+因为架构与非IID客户端划分固定绑定。损失为类别选择性重分配：automobile/ship/truck召回降为0，
+airplane/horse分别提升29.60/21.20。PEW误分不能单独解释（automobile的PEW family accuracy约80%仍
+坍缩），全局BER权重过大也不能单独解释（client2最大样本乘数四客户端最低）。当前最准确定位是
+`ShuffleNet/client2 pair上的类别决策重分配`。下一步先讨论一个架构×数据交叉的低成本Kill Test；
+不得直接调BER权重、补seed或把相关性写成因果。
 
 本地进程直接调用`D:\anaconda3\envs\pytorch\python.exe`会继承Codex优先PATH并可能加载冲突DLL；
 已复现原生退出码`0xC06D007F`。改用`D:\anaconda3\Scripts\conda.exe run -n pytorch python`

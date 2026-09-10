@@ -561,6 +561,17 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前新增的零训练理论验证与待运行粒度Kill Test入口：
+
+```text
+docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md       已完成，全部冻结门槛通过
+docs/experiments/current/CLE_V2_ORACLE_GRANULARITY_KILL_TEST_ZH.md  实现/smoke通过，Formal未授权
+scripts/openi_cle_v2_oracle_granularity_entry.py                    OpenI双锁入口
+```
+
+Oracle实验使用私有真实corruption metadata，只能测量family与operator分组之间的粒度缺口，
+不能作为可部署方法或层次化PEW有效性的直接证据。
+
 最新 CVRS Method Phase 已完成并归档：
 
 ```text

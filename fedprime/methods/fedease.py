@@ -23,6 +23,23 @@ from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.utils.env import seed_everything
 
 
+def shuffle_values_within_class(
+    values: np.ndarray, labels: np.ndarray, *, seed: int
+) -> np.ndarray:
+    """Break sample/group association while preserving every class x group count."""
+
+    values = np.asarray(values, dtype=np.int64)
+    labels = np.asarray(labels, dtype=np.int64)
+    if values.shape != labels.shape or values.ndim != 1:
+        raise ValueError("values and labels must be aligned one-dimensional arrays")
+    rng = np.random.default_rng(int(seed))
+    shuffled = values.copy()
+    for class_id in np.unique(labels):
+        indices = np.flatnonzero(labels == class_id)
+        shuffled[indices] = values[indices][rng.permutation(len(indices))]
+    return shuffled
+
+
 class FedEASEExperiment(AsymHFLExperiment):
     """FedEASE v2.1 staged experiment runner."""
 
@@ -35,10 +52,17 @@ class FedEASEExperiment(AsymHFLExperiment):
         if str(method_cfg.get("cl_module", "")).lower() != "fedease":
             raise ValueError("FedEASE requires method.cl_module=fedease.")
         environment_mode = str(fedease_cfg.get("environment_mode", "oracle")).lower()
-        if environment_mode not in {"oracle", "oracle_family", "learned", "learned_shuffled"}:
+        if environment_mode not in {
+            "oracle",
+            "oracle_family",
+            "oracle_operator",
+            "oracle_operator_shuffled",
+            "learned",
+            "learned_shuffled",
+        }:
             raise ValueError(
-                "FedEASE environment_mode must be oracle, oracle_family, learned, "
-                "or learned_shuffled."
+                "FedEASE environment_mode must be oracle/oracle_operator, oracle_family, "
+                "oracle_operator_shuffled, learned, or learned_shuffled."
             )
         communication = str(method_cfg.get("communication", "none")).lower()
         if communication not in {
@@ -75,6 +99,16 @@ class FedEASEExperiment(AsymHFLExperiment):
                 "[setup] reset experiment RNG after oracle-family preparation for matched initialization",
                 flush=True,
             )
+        elif environment_mode in {"oracle_operator", "oracle_operator_shuffled"}:
+            self._prepare_oracle_operator_annotations(
+                shuffle_within_class=environment_mode == "oracle_operator_shuffled"
+            )
+            seed_everything(int(self.config.get("seed", 0)))
+            print(
+                "[setup] reset experiment RNG after oracle-operator preparation "
+                "for matched initialization",
+                flush=True,
+            )
         super().run()
 
     def _shuffle_environment_annotations(self) -> None:
@@ -108,6 +142,29 @@ class FedEASEExperiment(AsymHFLExperiment):
         print(
             "[setup] WARNING: oracle-family annotations use private operator metadata; "
             "upper-bound analysis only",
+            flush=True,
+        )
+
+    def _prepare_oracle_operator_annotations(self, *, shuffle_within_class: bool) -> None:
+        """Build an oracle-operator upper bound or its class-count-matched random control."""
+
+        root = Path(self.config["data"]["private_root"])
+        annotations = {}
+        base_seed = int(self.config.get("seed", 0)) + 209_110
+        for client_id in range(len(self.config["models"]["names"])):
+            client_root = root / f"client_{client_id}"
+            operator_ids = np.load(client_root / "train_corruption_ids.npy").astype(np.int64)
+            labels = np.load(client_root / "train_labels.npy").astype(np.int64)
+            if shuffle_within_class:
+                operator_ids = shuffle_values_within_class(
+                    operator_ids, labels, seed=base_seed + client_id
+                )
+            annotations[client_id] = {"environment_ids": operator_ids}
+        self._fedease_environment_annotations = annotations
+        control = "class-wise shuffled random control" if shuffle_within_class else "oracle upper bound"
+        print(
+            "[setup] WARNING: oracle-operator annotations use private operator metadata; "
+            f"{control}, analysis only",
             flush=True,
         )
 

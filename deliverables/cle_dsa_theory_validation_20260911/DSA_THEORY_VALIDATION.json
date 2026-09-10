@@ -1,0 +1,187 @@
+{
+  "protocol": "cle_dsa_theory_cache_validation_v1",
+  "input": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\outputs\\openi_downloads\\cle_v2_mechanism_stage1_seed0_benchmark\\extracted_formal\\analysis\\STAGE1_PREDICTIONS.npz",
+  "training_or_inference_run": false,
+  "cached_dsa": {
+    "h0_b": -0.0002450674292910366,
+    "h9_b": 0.11964422414530747,
+    "l0_b": -0.0019143518766643116,
+    "l9_b": 0.10604610359518243
+  },
+  "proposition_1": {
+    "statement": "operator-conditional exchangeability implies DSA=0",
+    "constructed_exchangeable_dsa": -2.50194709664537e-20,
+    "empirical_gamma0": {
+      "h0_b": -0.0002450674292910366,
+      "l0_b": -0.0019143518766643116
+    },
+    "empirical_gamma0_max_abs": 0.0019143518766643116,
+    "gates": {
+      "constructed_abs_dsa_le_1e-12": true,
+      "empirical_gamma0_abs_le_0p01": true
+    }
+  },
+  "proposition_2": {
+    "statement": "DSA is affine under semantic-shortcut probability mixtures",
+    "systems": {
+      "hfl": {
+        "monotone_increasing": true,
+        "curve": [
+          {
+            "lambda": 0.0,
+            "observed_dsa": -0.0002450674292910366,
+            "linear_prediction": -0.0002450674292910366,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.1,
+            "observed_dsa": 0.011743861728168818,
+            "linear_prediction": 0.011743861728168815,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.2,
+            "observed_dsa": 0.023732790885628668,
+            "linear_prediction": 0.023732790885628664,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.30000000000000004,
+            "observed_dsa": 0.035721720043088524,
+            "linear_prediction": 0.03572172004308852,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.4,
+            "observed_dsa": 0.04771064920054837,
+            "linear_prediction": 0.04771064920054836,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.5,
+            "observed_dsa": 0.05969957835800822,
+            "linear_prediction": 0.059699578358008216,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.6000000000000001,
+            "observed_dsa": 0.0716885075154681,
+            "linear_prediction": 0.07168850751546807,
+            "absolute_error": 2.7755575615628914e-17
+          },
+          {
+            "lambda": 0.7000000000000001,
+            "observed_dsa": 0.08367743667292793,
+            "linear_prediction": 0.08367743667292792,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 0.8,
+            "observed_dsa": 0.09566636583038779,
+            "linear_prediction": 0.09566636583038778,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 0.9,
+            "observed_dsa": 0.10765529498784764,
+            "linear_prediction": 0.10765529498784762,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 1.0,
+            "observed_dsa": 0.11964422414530747,
+            "linear_prediction": 0.11964422414530747,
+            "absolute_error": 0.0
+          }
+        ]
+      },
+      "local": {
+        "monotone_increasing": true,
+        "curve": [
+          {
+            "lambda": 0.0,
+            "observed_dsa": -0.0019143518766643116,
+            "linear_prediction": -0.0019143518766643116,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.1,
+            "observed_dsa": 0.008881693670520366,
+            "linear_prediction": 0.008881693670520363,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.2,
+            "observed_dsa": 0.01967773921770504,
+            "linear_prediction": 0.019677739217705038,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.30000000000000004,
+            "observed_dsa": 0.030473784764889718,
+            "linear_prediction": 0.030473784764889714,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.4,
+            "observed_dsa": 0.041269830312074395,
+            "linear_prediction": 0.04126983031207439,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.5,
+            "observed_dsa": 0.05206587585925906,
+            "linear_prediction": 0.052065875859259064,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.6000000000000001,
+            "observed_dsa": 0.06286192140644374,
+            "linear_prediction": 0.06286192140644374,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.7000000000000001,
+            "observed_dsa": 0.07365796695362842,
+            "linear_prediction": 0.07365796695362842,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.8,
+            "observed_dsa": 0.0844540125008131,
+            "linear_prediction": 0.0844540125008131,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.9,
+            "observed_dsa": 0.09525005804799777,
+            "linear_prediction": 0.09525005804799777,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 1.0,
+            "observed_dsa": 0.10604610359518243,
+            "linear_prediction": 0.10604610359518243,
+            "absolute_error": 0.0
+          }
+        ]
+      }
+    },
+    "maximum_linearity_error": 2.7755575615628914e-17,
+    "gates": {
+      "maximum_error_le_1e-12": true,
+      "both_cached_pairs_monotone": true
+    }
+  },
+  "proposition_3": {
+    "statement": "zero within-operator view JSD does not imply zero cross-operator DSA",
+    "constructed_max_jsd": 0.0,
+    "cached_h9_dsa": 0.11964422414530747,
+    "gates": {
+      "max_jsd_le_1e-12": true,
+      "dsa_ge_0p10": true
+    }
+  },
+  "all_frozen_gates_pass": true,
+  "interpretation": "Numerical validation supports the algebra and provides an empirical counterexample; it does not replace the stated assumptions or establish cross-scenario generality."
+}

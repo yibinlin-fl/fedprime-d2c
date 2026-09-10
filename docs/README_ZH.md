@@ -4,6 +4,18 @@ Updated: 2026-09-10
 
 ## 当前 CLE-v2 × PEW+BER 八臂闭环
 
+Stage-1机制GO后，当前唯一待运行实验是固定gamma0.9、seed-0、12-round的纯PEW+BER两臂
+Stage-2。它显式排除CDep，先验证`Base vs Base+PEW+BER`的DSA与效用，再考虑粒度消融和其他
+底座：
+
+```text
+docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
+scripts/run_cle_v2_plugin_stage2.py
+scripts/analyze_cle_v2_plugin_stage2.py
+scripts/openi_cle_v2_plugin_stage2_entry.py
+tests/test_cle_v2_plugin_stage2.py
+```
+
 不使用 PEW/BER 的四臂 CLE-v2 Mechanism Stage-1 已于2026-09-10完成 seed-0、12-round
 Formal；L0/M1/M2/M3 全部通过，verdict 为 `GO_CLE_V2_MECHANISM_STAGE1`。冻结协议、正式结果、
 论文机制表/图和独立复算报告为：

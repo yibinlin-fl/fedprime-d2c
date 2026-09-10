@@ -2,6 +2,30 @@
 
 Updated: 2026-09-10
 
+## Pure PEW+BER Stage-2 已实现并通过本地CUDA Smoke，等待OpenI Formal
+
+Stage-1 GO后，用户批准先验证纯插件是否有效，再做PEW粒度消融和其他HFL底座。Stage-2冻结为
+固定`seed0_split0` gamma0.9、training seed 0、12 rounds、每客户端每轮16 batches的两臂A/B：
+
+```text
+h9_b = AugMix/JSD/DCL + strict AsymHFL-val
+h9_p = h9_b + frozen public PEW + hard BER
+```
+
+CDep显式禁止，真实operator/binding仅用于最终paired DSA报告。I0配对完整性、L0学习门、P1 DSA
+下降门和P2 last-5效用门已在结果前冻结。9/9聚焦测试、正式输入/PEW审计、两臂真实RTX 3050
+CUDA一批次训练、8个最终checkpoint、匹配local trace及20-source最终DSA分析链均通过；smoke数值
+不是科学证据。当前唯一入口与完整启动卡：
+
+```text
+docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
+scripts/openi_cle_v2_plugin_stage2_entry.py
+```
+
+本地进程直接调用`D:\anaconda3\envs\pytorch\python.exe`会继承Codex优先PATH并可能加载冲突DLL；
+已复现原生退出码`0xC06D007F`。改用`D:\anaconda3\Scripts\conda.exe run -n pytorch python`
+后Matplotlib与RTX 3050 CUDA均通过。后续本地实验统一完整Conda启动。
+
 ## CLE-v2 Mechanism Stage-1 Formal：四门全过，正式 GO
 
 2026-09-10 完成固定 `gamma0/gamma0.9 × HFL/Local` 四臂、training seed 0、12 rounds Formal。
@@ -30,9 +54,8 @@ docs/experiments/current/CLE_V2_MECHANISM_STAGE1_OPENI_ZH.md
 deliverables/cle_v2_mechanism_stage1_20260910/
 ```
 
-下一研究动作优先讨论同预算、同固定场景的 `h9 Base vs h9 Base+PEW+BER` 纯插件A/B；不得把
-旧三seed `PEW/BER+CDep` 结果写成纯 PEW+BER-only 归因。PEW粒度消融可排在插件是否有效之后，
-再补一个代表性异构联邦底座。未经用户另行批准，不启动新的付费或Formal任务。
+该纯插件A/B现已作为Stage-2完成实现和本地smoke。不得把旧三seed`PEW/BER+CDep`结果写成纯
+PEW+BER-only归因；粒度消融和其他底座必须等待Stage-2 Formal verdict。
 
 ## CLE-v2 × PEW+BER 八臂 OpenI Benchmark 已通过，Formal 因成本未授权
 

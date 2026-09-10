@@ -4173,3 +4173,32 @@ bootstrap只覆盖固定训练结果下的source不确定性，不覆盖训练se
 `h9 Base vs h9 Base+PEW+BER`纯插件A/B，然后才是PEW family/Oracle family/Oracle operator/random
 grouping粒度消融和其他HFL底座。旧三seed正式正结果的candidate包含`PEW/BER+CDep`，只能作为
 插件组合的训练seed稳定性证据，不得冒充PEW+BER-only归因。
+
+## Pure PEW+BER Stage-2 Implementation and Local Smoke - 2026-09-10
+
+Stage-1 GO后，用户授权先检验纯插件，再做粒度消融。Stage-2只运行固定CLE-v2
+`seed0_split0/gamma0.9`下的`h9_b/h9_p`；两臂均为training seed 0、12 rounds、每客户端每轮16
+batches，candidate只增加已冻结公共PEW annotations和hard BER，保留DCL并显式禁止CDep。主要
+estimand为`DSA(h9_b)-DSA(h9_p)`，它是目标强CLE场景中的插件效应，不是含gamma0控制的完整
+difference-in-differences。
+
+冻结门槛为：I0两臂local trace匹配；L0两臂operator-grid pooled accuracy均至少20%；P1 DSA
+reduction至少0.02、source-bootstrap CI95下界大于0且4/4客户端同向；P2 candidate-minus-base
+last-5 `Avg>=+1.5, Worst>=+1.0, WCCA>=0, CFG<=-1.0`。四门全过才是
+`GO_PEW_BER_STAGE2_SEED0`，否则NO-GO；禁止事后调阈值、BER参数、窗口或补seed翻案。
+
+9/9聚焦测试与正式输入审计通过。PEW checkpoint SHA256为
+`BC9FF7523B8474774B36E02507A544FEBD76363772E9B865191FD3119960DCBB`。真实RTX 3050一批次
+CUDA smoke完成两臂训练、8个最终checkpoint、PEW annotations加载、四客户端BER有效组数
+36/49/44/54、4条匹配local trace和20×15最终DSA/bootstrap链。Smoke verdict固定为
+`SMOKE_ONLY_NO_SCIENTIFIC_DECISION`，其准确率、DSA和门槛真假不得引用。
+
+Windows本地崩溃同时得到定位：直接调用环境内`python.exe`会继承Codex运行时优先PATH，在
+Matplotlib savefig路径复现Windows原生`0xC06D007F` DLL入口点/延迟加载失败；使用完整
+`D:\anaconda3\Scripts\conda.exe run -n pytorch python`时Matplotlib保存图和RTX 3050 CUDA
+运算均成功。后续本地PyTorch命令统一通过Conda启动，不需要重装PyTorch。
+
+入口为`scripts/openi_cle_v2_plugin_stage2_entry.py`，Formal只允许`mode=formal,
+confirm_formal=true`。复用已上传数据集`CLE_v2_Factorial_Seed0_PEW_20260909`，不上传新包；
+预估2.5--3.5 V100 GPU-hours。Formal结果出来前不运行粒度消融、多seed、40轮、跨scenario或
+其他底座。

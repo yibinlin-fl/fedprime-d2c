@@ -4293,3 +4293,69 @@ AsymHFL结果，论文可主张跨底座的捷径抑制机制证据，同时必�
 `A6328074227F08A6C89BF68727C4725CEEE826EB9D08DB09626C74A241E20F38`；总耗时1,444.32秒
 （0.4012 V100 GPU-hours）。报告位于
 `deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md`。
+
+## DSA Identification v2, Cross-Binding-Map S2, and BER Mechanism Audit - 2026-09-12
+
+DSA理论由三个代数性质升级为明确的识别对象、最弱假设和source-level统计推断。若同一source
+上的绑定质量可写为`m(z,o')=s(z)+r(z,o')`，paired contrast精确消除operator-invariant语义
+基线`s`，识别沿预先固定binding方向的operator response contrast。成立要求paired变换保持任务
+语义、binding在查看预测前固定、operator视图按source成簇、最终标签/operator/binding不进入
+训练或选择。DSA不是无条件因果充分统计量。
+
+固定Stage-1预测缓存和受控概率构造的五项验证全部通过：
+
+```text
+exchangeable projection DSA: -2.50e-20
+gamma0 empirical max |DSA|: 0.001914
+11-point mixture max affine error: 2.78e-17
+JSD counterexample: JSD 0, DSA 0.119644
+known binding-aligned strength recovery max error: 6.66e-16
+operator-invariant shift error: 8.33e-17
+binding specificity: observed 0.241071, shuffled p95 0.026786, p=0.000999
+source-level Hoeffding radius: n=1000, delta=.05 -> 0.085894
+```
+
+Cross-binding-map协议完成S0--S2。map1/map2固定partition seed0、evaluation seed、training seed0、
+初始权重、source、severity、公共数据、评价grid及同一冻结PEW checkpoint，只改变客户端特定
+class-operator binding；比较纯`h9_b`与`h9_b+PEW/BER`，CDep禁用且PEW不重训。两张map的CUDA
+smoke、20-source分析、配对轨迹、输入审计和20项聚焦测试通过，但smoke不是科学证据。唯一输入包：
+
+```text
+local_runs/cle_v2_cross_scenario/cle_hfl_v2_cross_maps1_2_seed0_split0_with_pew.tar.gz
+bytes: 1385820059
+SHA256: BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5
+entry: scripts/openi_cle_v2_cross_scenario_entry.py
+next: map_seed=1, mode=benchmark only
+```
+
+旧`openi_cle_cross_scenario_40round_entry.py`及seed1_split1/seed2_split2包同时改变partition、重训
+PEW并包含CDep，禁止用于当前单变量cross-map协议。Formal仍未授权。
+
+BER进一步形式化为有效经验分布`Q_gamma`。当前hard BER中，类内伪环境质量正比于
+`min(n_ce,32)^0.5`；无cap区域的环境log支持优势压缩为原来的0.5倍，且有效伪环境组最大质量比
+不超过`sqrt(32/2)=4`。当`gamma=0`且各类别共享共同环境支持时，理想有效分布满足
+`Y independent of E_hat`。生产PyTorch loss与理论等价公式的直接单测通过。
+
+固定CLE-v2 `seed0_split0/gamma09` strict-fit的CPU零训练审计为：
+
+```text
+code/theory identity max error: 7.32e-16
+pseudo-environment TV: 0.487505 -> 0.199744, -59.03%, 4/4 clients decrease
+true-family TV (reporting only): 0.634914 -> 0.433513, -31.72%, 4/4 decrease
+true-family environment-only Bayes advantage: 0.313840 -> 0.240863, -23.25%
+frozen T0--T3: all PASS
+```
+
+但BER有效分布中的PEW family误差为`0.507--0.575`，使条件界
+`TV(Y,E)<=TV(Y,E_hat)+2 epsilon`截断为平凡`1.0`。允许主张BER显著压缩固定训练分布中的CLE
+统计来源，并由已有Formal DSA验证行为层缓解；禁止主张无条件真实环境独立、DSA必为零或准确率
+必提升。client2的真实family TV也下降38.66%，其效用损伤不能归因于“BER未压缩CLE分布”。
+
+文档与网页端初稿交接：
+
+```text
+docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
+docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```

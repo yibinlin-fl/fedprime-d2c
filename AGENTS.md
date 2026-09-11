@@ -31,6 +31,23 @@ docs/experiments/guides/EXPERIMENT_GUIDE_ZH.md
 `docs/archive/legacy/AGENT.md` is an obsolete early D2C instruction file and is
 not authoritative.
 
+## Current Research Navigation
+
+Keep detailed state in the handoff and documentation index. The current theory,
+cross-scenario protocol, and paper-writing handoff are indexed here only as
+stable navigation pointers:
+
+```text
+docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
+docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+Read `docs/handoffs/latest.md` before trusting the status of any experiment.
+Use `docs/README_ZH.md` for the complete document map; do not expand this entry
+file into a historical result log.
+
 ## Current Formal Result
 
 The strict 12-round CLE-HFL v2 A/B completed for matched training seeds 0/1/2

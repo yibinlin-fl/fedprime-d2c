@@ -2,7 +2,8 @@
 
 Updated: 2026-09-11
 
-状态：S0协议冻结、S1数据生成与PEW复用完成、S2本地smoke完成；等待OpenI benchmark。尚无科学结果。
+状态：S0协议冻结、S1数据生成与PEW复用完成、S2本地smoke完成。2026-09-12用户明确选择
+跳过OpenI benchmark并授权只运行map1 Formal；map2 Formal尚未授权。当前仍无cross-map科学结果。
 
 ## 实验问题
 
@@ -79,6 +80,18 @@ C2 mitigation replication:
 
 Avg/Worst/WCCA/CFG完整报告，但不是本次cross-map复现的主gate；不得用它们事后覆盖C1/C2。
 benchmark永远不给科学判定。
+
+## 2026-09-12 Formal授权范围
+
+```text
+authorized: mode=formal, map_seed=1, confirm_formal=true
+not authorized: map_seed=2 or map_seed=all
+benchmark: explicitly skipped by user
+```
+
+同协议旧Stage-2两臂Formal实测训练加分析为`8116.51 s`，即约`2.25 V100 GPU-hours`。新map1
+预计约`2.3--3.0 V100 GPU-hours`；这是参考估算而非新入口benchmark实测。若map1任务失败，先
+诊断失败，不得自动创建map2或重跑Formal。
 
 ## 当前唯一有效入口与数据包
 

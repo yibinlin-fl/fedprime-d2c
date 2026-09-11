@@ -561,6 +561,20 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前DSA识别理论v2与cross-binding-map S2入口：
+
+```text
+docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md   识别定理、假设、统计推断与限制
+docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md       五项缓存/受控构造验证，全部PASS
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md     S0--S2完成，等待OpenI benchmark
+scripts/openi_cle_v2_cross_scenario_entry.py                         当前唯一cross-map OpenI入口
+```
+
+新协议只改变binding map，固定partition、训练seed、初始权重、评价grid和冻结PEW；只比较
+`AsymHFL base`与`base+PEW/BER`，CDep禁用。当前smoke和输入审计通过但无科学结果。旧
+`scripts/openi_cle_cross_scenario_40round_entry.py`同时更换partition、重训PEW并包含CDep，已被
+本问题替代，禁止混用。
+
 当前新增的零训练理论验证与待运行粒度Kill Test入口：
 
 ```text

@@ -62,6 +62,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--samples-per-client", type=int, default=10000)
     parser.add_argument("--test-samples-per-class", type=int, default=100)
     parser.add_argument("--audit-ratio", type=float, default=0.15)
+    parser.add_argument(
+        "--binding-map-seed",
+        type=int,
+        default=SEED,
+        help="Seed for the client/class dominant-operator map only.",
+    )
+    parser.add_argument(
+        "--package-name",
+        default=PACKAGE_NAME,
+        help="Output package directory/archive name; defaults to the frozen seed0 package.",
+    )
     parser.add_argument("--unseen-operators", default=",".join(DEFAULT_UNSEEN_CORRUPTIONS))
     parser.add_argument("--no-archive", action="store_true")
     return parser.parse_args()
@@ -236,6 +247,9 @@ def condition_metadata(
     unseen: list[str],
     operator_to_id: dict[str, int],
     binding: dict[int, dict[int, str]],
+    *,
+    binding_map_seed: int = SEED,
+    scenario_id: str = PACKAGE_NAME,
 ) -> dict[str, object]:
     return {
         "dataset": "cifar10_cle_hfl_v2_factorial",
@@ -247,6 +261,9 @@ def condition_metadata(
         "alpha": 0.5,
         "gamma": gamma,
         "seed": SEED,
+        "partition_seed": SEED,
+        "binding_map_seed": int(binding_map_seed),
+        "scenario_id": scenario_id,
         "num_clients": 4,
         "num_classes": 10,
         "operators": operators,
@@ -268,8 +285,11 @@ def condition_metadata(
 def main() -> None:
     args = parse_args()
     output_root = args.output_root.resolve()
-    package_root = output_root / PACKAGE_NAME
-    archive_path = output_root / f"{PACKAGE_NAME}.tar.gz"
+    package_name = str(args.package_name).strip()
+    if not package_name or Path(package_name).name != package_name:
+        raise ValueError("--package-name must be one non-empty directory name")
+    package_root = output_root / package_name
+    archive_path = output_root / f"{package_name}.tar.gz"
     if package_root.exists() or archive_path.exists():
         raise FileExistsError(f"Refusing to overwrite existing factorial artifact: {package_root}")
     if not args.cifar100_tar.resolve().is_file():
@@ -280,7 +300,7 @@ def main() -> None:
     seen, unseen = parse_operator_split(args.unseen_operators)
     operators = list(CIFAR_C_CORE_CORRUPTIONS)
     operator_to_id = {name: index for index, name in enumerate(operators)}
-    binding = build_class_operator_map(4, 10, seen, SEED)
+    binding = build_class_operator_map(4, 10, seen, int(args.binding_map_seed))
     partition = partition_private_data(
         labels=train_labels,
         num_clients=4,
@@ -317,14 +337,26 @@ def main() -> None:
     package_root.mkdir(parents=True)
     manifest: dict[str, object] = {
         "protocol": PROTOCOL,
-        "package": PACKAGE_NAME,
+        "package": package_name,
+        "scenario_id": package_name,
+        "partition_seed": SEED,
+        "binding_map_seed": int(args.binding_map_seed),
+        "evaluation_seed": EVAL_SEED,
         "gammas": GAMMAS,
         "model_names": MODEL_NAMES,
         "operators": operators,
         "seen_operators": seen,
         "unseen_operators": unseen,
         "class_operator_map": condition_metadata(
-            "gamma00", 0.0, operators, seen, unseen, operator_to_id, binding
+            "gamma00",
+            0.0,
+            operators,
+            seen,
+            unseen,
+            operator_to_id,
+            binding,
+            binding_map_seed=int(args.binding_map_seed),
+            scenario_id=package_name,
         )["class_operator_map"],
         "conditions": {},
     }
@@ -366,7 +398,15 @@ def main() -> None:
         ):
             write_arrays(condition_root / split_name, arrays)
         metadata = condition_metadata(
-            condition, gamma, operators, seen, unseen, operator_to_id, binding
+            condition,
+            gamma,
+            operators,
+            seen,
+            unseen,
+            operator_to_id,
+            binding,
+            binding_map_seed=int(args.binding_map_seed),
+            scenario_id=package_name,
         )
         metadata_path = condition_root / "metadata.json"
         metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
@@ -408,7 +448,7 @@ def main() -> None:
     if not args.no_archive:
         output_root.mkdir(parents=True, exist_ok=True)
         with tarfile.open(archive_path, "w:gz", compresslevel=6) as archive:
-            archive.add(package_root, arcname=PACKAGE_NAME)
+            archive.add(package_root, arcname=package_name)
         audit = {
             "archive": archive_path.name,
             "bytes": archive_path.stat().st_size,

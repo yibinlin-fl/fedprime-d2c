@@ -30,6 +30,18 @@ def test_client_class_mapping_is_deterministic_and_seen_only():
     assert all(len(set(mapping.values())) == 10 for mapping in first.values())
 
 
+def test_cross_scenario_map_seeds_change_only_the_binding_assignment():
+    seen, _ = parse_operator_split(",".join(DEFAULT_UNSEEN_CORRUPTIONS))
+    seed0 = build_class_operator_map(4, 10, seen, seed=0)
+    seed1 = build_class_operator_map(4, 10, seen, seed=1)
+    seed2 = build_class_operator_map(4, 10, seen, seed=2)
+    assert seed0 != seed1
+    assert seed0 != seed2
+    assert seed1 != seed2
+    assert all(set(mapping) == set(range(10)) for mapping in seed1.values())
+    assert all(set(mapping) == set(range(10)) for mapping in seed2.values())
+
+
 def test_gamma_one_always_selects_dominant_operator():
     seen, _ = parse_operator_split(",".join(DEFAULT_UNSEEN_CORRUPTIONS))
     mapping = build_class_operator_map(1, 10, seen, seed=3)

@@ -1,0 +1,291 @@
+{
+  "protocol": "cle_dsa_identification_cache_validation_v2",
+  "input": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\outputs\\openi_downloads\\cle_v2_mechanism_stage1_seed0_benchmark\\extracted_formal\\analysis\\STAGE1_PREDICTIONS.npz",
+  "training_or_inference_run": false,
+  "cached_dsa": {
+    "h0_b": -0.0002450674292910366,
+    "h9_b": 0.11964422414530747,
+    "l0_b": -0.0019143518766643116,
+    "l9_b": 0.10604610359518243
+  },
+  "proposition_1": {
+    "statement": "operator-conditional exchangeability implies DSA=0",
+    "constructed_exchangeable_dsa": -2.50194709664537e-20,
+    "empirical_gamma0": {
+      "h0_b": -0.0002450674292910366,
+      "l0_b": -0.0019143518766643116
+    },
+    "empirical_gamma0_max_abs": 0.0019143518766643116,
+    "gates": {
+      "constructed_abs_dsa_le_1e-12": true,
+      "empirical_gamma0_abs_le_0p01": true
+    }
+  },
+  "proposition_2": {
+    "statement": "DSA is affine under semantic-shortcut probability mixtures",
+    "systems": {
+      "hfl": {
+        "monotone_increasing": true,
+        "curve": [
+          {
+            "lambda": 0.0,
+            "observed_dsa": -0.0002450674292910366,
+            "linear_prediction": -0.0002450674292910366,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.1,
+            "observed_dsa": 0.011743861728168818,
+            "linear_prediction": 0.011743861728168815,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.2,
+            "observed_dsa": 0.023732790885628668,
+            "linear_prediction": 0.023732790885628664,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.30000000000000004,
+            "observed_dsa": 0.035721720043088524,
+            "linear_prediction": 0.03572172004308852,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.4,
+            "observed_dsa": 0.04771064920054837,
+            "linear_prediction": 0.04771064920054836,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.5,
+            "observed_dsa": 0.05969957835800822,
+            "linear_prediction": 0.059699578358008216,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.6000000000000001,
+            "observed_dsa": 0.0716885075154681,
+            "linear_prediction": 0.07168850751546807,
+            "absolute_error": 2.7755575615628914e-17
+          },
+          {
+            "lambda": 0.7000000000000001,
+            "observed_dsa": 0.08367743667292793,
+            "linear_prediction": 0.08367743667292792,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 0.8,
+            "observed_dsa": 0.09566636583038779,
+            "linear_prediction": 0.09566636583038778,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 0.9,
+            "observed_dsa": 0.10765529498784764,
+            "linear_prediction": 0.10765529498784762,
+            "absolute_error": 1.3877787807814457e-17
+          },
+          {
+            "lambda": 1.0,
+            "observed_dsa": 0.11964422414530747,
+            "linear_prediction": 0.11964422414530747,
+            "absolute_error": 0.0
+          }
+        ]
+      },
+      "local": {
+        "monotone_increasing": true,
+        "curve": [
+          {
+            "lambda": 0.0,
+            "observed_dsa": -0.0019143518766643116,
+            "linear_prediction": -0.0019143518766643116,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.1,
+            "observed_dsa": 0.008881693670520366,
+            "linear_prediction": 0.008881693670520363,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.2,
+            "observed_dsa": 0.01967773921770504,
+            "linear_prediction": 0.019677739217705038,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.30000000000000004,
+            "observed_dsa": 0.030473784764889718,
+            "linear_prediction": 0.030473784764889714,
+            "absolute_error": 3.469446951953614e-18
+          },
+          {
+            "lambda": 0.4,
+            "observed_dsa": 0.041269830312074395,
+            "linear_prediction": 0.04126983031207439,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.5,
+            "observed_dsa": 0.05206587585925906,
+            "linear_prediction": 0.052065875859259064,
+            "absolute_error": 6.938893903907228e-18
+          },
+          {
+            "lambda": 0.6000000000000001,
+            "observed_dsa": 0.06286192140644374,
+            "linear_prediction": 0.06286192140644374,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.7000000000000001,
+            "observed_dsa": 0.07365796695362842,
+            "linear_prediction": 0.07365796695362842,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.8,
+            "observed_dsa": 0.0844540125008131,
+            "linear_prediction": 0.0844540125008131,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 0.9,
+            "observed_dsa": 0.09525005804799777,
+            "linear_prediction": 0.09525005804799777,
+            "absolute_error": 0.0
+          },
+          {
+            "lambda": 1.0,
+            "observed_dsa": 0.10604610359518243,
+            "linear_prediction": 0.10604610359518243,
+            "absolute_error": 0.0
+          }
+        ]
+      }
+    },
+    "maximum_linearity_error": 2.7755575615628914e-17,
+    "gates": {
+      "maximum_error_le_1e-12": true,
+      "both_cached_pairs_monotone": true
+    }
+  },
+  "proposition_3": {
+    "statement": "zero within-operator view JSD does not imply zero cross-operator DSA",
+    "constructed_max_jsd": 0.0,
+    "cached_h9_dsa": 0.11964422414530747,
+    "gates": {
+      "max_jsd_le_1e-12": true,
+      "dsa_ge_0p10": true
+    }
+  },
+  "proposition_4": {
+    "statement": "paired DSA cancels operator-invariant semantic probability shifts and recovers controlled binding-aligned response strength",
+    "aligned_endpoint_dsa": 0.9642857142857139,
+    "injection_curve": [
+      {
+        "injected_strength": 0.0,
+        "observed_dsa": -1.3877787807814457e-17,
+        "known_linear_target": 0.0,
+        "absolute_error": 1.3877787807814457e-17
+      },
+      {
+        "injected_strength": 0.1,
+        "observed_dsa": 0.09642857142857139,
+        "known_linear_target": 0.09642857142857139,
+        "absolute_error": 0.0
+      },
+      {
+        "injected_strength": 0.2,
+        "observed_dsa": 0.1928571428571429,
+        "known_linear_target": 0.19285714285714278,
+        "absolute_error": 1.1102230246251565e-16
+      },
+      {
+        "injected_strength": 0.30000000000000004,
+        "observed_dsa": 0.2892857142857144,
+        "known_linear_target": 0.2892857142857142,
+        "absolute_error": 2.220446049250313e-16
+      },
+      {
+        "injected_strength": 0.4,
+        "observed_dsa": 0.3857142857142858,
+        "known_linear_target": 0.38571428571428557,
+        "absolute_error": 2.220446049250313e-16
+      },
+      {
+        "injected_strength": 0.5,
+        "observed_dsa": 0.4821428571428571,
+        "known_linear_target": 0.48214285714285693,
+        "absolute_error": 1.6653345369377348e-16
+      },
+      {
+        "injected_strength": 0.6000000000000001,
+        "observed_dsa": 0.5785714285714286,
+        "known_linear_target": 0.5785714285714284,
+        "absolute_error": 2.220446049250313e-16
+      },
+      {
+        "injected_strength": 0.7000000000000001,
+        "observed_dsa": 0.675,
+        "known_linear_target": 0.6749999999999997,
+        "absolute_error": 3.3306690738754696e-16
+      },
+      {
+        "injected_strength": 0.8,
+        "observed_dsa": 0.7714285714285716,
+        "known_linear_target": 0.7714285714285711,
+        "absolute_error": 4.440892098500626e-16
+      },
+      {
+        "injected_strength": 0.9,
+        "observed_dsa": 0.8678571428571431,
+        "known_linear_target": 0.8678571428571424,
+        "absolute_error": 6.661338147750939e-16
+      },
+      {
+        "injected_strength": 1.0,
+        "observed_dsa": 0.9642857142857139,
+        "known_linear_target": 0.9642857142857139,
+        "absolute_error": 0.0
+      }
+    ],
+    "maximum_known_strength_recovery_error": 6.661338147750939e-16,
+    "operator_invariant_shift": {
+      "before": 0.24107142857142846,
+      "after": 0.24107142857142855,
+      "absolute_error": 8.326672684688674e-17
+    },
+    "binding_specificity": {
+      "observed": 0.24107142857142846,
+      "null_p95": 0.026785714285714263,
+      "p_value": 0.000999000999000999
+    },
+    "gates": {
+      "known_strength_max_error_le_1e-12": true,
+      "operator_invariant_shift_error_le_1e-12": true,
+      "aligned_response_exceeds_shuffled_null": true
+    }
+  },
+  "proposition_5": {
+    "statement": "independent source-level effects in [-1,1] admit a conservative two-sided Hoeffding confidence radius",
+    "source_count": 1000,
+    "delta": 0.05,
+    "bounded_interval": [
+      -1.0,
+      1.0
+    ],
+    "hoeffding_radius": 0.08589388166934751,
+    "resampling_unit": "source",
+    "warning": "operator images from the same source are paired and must not be treated as independent bootstrap observations",
+    "gates": {
+      "finite_positive_radius": true,
+      "source_contract_is_1000": true
+    }
+  },
+  "all_frozen_gates_pass": true,
+  "interpretation": "Numerical validation supports the algebra and provides an empirical counterexample; it does not replace the stated assumptions or establish cross-scenario generality."
+}

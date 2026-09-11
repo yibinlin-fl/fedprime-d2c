@@ -16,8 +16,8 @@ from scripts.run_cle_v2_factorial import arm_config, verify_package  # noqa: E40
 
 
 ARMS = ("h9_b", "h9_p")
-ROUND_BUDGET = {"smoke": 1, "formal": 12}
-LOCAL_BATCH_BUDGET = {"smoke": 1, "formal": 16}
+ROUND_BUDGET = {"smoke": 1, "benchmark": 1, "formal": 12}
+LOCAL_BATCH_BUDGET = {"smoke": 1, "benchmark": 8, "formal": 16}
 ALLOWED_FEDEASE_KEYS = {
     "environment_mode",
     "num_environments",
@@ -87,6 +87,7 @@ def stage2_arm_config(
     if arm not in ARMS:
         raise ValueError(f"Stage-2 does not allow arm {arm}")
     smoke = mode == "smoke"
+    benchmark = mode == "benchmark"
     config = arm_config(
         arm,
         package_root=package_root,
@@ -95,14 +96,16 @@ def stage2_arm_config(
         device=device,
         output_root=output_root,
         smoke=smoke,
-        benchmark=False,
+        benchmark=benchmark,
     )
     config["experiment_name"] = f"cle_v2_plugin_stage2_{arm}_trainseed0"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
     # Smoke limits reporting to one batch, but Formal must use the complete
     # reporting split because P2 is a scientific last-five utility gate.
-    config["train"]["max_test_batches"] = 1 if smoke else None
-    config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if smoke else None
+    config["train"]["max_test_batches"] = 1 if (smoke or benchmark) else None
+    config["method"]["strict_fit_audit"]["max_audit_batches"] = (
+        1 if (smoke or benchmark) else None
+    )
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
     if arm == "h9_b":

@@ -2,6 +2,37 @@
 
 Updated: 2026-09-11
 
+## DSA识别理论v2与Cross-Binding-Map S2完成：等待OpenI benchmark
+
+DSA理论已从三个代数性质扩展为完整的识别对象与五项验证：paired contrast在
+`m(z,o')=s(z)+r(z,o')`下消除operator-invariant语义基线，识别binding-specific operator
+response；补充了受控binding注入恢复、operator-invariant位移消除、shuffled-binding
+specificity及source-level推断。v2缓存/构造验证全部冻结门槛通过：已知强度恢复最大误差
+`6.66e-16`，不变位移误差`8.33e-17`，真实binding `0.241071`高于null p95 `0.026786`
+（`p=0.000999`）；`n=1000`的95%保守Hoeffding半径为`0.085894`。这不等于跨场景因果充分性。
+
+Cross-binding-map协议已完成S0--S2。新map1/map2固定partition seed0、evaluation seed、training
+seed0、初始模型、公共数据、评价source和同一冻结PEW checkpoint，只改变binding map；纯两臂为
+`h9_b`与`h9_b+PEW/BER`，CDep禁用。两张map的一轮CUDA smoke、20-source分析、配对轨迹、输入
+审计和20项测试均通过；smoke数值不是科学证据。唯一有效输入包：
+
+```text
+local_runs/cle_v2_cross_scenario/cle_hfl_v2_cross_maps1_2_seed0_split0_with_pew.tar.gz
+bytes: 1385820059
+SHA256: BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5
+entry: scripts/openi_cle_v2_cross_scenario_entry.py
+```
+
+下一步只运行`map_seed=1, mode=benchmark`验证OpenI链路与成本。不得把benchmark写成证据；
+Formal仍需用户另行明确授权。旧`openi_cle_cross_scenario_40round_entry.py`及seed1_split1/
+seed2_split2包同时改变partition、重训PEW并含CDep，禁止用于本协议。
+
+```text
+docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
 ## CLE-HFL网页端论文初稿交接包已完成
 
 已将当前八段完整证据链整理为自包含网页端GPT交接文档：CLE-HFL场景、paired DSA、strong

@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import json
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -23,6 +24,7 @@ from fedprime.methods.environment_witness import (  # noqa: E402
     calibrate_unknown_threshold,
     evaluate_environment_witness,
     infer_environment_annotations,
+    load_environment_witness,
     save_environment_witness,
     train_environment_witness,
 )
@@ -43,6 +45,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--inference-batch-size", type=int, default=512)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--max-batches", type=int)
+    parser.add_argument(
+        "--reuse-pew-root",
+        type=Path,
+        help=(
+            "Reuse a frozen standard PEW from another prepared package. The checkpoint and "
+            "public-only calibration are copied, while private annotations are regenerated."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -85,42 +95,79 @@ def main() -> None:
     asset_root.mkdir(parents=True)
     device = resolve_device(args.device)
     seed_everything(0)
-    train_loader, validation_loader = build_public_environment_loaders(
-        package_root / "public",
-        public_size=int(args.public_size),
-        batch_size=int(args.batch_size),
-        num_workers=int(args.num_workers),
-        seed=0,
-        validation_fraction=0.2,
-        public_dataset="cifar100",
-        excluded_operators=(),
-        label_mode="hard",
-    )
-    witness = PublicEnvironmentWitness(
-        embedding_dim=32,
-        num_environments=len(PEW_ENVIRONMENT_NAMES),
-        severity_levels=5,
-    ).to(device)
     started = time.perf_counter()
-    history = train_environment_witness(
-        witness,
-        train_loader,
-        validation_loader,
-        device,
-        epochs=int(args.epochs),
-        learning_rate=1.0e-3,
-        severity_weight=0.25,
-        max_batches=args.max_batches,
-    )
     checkpoint = asset_root / "pew_standard.pt"
-    save_environment_witness(witness, checkpoint, excluded_operators=(), label_mode="hard")
-    calibration = calibrate_unknown_threshold(witness, validation_loader, device)
-    threshold = float(calibration["threshold"])
-    validation = evaluate_environment_witness(witness, validation_loader, device).as_dict()
-    with (asset_root / "pew_training.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(history[0]))
-        writer.writeheader()
-        writer.writerows(history)
+    reused_from = None
+    if args.reuse_pew_root is not None:
+        source_root = args.reuse_pew_root.resolve()
+        source_asset = source_root / "pew_standard" if (source_root / "pew_standard").is_dir() else source_root
+        source_manifest_path = source_asset / "manifest.json"
+        source_checkpoint = source_asset / "pew_standard.pt"
+        if not source_manifest_path.is_file() or not source_checkpoint.is_file():
+            raise FileNotFoundError(f"Frozen PEW assets not found under {source_asset}")
+        source_report = json.loads(source_manifest_path.read_text(encoding="utf-8"))
+        if source_report.get("protocol") != "cle_v2_factorial_standard_pew_v1":
+            raise ValueError("Reuse source is not a standard frozen CLE-v2 PEW")
+        if source_report.get("max_batches") is not None:
+            raise ValueError("Refusing to reuse a truncated PEW checkpoint")
+        expected_sha = str(source_report.get("checkpoint_sha256", "")).upper()
+        if sha256_file(source_checkpoint) != expected_sha:
+            raise ValueError("Reuse PEW checkpoint hash does not match its manifest")
+        shutil.copy2(source_checkpoint, checkpoint)
+        source_history = source_asset / "pew_training.csv"
+        if source_history.is_file():
+            shutil.copy2(source_history, asset_root / "pew_training.csv")
+        witness = load_environment_witness(checkpoint, device)
+        threshold = float(source_report["unknown_threshold"])
+        calibration = source_report["calibration"]
+        validation = source_report["validation"]
+        public_size = int(source_report["public_size"])
+        epochs = int(source_report["epochs"])
+        max_batches = None
+        reused_from = {
+            "source": str(source_asset),
+            "checkpoint_sha256": expected_sha,
+            "public_only_calibration_reused": True,
+            "private_annotations_regenerated": True,
+        }
+    else:
+        train_loader, validation_loader = build_public_environment_loaders(
+            package_root / "public",
+            public_size=int(args.public_size),
+            batch_size=int(args.batch_size),
+            num_workers=int(args.num_workers),
+            seed=0,
+            validation_fraction=0.2,
+            public_dataset="cifar100",
+            excluded_operators=(),
+            label_mode="hard",
+        )
+        witness = PublicEnvironmentWitness(
+            embedding_dim=32,
+            num_environments=len(PEW_ENVIRONMENT_NAMES),
+            severity_levels=5,
+        ).to(device)
+        history = train_environment_witness(
+            witness,
+            train_loader,
+            validation_loader,
+            device,
+            epochs=int(args.epochs),
+            learning_rate=1.0e-3,
+            severity_weight=0.25,
+            max_batches=args.max_batches,
+        )
+        save_environment_witness(witness, checkpoint, excluded_operators=(), label_mode="hard")
+        calibration = calibrate_unknown_threshold(witness, validation_loader, device)
+        threshold = float(calibration["threshold"])
+        validation = evaluate_environment_witness(witness, validation_loader, device).as_dict()
+        with (asset_root / "pew_training.csv").open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(history[0]))
+            writer.writeheader()
+            writer.writerows(history)
+        public_size = int(args.public_size)
+        epochs = int(args.epochs)
+        max_batches = args.max_batches
 
     condition_reports = {}
     for condition in ("gamma00", "gamma09"):
@@ -181,10 +228,10 @@ def main() -> None:
         "data_manifest_sha256": sha256_file(manifest_path),
         "device": str(device),
         "environment_names": PEW_ENVIRONMENT_NAMES,
-        "public_size": int(args.public_size),
+        "public_size": public_size,
         "validation_fraction": 0.2,
-        "epochs": int(args.epochs),
-        "max_batches": args.max_batches,
+        "epochs": epochs,
+        "max_batches": max_batches,
         "learning_rate": 1.0e-3,
         "severity_weight": 0.25,
         "unknown_threshold": threshold,
@@ -193,6 +240,7 @@ def main() -> None:
         "checkpoint": checkpoint.name,
         "checkpoint_bytes": checkpoint.stat().st_size,
         "checkpoint_sha256": sha256_file(checkpoint),
+        "reused_from": reused_from,
         "conditions": condition_reports,
         "elapsed_seconds": time.perf_counter() - started,
     }

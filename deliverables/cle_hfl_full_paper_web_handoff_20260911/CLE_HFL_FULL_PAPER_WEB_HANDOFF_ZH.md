@@ -2,7 +2,7 @@
 
 日期：2026-09-11
 用途：交给网页端 GPT 进行论文结构审查、创新性讨论和初稿生成
-当前阶段：核心机制链已完成；方法扩展停止；投稿前实验缺口仍需审计
+当前阶段：核心机制链已完成；DSA识别理论已升级；cross-binding-map已完成S2并等待benchmark
 
 ---
 
@@ -31,6 +31,8 @@ taxonomy-assisted PEW+BER本地缓解
 Oracle family/operator/random消融界定环境对应与粒度边界
   ↓
 准确率收益并非跨底座一致：shortcut suppression与utility必须分开报告
+  ↓
+固定其余因素、只更换binding map的cross-scenario复现（S2完成，尚无科学结果）
 ```
 
 必须保留以下区分：
@@ -104,6 +106,7 @@ class-corruption绑定、模型架构与通信共同作用。研究问题不是�
 - 保持source语义不变的operator-level paired counterfactual；
 - 直接测量概率质量是否沿训练绑定方向移动的DSA；
 - matched HFL-vs-Local机制归因；
+- paired cancellation、binding specificity与source-level推断理论；
 - 一个不改变通信协议的taxonomy-assisted本地缓解模块；
 - 真实环境对应、环境粒度及跨通信底座的边界验证。
 
@@ -312,7 +315,32 @@ pooled通信附加量为：
 
 ---
 
-## 6. DSA 的三个理论性质与缓存验证
+## 6. DSA 的识别理论与五个可检验性质
+
+### 6.0 DSA究竟识别什么
+
+令`B_{k,o}`为客户端`k`中与operator `o`预先绑定的类别集合，并排除真实标签落入该集合的
+source。定义：
+
+\[
+m_{k,o}(z,o')=\sum_{c\in B_{k,o}}p_k(c\mid T_{o'}(x)).
+\]
+
+若绑定质量可分解为operator-invariant语义基线和operator response：
+
+\[
+m_{k,o}(z,o')=s_{k,o}(z)+r_{k,o}(z,o'),
+\]
+
+则paired contrast中的`s`精确相消，DSA识别：
+
+\[
+E_z\left[r_{k,o}(z,o)-\frac{1}{|\mathcal O|-1}\sum_{o'\ne o}r_{k,o}(z,o')\right].
+\]
+
+也就是说，DSA识别的是**同一source跨operator时沿预先固定训练binding方向的概率响应差**。
+它不是无条件恢复模型内部因果机制；成立依赖paired变换语义保持、binding预注册、source作为
+配对统计单位，以及评价标签/operator/binding不进入训练或选择。
 
 ### 6.1 命题一：operator条件交换时DSA为零
 
@@ -362,7 +390,22 @@ p(x_o)=p(a_1(x_o))=p(a_2(x_o)),
 这解释了为什么AugMix/JSD与PEW+BER不等价：JSD约束同一样本附近的增强一致性，DSA测量跨
 operator的绑定方向。JSD可以保留一个稳定但错误的corruption-to-class shortcut。
 
-这些结果验证代数性质、经验零点和反例，不等于DSA已经被证明为跨所有场景的因果充分统计量。
+### 6.4 命题四：paired cancellation与已知方向响应恢复
+
+在概率单纯形中注入强度已知的binding-aligned response，11点曲线的最大恢复误差为
+`6.66e-16`。向同一source的所有operator加入相同概率位移后，DSA变化仅`8.33e-17`，验证
+operator-invariant项被paired contrast消除。同一受控响应的真实binding DSA为`0.241071`，
+shuffled-binding null p95为`0.026786`，`p=0.000999`。
+
+### 6.5 命题五：统计单位必须是source
+
+同一source的15个operator图像不是15个独立样本。先在source内部形成directional contrast，
+再以source为单位bootstrap。若source effect位于`[-1,1]`，`n=1000, delta=.05`的保守
+Hoeffding半径为`0.085894`。主文bootstrap CI覆盖source抽样不确定性，不覆盖训练seed、
+binding map或partition不确定性。
+
+这些结果验证识别代数、受控恢复、经验零点和反例，不等于DSA已经被证明为跨所有场景的因果
+充分统计量。其完整定理、证明边界和推断说明见仓库理论文档。
 
 ---
 
@@ -621,6 +664,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | DSA是否有可解释零点 | exchangeable projection | -2.50e-20 | PASS |
 | DSA是否对应shortcut混合强度 | probability mixture | 严格单调，误差2.78e-17 | PASS |
 | JSD能否替代DSA | JSD=0反例 | JSD 0而DSA 0.119644 | 不能 |
+| paired DSA是否消除operator-invariant位移 | 受控概率注入 | 不变误差8.33e-17 | PASS |
+| DSA能否恢复已知binding方向强度 | 11点受控注入 | 最大误差6.66e-16 | PASS |
+| 推断单位是否明确 | source-level界与bootstrap | n=1000半径0.085894 | PASS |
 | PEW+BER能否抑制AsymHFL中的CLE | matched Stage-2 | DSA降低65.52% | mitigation GO |
 | PEW+BER能否跨第二底座抑制CLE | native-CE FedDF | DSA降低78.82% | cross-base mitigation GO |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
@@ -636,7 +682,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 1. **场景贡献**：提出受控CLE-HFL评估问题，在模型异构、非IID客户端中构造client-specific
    class-corruption directional bindings。
 2. **诊断贡献**：提出paired counterfactual operator grid与DSA，直接识别预测概率是否沿训练
-   binding方向移动，并给出零基准、混合线性和JSD不充分性分析。
+   binding方向移动；给出paired cancellation识别定理、零基准、混合线性、binding specificity、
+   source-level推断和JSD不充分性反例。
 3. **机制贡献**：通过matched HFL-vs-Local factorial发现shortcut主要local-first，通信只在
    pooled平均上增加较小附加效应。
 4. **干预与边界贡献**：给出taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
@@ -689,7 +736,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 1. 纯PEW+BER正式证据目前主要是固定CLE-v2 scenario、training seed 0；历史三seed正结果包含
    CDep，不能冒充纯PEW+BER-only多seed。
-2. 当前没有cross-scenario或新class-operator mapping证据，不能宣称跨CLE场景泛化。
+2. 新class-operator binding map的数据、冻结PEW复用和双mapping端到端smoke已经完成；当前只
+   证明协议可执行，尚无benchmark/Formal科学结果，不能宣称跨CLE场景复现。
 3. 架构与客户端数据划分绑定，不能把client2现象单独归因于ShuffleNet容量。
 4. FedDF两臂低于预注册20%学习下限；可作为支持性跨底座机制证据，但主表定位需谨慎。
 5. 应审计主表是否还缺标准ERM/Local/RAHFL/FedDF等必要对照；不要为了“工作量”添加不能回答
@@ -699,8 +747,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 7. novelty仍需要最新文献检索，尤其是federated spurious correlation、group reweighting、
    pseudo-group discovery、corruption robustness与model-heterogeneous FL。
 
-下一步应先做**论文证据缺口审计**，再决定是否必须补一个新CLE mapping、纯插件多seed或标准
-基线；不得把追加实验用于事后翻转已经冻结的NO-GO门槛。
+下一步先运行cross-binding-map benchmark检查成本与平台产物；benchmark通过后，是否授权Formal
+仍需用户明确决定。不得把追加实验用于事后翻转已经冻结的NO-GO门槛。
 
 ---
 
@@ -732,7 +780,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 - paired operator counterfactual；
 - DSA定义；
-- 三个理论性质；
+- 识别定理与五个可检验性质；
 - shuffled-binding；
 - HFL-vs-Local factorial与local-first。
 
@@ -840,7 +888,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；尤其判断是否必须补
    新CLE mapping、纯PEW+BER多seed或更标准的基线。
 4. 设计一套不把FedDF写成失败、也不把它写成无损成功的结果叙事。
-5. 检查DSA定义、三个理论性质和JSD反例是否需要更严格的定理、证明或假设。
+5. 检查DSA识别定理、五个性质、source-level推断和JSD反例是否还存在逻辑缺口。
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
@@ -856,6 +904,8 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 ```text
 deliverables/cle_v2_mechanism_stage1_20260910/RESULT_SUMMARY_ZH.md
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md
+docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md

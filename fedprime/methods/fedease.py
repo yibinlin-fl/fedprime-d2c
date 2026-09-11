@@ -72,10 +72,11 @@ class FedEASEExperiment(AsymHFLExperiment):
             "asymhfl_val",
             "hfl",
             "symmetric_hfl",
+            "feddf_fidelity",
         }:
             raise ValueError(
                 "FedEASE communication must be none/local_only, hfl/symmetric_hfl, "
-                "or asymhfl/asymhfl_val."
+                "asymhfl/asymhfl_val, or feddf_fidelity."
             )
         super().__init__(config)
 

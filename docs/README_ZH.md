@@ -574,6 +574,17 @@ Oracle实验使用私有真实corruption metadata，只能测量family与operato
 不能作为可部署方法。Formal显示真实分组相对随机对照有效，但operator相对family的DSA改善只有
 0.001449，未过0.02门槛；层次化/operator PEW不授权。
 
+当前论文闭环与唯一待决的跨通信插件验证：
+
+```text
+docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
+docs/experiments/current/CLE_V2_FEDDF_PEW_BER_PLUGIN_ZH.md
+scripts/openi_cle_v2_feddf_plugin_entry.py
+```
+
+FedDF实验使用修复后的`feddf_fidelity`通信；两臂共享AugMix/JSD/DCL和FedDF，唯一差异是
+coarse PEW+BER。当前仅本地smoke通过，任何smoke数值均非科学证据。
+
 最新 CVRS Method Phase 已完成并归档：
 
 ```text

@@ -2,6 +2,24 @@
 
 Updated: 2026-09-11
 
+## FedDF-fidelity × coarse PEW+BER 两臂已实现并通过本地smoke
+
+为验证插件性，现冻结第二通信底座两臂：`fd_b=AugMix/JSD/DCL+FedDF-fidelity`，
+`fd_p=fd_b+frozen coarse PEW+hard BER`。两臂共享同一CLE场景、初始化、私有/公共预算和修复后的
+post-local FedDF server distillation，CDep禁止；唯一处理差异是PEW+BER。该定位是matched robust
+local backbone下的FedDF通信，不是未经修改的官方完整recipe。
+
+12项聚焦测试、Formal配置静态审计和本地CUDA smoke通过。两臂完成训练、各4个checkpoint、
+FedDF诊断和20-source分析，4条local batch/AugMix trace匹配，峰值显存约1.53GB。单批smoke的
+准确率/DSA不构成证据；插件臂早期准确率低要求先做OpenI benchmark检查8-batch稳定性，禁止据此
+调参或直接宣称失败。OpenI benchmark与Formal均未授权、未启动。
+
+```text
+docs/experiments/current/CLE_V2_FEDDF_PEW_BER_PLUGIN_ZH.md
+scripts/openi_cle_v2_feddf_plugin_entry.py
+docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
+```
+
 ## Oracle粒度Formal完成：真实分组有效，但operator细分无实质收益
 
 固定CLE-v2 `seed0_split0`、gamma0.9、training seed 0、12 rounds的Oracle family/operator/

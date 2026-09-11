@@ -584,7 +584,8 @@ scripts/openi_cle_v2_feddf_plugin_entry.py
 
 FedDF实验使用修复后的`feddf_fidelity`通信；Base为standard CE，candidate只把CE均值替换为
 coarse PEW分组的hard BER-weighted CE。两臂均禁用AugMix/JSD/DCL，当前仅本地smoke通过，任何
-smoke数值均非科学证据。先前matched-robust设计已作废。
+smoke数值均非科学证据。先前matched-robust设计已作废。OpenI V100 benchmark现已通过，Formal
+仍未授权；benchmark报告位于`deliverables/cle_v2_feddf_plugin_benchmark_20260911/`。
 
 最新 CVRS Method Phase 已完成并归档：
 

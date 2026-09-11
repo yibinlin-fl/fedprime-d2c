@@ -66,5 +66,5 @@ vs
 FedDF-fidelity + coarse PEW/BER-weighted CE
 ```
 
-先完成OpenI benchmark；只有执行、轨迹、数值稳定性和成本均通过，且用户另行明确批准，才运行
-12轮Formal。此后停止方法扩展，进入主表、消融表、机制图和逐句证据审计。
+OpenI benchmark现已通过执行、轨迹、数值稳定性和成本检查，但不产生方法证据。只有用户另行
+明确批准，才运行12轮Formal。此后停止方法扩展，进入主表、消融表、机制图和逐句证据审计。

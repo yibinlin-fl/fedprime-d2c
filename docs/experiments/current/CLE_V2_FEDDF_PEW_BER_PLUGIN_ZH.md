@@ -2,8 +2,25 @@
 
 Updated: 2026-09-11
 
-状态：原matched-robust设计已作废；修正后的native-CE协议冻结，22项回归测试和两臂本地CUDA
-smoke通过。OpenI benchmark与Formal未授权。
+状态：原matched-robust设计已作废；修正后的native-CE协议冻结，22项回归测试、本地CUDA smoke
+和OpenI V100 benchmark通过。Formal未授权。
+
+## 2026-09-11 OpenI benchmark
+
+```text
+1 round x 8 local batches/client
+training 88.62 s, analysis 8.29 s, total 96.91 s
+peak CUDA memory 2224.13 MB
+4 paired standard-batch traces matched
+verdict: BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION
+```
+
+输入、配置哈希、FedDF诊断、checkpoint推理和20-source分析均完整且有限。两臂operator-grid
+accuracy约10%，未达到学习下限；benchmark DSA/准确率及分析器门槛真假全部禁止作为方法证据。
+按Formal 12轮、双倍local batch和完整评估保守预估0.5--1.0 V100 GPU-hour。Formal仍需用户
+另行明确批准。
+
+报告：`deliverables/cle_v2_feddf_plugin_benchmark_20260911/RESULT_SUMMARY_ZH.md`。
 
 ## 2026-09-11 本地验证
 

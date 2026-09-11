@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-## Native FedDF-fidelity × coarse PEW+BER 两臂已修正并通过本地smoke
+## Native FedDF-fidelity × coarse PEW+BER 已通过OpenI benchmark，Formal待授权
 
 用户指出matched-robust设计不能证明真正插件性后，该设计及其smoke立即作废。现冻结第二底座
 原生CE两臂：`fd_b=standard CE+FedDF-fidelity`，`fd_p=PEW-grouped hard BER-weighted CE+
@@ -10,10 +10,18 @@ Updated: 2026-09-11
 post-local FedDF server distillation；AugMix/JSD/DCL/CDep全部禁用。唯一目标差异是PEW分组与
 BER重加权。仍只称protocol-matched FedDF fidelity adapter，不声称官方完整recipe复现。
 
-22项回归测试、Formal配置静态审计和修正后的本地CUDA smoke通过。两臂完成训练、各4个
-checkpoint、FedDF诊断和20-source分析，4条standard batch trace匹配，峰值显存约1.53GB。
-单批截断报告与balanced grid数值方向不一致，所有smoke准确率/DSA均禁止引用；先做OpenI
-benchmark检查8-batch稳定性，不能据此调参或宣称失败。OpenI benchmark与Formal均未授权、未启动。
+22项回归测试、Formal配置静态审计、本地CUDA smoke及OpenI V100 benchmark通过。benchmark为
+1轮×8 local batches/client：训练88.62秒、分析8.29秒、总计96.91秒，峰值显存2224.13MB；
+两臂配置哈希、4条standard batch trace、FedDF诊断和20-source预测缓存均通过完整性检查。
+两臂学习下限约10%，所有benchmark准确率/DSA和门槛真假均禁止引用。允许结论仅是Formal链路
+可执行，预计0.5--1.0 V100 GPU-hour；Formal仍需用户明确批准，当前未启动。
+
+原始benchmark包94,367 bytes，SHA256
+`828921F200FF6A862C2397ACA9C4F856E15C4CA6110DB70E8D45C862E18FE25D`。报告：
+
+```text
+deliverables/cle_v2_feddf_plugin_benchmark_20260911/RESULT_SUMMARY_ZH.md
+```
 
 ```text
 docs/experiments/current/CLE_V2_FEDDF_PEW_BER_PLUGIN_ZH.md

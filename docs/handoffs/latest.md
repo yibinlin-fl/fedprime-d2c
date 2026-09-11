@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-## Native FedDF-fidelity × coarse PEW+BER 已通过OpenI benchmark，Formal待授权
+## Native FedDF-fidelity × coarse PEW+BER Formal完成：机制迁移，插件总门NO-GO
 
 用户指出matched-robust设计不能证明真正插件性后，该设计及其smoke立即作废。现冻结第二底座
 原生CE两臂：`fd_b=standard CE+FedDF-fidelity`，`fd_p=PEW-grouped hard BER-weighted CE+
@@ -10,17 +10,28 @@ Updated: 2026-09-11
 post-local FedDF server distillation；AugMix/JSD/DCL/CDep全部禁用。唯一目标差异是PEW分组与
 BER重加权。仍只称protocol-matched FedDF fidelity adapter，不声称官方完整recipe复现。
 
-22项回归测试、Formal配置静态审计、本地CUDA smoke及OpenI V100 benchmark通过。benchmark为
-1轮×8 local batches/client：训练88.62秒、分析8.29秒、总计96.91秒，峰值显存2224.13MB；
-两臂配置哈希、4条standard batch trace、FedDF诊断和20-source预测缓存均通过完整性检查。
-两臂学习下限约10%，所有benchmark准确率/DSA和门槛真假均禁止引用。允许结论仅是Formal链路
-可执行，预计0.5--1.0 V100 GPU-hour；Formal仍需用户明确批准，当前未启动。
-
-原始benchmark包94,367 bytes，SHA256
-`828921F200FF6A862C2397ACA9C4F856E15C4CA6110DB70E8D45C862E18FE25D`。报告：
+12轮×16 local batches/client/round Formal已完成，输入审计、配置哈希、48条配对local trace、
+checkpoint预测及独立缓存复算均通过：
 
 ```text
-deliverables/cle_v2_feddf_plugin_benchmark_20260911/RESULT_SUMMARY_ZH.md
+DSA 0.136989 -> 0.029012, reduction 0.107977 (78.82%)
+CI95 [0.106498, 0.109417], 4/4 clients positive -> P1 PASS
+operator-grid 18.4917 -> 18.4517 -> L0 FAIL（两臂均低于20%）
+last-5 delta: Avg -0.6660, Worst +0.2147, WCCA -0.1000, CFG -13.2350
+I0 PASS, L0 FAIL, P1 PASS, P2 FAIL
+verdict: NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0
+```
+
+允许结论是PEW+BER的CLE shortcut抑制从AsymHFL迁移到native-CE FedDF-fidelity；不允许宣称
+通用无损插件或架构一致效用。结果不是单调崩溃：operator-grid pooled仅下降0.04pp，但冻结
+last-5 Avg下降0.666pp，且逐客户端效用不一致。不得改门槛、调权重或补seed翻案。
+
+原始Formal包4,496,390 bytes，SHA256
+`A6328074227F08A6C89BF68727C4725CEEE826EB9D08DB09626C74A241E20F38`，总耗时0.4012 V100
+GPU-hours。报告：
+
+```text
+deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md
 ```
 
 ```text

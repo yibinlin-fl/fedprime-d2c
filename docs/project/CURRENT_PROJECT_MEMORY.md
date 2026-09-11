@@ -4263,3 +4263,33 @@ operator相对family的DSA收益仅0.001449，距离0.02门槛约13.8倍，且cl
 `B133F578255308764A1AB6ECD41ACB66421FA75A73A75AF7864BA16681D7054C`；总耗时12,426.45秒
 （3.4518 V100 GPU-hours）。报告位于
 `deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md`。
+
+## Native FedDF-fidelity × PEW+BER Formal - 2026-09-11
+
+真正插件两臂使用固定CLE-v2 `seed0_split0/gamma0.9`、training seed 0、12 rounds、每客户端每轮
+16个local batches：`fd_b=standard single-view CE+feddf_fidelity`，`fd_p=PEW-grouped hard
+BER-weighted CE+identical feddf_fidelity`。两臂均禁用AugMix/JSD/DCL/CDep，唯一目标差异为
+PEW分组与BER重加权。输入审计、配置哈希、48条配对local trace、checkpoint推理和预测缓存独立
+复算均通过。
+
+```text
+pooled DSA: 0.136989 -> 0.029012
+reduction: 0.107977 (78.82%), CI95 [0.106498, 0.109417]
+client reductions: [0.150575, 0.074155, 0.053119, 0.154059]
+operator-grid pooled: 18.4917 -> 18.4517, delta -0.0400 pp
+last-5 delta: Avg -0.6660, Worst +0.2147, WCCA -0.1000, CFG -13.2350
+gates: I0 PASS, L0 FAIL, P1 PASS, P2 FAIL
+verdict: NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0
+architecture_uniform_utility_claim: false
+```
+
+P1强力通过说明固定强CLE场景中的shortcut suppression从AsymHFL迁移到第二通信底座；但两臂
+均低于20%学习下限，且last-5 Avg下降0.666pp，所以不能宣称无效用代价的通用插件。联合已有
+AsymHFL结果，论文可主张跨底座的捷径抑制机制证据，同时必须报告准确率收益依赖底座/客户端。
+禁止通过调权重、延长轮数、改门槛或补seed覆盖NO-GO。实现只称protocol-matched
+`feddf_fidelity` adapter，不称官方完整FedDF recipe复现。
+
+结果包4,496,390 bytes，SHA256为
+`A6328074227F08A6C89BF68727C4725CEEE826EB9D08DB09626C74A241E20F38`；总耗时1,444.32秒
+（0.4012 V100 GPU-hours）。报告位于
+`deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md`。

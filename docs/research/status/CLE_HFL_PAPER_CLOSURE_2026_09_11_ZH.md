@@ -45,9 +45,12 @@ CLE-HFL受控场景
 策略本身不由插件修改。固定AsymHFL场景seed-0纯插件Formal将DSA从`0.119644`降到`0.041252`
 （降低65.52%，CI95 `[0.077191,0.079601]`），Avg增加1.7323pp，但原完整效用门因Worst失败。
 
-当前新增的FedDF-fidelity两臂使用`standard CE vs PEW-grouped BER-weighted CE`，两臂均不使用
-AugMix/JSD/DCL，并保持FedDF通信完全相同。它用于验证PEW+BER能否作为真正的本地目标插件迁移
-到第二底座；实现仍是protocol-matched fidelity adapter，不是未经修改的官方完整recipe。
+FedDF-fidelity两臂使用`standard CE vs PEW-grouped BER-weighted CE`，两臂均不使用
+AugMix/JSD/DCL，并保持FedDF通信完全相同。Formal中DSA从`0.136989`降到`0.029012`
+（下降78.82%，CI95 `[0.106498,0.109417]`，4/4客户端同向），证明捷径抑制迁移到第二底座；
+但last-5 Avg下降0.6660pp，且两臂operator-grid均未达到20%学习下限。冻结 verdict 为
+`NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0`，不能建立无损通用插件主张。实现仍是protocol-matched
+fidelity adapter，不是未经修改的官方完整recipe。
 
 ## 四、必须明确的限制
 
@@ -58,7 +61,7 @@ AugMix/JSD/DCL，并保持FedDF通信完全相同。它用于验证PEW+BER能否
 - coarse family足够不等于learned PEW已达到Oracle质量。
 - smoke和benchmark只验证执行/成本，不能进入科学结果表。
 
-## 当前唯一待决实验
+## FedDF跨底座验证的最终边界
 
 ```text
 FedDF-fidelity + standard CE
@@ -66,5 +69,6 @@ vs
 FedDF-fidelity + coarse PEW/BER-weighted CE
 ```
 
-OpenI benchmark现已通过执行、轨迹、数值稳定性和成本检查，但不产生方法证据。只有用户另行
-明确批准，才运行12轮Formal。此后停止方法扩展，进入主表、消融表、机制图和逐句证据审计。
+12轮Formal已经完成。允许结论是“shortcut suppression跨AsymHFL与FedDF-fidelity复现”；禁止
+结论是“任务效用跨底座稳定提升”或“通用无损插件”。至此停止方法扩展，进入主表、消融表、
+机制图、限制段和逐句证据审计。

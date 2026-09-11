@@ -2,8 +2,30 @@
 
 Updated: 2026-09-11
 
-状态：原matched-robust设计已作废；修正后的native-CE协议冻结，22项回归测试、本地CUDA smoke
-和OpenI V100 benchmark通过。Formal未授权。
+状态：原matched-robust设计已作废；修正后的native-CE协议已完成Formal。冻结 verdict 为
+`NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0`：P1捷径抑制通过，但L0学习下限和P2平均效用失败。
+
+## 2026-09-11 OpenI Formal
+
+```text
+pooled DSA: 0.136989 -> 0.029012
+reduction: 0.107977 (78.82%)
+source-bootstrap CI95: [0.106498, 0.109417]
+client reductions: [0.150575, 0.074155, 0.053119, 0.154059]
+operator-grid pooled delta: -0.0400 pp
+last-5 delta: Avg -0.6660, Worst +0.2147, WCCA -0.1000, CFG -13.2350
+gates: I0 PASS, L0 FAIL, P1 PASS, P2 FAIL
+verdict: NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0
+```
+
+两臂均低于冻结的20% operator-grid学习下限（18.4917/18.4517），且candidate last-5 Avg
+下降0.6660pp；因此不能宣称无效用代价的通用插件。P1仍提供强机制证据：固定强CLE场景中，
+PEW+BER的DSA抑制迁移到第二通信底座，4/4客户端同向。论文必须同时报告NO-GO与效用边界。
+
+原始包4,496,390 bytes，SHA256为
+`A6328074227F08A6C89BF68727C4725CEEE826EB9D08DB09626C74A241E20F38`；总耗时0.4012 V100
+GPU-hours。完整独立复算报告：
+`deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md`。
 
 ## 2026-09-11 OpenI benchmark
 
@@ -68,7 +90,7 @@ formal:    12 rounds x 16 local batches/client，未授权
 - P2：candidate-minus-base last-5 Avg不低于0，且candidate operator-grid pooled accuracy不比
   base低超过1pp。
 
-Formal四门全过才是`GO_PEW_BER_FEDDF_PLUGIN_SEED0`。Worst/WCCA/CFG和逐客户端结果必须完整
+Formal四门全过才是`GO_PEW_BER_FEDDF_PLUGIN_SEED0`。本次I0/P1通过、L0/P2失败。Worst/WCCA/CFG和逐客户端结果必须完整
 报告，但不用于覆盖本实验限定的平均效用门；本实验不能建立架构一致效用、跨场景或通用HFL结论。
 不得根据smoke/benchmark或Formal结果修改门槛、BER/PEW/FedDF参数或补seed翻案。
 

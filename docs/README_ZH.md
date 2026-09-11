@@ -565,12 +565,14 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ```text
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md       已完成，全部冻结门槛通过
-docs/experiments/current/CLE_V2_ORACLE_GRANULARITY_KILL_TEST_ZH.md  实现/smoke通过，Formal未授权
+docs/experiments/current/CLE_V2_ORACLE_GRANULARITY_KILL_TEST_ZH.md  Formal完成，operator粒度NO-GO
 scripts/openi_cle_v2_oracle_granularity_entry.py                    OpenI双锁入口
+deliverables/cle_v2_oracle_granularity_formal_20260911/             正式结果与独立复算结论
 ```
 
 Oracle实验使用私有真实corruption metadata，只能测量family与operator分组之间的粒度缺口，
-不能作为可部署方法或层次化PEW有效性的直接证据。
+不能作为可部署方法。Formal显示真实分组相对随机对照有效，但operator相对family的DSA改善只有
+0.001449，未过0.02门槛；层次化/operator PEW不授权。
 
 最新 CVRS Method Phase 已完成并归档：
 

@@ -4229,3 +4229,37 @@ accuracy约79.97%仍坍缩），BER全局极端权重也不足以解释（client
 最低）。架构与非IID客户端数据固定绑定，所以不得把结果写成“小模型容量导致伤害”。当前最强
 描述是`ShuffleNet/client2 pair上的类别决策重分配`；需要架构×客户端数据交叉Kill Test才能区分
 架构和数据原因。证据位于`deliverables/cle_v2_plugin_stage2_architecture_attribution_20260910/`。
+
+## DSA Theory Cache Validation and Oracle Granularity Formal - 2026-09-11
+
+DSA三个冻结命题以Stage-1正式预测缓存完成CPU零训练验证。exchangeable projection DSA为
+`-2.50e-20`，gamma0经验最大绝对DSA为`0.001914`；HFL/Local的11点概率混合曲线严格递增，
+最大仿射误差`2.78e-17`；三个相同预测视图的JSD为0而h9 HFL DSA为`0.119644`。全部门槛通过，
+只支持DSA代数性质、固定缓存经验零点和JSD不充分反例，不外推跨场景结论。
+
+随后完成固定`seed0_split0/gamma0.9`、training seed 0、12 rounds、16 local batches/client/round
+的Oracle family (`OF`)、Oracle operator (`OO`)及类别内打乱operator随机对照 (`RO`) 三臂Formal。
+真实operator metadata只用于不可部署机制上界；三臂未使用learned PEW或CDep。输入审计、三份
+配置哈希、48条local batch/AugMix trace及预测合法性均通过，独立缓存复算与平台结果完全一致。
+
+```text
+DSA: OF 0.017232, OO 0.015783, RO 0.067895
+RO-OO 0.052112, CI95 [0.051231, 0.052983] -> G1 PASS
+OF-OO 0.001449, CI95 [0.001086, 0.001790] -> G2 FAIL
+operator-grid pooled: OF 21.9333, OO 21.5200, RO 18.7817 -> L0 FAIL
+last-5 Avg: OF 21.0960, OO 20.0273; zero-recall totals OF/OO=13/13 -> G3 FAIL
+I0 PASS
+verdict: NO_GO_OPERATOR_GRANULARITY_GAP
+hierarchical_pew_training_authorized: false
+```
+
+G3仅因OO last-5 Avg比OF低1.0687pp、超过1pp容忍线0.0687pp而窄幅失败，但结论由G2决定：
+operator相对family的DSA收益仅0.001449，距离0.02门槛约13.8倍，且client-wise OF-OO约为
+`[+0.020798,+0.007219,-0.022287,+0.000065]`，不具跨客户端一致性。允许结论是环境真实对应关系
+相对随机分组重要、粗family已捕获几乎全部粒度收益；禁止实现层次化/operator PEW或通过调参、
+补seed、改门槛复活。它不解决ShuffleNet/client2任务效用问题。
+
+结果包6,633,253 bytes，SHA256为
+`B133F578255308764A1AB6ECD41ACB66421FA75A73A75AF7864BA16681D7054C`；总耗时12,426.45秒
+（3.4518 V100 GPU-hours）。报告位于
+`deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md`。

@@ -2,8 +2,29 @@
 
 Updated: 2026-09-11
 
-状态：协议、实现和配置已冻结；13项聚焦测试通过，三臂本地CUDA smoke完整通过且训练轨迹匹配。
-本地benchmark按用户要求在第一臂完成后中止，残留输出不得引用。Formal未授权、未启动。
+状态：Formal已完成并独立复算；判定`NO_GO_OPERATOR_GRANULARITY_GAP`，层次化PEW训练不授权。
+此前13项聚焦测试及三臂本地CUDA smoke通过；中止的本地benchmark残留仍不得引用。
+
+## 2026-09-11 Formal结果
+
+```text
+DSA: OF 0.017232, OO 0.015783, RO 0.067895
+RO-OO: 0.052112, CI95 [0.051231, 0.052983]  -> G1 PASS
+OF-OO: 0.001449, CI95 [0.001086, 0.001790]  -> G2 FAIL (<0.02)
+grid Avg: OF 21.9333, OO 21.5200, RO 18.7817 -> L0 FAIL (RO<20)
+last-5 Avg: OF 21.0960, OO 20.0273          -> G3 FAIL by 0.0687pp beyond tolerance
+I0: 48 paired traces matched                -> PASS
+```
+
+即使忽略很窄的G3失败，决定性G2仍只达到冻结绝对门槛的约7.24%，结论不会改变。真实operator
+关联相对随机分组有效，但operator细分相对family没有实质增益，且按客户端并不一致。因此不得
+实现operator-level/hierarchical PEW，不得通过调权重、补seed或改门槛复活。
+
+完整报告：
+
+```text
+deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
+```
 
 ## 问题与边界
 
@@ -55,9 +76,8 @@ benchmark: 1 round x 8 local batches/client，成本估计，无科学结论
 formal:    12 rounds x 16 local batches/client，当前锁定
 ```
 
-smoke只证明三种分组方式、训练、检查点和分析链路可执行。其低轮次准确率、DSA、置信区间及
-门槛真假均没有科学意义。下一次如使用OpenI，应先运行`mode=benchmark`取得V100平台成本；
-`mode=formal`仍须用户另行明确批准，并同时设置`confirm_formal=true`。
+smoke只证明三种分组方式、训练、检查点和分析链路可执行，其数值没有科学意义。正式实验实际
+耗时`12426.45 s`（3.4518 V100 GPU-hours），其中训练`12365.30 s`、分析`61.15 s`。
 
 入口：
 

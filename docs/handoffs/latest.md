@@ -2,24 +2,45 @@
 
 Updated: 2026-09-11
 
-## DSA理论缓存验证完成；Oracle粒度Kill Test已实现，Formal仍锁定
+## Oracle粒度Formal完成：真实分组有效，但operator细分无实质收益
+
+固定CLE-v2 `seed0_split0`、gamma0.9、training seed 0、12 rounds的Oracle family/operator/
+类别内随机operator三臂Formal已完成，输入审计、配置哈希和48条配对训练轨迹通过；独立缓存复算
+与平台JSON完全一致。
+
+```text
+DSA: OF 0.017232, OO 0.015783, RO 0.067895
+RO-OO 0.052112, CI95 [0.051231, 0.052983] -> G1 PASS
+OF-OO 0.001449, CI95 [0.001086, 0.001790] -> G2 FAIL
+grid Avg: OF 21.9333, OO 21.5200, RO 18.7817 -> L0 FAIL
+last-5 Avg: OF 21.0960, OO 20.0273; zero-recall均13 -> G3窄幅FAIL
+verdict: NO_GO_OPERATOR_GRANULARITY_GAP
+hierarchical_pew_training_authorized: false
+```
+
+主结论由G2决定：operator相对family的绝对DSA改善仅`0.001449`，距离`0.02`门槛约13.8倍，
+按客户端还出现一正一负的明显异质性。真实operator分组相对随机分组显著有效，说明环境对应关系
+确实重要；但粗family已经捕获几乎全部可用粒度收益。不得实现层次化/operator PEW，或用调参、
+补seed、改门槛复活。该结果不解决ShuffleNet/client2任务效用问题。
+
+原始包6,633,253 bytes，SHA256
+`B133F578255308764A1AB6ECD41ACB66421FA75A73A75AF7864BA16681D7054C`；总耗时3.4518 V100
+GPU-hours。报告：
+
+```text
+deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
+```
+
+## DSA理论缓存验证完成
 
 DSA三个预注册命题已在Stage-1正式预测缓存上以CPU零训练方式验证：exchangeable projection
 的DSA为`-2.50e-20`，gamma0经验最大绝对DSA为`0.001914`；HFL/Local的11点概率混合曲线
 严格单调，最大仿射误差`2.78e-17`；三个完全相同预测视图的最大JSD为0，而h9 HFL DSA仍为
 `0.119644`。全部冻结门槛通过，但只支持代数性质、经验零点和JSD不充分反例，不外推跨场景结论。
 
-Oracle粒度Kill Test现固定三臂：Oracle family、Oracle operator、类别内打乱operator随机对照。
-它们保持同一初始化、数据/AugMix轨迹、通信和BER参数；真实operator metadata仅用于不可部署的
-上界/机制实验。13项聚焦测试和三臂本地CUDA smoke均通过，4条客户端轨迹匹配。smoke数值不构成
-证据。本地成本benchmark按用户要求在第一臂后中止，残留结果禁止引用。OpenI benchmark与Formal
-均未启动；Formal继续由`confirm_formal=true`双锁保护，未经用户另行明确批准不得运行。
-
 ```text
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md
 deliverables/cle_dsa_theory_validation_20260911/
-docs/experiments/current/CLE_V2_ORACLE_GRANULARITY_KILL_TEST_ZH.md
-scripts/openi_cle_v2_oracle_granularity_entry.py
 ```
 
 ## Pure PEW+BER Stage-2 Formal完成：CLE抑制有效，原四门总判定NO-GO

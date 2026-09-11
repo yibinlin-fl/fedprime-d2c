@@ -14,7 +14,6 @@ if str(ROOT) not in sys.path:
 
 from scripts.run_cle_v2_factorial import arm_config  # noqa: E402
 from scripts.run_cle_v2_plugin_stage2 import (  # noqa: E402
-    ALLOWED_FEDEASE_KEYS,
     verify_stage2_assets,
 )
 
@@ -26,6 +25,14 @@ FEDDF_CONFIG = {
     "temperature": 1.0,
     "student_learning_rate": 1.0e-3,
     "server_steps_per_batch": 1,
+}
+FEDDF_PLUGIN_FEDEASE_KEYS = {
+    "environment_mode",
+    "num_environments",
+    "objective",
+    "preserve_dcl",
+    "pew",
+    "ber",
 }
 
 
@@ -66,24 +73,29 @@ def feddf_plugin_arm_config(
     )
     config["method"]["communication"] = "feddf_fidelity"
     config["method"]["baseline"] = dict(FEDDF_CONFIG)
+    config["method"]["local_loader_mode"] = "standard"
+    config["method"]["lambda_jsd"] = 0.0
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
 
     if arm == "fd_b":
-        if config["method_name"] != "rahfl" or config["method"]["cl_module"] != "dcl":
-            raise ValueError("FedDF base must preserve the AugMix/JSD/DCL local trainer")
+        config["method"]["cl_module"] = "none"
+        if config["method_name"] != "rahfl":
+            raise ValueError("FedDF base must preserve the standard CE experiment runner")
         if "fedease" in config["method"]:
             raise ValueError("FedDF base must be PEW/BER-free")
     else:
         fedease = config["method"].get("fedease", {})
+        fedease["objective"] = "ce_ber"
+        fedease["preserve_dcl"] = False
         if config["method_name"] != "fedease" or config["method"]["cl_module"] != "fedease":
             raise ValueError("FedDF plugin arm must use the PEW+BER local trainer")
-        if set(fedease) != ALLOWED_FEDEASE_KEYS:
+        if set(fedease) != FEDDF_PLUGIN_FEDEASE_KEYS:
             raise ValueError("FedDF plugin arm contains unexpected FedEASE fields")
         if fedease.get("environment_mode") != "learned" or not fedease["ber"]["enabled"]:
             raise ValueError("FedDF plugin arm must use frozen learned PEW and hard BER")
-        if not fedease.get("preserve_dcl"):
-            raise ValueError("FedDF plugin arm must preserve DCL")
+        if fedease.get("preserve_dcl") or config["method"]["lambda_jsd"] != 0.0:
+            raise ValueError("FedDF plugin attribution forbids AugMix/JSD/DCL")
         if "cdep" in json.dumps(config).lower():
             raise ValueError("CDep is forbidden in the FedDF plugin attribution")
     return config
@@ -137,8 +149,10 @@ def main() -> None:
         "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
         "batch_size": 16 if args.mode == "smoke" else 64,
         "communication_both_arms": "feddf_fidelity",
-        "local_backbone_both_arms": "AugMix/JSD/DCL",
-        "only_candidate_addition": "frozen coarse PEW + hard BER",
+        "base_local_objective": "standard cross entropy",
+        "candidate_local_objective": "PEW-grouped hard BER-weighted cross entropy",
+        "augmentation_or_contrastive_objective_both_arms": "none",
+        "only_candidate_addition": "frozen coarse PEW grouping + hard BER weighting",
         "cdep_used": False,
         "arms": records,
     }

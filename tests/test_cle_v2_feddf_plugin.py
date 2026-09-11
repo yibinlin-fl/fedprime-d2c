@@ -27,7 +27,7 @@ def _flatten(value, prefix=""):
     return output
 
 
-def test_feddf_pair_has_matched_communication_and_local_backbone(tmp_path: Path) -> None:
+def test_feddf_pair_is_native_ce_vs_pew_ber_ce(tmp_path: Path) -> None:
     configs = {
         arm: feddf_plugin_arm_config(
             arm,
@@ -43,8 +43,12 @@ def test_feddf_pair_has_matched_communication_and_local_backbone(tmp_path: Path)
     assert plugin["method"]["communication"] == "feddf_fidelity"
     assert base["method"]["baseline"] == FEDDF_CONFIG
     assert plugin["method"]["baseline"] == FEDDF_CONFIG
-    assert base["method"]["cl_module"] == "dcl"
-    assert plugin["method"]["fedease"]["preserve_dcl"] is True
+    assert base["method"]["local_loader_mode"] == "standard"
+    assert plugin["method"]["local_loader_mode"] == "standard"
+    assert base["method"]["cl_module"] == "none"
+    assert plugin["method"]["fedease"]["objective"] == "ce_ber"
+    assert plugin["method"]["fedease"]["preserve_dcl"] is False
+    assert base["method"]["lambda_jsd"] == plugin["method"]["lambda_jsd"] == 0.0
     assert "cdep" not in json.dumps(plugin).lower()
 
 
@@ -67,6 +71,7 @@ def test_feddf_pair_diff_is_only_plugin_fields(tmp_path: Path) -> None:
         "method.cl_module",
         "method.fedease.environment_mode",
         "method.fedease.num_environments",
+        "method.fedease.objective",
         "method.fedease.preserve_dcl",
         "method.fedease.pew.annotation_root",
         "method.fedease.pew.checkpoint",

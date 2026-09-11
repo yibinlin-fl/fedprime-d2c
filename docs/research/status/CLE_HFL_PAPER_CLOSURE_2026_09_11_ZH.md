@@ -45,8 +45,9 @@ CLE-HFL受控场景
 策略本身不由插件修改。固定AsymHFL场景seed-0纯插件Formal将DSA从`0.119644`降到`0.041252`
 （降低65.52%，CI95 `[0.077191,0.079601]`），Avg增加1.7323pp，但原完整效用门因Worst失败。
 
-当前新增的FedDF-fidelity两臂实验只改变PEW+BER开关，用于判断CLE抑制能否迁移到第二种通信；
-它支持的是matched robust local backbone下的插件性，不是未经修改的官方FedDF recipe。
+当前新增的FedDF-fidelity两臂使用`standard CE vs PEW-grouped BER-weighted CE`，两臂均不使用
+AugMix/JSD/DCL，并保持FedDF通信完全相同。它用于验证PEW+BER能否作为真正的本地目标插件迁移
+到第二底座；实现仍是protocol-matched fidelity adapter，不是未经修改的官方完整recipe。
 
 ## 四、必须明确的限制
 
@@ -60,9 +61,9 @@ CLE-HFL受控场景
 ## 当前唯一待决实验
 
 ```text
-FedDF-Robust Base
+FedDF-fidelity + standard CE
 vs
-FedDF-Robust + coarse PEW+BER
+FedDF-fidelity + coarse PEW/BER-weighted CE
 ```
 
 先完成OpenI benchmark；只有执行、轨迹、数值稳定性和成本均通过，且用户另行明确批准，才运行

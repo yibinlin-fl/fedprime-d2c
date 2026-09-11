@@ -10,6 +10,7 @@ from fedprime.data.loaders import (
     CorruptionSkewClientDataset,
     TwoViewTransform,
     _private_test_transform,
+    _private_train_transform,
     _prepared_private_dataset_name,
     _rahfl_augmix_view_transforms,
 )
@@ -182,6 +183,58 @@ def build_fedease_fit_augmix_loaders(
             pin_memory=torch.cuda.is_available(),
             generator=loader_generator,
         ))
+    return loaders
+
+
+def build_fedease_fit_standard_loaders(
+    root: str | Path,
+    *,
+    client_splits,
+    train_batch_size: int,
+    num_workers: int,
+    environment_annotations: dict[int, dict[str, np.ndarray]] | None = None,
+    loader_seed: int | None = None,
+) -> list[data.DataLoader]:
+    """Build fit-only standard CE loaders, optionally attaching PEW environments."""
+
+    root = Path(root)
+    loaders: list[data.DataLoader] = []
+    for client_id, split in sorted(client_splits.items()):
+        base_dataset = CorruptionSkewClientDataset(
+            root=root,
+            client_id=int(client_id),
+            train=True,
+            transform=_private_train_transform(raw_for_prime=False),
+            return_corruption=False,
+        )
+        annotation = (environment_annotations or {}).get(int(client_id))
+        dataset = (
+            base_dataset
+            if annotation is None
+            else EnvironmentAnnotatedDataset(
+                base_dataset,
+                annotation["environment_ids"],
+                environment_features=annotation.get("embedding"),
+                confidence=annotation.get("confidence"),
+                environment_probabilities=annotation.get("environment_probabilities"),
+            )
+        )
+        fit_dataset = data.Subset(dataset, split.fit_indices.tolist())
+        loader_generator = None
+        if loader_seed is not None:
+            loader_generator = torch.Generator()
+            loader_generator.manual_seed(int(loader_seed) * 1009 + int(client_id))
+        loaders.append(
+            data.DataLoader(
+                fit_dataset,
+                batch_size=int(train_batch_size),
+                shuffle=True,
+                drop_last=True,
+                num_workers=int(num_workers),
+                pin_memory=torch.cuda.is_available(),
+                generator=loader_generator,
+            )
+        )
     return loaders
 
 

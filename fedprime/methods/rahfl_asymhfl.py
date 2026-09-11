@@ -15,6 +15,7 @@ from fedprime.augmentations.prime_adapter import build_prime_module
 from fedprime.data.fedease import (
     build_fedease_evaluation_loaders,
     build_fedease_fit_augmix_loaders,
+    build_fedease_fit_standard_loaders,
     build_fedease_oracle_augmix_loaders,
     load_client_class_environment_counts,
 )
@@ -39,7 +40,10 @@ from fedprime.data.loaders import (
 )
 from fedprime.methods.local_prime import train_local_prime_epoch
 from fedprime.methods.local_prime import train_local_prime_dcl_epoch
-from fedprime.methods.local_fedease import train_local_fedease_epoch
+from fedprime.methods.local_fedease import (
+    train_local_fedease_epoch,
+    train_local_pew_ber_ce_epoch,
+)
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
 from fedprime.engine.cle_metrics import evaluate_cle_split, write_cle_evaluation
 from fedprime.engine.operator_metrics import (
@@ -180,7 +184,27 @@ class AsymHFLExperiment:
                     batch_size=int(strict_cfg.get("audit_batch_size", 256)),
                     num_workers=int(self.config.get("num_workers", 2)),
                 )
-                if cl_module == "fedease":
+                local_loader_mode = str(method_cfg.get("local_loader_mode", "augmix")).lower()
+                if local_loader_mode not in {"augmix", "standard"}:
+                    raise ValueError("method.local_loader_mode must be augmix or standard")
+                if local_loader_mode == "standard":
+                    private_loaders = build_fedease_fit_standard_loaders(
+                        root=data_cfg["private_root"],
+                        client_splits=client_splits,
+                        train_batch_size=train_cfg["batch_size"],
+                        num_workers=int(self.config.get("num_workers", 2)),
+                        environment_annotations=(
+                            getattr(self, "_fedease_environment_annotations", None)
+                            if cl_module == "fedease"
+                            else None
+                        ),
+                        loader_seed=(
+                            int(strict_cfg["loader_seed"])
+                            if strict_cfg.get("loader_seed") is not None
+                            else None
+                        ),
+                    )
+                elif cl_module == "fedease":
                     private_loaders = build_fedease_fit_augmix_loaders(
                         root=data_cfg["private_root"],
                         client_splits=client_splits,
@@ -1304,7 +1328,15 @@ class AsymHFLExperiment:
                 if cl_module == "fedease":
                     fedease_cfg = method_cfg.get("fedease", {})
                     epoch_diagnostics = {}
-                    loss = train_local_fedease_epoch(
+                    objective = str(fedease_cfg.get("objective", "augmix_jsd_dcl")).lower()
+                    train_function = (
+                        train_local_pew_ber_ce_epoch
+                        if objective == "ce_ber"
+                        else train_local_fedease_epoch
+                    )
+                    if objective not in {"ce_ber", "augmix_jsd_dcl"}:
+                        raise ValueError(f"Unknown FedEASE objective: {objective}")
+                    common_kwargs = dict(
                         model=models[client_id],
                         loader=loader,
                         optimizer=optimizers[client_id],
@@ -1315,7 +1347,6 @@ class AsymHFLExperiment:
                             "_client_class_environment_counts",
                             {},
                         ).get(client_id),
-                        lambda_jsd=float(method_cfg.get("lambda_jsd", 12.0)),
                         max_batches=train_cfg.get("max_local_batches"),
                         max_grad_norm=train_cfg.get("max_grad_norm"),
                         skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
@@ -1331,6 +1362,9 @@ class AsymHFLExperiment:
                             else None
                         ),
                     )
+                    if objective == "augmix_jsd_dcl":
+                        common_kwargs["lambda_jsd"] = float(method_cfg.get("lambda_jsd", 12.0))
+                    loss = train_function(**common_kwargs)
                     fedease_diagnostics.append(epoch_diagnostics)
                 elif use_prime:
                     if use_prime_dcl:

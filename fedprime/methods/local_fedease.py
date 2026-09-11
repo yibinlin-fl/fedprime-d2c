@@ -200,3 +200,102 @@ def train_local_fedease_epoch(
             diagnostics[name] = sum(values) / max(len(values), 1)
         diagnostics["total_loss"] = sum(total_losses) / max(len(total_losses), 1)
     return sum(total_losses) / max(len(total_losses), 1)
+
+
+def train_local_pew_ber_ce_epoch(
+    model,
+    loader,
+    optimizer,
+    device: torch.device,
+    fedease_cfg: dict,
+    *,
+    class_environment_counts: torch.Tensor | None = None,
+    max_batches: int | None = None,
+    max_grad_norm: float | None = None,
+    skip_nonfinite: bool = False,
+    log_interval: int | None = None,
+    context: str = "PEW+BER CE local phase",
+    diagnostics: dict[str, float] | None = None,
+    batch_trace_fn=None,
+) -> float:
+    """Train standard CE with PEW/BER weighting and no AugMix, JSD, or DCL."""
+
+    ber_cfg = fedease_cfg.get("ber", {})
+    if not bool(ber_cfg.get("enabled", True)):
+        raise ValueError("PEW+BER CE objective requires BER enabled")
+    if str(ber_cfg.get("assignment", "hard")).lower() != "hard":
+        raise ValueError("PEW+BER CE objective currently requires hard assignments")
+
+    model.train()
+    total_losses: list[float] = []
+    clean_losses: list[float] = []
+    valid_groups: list[float] = []
+    for batch_idx, batch in enumerate(loader):
+        if max_batches is not None and batch_idx >= int(max_batches):
+            break
+        if len(batch) not in {3, 5, 6}:
+            raise ValueError("PEW+BER CE requires images, labels, and environment IDs")
+        images, labels, environment_ids = batch[:3]
+        if isinstance(images, (tuple, list)):
+            raise ValueError("PEW+BER CE forbids AugMix/multi-view inputs")
+        if batch_trace_fn is not None:
+            batch_trace_fn(batch_idx=batch_idx, images=images, labels=labels)
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True).long()
+        environment_ids = environment_ids.to(device, non_blocking=True).long()
+        logits = forward_logits(model, images)
+        sample_ce = F.cross_entropy(logits, labels, reduction="none")
+        clean_ce = sample_ce.mean()
+        loss, ber_stats = balanced_environment_risk(
+            sample_ce,
+            labels,
+            environment_ids,
+            group_counts=class_environment_counts,
+            support_gamma=float(ber_cfg.get("support_gamma", 0.0)),
+            count_cap=int(ber_cfg.get("count_cap", 32)),
+            min_group_count=int(ber_cfg.get("min_group_count", 1)),
+        )
+        if not torch.isfinite(loss):
+            message = f"{context}: non-finite loss at batch {batch_idx}"
+            if skip_nonfinite:
+                print(f"[warning] {message}; skipping batch", flush=True)
+                continue
+            raise FloatingPointError(message)
+        optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        gradients_finite = all(
+            parameter.grad is None or bool(torch.isfinite(parameter.grad).all())
+            for parameter in model.parameters()
+        )
+        if not gradients_finite:
+            optimizer.zero_grad(set_to_none=True)
+            message = f"{context}: non-finite gradient at batch {batch_idx}"
+            if skip_nonfinite:
+                print(f"[warning] {message}; skipping batch", flush=True)
+                continue
+            raise FloatingPointError(message)
+        if max_grad_norm is not None:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), float(max_grad_norm))
+        optimizer.step()
+        total_losses.append(float(loss.detach().cpu()))
+        clean_losses.append(float(clean_ce.detach().cpu()))
+        valid_groups.append(float(ber_stats["valid_groups"].detach().cpu()))
+        if log_interval and (batch_idx + 1) % int(log_interval) == 0:
+            print(
+                f"[heartbeat] {context} batch={batch_idx + 1} "
+                f"loss={total_losses[-1]:.4f} ber_groups={valid_groups[-1]:.0f}",
+                flush=True,
+            )
+    if diagnostics is not None:
+        diagnostics.update(
+            {
+                "clean_ce": sum(clean_losses) / max(len(clean_losses), 1),
+                "classification_loss": sum(total_losses) / max(len(total_losses), 1),
+                "ber_loss": sum(total_losses) / max(len(total_losses), 1),
+                "jsd_loss": 0.0,
+                "dcl_loss": 0.0,
+                "ber_valid_groups": sum(valid_groups) / max(len(valid_groups), 1),
+                "total_loss": sum(total_losses) / max(len(total_losses), 1),
+            }
+        )
+    return sum(total_losses) / max(len(total_losses), 1)

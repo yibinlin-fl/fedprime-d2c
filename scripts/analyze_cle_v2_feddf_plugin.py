@@ -144,7 +144,7 @@ def main() -> None:
         "paired_local_traces": trace_audit,
         "frozen_gates": gates,
         "scientific_verdict": verdict,
-        "claim_scope": "PEW+BER portability to matched FedDF-fidelity communication",
+        "claim_scope": "PEW+BER portability to native-CE FedDF-fidelity training",
         "architecture_uniform_utility_claim": False,
         "cdep_used": False,
     }

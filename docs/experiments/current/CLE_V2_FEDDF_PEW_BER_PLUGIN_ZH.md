@@ -2,21 +2,23 @@
 
 Updated: 2026-09-11
 
-状态：协议冻结，12项聚焦测试和两臂本地CUDA smoke通过；OpenI benchmark与Formal未授权。
+状态：原matched-robust设计已作废；修正后的native-CE协议冻结，22项回归测试和两臂本地CUDA
+smoke通过。OpenI benchmark与Formal未授权。
 
 ## 2026-09-11 本地验证
 
-两臂均完成1个local batch/client、一次post-local FedDF server update、四模型checkpoint保存与
-20-source paired分析；4条local batch/AugMix trace完全匹配。FedDF teacher entropy、teacher
+修正后的两臂均完成1个local batch/client、一次post-local FedDF server update、四模型checkpoint
+保存与20-source paired分析；4条standard single-view batch trace完全匹配。FedDF teacher entropy、teacher
 disagreement和server update诊断均有限，峰值显存约1.53GB。入口`--help`与Formal双锁通过。
 
 ```text
 verdict: SMOKE_ONLY_NO_SCIENTIFIC_DECISION
 ```
 
-单批次smoke的模型指标未达到学习下限，且插件臂早期准确率很低。这不能用于判断方法有效或失败，
-但要求下一步先用OpenI `benchmark`检查8个local batches下的数值/成本稳定性；禁止直接据此调参，
-也不得将smoke升级为论文证据。
+单批次smoke的模型指标未达到学习下限；截断报告batch与balanced operator-grid还给出不同方向。
+这不能用于判断方法有效或失败，但要求下一步先用OpenI `benchmark`检查8个local batches下的
+数值/成本稳定性；禁止直接据此调参，也不得将smoke升级为论文证据。此前包含AugMix/JSD/DCL的
+本地输出目录仅保留为作废审计，不得运行、引用或上传。
 
 ## 研究问题
 
@@ -25,14 +27,15 @@ verdict: SMOKE_ONLY_NO_SCIENTIFIC_DECISION
 完整recipe。
 
 ```text
-fd_b = AugMix/JSD/DCL + FedDF-fidelity communication
-fd_p = fd_b + frozen coarse PEW + hard BER
+fd_b = standard CE + FedDF-fidelity communication
+fd_p = PEW-grouped hard BER-weighted CE + identical FedDF-fidelity communication
 ```
 
 两臂固定相同CLE-v2 `seed0_split0/gamma0.9`、training seed 0、四个异构模型、初始化、fit/audit、
-私有batch/AugMix轨迹、公共batch、FedDF温度/优化器/步数与评价协议。CDep禁止。唯一处理差异是
-PEW+BER开关，因此本实验支持的是“在matched robust local backbone下迁移到FedDF通信”，不是
-“未经修改的官方FedDF+插件”。
+私有single-view batch轨迹、公共batch、FedDF温度/优化器/步数与评价协议。两臂均禁用
+AugMix、JSD、DCL与CDep。唯一处理差异是：candidate用冻结PEW family给标准逐样本CE分组，再以
+BER替代CE均值；因此这是原生CE型FedDF适配器上的真正本地插件归因。仍应称
+`protocol-matched FedDF-fidelity`，不能声称未经修改地复现官方完整训练recipe。
 
 ## 预算与冻结门槛
 

@@ -2,17 +2,18 @@
 
 Updated: 2026-09-11
 
-## FedDF-fidelity × coarse PEW+BER 两臂已实现并通过本地smoke
+## Native FedDF-fidelity × coarse PEW+BER 两臂已修正并通过本地smoke
 
-为验证插件性，现冻结第二通信底座两臂：`fd_b=AugMix/JSD/DCL+FedDF-fidelity`，
-`fd_p=fd_b+frozen coarse PEW+hard BER`。两臂共享同一CLE场景、初始化、私有/公共预算和修复后的
-post-local FedDF server distillation，CDep禁止；唯一处理差异是PEW+BER。该定位是matched robust
-local backbone下的FedDF通信，不是未经修改的官方完整recipe。
+用户指出matched-robust设计不能证明真正插件性后，该设计及其smoke立即作废。现冻结第二底座
+原生CE两臂：`fd_b=standard CE+FedDF-fidelity`，`fd_p=PEW-grouped hard BER-weighted CE+
+相同FedDF-fidelity`。两臂共享同一CLE场景、初始化、single-view私有batch、公共预算和修复后的
+post-local FedDF server distillation；AugMix/JSD/DCL/CDep全部禁用。唯一目标差异是PEW分组与
+BER重加权。仍只称protocol-matched FedDF fidelity adapter，不声称官方完整recipe复现。
 
-12项聚焦测试、Formal配置静态审计和本地CUDA smoke通过。两臂完成训练、各4个checkpoint、
-FedDF诊断和20-source分析，4条local batch/AugMix trace匹配，峰值显存约1.53GB。单批smoke的
-准确率/DSA不构成证据；插件臂早期准确率低要求先做OpenI benchmark检查8-batch稳定性，禁止据此
-调参或直接宣称失败。OpenI benchmark与Formal均未授权、未启动。
+22项回归测试、Formal配置静态审计和修正后的本地CUDA smoke通过。两臂完成训练、各4个
+checkpoint、FedDF诊断和20-source分析，4条standard batch trace匹配，峰值显存约1.53GB。
+单批截断报告与balanced grid数值方向不一致，所有smoke准确率/DSA均禁止引用；先做OpenI
+benchmark检查8-batch稳定性，不能据此调参或宣称失败。OpenI benchmark与Formal均未授权、未启动。
 
 ```text
 docs/experiments/current/CLE_V2_FEDDF_PEW_BER_PLUGIN_ZH.md

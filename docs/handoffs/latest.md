@@ -2,6 +2,22 @@
 
 Updated: 2026-09-11
 
+## CLE-HFL网页端论文初稿交接包已完成
+
+已将当前八段完整证据链整理为自包含网页端GPT交接文档：CLE-HFL场景、paired DSA、strong
+directional shortcut、HFL-vs-Local local-first归因、DSA三个理论性质、AsymHFL与FedDF-fidelity
+上的PEW+BER结果、Oracle family/operator/random粒度边界。文档同时给出统一证据表、贡献边界、
+可写/不可写主张、建议论文结构、表图设计、投稿前缺口和网页端GPT任务提示。
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20260911/
+  CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+文档以最新CLE-v2 Formal为主链，早期CLE-v1只作为先导场景说明；明确保留“shortcut mitigation
+GO / architecture-uniform utility未建立 / frozen overall plugin NO-GO”的分层结论。该交接包
+可用于生成初稿，但不等于已经确认无需补实验；下一步先让网页端GPT完成投稿证据缺口审计。
+
 ## Native FedDF-fidelity × coarse PEW+BER Formal完成：机制迁移，插件总门NO-GO
 
 用户指出matched-robust设计不能证明真正插件性后，该设计及其smoke立即作废。现冻结第二底座

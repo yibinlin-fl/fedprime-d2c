@@ -580,6 +580,7 @@ Oracle实验使用私有真实corruption metadata，只能测量family与operato
 docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
 docs/experiments/current/CLE_V2_FEDDF_PEW_BER_PLUGIN_ZH.md
 deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 scripts/openi_cle_v2_feddf_plugin_entry.py
 ```
 

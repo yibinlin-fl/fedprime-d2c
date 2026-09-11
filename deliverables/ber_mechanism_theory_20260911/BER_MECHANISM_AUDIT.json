@@ -1,0 +1,226 @@
+{
+  "protocol": "ber_effective_distribution_mechanism_audit_v1",
+  "training_or_inference_run": false,
+  "data_scope": "strict fit only; gamma09; fixed cle_hfl_v2 seed0_split0",
+  "parameters": {
+    "support_gamma": 0.5,
+    "count_cap": 32,
+    "min_group_count": 2
+  },
+  "reference": "class-balanced empirical distribution before environment reweighting",
+  "clients": {
+    "0": {
+      "fit_samples": 8498,
+      "valid_groups": 36,
+      "valid_classes": 7,
+      "implementation_identity_max_error": 7.320533068622126e-16,
+      "reference_class_balanced": {
+        "pseudo_environment": {
+          "tv_dependence": 0.4690907487832884,
+          "mutual_information_nats": 0.6794255218374659,
+          "environment_only_bayes_advantage": 0.3665369427181713,
+          "maximum_within_class_support_ratio": 185.66666666667106,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.6377049137519022,
+          "mutual_information_nats": 1.0138390356520859,
+          "environment_only_bayes_advantage": 0.39888912136052845,
+          "maximum_within_class_support_ratio": 129.49999999999972,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "ber_effective_distribution": {
+        "pseudo_environment": {
+          "tv_dependence": 0.2372611691130777,
+          "mutual_information_nats": 0.23529438985430132,
+          "environment_only_bayes_advantage": 0.15899586535685728,
+          "maximum_within_class_support_ratio": 4.000000000000011,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.42206477665259,
+          "mutual_information_nats": 0.4959088336388099,
+          "environment_only_bayes_advantage": 0.24990295558512082,
+          "maximum_within_class_support_ratio": 31.79914087207147,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "pseudo_tv_absolute_drop": 0.23182957967021067,
+      "pseudo_tv_relative_drop": 0.4942105131502217,
+      "true_tv_absolute_drop": 0.21564013709931218,
+      "true_tv_relative_drop": 0.3381503457933312,
+      "pew_family_error": {
+        "unweighted_fit": 0.40174158625558953,
+        "class_balanced_reference": 0.38772727196777457,
+        "ber_effective_distribution": 0.5073872877140451
+      },
+      "true_tv_conditional_upper_bound": 1.0
+    },
+    "1": {
+      "fit_samples": 8500,
+      "valid_groups": 49,
+      "valid_classes": 9,
+      "implementation_identity_max_error": 2.983724378680108e-16,
+      "reference_class_balanced": {
+        "pseudo_environment": {
+          "tv_dependence": 0.43124266830398017,
+          "mutual_information_nats": 0.5649959075190876,
+          "environment_only_bayes_advantage": 0.27011610555189525,
+          "maximum_within_class_support_ratio": 116.50000000000016,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.5749432612381429,
+          "mutual_information_nats": 0.861110319476618,
+          "environment_only_bayes_advantage": 0.2996234207475659,
+          "maximum_within_class_support_ratio": 120.00000000000001,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "ber_effective_distribution": {
+        "pseudo_environment": {
+          "tv_dependence": 0.21193413228072028,
+          "mutual_information_nats": 0.19776190369741736,
+          "environment_only_bayes_advantage": 0.13832311388692903,
+          "maximum_within_class_support_ratio": 4.000000000000015,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.45692542407283154,
+          "mutual_information_nats": 0.5703374926607053,
+          "environment_only_bayes_advantage": 0.24287478328915799,
+          "maximum_within_class_support_ratio": 40.56571524860878,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "pseudo_tv_absolute_drop": 0.2193085360232599,
+      "pseudo_tv_relative_drop": 0.5085501786865643,
+      "true_tv_absolute_drop": 0.11801783716531133,
+      "true_tv_relative_drop": 0.2052686675745349,
+      "pew_family_error": {
+        "unweighted_fit": 0.4072941176470588,
+        "class_balanced_reference": 0.5134513351232036,
+        "ber_effective_distribution": 0.5743863128932742
+      },
+      "true_tv_conditional_upper_bound": 1.0
+    },
+    "2": {
+      "fit_samples": 8499,
+      "valid_groups": 44,
+      "valid_classes": 8,
+      "implementation_identity_max_error": 5.030698080332741e-16,
+      "reference_class_balanced": {
+        "pseudo_environment": {
+          "tv_dependence": 0.5679009792749904,
+          "mutual_information_nats": 0.873389023322935,
+          "environment_only_bayes_advantage": 0.30537815920394257,
+          "maximum_within_class_support_ratio": 205.6666666666674,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.6681876858375,
+          "mutual_information_nats": 1.0907716883701153,
+          "environment_only_bayes_advantage": 0.2876549253233845,
+          "maximum_within_class_support_ratio": 66.29411764705756,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "ber_effective_distribution": {
+        "pseudo_environment": {
+          "tv_dependence": 0.15135502176307264,
+          "mutual_information_nats": 0.12898216101434992,
+          "environment_only_bayes_advantage": 0.1009579427685425,
+          "maximum_within_class_support_ratio": 3.9999999999999956,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.4098346763720431,
+          "mutual_information_nats": 0.4456405194081357,
+          "environment_only_bayes_advantage": 0.24330489385235204,
+          "maximum_within_class_support_ratio": 19.59447971769544,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "pseudo_tv_absolute_drop": 0.41654595751191775,
+      "pseudo_tv_relative_drop": 0.7334834288253919,
+      "true_tv_absolute_drop": 0.25835300946545686,
+      "true_tv_relative_drop": 0.38664736711159187,
+      "pew_family_error": {
+        "unweighted_fit": 0.47511471937875044,
+        "class_balanced_reference": 0.39621403542110767,
+        "ber_effective_distribution": 0.5745750346083816
+      },
+      "true_tv_conditional_upper_bound": 1.0
+    },
+    "3": {
+      "fit_samples": 8497,
+      "valid_groups": 54,
+      "valid_classes": 10,
+      "implementation_identity_max_error": 4.3021142204224816e-16,
+      "reference_class_balanced": {
+        "pseudo_environment": {
+          "tv_dependence": 0.4817867445732406,
+          "mutual_information_nats": 0.6485424561217665,
+          "environment_only_bayes_advantage": 0.2246762155049125,
+          "maximum_within_class_support_ratio": 157.9000000000003,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.658821587119849,
+          "mutual_information_nats": 1.0154662371371568,
+          "environment_only_bayes_advantage": 0.26919149462000375,
+          "maximum_within_class_support_ratio": 72.99999999999994,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "ber_effective_distribution": {
+        "pseudo_environment": {
+          "tv_dependence": 0.19842393769671746,
+          "mutual_information_nats": 0.21865585975509433,
+          "environment_only_bayes_advantage": 0.12635421885778003,
+          "maximum_within_class_support_ratio": 4.000000000000004,
+          "bayes_advantage_le_tv": true
+        },
+        "true_family": {
+          "tv_dependence": 0.4452270650282196,
+          "mutual_information_nats": 0.5408408152363673,
+          "environment_only_bayes_advantage": 0.22736808660318097,
+          "maximum_within_class_support_ratio": 83.80388349341591,
+          "bayes_advantage_le_tv": true
+        }
+      },
+      "pseudo_tv_absolute_drop": 0.28336280687652315,
+      "pseudo_tv_relative_drop": 0.5881498610500827,
+      "true_tv_absolute_drop": 0.21359452209162932,
+      "true_tv_relative_drop": 0.32420692683339997,
+      "pew_family_error": {
+        "unweighted_fit": 0.23302342003059903,
+        "class_balanced_reference": 0.3751232060571008,
+        "ber_effective_distribution": 0.5453293464739559
+      },
+      "true_tv_conditional_upper_bound": 1.0
+    }
+  },
+  "pooled_equal_client": {
+    "pseudo_tv_before": 0.4875052852338749,
+    "pseudo_tv_after": 0.19974356521339703,
+    "pseudo_tv_relative_drop": 0.5902740518647456,
+    "true_family_tv_before": 0.6349143619868485,
+    "true_family_tv_after": 0.43351298553142104,
+    "true_family_tv_relative_drop": 0.3172103019140702
+  },
+  "frozen_gates": {
+    "T0_code_theory_identity_error_le_1e_10": true,
+    "T1_pseudo_dependence_decreases_4_of_4": true,
+    "T2_pooled_pseudo_tv_relative_drop_ge_0p50": true,
+    "T3_true_family_dependence_decreases_4_of_4": true
+  },
+  "verdict": "PASS",
+  "limitations": [
+    "This is a CPU distribution audit, not a training result.",
+    "BER balances PEW pseudo-environments; the true-family conclusion is reporting-only.",
+    "Dependence contraction does not by itself guarantee zero DSA or higher accuracy.",
+    "The PEW-error upper bound is conditional and may be loose."
+  ]
+}

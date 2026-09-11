@@ -2,7 +2,7 @@
 
 日期：2026-09-11
 用途：交给网页端 GPT 进行论文结构审查、创新性讨论和初稿生成
-当前阶段：核心机制链已完成；DSA识别理论已升级；cross-binding-map已完成S2并等待benchmark
+当前阶段：DSA与BER机制理论均已升级；cross-binding-map已完成S2并等待benchmark
 
 ---
 
@@ -476,7 +476,42 @@ L_{BER,k}=
 BER不是“让所有类别都预测正确”，也不是直接优化最坏组的GroupDRO/CVaR。它压缩同一类别中
 大环境组的样本数优势，使少数伪环境组不会完全被多数环境组淹没。
 
-### 7.4 与 AugMix/JSD/DCL 的区别
+### 7.4 BER的有效分布与CLE失衡压缩定理
+
+BER等价于在有效分布`Q_gamma`上训练，其中：
+
+\[
+Q_\gamma(\hat E=e\mid Y=c)=a_{c,e}^{(\gamma)}.
+\]
+
+对两个有效环境组：
+
+\[
+\frac{Q_\gamma(e_1\mid c)}{Q_\gamma(e_2\mid c)}=
+\left(\frac{\min(n_{c,e_1},K)}{\min(n_{c,e_2},K)}\right)^\gamma.
+\]
+
+所以无cap区域的环境log-odds被压缩为原来的`gamma`倍。当前`gamma=.5,K=32,m=2`使有效
+伪环境组最大质量比不超过4。若`gamma=0`且所有类别共享同一环境支持，则
+`Q_0(\hat E|Y)=Q_0(\hat E)`，从而`Y`与伪环境独立，纯环境预测器不再获得类别优势。
+
+固定strict-fit CPU审计验证了生产实现与有效分布公式（最大误差`7.32e-16`）。四客户端伪环境
+TV依赖全部下降，pooled从`0.487505`降至`0.199744`（`-59.03%`）；只作报告的真实family TV
+也在4/4客户端下降，pooled从`0.634914`降至`0.433513`（`-31.72%`）；真实family-only Bayes
+advantage平均下降`23.25%`。
+
+PEW误差下只有条件边界：
+
+\[
+TV(Q_{Y,E},Q_YQ_E)\le
+TV(Q_{Y,\hat E},Q_YQ_{\hat E})+2P_Q(E\ne\hat E).
+\]
+
+当前BER有效分布中的PEW误差为`0.507--0.575`，故该上界为平凡的`1.0`，不能宣称真实环境
+去相关的非平凡理论保证。分布压缩也不自动推出DSA为零或准确率提升，最终行为仍由Formal
+paired DSA检验。
+
+### 7.5 与 AugMix/JSD/DCL 的区别
 
 | 模块 | 操作单位 | 直接解决的问题 | 未直接解决的问题 |
 |---|---|---|---|
@@ -667,6 +702,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | paired DSA是否消除operator-invariant位移 | 受控概率注入 | 不变误差8.33e-17 | PASS |
 | DSA能否恢复已知binding方向强度 | 11点受控注入 | 最大误差6.66e-16 | PASS |
 | 推断单位是否明确 | source-level界与bootstrap | n=1000半径0.085894 | PASS |
+| BER是否对应明确有效分布 | 生产公式/CPU审计 | 最大误差7.32e-16 | PASS |
+| BER是否压缩类别—伪环境依赖 | strict-fit TV | 0.487505→0.199744，-59.03% | PASS |
+| 压缩是否传递到真实family | oracle reporting-only TV | 0.634914→0.433513，4/4下降 | PASS |
 | PEW+BER能否抑制AsymHFL中的CLE | matched Stage-2 | DSA降低65.52% | mitigation GO |
 | PEW+BER能否跨第二底座抑制CLE | native-CE FedDF | DSA降低78.82% | cross-base mitigation GO |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
@@ -688,7 +726,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
    pooled平均上增加较小附加效应。
 4. **干预与边界贡献**：给出taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
    两个底座上分别降低DSA 65.52%和78.82%；Oracle/random消融证明真实环境对应重要、粗family
-   足够，同时揭示shortcut抑制与任务效用可能解耦。
+   足够；有效分布定理与CPU审计进一步说明BER如何压缩CLE的统计来源，同时揭示PEW误差上界
+   可能平凡、shortcut抑制与任务效用可能解耦。
 
 不建议把贡献写成“提出一个全新的PEW网络”或“提出普适无损HFL插件”。更稳妥的总定位是：
 
@@ -713,6 +752,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 - DSA抑制在AsymHFL和native-CE FedDF-fidelity中均复现；
 - pooled FedDF operator-grid accuracy近似保持（`-0.04pp`），但last-5 Avg轻微下降；
 - 真实环境对应优于随机分组，family细化到operator收益很小；
+- BER在固定strict-fit分布上使伪环境TV依赖下降59.03%、真实family TV下降31.72%；
 - taxonomy-assisted方法有效，但效用收益依赖底座/客户端。
 
 ### 13.2 禁止
@@ -725,6 +765,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 - “90.05%的每个样本shortcut都由本地因果产生”；
 - “12轮等价于达到40轮最终性能”；
 - “source-bootstrap覆盖训练seed或cross-scenario不确定性”；
+- “BER已经无条件保证真实环境与类别独立”或“BER理论保证DSA必为零”；
 - 用smoke/benchmark准确率作为论文证据；
 - 混用早期CLE-v1与当前CLE-v2数字而不标注协议差异。
 
@@ -788,6 +829,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 - PEW公共训练；
 - BER数学目标；
+- BER有效分布等价、log-odds压缩、理想独立性与PEW误差条件边界；
 - 与AugMix/JSD/DCL、GroupDRO的区别；
 - 可部署信息边界。
 
@@ -888,7 +930,8 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；尤其判断是否必须补
    新CLE mapping、纯PEW+BER多seed或更标准的基线。
 4. 设计一套不把FedDF写成失败、也不把它写成无损成功的结果叙事。
-5. 检查DSA识别定理、五个性质、source-level推断和JSD反例是否还存在逻辑缺口。
+5. 检查DSA识别定理、五个性质、BER有效分布/失衡压缩定理、PEW误差条件边界和JSD反例是否
+   还存在逻辑缺口；不得把当前平凡PEW误差界写成强保证。
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
@@ -905,6 +948,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 deliverables/cle_v2_mechanism_stage1_20260910/RESULT_SUMMARY_ZH.md
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
+docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md

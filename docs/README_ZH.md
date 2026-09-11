@@ -561,6 +561,18 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+BER有效分布机制理论与CPU审计：
+
+```text
+docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md  定理、假设、PEW误差边界与审计结论
+scripts/audit_ber_mechanism.py                                strict-fit CPU零训练审计
+deliverables/ber_mechanism_theory_20260911/                   JSON与中文结果摘要
+```
+
+当前实现被证明精确等价于`Q_gamma`有效分布；伪环境TV依赖下降59.03%，真实family TV离线下降
+31.72%，4/4客户端一致。但BER加权后的PEW误差使条件上界仍为平凡1.0，不能写成无条件去相关
+保证或替代训练后paired DSA。该结果不授权新方法、Safety-BER或额外Formal。
+
 当前DSA识别理论v2与cross-binding-map S2入口：
 
 ```text

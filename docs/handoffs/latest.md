@@ -2,6 +2,33 @@
 
 Updated: 2026-09-11
 
+## BER机制理论与CPU Kill Test完成：失衡压缩PASS，PEW误差界仍平凡
+
+当前hard BER已形式化为有效经验分布`Q_gamma`：类内环境质量正比于
+`min(n_ce,32)^0.5`，因此无cap区域log支持优势压缩为原来的`0.5`倍；在共同支持且
+`gamma=0`的理想条件下，`Y`与伪环境独立。生产PyTorch loss与有效分布公式的直接测试通过。
+
+固定CLE-v2 `seed0_split0/gamma09` strict-fit的CPU零训练审计全部冻结门槛通过：
+
+```text
+code/theory identity max error: 7.32e-16
+pseudo TV: 0.487505 -> 0.199744, relative -59.03%, 4/4 clients decrease
+true-family TV: 0.634914 -> 0.433513, relative -31.72%, 4/4 clients decrease
+true-family environment-only Bayes advantage: 0.313840 -> 0.240863, -23.25%
+verdict: PASS
+```
+
+真实family只用于离线审计，不进入训练。BER有效分布下PEW family误差为`0.507--0.575`，使
+`TV(Y,E)<=TV(Y,E_hat)+2 epsilon`上界截断为平凡`1.0`；不得宣称无条件真实环境去相关、DSA
+必为零或准确率必提升。client2的真实TV也下降38.66%，故其任务损伤不能归因于“BER没有压缩
+CLE分布”。下一平台任务仍是已准备的cross-map benchmark，不因本审计增加Formal授权。
+
+```text
+docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
+deliverables/ber_mechanism_theory_20260911/
+scripts/audit_ber_mechanism.py
+```
+
 ## DSA识别理论v2与Cross-Binding-Map S2完成：等待OpenI benchmark
 
 DSA理论已从三个代数性质扩展为完整的识别对象与五项验证：paired contrast在

@@ -4363,4 +4363,6 @@ deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HAND
 2026-09-12用户明确选择跳过cross-map新入口的OpenI benchmark，授权仅运行map1 Formal：
 `mode=formal, map_seed=1, confirm_formal=true`。map2/all未授权。同协议旧Stage-2两臂Formal实测
 `8116.51 s`，故本次预计约`2.3--3.0 V100 GPU-hours`；该数字是参考估算，不是新入口benchmark
-实测。任务失败时只诊断，不自动重跑或启动map2。
+实测。任务失败时只诊断，不自动重跑或启动map2。随后代码推送至`origin/main`，正式输入包通过
+本机已保存OpenI凭据上传至`chujiu/CLE_v2_CrossBindingMaps_Seed0_PEW_20260911`；CLI返回
+`100% / 1.3 GiB / 2.5 MiB/s / 00:09:36`。Token未写入命令输出、仓库或提交历史。

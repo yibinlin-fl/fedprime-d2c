@@ -3,7 +3,8 @@
 Updated: 2026-09-11
 
 状态：S0协议冻结、S1数据生成与PEW复用完成、S2本地smoke完成。2026-09-12用户明确选择
-跳过OpenI benchmark并授权只运行map1 Formal；map2 Formal尚未授权。当前仍无cross-map科学结果。
+跳过OpenI benchmark并授权只运行map1 Formal；map2 Formal尚未授权。代码已push，正式输入包已
+上传OpenI。当前仍无cross-map科学结果。
 
 ## 实验问题
 
@@ -100,6 +101,8 @@ entry: scripts/openi_cle_v2_cross_scenario_entry.py
 bundle: local_runs/cle_v2_cross_scenario/cle_hfl_v2_cross_maps1_2_seed0_split0_with_pew.tar.gz
 bytes: 1385820059
 SHA256: BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5
+OpenI dataset: chujiu/CLE_v2_CrossBindingMaps_Seed0_PEW_20260911
+upload: 100%, 1.3 GiB, 2.5 MiB/s, 00:09:36
 ```
 
 禁止使用旧的`openi_cle_cross_scenario_40round_entry.py`及其`seed1_split1/seed2_split2`数据包：

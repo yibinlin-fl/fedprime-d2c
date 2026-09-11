@@ -2,12 +2,14 @@
 
 Updated: 2026-09-12
 
-## Cross-map1 Formal已授权，等待代码推送与OpenI启动
+## Cross-map1 Formal已授权，代码与数据已就绪，等待OpenI启动
 
 2026-09-12用户明确选择跳过新入口benchmark，授权仅运行`mode=formal, map_seed=1,
 confirm_formal=true`。map2/all未授权。参考同协议旧Stage-2 Formal实测`8116.51 s`，预计新任务
 约`2.3--3.0 V100 GPU-hours`。代码、本地CUDA smoke、输入审计和数据包均已完成；当前本地提交
-尚未push，OpenI创建任务前必须先得到用户明确push指令。失败时只诊断，不自动重跑或启动map2。
+已push至`origin/main`。输入包已上传到
+`chujiu/CLE_v2_CrossBindingMaps_Seed0_PEW_20260911`，CLI返回`100% / 1.3 GiB / 2.5 MiB/s /
+00:09:36`。现在可创建map1 Formal；失败时只诊断，不自动重跑或启动map2。
 
 ## BER机制理论与CPU Kill Test完成：失衡压缩PASS，PEW误差界仍平凡
 

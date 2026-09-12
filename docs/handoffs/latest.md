@@ -29,6 +29,27 @@ deliverables/cle_v2_cross_map1_formal_20260912/RESULT_SUMMARY_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 ```
 
+## Cross-map结果已纳入论文主表、机制图和初稿证据链
+
+论文核心材料已按“问题—诊断—归因—干预—受控验证”闭环生成。统一主表同时列出原AsymHFL map、
+新binding map1及native-CE FedDF-fidelity三项Formal DSA结果，并保留各自效用变化与冻结overall
+verdict。机制图将CLE形成、paired DSA、local-first、PEW/BER和两类复现轴连接起来，底部明确
+taxonomy-assisted、效用非一致以及不能外推到新partition/seed/dataset/real domain的边界。
+
+```text
+deliverables/cle_hfl_paper_core_artifacts_20260912/
+  PAPER_MAIN_TABLE_ZH.md
+  PAPER_MAIN_TABLE.csv
+  PAPER_MECHANISM_EVIDENCE_CHAIN.png
+  PAPER_MECHANISM_EVIDENCE_CHAIN.pdf
+  PAPER_MECHANISM_EVIDENCE_CHAIN.svg
+  plot_paper_mechanism_figure.py
+  README_ZH.md
+```
+
+网页端初稿交接文档已写入这些稳定路径及cross-map结果；下一步优先做投稿证据缺口审计，不自动
+启动map2或新的方法扩展。
+
 ## BER机制理论与CPU Kill Test完成：失衡压缩PASS，PEW误差界仍平凡
 
 当前hard BER已形式化为有效经验分布`Q_gamma`：类内环境质量正比于
@@ -88,10 +109,10 @@ deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HAND
 
 ## CLE-HFL网页端论文初稿交接包已完成
 
-已将当前八段完整证据链整理为自包含网页端GPT交接文档：CLE-HFL场景、paired DSA、strong
-directional shortcut、HFL-vs-Local local-first归因、DSA三个理论性质、AsymHFL与FedDF-fidelity
-上的PEW+BER结果、Oracle family/operator/random粒度边界。文档同时给出统一证据表、贡献边界、
-可写/不可写主张、建议论文结构、表图设计、投稿前缺口和网页端GPT任务提示。
+已将完整证据链整理为自包含网页端GPT交接文档：CLE-HFL场景、paired DSA、strong directional
+shortcut、HFL-vs-Local local-first归因、DSA识别理论、BER机制理论、AsymHFL与FedDF-fidelity
+上的PEW+BER结果、Oracle粒度边界及cross-binding-map Formal复现。文档同时给出统一证据表、
+贡献边界、可写/不可写主张、建议论文结构、正式表图路径、投稿前缺口和网页端GPT任务提示。
 
 ```text
 deliverables/cle_hfl_full_paper_web_handoff_20260911/

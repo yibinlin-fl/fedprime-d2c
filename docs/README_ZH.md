@@ -581,6 +581,7 @@ docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md       五项缓�
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md     map1 Formal四门全过，跨binding-map复现GO
 scripts/openi_cle_v2_cross_scenario_entry.py                         当前唯一cross-map OpenI入口
 deliverables/cle_v2_cross_map1_formal_20260912/                      正式结果与独立复算报告
+deliverables/cle_hfl_paper_core_artifacts_20260912/                  论文主表、机制图及可编辑源文件
 ```
 
 新协议只改变binding map，固定partition、训练seed、初始权重、评价grid和冻结PEW；只比较

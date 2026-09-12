@@ -1,6 +1,6 @@
 # CLE-HFL 完整论文证据与网页端 GPT 初稿交接文档
 
-日期：2026-09-11
+创建：2026-09-11；最新更新：2026-09-12
 用途：交给网页端 GPT 进行论文结构审查、创新性讨论和初稿生成
 当前阶段：DSA与BER机制理论均已升级；cross-binding-map map1 Formal已四门全过
 
@@ -884,6 +884,16 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 ## 16. 建议的主表与图
 
+以下主表和机制图已经生成，可直接作为初稿素材：
+
+```text
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MAIN_TABLE_ZH.md
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MAIN_TABLE.csv
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.png
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.pdf
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.svg
+```
+
 ### 表1：CLE机制与local-first归因
 
 使用第4节四臂表及三个estimand，包含DSA、operator-grid accuracy、CI和shuffled-null。
@@ -910,7 +920,11 @@ client-specific class↔operator binding
   -> HFL/Local attribution
   -> PEW pseudo-environment
   -> BER class-conditional environment balancing
+  -> original-map / new-map / cross-base Formal validation
 ```
+
+正式图将这条链拆为“问题—诊断—归因—干预—受控验证”五段，并把原map、新map1和FedDF的DSA
+结果放在同一证据带中；底部边界框明确taxonomy-assisted、效用非一致及外推范围。
 
 ### 图2：DSA可解释性
 

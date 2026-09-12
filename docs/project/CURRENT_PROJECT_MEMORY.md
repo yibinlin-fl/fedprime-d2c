@@ -4394,3 +4394,28 @@ verdict: GO_PEW_BER_CROSS_MAP1
 总耗时`8311.44 s`（约2.31 V100小时）。结果包4,457,718 bytes，SHA256
 `8DA64B4E6669CE7534ADEA023E54EFAEB51353073EE85261E0F1768F2BD688E1`。报告位于
 `deliverables/cle_v2_cross_map1_formal_20260912/RESULT_SUMMARY_ZH.md`。
+
+## Paper Main Table and Mechanism Evidence Chain - 2026-09-12
+
+cross-map1 GO后，已将现有Formal证据固化为正文主表与论文机制图，而非只停留在实验日志。主表
+统一呈现三项互补证据：原AsymHFL map的DSA下降65.52%、新binding map1下降56.46%、native-CE
+FedDF-fidelity下降78.82%，同时保留Avg/Worst/WCCA/CFG变化及原Stage-2/FedDF冻结overall
+NO-GO，防止把shortcut mitigation GO误写成普适无损插件。
+
+机制图采用五段闭环：`CLE-HFL problem -> paired DSA diagnosis -> HFL-vs-Local local-first
+attribution -> public PEW + within-class BER intervention -> cross-map/cross-base controlled
+validation`。底部claim boundary明确：当前支持跨binding-map与跨通信底座的受控机制复现；不
+支持taxonomy-free、architecture-uniform utility或跨partition/seed/dataset/real domain泛化。
+
+稳定索引：
+
+```text
+deliverables/cle_hfl_paper_core_artifacts_20260912/README_ZH.md
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MAIN_TABLE_ZH.md
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MAIN_TABLE.csv
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.{png,pdf,svg}
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+上述目录已加入`docs/README_ZH.md`导航；`docs/handoffs/latest.md`记录当前入口。网页端GPT应以
+更新后的完整交接文档和本表图包为初稿证据源，不应从旧聊天或smoke/benchmark恢复数字。

@@ -1,0 +1,4 @@
+setting,communication_base,private_objective,binding_map,base_dsa,plugin_dsa,absolute_dsa_reduction,relative_dsa_reduction_percent,avg_delta_pp,worst_delta_pp,wcca_delta_pp,cfg_delta_pp,scientific_interpretation,frozen_overall_verdict
+Original CLE-v2,strict AsymHFL-val,AugMix/JSD/DCL,original,0.119644,0.041252,0.078392,65.52,1.7323,-0.3760,0.3500,-9.2600,Shortcut mitigation GO; architecture-uniform utility not established,NO_GO_PEW_BER_STAGE2_SEED0
+Cross-binding map1,strict AsymHFL-val,AugMix/JSD/DCL,new map1,0.113761,0.049531,0.064230,56.46,0.7040,1.0760,0.3500,-9.8550,Cross-binding-map replication GO,GO_PEW_BER_CROSS_MAP1
+Original CLE-v2,FedDF-fidelity,single-view CE,original,0.136989,0.029012,0.107977,78.82,-0.6660,0.2147,-0.1000,-13.2350,Cross-base shortcut mitigation GO; utility trade-off,NO_GO_PEW_BER_FEDDF_PLUGIN_SEED0

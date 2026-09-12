@@ -633,6 +633,22 @@ KT-pFL与FCCL通信实现原本就存在于`fedprime/communication/baselines.py`
 只在独立组合层比较`standard CE`和`PEW hard-BER CE`。四臂真实CUDA smoke、配对轨迹和22项
 回归测试已通过；smoke无科学结论。OpenI benchmark与Formal均未授权，Formal门槛仍是草案。
 
+当前最终基线审计与spurious-correlation对照：
+
+```text
+docs/research/baselines/CLE_HFL_FINAL_BASELINE_AUDIT_2026_09_12_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+fedprime/methods/spurious_baselines.py
+scripts/run_cle_v2_spurious_baselines.py
+scripts/analyze_cle_v2_spurious_baselines.py
+scripts/openi_cle_v2_spurious_baselines_entry.py
+```
+
+九种HFL基线已按历史适配、fidelity修复和最终重跑需要分类。新增ERM/JTT/CVaR-DRO/
+PEW+GroupDRO/PEW+BER五臂对照；JTT和CVaR不读取PEW，PEW+GroupDRO不调用BER。全新目录的
+真实CUDA smoke、fit-only JTT错误集合、checkpoint、20-source DSA分析和五臂配对轨迹全部
+通过。OpenI benchmark及12轮screen均未授权；12轮只筛选，不是最终论文证据。
+
 最新 CVRS Method Phase 已完成并归档：
 
 ```text

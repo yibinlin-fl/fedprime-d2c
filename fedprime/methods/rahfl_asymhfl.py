@@ -7,6 +7,7 @@ import math
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -45,6 +46,7 @@ from fedprime.methods.local_fedease import (
     train_local_pew_ber_ce_epoch,
 )
 from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
+from fedprime.methods.spurious_baselines import GroupDROState, train_local_spurious_epoch
 from fedprime.engine.cle_metrics import evaluate_cle_split, write_cle_evaluation
 from fedprime.engine.operator_metrics import (
     load_operator_metadata,
@@ -74,7 +76,10 @@ class AsymHFLExperiment:
         seed_everything(int(config.get("seed", 0)))
         self._nir_dcl_queues: dict[int, NIRDCLFeatureQueue] = {}
         self._last_fedease_metrics: dict[str, float] = {}
+        self._last_spurious_metrics: dict[str, float] = {}
         self._last_baseline_metrics: dict[str, float] = {}
+        self._group_dro_states: dict[int, GroupDROState] = {}
+        self._jtt_annotations = self._load_jtt_annotations(config)
         self._fedease_evaluation_loaders = {}
         communication_name = str(config.get("method", {}).get("communication", "asymhfl"))
         self._communication_strategy = build_core_communication_strategy(communication_name)
@@ -83,6 +88,26 @@ class AsymHFLExperiment:
                 communication_name, config.get("method", {})
             )
         self._communication_private_loaders = None
+
+    @staticmethod
+    def _load_jtt_annotations(config: dict) -> dict[int, dict[str, np.ndarray]] | None:
+        method_cfg = config.get("method", {})
+        if str(method_cfg.get("cl_module", "")).lower() != "jtt":
+            return None
+        root_value = method_cfg.get("spurious_baseline", {}).get("jtt", {}).get("annotation_root")
+        if not root_value:
+            raise ValueError("JTT requires method.spurious_baseline.jtt.annotation_root")
+        root = Path(root_value)
+        annotations: dict[int, dict[str, np.ndarray]] = {}
+        for client_id in range(len(config.get("models", {}).get("names", []))):
+            path = root / f"client_{client_id}_error_mask.npy"
+            if not path.is_file():
+                raise FileNotFoundError(path)
+            values = np.load(path, allow_pickle=False).astype(np.int64, copy=False)
+            if values.ndim != 1 or not np.isin(values, [0, 1]).all():
+                raise ValueError(f"Invalid JTT error mask: {path}")
+            annotations[client_id] = {"environment_ids": values}
+        return annotations
 
     def run(self) -> None:
         data_cfg = self.config["data"]
@@ -196,7 +221,7 @@ class AsymHFLExperiment:
                         environment_annotations=(
                             getattr(self, "_fedease_environment_annotations", None)
                             if cl_module == "fedease"
-                            else None
+                            else self._jtt_annotations if cl_module == "jtt" else None
                         ),
                         loader_seed=(
                             int(strict_cfg["loader_seed"])
@@ -481,6 +506,13 @@ class AsymHFLExperiment:
                     "fedease_jsd_loss",
                     "fedease_dcl_loss",
                     "fedease_ber_valid_groups",
+                    "spurious_classification_loss",
+                    "spurious_clean_ce",
+                    "spurious_error_fraction",
+                    "spurious_tail_fraction",
+                    "spurious_observed_groups",
+                    "spurious_group_weight_max",
+                    "spurious_group_weight_entropy",
                     "baseline_teacher_entropy",
                     "baseline_teacher_disagreement",
                     "baseline_teacher_weight_min",
@@ -668,6 +700,13 @@ class AsymHFLExperiment:
                     "fedease_jsd_loss": self._last_fedease_metrics.get("jsd_loss", ""),
                     "fedease_dcl_loss": self._last_fedease_metrics.get("dcl_loss", ""),
                     "fedease_ber_valid_groups": self._last_fedease_metrics.get("ber_valid_groups", ""),
+                    "spurious_classification_loss": self._last_spurious_metrics.get("classification_loss", ""),
+                    "spurious_clean_ce": self._last_spurious_metrics.get("clean_ce", ""),
+                    "spurious_error_fraction": self._last_spurious_metrics.get("error_fraction", ""),
+                    "spurious_tail_fraction": self._last_spurious_metrics.get("tail_fraction", ""),
+                    "spurious_observed_groups": self._last_spurious_metrics.get("observed_groups", ""),
+                    "spurious_group_weight_max": self._last_spurious_metrics.get("group_weight_max", ""),
+                    "spurious_group_weight_entropy": self._last_spurious_metrics.get("group_weight_entropy", ""),
                     "baseline_teacher_entropy": self._last_baseline_metrics.get("teacher_entropy", self._last_baseline_metrics.get("teacher_weight_entropy", "")),
                     "baseline_teacher_disagreement": self._last_baseline_metrics.get("teacher_disagreement", ""),
                     "baseline_teacher_weight_min": self._last_baseline_metrics.get("teacher_weight_min", ""),
@@ -710,6 +749,10 @@ class AsymHFLExperiment:
                         f"cls={float(row['fedease_classification_loss']):.4f} "
                         f"ber={float(row['fedease_ber_loss']):.4f} "
                         f"ber_groups={float(row['fedease_ber_valid_groups']):.2f} "
+                    )
+                if row["spurious_classification_loss"] != "":
+                    method_metrics += (
+                        f"spurious={float(row['spurious_classification_loss']):.4f} "
                     )
                 print(
                     f"[round {round_idx:03d}] "
@@ -1312,6 +1355,7 @@ class AsymHFLExperiment:
     ) -> float:
         losses = []
         fedease_diagnostics = []
+        spurious_diagnostics = []
         paired_rng_cfg = method_cfg.get("paired_local_rng", {})
         for client_id, loader in enumerate(private_loaders):
             for local_epoch in range(int(train_cfg.get("local_epochs", 1))):
@@ -1329,24 +1373,18 @@ class AsymHFLExperiment:
                     fedease_cfg = method_cfg.get("fedease", {})
                     epoch_diagnostics = {}
                     objective = str(fedease_cfg.get("objective", "augmix_jsd_dcl")).lower()
-                    train_function = (
-                        train_local_pew_ber_ce_epoch
-                        if objective == "ce_ber"
-                        else train_local_fedease_epoch
-                    )
-                    if objective not in {"ce_ber", "augmix_jsd_dcl"}:
+                    train_function = {
+                        "ce_ber": train_local_pew_ber_ce_epoch,
+                        "augmix_jsd_dcl": train_local_fedease_epoch,
+                        "pew_groupdro": train_local_spurious_epoch,
+                    }.get(objective)
+                    if train_function is None:
                         raise ValueError(f"Unknown FedEASE objective: {objective}")
                     common_kwargs = dict(
                         model=models[client_id],
                         loader=loader,
                         optimizer=optimizers[client_id],
                         device=self.device,
-                        fedease_cfg=fedease_cfg,
-                        class_environment_counts=getattr(
-                            self,
-                            "_client_class_environment_counts",
-                            {},
-                        ).get(client_id),
                         max_batches=train_cfg.get("max_local_batches"),
                         max_grad_norm=train_cfg.get("max_grad_norm"),
                         skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
@@ -1362,10 +1400,62 @@ class AsymHFLExperiment:
                             else None
                         ),
                     )
+                    if objective == "pew_groupdro":
+                        state = self._group_dro_states.get(client_id)
+                        if state is None:
+                            state = GroupDROState.uniform(
+                                num_classes,
+                                int(fedease_cfg.get("num_environments", 6)),
+                                self.device,
+                            )
+                            self._group_dro_states[client_id] = state
+                        common_kwargs.update(
+                            objective="pew_groupdro",
+                            objective_cfg=fedease_cfg.get("group_dro", {}),
+                            group_dro_state=state,
+                            num_classes=num_classes,
+                            num_environments=int(fedease_cfg.get("num_environments", 6)),
+                        )
+                    else:
+                        common_kwargs.update(
+                            fedease_cfg=fedease_cfg,
+                            class_environment_counts=getattr(
+                                self,
+                                "_client_class_environment_counts",
+                                {},
+                            ).get(client_id),
+                        )
                     if objective == "augmix_jsd_dcl":
                         common_kwargs["lambda_jsd"] = float(method_cfg.get("lambda_jsd", 12.0))
                     loss = train_function(**common_kwargs)
-                    fedease_diagnostics.append(epoch_diagnostics)
+                    if objective == "pew_groupdro":
+                        spurious_diagnostics.append(epoch_diagnostics)
+                    else:
+                        fedease_diagnostics.append(epoch_diagnostics)
+                elif cl_module in {"jtt", "cvar_dro"}:
+                    objective_cfg = method_cfg.get("spurious_baseline", {}).get(cl_module, {})
+                    epoch_diagnostics = {}
+                    loss = train_local_spurious_epoch(
+                        model=models[client_id],
+                        loader=loader,
+                        optimizer=optimizers[client_id],
+                        device=self.device,
+                        objective=cl_module,
+                        objective_cfg=objective_cfg,
+                        num_classes=num_classes,
+                        max_batches=train_cfg.get("max_local_batches"),
+                        max_grad_norm=train_cfg.get("max_grad_norm"),
+                        skip_nonfinite=bool(train_cfg.get("skip_nonfinite", False)),
+                        log_interval=train_cfg.get("local_log_interval"),
+                        context=f"{cl_module} local phase, round={round_idx}, client={client_id}",
+                        diagnostics=epoch_diagnostics,
+                        batch_trace_fn=(
+                            self._build_local_batch_trace_fn(round_idx=round_idx, client_id=client_id)
+                            if bool(method_cfg.get("record_local_batch_trace", False))
+                            else None
+                        ),
+                    )
+                    spurious_diagnostics.append(epoch_diagnostics)
                 elif use_prime:
                     if use_prime_dcl:
                         loss = train_local_prime_dcl_epoch(
@@ -1440,6 +1530,15 @@ class AsymHFLExperiment:
             }
         else:
             self._last_fedease_metrics = {}
+        if spurious_diagnostics:
+            metric_names = set().union(*(item.keys() for item in spurious_diagnostics))
+            self._last_spurious_metrics = {
+                key: sum(item.get(key, 0.0) for item in spurious_diagnostics)
+                / len(spurious_diagnostics)
+                for key in metric_names
+            }
+        else:
+            self._last_spurious_metrics = {}
         return sum(losses) / max(len(losses), 1)
 
     def _build_local_batch_trace_fn(self, *, round_idx: int, client_id: int):

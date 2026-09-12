@@ -2,6 +2,30 @@
 
 Updated: 2026-09-12
 
+## 最终基线审计与spurious-correlation五臂已完成本地smoke
+
+九种HFL基线已完成代码/协议分级：Local/ERM、FedMD、RHFL、FedProto、AugHFL、FedDF、
+KT-pFL、FCCL、RAHFL。最终表必须使用`aughfl_fidelity/feddf_fidelity/kt_pfl_fidelity`，
+早期同名适配器12轮结果只作历史筛选；FCCL、FedMD、RHFL、FedProto仍应标为protocol-matched
+core adapter。12轮肯定不足以作为最终主表，只能筛选晋级者。
+
+新增五臂保持相同strict AsymHFL-val通信、初始化、single-view输入和fit/audit/test角色：
+
+```text
+ERM / JTT / CVaR-DRO / PEW+GroupDRO / PEW+BER
+```
+
+JTT和CVaR完全不读取PEW；JTT第一阶段只从fit错误构造冻结集合，第二阶段从共同initial states
+重训。PEW+GroupDRO共享冻结PEW分组但不调用BER。全新目录真实CUDA smoke、五臂checkpoint、
+4/4客户端完整JTT fit推理、20-source DSA及逐batch配对均通过；smoke数值无科学意义。
+OpenI benchmark和12轮screen均未授权，当前不存在最终Formal入口。最终协议须在screen后冻结，
+至少匹配40轮通信；若声称完整RAHFL性能，需要明确处理共享40轮预训练与40轮通信预算。
+
+```text
+docs/research/baselines/CLE_HFL_FINAL_BASELINE_AUDIT_2026_09_12_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+```
+
 ## KT-pFL/FCCL独立插件扩展已完成本地smoke
 
 KT-pFL与FCCL并非本轮新实现；仓库已有各自的通信策略。本轮没有修改

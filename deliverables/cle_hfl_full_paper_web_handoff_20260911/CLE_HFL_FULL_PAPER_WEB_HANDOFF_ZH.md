@@ -730,6 +730,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | PEW+BER能否抑制AsymHFL中的CLE | matched Stage-2 | DSA降低65.52% | mitigation GO |
 | 结论是否依赖唯一binding map | cross-binding-map map1 | DSA降低56.46%，4/4客户端同向 | replication GO |
 | PEW+BER能否跨第二底座抑制CLE | native-CE FedDF | DSA降低78.82% | cross-base mitigation GO |
+| 通用困难样本方法能否解释PEW+BER收益 | 12轮五臂selection screen | CVaR DSA最低；BER效用与综合折中更强 | 仅筛选，不是Formal |
+| BER是否只是标准GroupDRO | 相同PEW分组的GroupDRO对照 | BER DSA低0.139850、grid高1.5817pp | screen支持，待map2 Formal |
+| 四臂结论能否在筛选未见map复现 | held-out map2，40轮 | OpenI运行中 | 结果待回收，禁止预写结论 |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
 | 环境对应是否重要 | Oracle operator vs random | DSA差0.052112 | GO |
 | 是否需要operator级PEW | Oracle family vs operator | 仅差0.001449 | NO-GO |
@@ -803,7 +806,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 2. 新class-operator binding map的map1 Formal已经完成：Base DSA `0.113761`，PEW+BER DSA
    `0.049531`，下降`0.064230`（56.46%），CI95 `[0.063105,0.065328]`，4/4客户端同向，
    I0/L0/C1/C2全部通过。可宣称跨binding-map复现，但不能扩写成跨partition、训练seed、
-   corruption库、数据集或真实场景泛化；map2尚未授权。
+   corruption库、数据集或真实场景泛化。用于四臂最终比较的map2在五臂筛选时保持未见；其40轮
+   `ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER` Formal已于2026-09-13启动，结果尚未返回。
 3. 架构与客户端数据划分绑定，不能把client2现象单独归因于ShuffleNet容量。
 4. FedDF两臂低于预注册20%学习下限；可作为支持性跨底座机制证据，但主表定位需谨慎。
 5. 应审计主表是否还缺标准ERM/Local/RAHFL/FedDF等必要对照；不要为了“工作量”添加不能回答
@@ -813,8 +817,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 7. novelty仍需要最新文献检索，尤其是federated spurious correlation、group reweighting、
    pseudo-group discovery、corruption robustness与model-heterogeneous FL。
 
-下一步应先把cross-map1 Formal加入主表、机制图和初稿，再审计投稿前剩余证据缺口。不得把追加
-实验用于事后翻转已经冻结的NO-GO门槛；map2不是自动续跑项。
+下一步只回收并按预注册门槛分析held-out map2四臂Formal。不得根据运行中间值调参，不得把12轮
+screen写进最终主表冒充Formal，也不得用追加实验事后翻转已经冻结的旧NO-GO门槛。
 
 ---
 
@@ -911,6 +915,13 @@ deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAI
 使用Oracle family/operator/random结果，突出`Random-Operator=0.052112`和
 `Family-Operator=0.001449`。
 
+### 表4：通用spurious基线与BER机制对照
+
+12轮screen暂时只作为附录式选择依据：CVaR DSA `0.034980`，PEW+BER DSA `0.037889`；后者
+operator-grid accuracy高`4.5350pp`、last-5 Avg高`2.7377pp`。最终表必须等待held-out map2
+40轮四臂结果，只保留`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，并同时报告DSA和utility，禁止
+用单一指标宣称全面胜出。
+
 ### 图1：场景与完整证据链
 
 ```text
@@ -975,7 +986,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
-8. 在完成上述审查后，生成一份中文论文初稿；所有无法由本文件支持的句子标注`[待证据]`，
+8. 在完成上述审查且map2结果回填后，生成一份英文论文初稿；所有无法由本文件支持的句子标注`[待证据]`，
    所有需引用的事实标注`[待引用]`，不得自行编造实验数字或SOTA结论。
 
 建议网页端GPT首先回答“还缺哪些必做实验”，确认后再写全文，以免初稿建立在过度主张上。
@@ -991,6 +1002,8 @@ docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
 docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
 deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md
 docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md

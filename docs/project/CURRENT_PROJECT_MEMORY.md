@@ -4465,3 +4465,42 @@ docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
 fedprime/methods/spurious_baselines.py
 scripts/openi_cle_v2_spurious_baselines_entry.py
 ```
+
+## Spurious Five-Arm Screen and Held-Out Map2 Final - 2026-09-13
+
+原binding map上的12轮五臂OpenI screen完成；五臂local batch traces完全匹配，JTT错误集合只读
+fit，CVaR/JTT不含PEW，PEW+GroupDRO不含BER。结果仅用于方法选择：
+
+```text
+arm             DSA       operator-grid  last5 Avg  last5 Worst  WCCA  CFG
+ERM             0.214812  18.4183        17.8240    15.5213      0.0   35.580
+JTT             0.046833  15.2617        16.0470    12.2240      0.4   19.350
+CVaR-DRO        0.034980  16.5917        16.6053    12.9427      0.1   25.635
+PEW+GroupDRO    0.177739  19.5450        19.2727    14.9640      0.6   32.115
+PEW+BER         0.037889  21.1267        19.3430    16.4133      0.7   19.545
+```
+
+PEW+BER相对ERM使DSA降低`0.176922`（82.36%）且operator-grid提高`2.7083pp`。CVaR的DSA
+比BER低`0.002909`，但BER的operator-grid/Avg/Worst分别高`4.5350/2.7377/3.4707pp`，故
+二者形成shortcut—utility Pareto取舍，不能宣称BER在纯DSA上胜过CVaR。共享PEW分组下，BER
+相对GroupDRO使DSA降低`0.139850`、operator-grid提高`1.5817pp`，支持“类别内环境支持平衡”
+不同于通用worst-group追逐。JTT不进入最终长程比较。
+
+在screen结果之后、map2结果之前，冻结held-out map2四臂40轮Formal：
+
+```text
+ERM / CVaR-DRO / PEW+GroupDRO / PEW+BER
+map2; partition/evaluation/train seed固定；40 rounds；16 local batches/client/round
+strict AsymHFL-val；single-view；AugMix/JSD/DCL/CDep禁用
+```
+
+Formal门槛覆盖配对完整性、map2 ERM shortcut、BER-vs-ERM、BER-vs-matched-GroupDRO、以及
+BER-vs-CVaR的DSA容差和operator-grid utility优势。8项测试与真实CUDA一轮四臂smoke/分析通过；
+smoke无科学意义。实现提交`5ea5861`已push至`origin/main`。用户于2026-09-13在OpenI启动Formal，
+结果尚未返回；不得预写GO/NO-GO。预计1xV100约2.7--3.2小时，不含排队/安装。
+
+```text
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
+scripts/openi_cle_v2_spurious_final_entry.py
+```

@@ -2,22 +2,24 @@
 
 Updated: 2026-09-13
 
-## Held-out map2 40轮四臂Formal已实现并完成本地smoke
+## Held-out map2 40轮四臂Formal已在OpenI启动
 
 原binding map五臂12轮screen已晋级`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，JTT不进入
 最终表。新协议在未参与筛选的binding map2上固定40轮、16 local batches、train seed0和strict
 AsymHFL-val，禁用AugMix/JSD/DCL/CDep。结果前已冻结shortcut、BER-vs-ERM、BER-vs-
 GroupDRO及BER-vs-CVaR准确率—DSA折中门槛。8项单元测试和真实CUDA一轮四臂训练/配对
-分析通过；smoke无科学意义。预计1xV100 Formal约2.7--3.2小时，不含排队/安装。
+分析通过；smoke无科学意义。提交`5ea5861`已push至`origin/main`。用户于2026-09-13已在OpenI
+启动Formal，结果待回收；预计1xV100约2.7--3.2小时，不含排队/安装。结果返回前不得预写结论。
 
 ```text
 scripts/openi_cle_v2_spurious_final_entry.py
 docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
 ```
 
-当前改动尚未push；OpenI不可在远端运行到新入口。用户若明确要求push，再推送本轮提交。
+下载目标为`cle_v2_spurious_final_map2_formal_outputs.tar.gz`和`RUN_TIMING.json`，应放入
+`outputs/openi_downloads/cle_v2_spurious_final_map2_formal/`后再分析。
 
-## 最终基线审计与spurious-correlation五臂已完成本地smoke
+## 最终基线审计与spurious-correlation五臂Screen已完成
 
 九种HFL基线已完成代码/协议分级：Local/ERM、FedMD、RHFL、FedProto、AugHFL、FedDF、
 KT-pFL、FCCL、RAHFL。最终表必须使用`aughfl_fidelity/feddf_fidelity/kt_pfl_fidelity`，
@@ -33,8 +35,10 @@ ERM / JTT / CVaR-DRO / PEW+GroupDRO / PEW+BER
 JTT和CVaR完全不读取PEW；JTT第一阶段只从fit错误构造冻结集合，第二阶段从共同initial states
 重训。PEW+GroupDRO共享冻结PEW分组但不调用BER。全新目录真实CUDA smoke、五臂checkpoint、
 4/4客户端完整JTT fit推理、20-source DSA及逐batch配对均通过；smoke数值无科学意义。
-OpenI benchmark和12轮screen均未授权，当前不存在最终Formal入口。最终协议须在screen后冻结，
-至少匹配40轮通信；若声称完整RAHFL性能，需要明确处理共享40轮预训练与40轮通信预算。
+OpenI 12轮screen已经完成：CVaR取得最低DSA `0.034980`；PEW+BER DSA为`0.037889`，但取得
+最高operator-grid accuracy `21.1267`、最高last-5 Avg `19.3430`和更低CFG。PEW+BER相对ERM
+使DSA降低82.36%；相同PEW分组下也显著优于PEW+GroupDRO。该结果仅作选择，晋级四臂见本
+handoff首节；若声称完整RAHFL性能，仍须明确处理共享40轮预训练与40轮通信预算。
 
 ```text
 docs/research/baselines/CLE_HFL_FINAL_BASELINE_AUDIT_2026_09_12_ZH.md

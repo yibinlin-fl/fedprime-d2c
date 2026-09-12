@@ -27,3 +27,14 @@ CLE场景定义
 
 图和表中的“GO”均按对应冻结estimand解释，不得用cross-map GO覆盖原Stage-2或FedDF的overall
 NO-GO，也不得把两张binding map写成跨真实领域泛化。
+
+## 2026-09-13待回填项
+
+原binding map五臂12轮screen已完成，晋级`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`。用于最终
+比较的held-out map2四臂40轮Formal已启动，结果尚未返回。本目录现有主表和机制图不提前写入
+screen数值，也不预设map2结论；结果通过完整性审计和冻结门槛后再统一重生成表图。
+
+```text
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
+```

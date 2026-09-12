@@ -1,8 +1,8 @@
 # CLE-HFL v2 Spurious Baseline Screen
 
-Updated: 2026-09-12
+Updated: 2026-09-13
 
-状态：实现、本地真实CUDA smoke与20-source分析通过；OpenI benchmark和12轮screen均未授权。
+状态：OpenI 12轮五臂screen已完成并独立读取结果；它只用于选择最终四臂，不是最终论文证据。
 
 ## 目标
 
@@ -48,6 +48,35 @@ paired DSA 20-source分析: PASS
 CVaR诊断误读为BER字段而中止；修复为独立`spurious_*`诊断命名空间后通过。随后在全新本地
 目录完整重跑，五臂训练、checkpoint、JTT错误集合、20-source DSA和逐batch配对全部通过。
 
+## 12轮Screen结果
+
+五臂输入、初始化、strict AsymHFL-val通信、single-view训练、fit/audit/test角色和逐batch轨迹
+匹配。完整评价结果为：
+
+| Arm | DSA | Operator-grid Acc | Last-5 Avg | Last-5 Worst | WCCA | CFG |
+|---|---:|---:|---:|---:|---:|---:|
+| ERM | 0.214812 | 18.4183 | 17.8240 | 15.5213 | 0.0000 | 35.5800 |
+| JTT | 0.046833 | 15.2617 | 16.0470 | 12.2240 | 0.4000 | 19.3500 |
+| CVaR-DRO | **0.034980** | 16.5917 | 16.6053 | 12.9427 | 0.1000 | 25.6350 |
+| PEW+GroupDRO | 0.177739 | 19.5450 | 19.2727 | 14.9640 | 0.6000 | 32.1150 |
+| PEW+BER | 0.037889 | **21.1267** | **19.3430** | **16.4133** | **0.7000** | **19.5450** |
+
+关键解释：
+
+- `PEW+BER vs ERM`：DSA降低`0.176922`（82.36%），operator-grid accuracy提高`2.7083pp`；
+- `CVaR vs PEW+BER`：CVaR的DSA低`0.002909`，但PEW+BER的operator-grid accuracy高
+  `4.5350pp`、Avg高`2.7377pp`、Worst高`3.4707pp`、CFG低`6.0900pp`，两者是
+  shortcut—utility取舍，不能写成任一方全面支配；
+- `PEW+BER vs PEW+GroupDRO`：共享相同PEW分组时，BER的DSA低`0.139850`且
+  operator-grid accuracy高`1.5817pp`，说明收益不只是“有了伪环境组”；
+- JTT显著降低DSA但任务效用最弱，未晋级最终长程比较。
+
+最终晋级：`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`。最终协议改用筛选未见的binding map2并
+训练40轮；见`CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md`。本表必须标为selection screen，不进入论文
+最终主结果表冒充Formal。
+
+实测V100训练`3559.602s`、完整分析`88.887s`，总计约60.81分钟。
+
 ## 入口
 
 ```text
@@ -57,5 +86,5 @@ scripts/openi_cle_v2_spurious_baselines_entry.py
 tests/test_cle_v2_spurious_baselines.py
 ```
 
-OpenI的`screen`具有显式`confirm_screen=true`锁。当前没有最终Formal入口；只有screen结果和成本
-通过后，才允许单独设计40-pretrain+40-communication或统一40-round最终协议。
+OpenI的`screen`具有显式`confirm_screen=true`锁。screen已完成，不得根据结果修改五臂超参数或
+把12轮结果升级为论文Formal。40轮held-out map2四臂协议已在结果前冻结并于2026-09-13启动。

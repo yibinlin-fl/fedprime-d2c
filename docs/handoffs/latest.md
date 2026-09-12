@@ -1,6 +1,21 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-12
+Updated: 2026-09-13
+
+## Held-out map2 40轮四臂Formal已实现并完成本地smoke
+
+原binding map五臂12轮screen已晋级`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，JTT不进入
+最终表。新协议在未参与筛选的binding map2上固定40轮、16 local batches、train seed0和strict
+AsymHFL-val，禁用AugMix/JSD/DCL/CDep。结果前已冻结shortcut、BER-vs-ERM、BER-vs-
+GroupDRO及BER-vs-CVaR准确率—DSA折中门槛。8项单元测试和真实CUDA一轮四臂训练/配对
+分析通过；smoke无科学意义。预计1xV100 Formal约2.7--3.2小时，不含排队/安装。
+
+```text
+scripts/openi_cle_v2_spurious_final_entry.py
+docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
+```
+
+当前改动尚未push；OpenI不可在远端运行到新入口。用户若明确要求push，再推送本轮提交。
 
 ## 最终基线审计与spurious-correlation五臂已完成本地smoke
 

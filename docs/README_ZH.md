@@ -638,6 +638,7 @@ KT-pFL与FCCL通信实现原本就存在于`fedprime/communication/baselines.py`
 ```text
 docs/research/baselines/CLE_HFL_FINAL_BASELINE_AUDIT_2026_09_12_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
 fedprime/methods/spurious_baselines.py
 scripts/run_cle_v2_spurious_baselines.py
 scripts/analyze_cle_v2_spurious_baselines.py

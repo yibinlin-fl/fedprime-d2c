@@ -1,5 +1,20 @@
 # TODO Next
 
+## Current - Spurious Baseline Cost Gate - 2026-09-12
+
+The five-arm ERM/JTT/CVaR-DRO/PEW+GroupDRO/PEW+BER implementation and a fresh-output CUDA smoke
+are complete. All local traces match; JTT derives its frozen error set from fit only. No OpenI job is
+authorized. The next platform action, only after explicit user approval, is a one-round benchmark to
+measure the true five-arm cost including JTT's full-fit inference and second training stage. If that
+cost is accepted, run the locked 12-round screen. The screen selects finalists and is not final paper
+evidence. Do not add a Formal mode until a matched long-run protocol (at least 40 communication rounds,
+with an explicit pretraining policy) is frozen.
+
+```text
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+scripts/openi_cle_v2_spurious_baselines_entry.py
+```
+
 ## Current - LCRE M0 Cost Decision - 2026-09-06
 
 LCRE M0 is implemented and verified through a real-checkpoint six-arm smoke and local 8-step

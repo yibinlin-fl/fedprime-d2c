@@ -1,6 +1,6 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-09-06
+Updated: 2026-09-12
 
 ## LCRE M0 Implementation and Local Cost Gate - 2026-09-06
 
@@ -4419,3 +4419,49 @@ deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HAND
 
 上述目录已加入`docs/README_ZH.md`导航；`docs/handoffs/latest.md`记录当前入口。网页端GPT应以
 更新后的完整交接文档和本表图包为初稿证据源，不应从旧聊天或smoke/benchmark恢复数字。
+
+## KT-pFL/FCCL Decoupled Plugin Harness - 2026-09-12
+
+KT-pFL与FCCL并非新实现；仓库已有`KTPFLFidelityCommunicationStrategy`与
+`FCCLCommunicationStrategy`。本阶段没有修改`fedprime/communication/baselines.py`，仅在独立
+组合层形成四臂：standard CE与PEW hard-BER CE分别连接完全相同的KT-pFL-fidelity或FCCL通信。
+四臂均禁用AugMix/JSD/DCL/CDep并匹配初始化、数据、私有batch trace和公共通信预算。
+
+22项相关测试、四臂真实CUDA smoke、checkpoint与20-source paired DSA分析通过；两组Base/Plugin
+trace均逐项匹配。Smoke未收敛且DSA接近零，只证明执行，不构成科学证据。OpenI benchmark与
+Formal均未授权；Formal门槛仍是草案。实现提交为`c24c4bd`。
+
+```text
+docs/experiments/current/CLE_V2_KT_FCCL_PEW_BER_PLUGIN_ZH.md
+scripts/openi_cle_v2_kt_fccl_plugin_entry.py
+```
+
+## Final Baseline Audit and Spurious-Correlation Screen - 2026-09-12
+
+九种HFL基线已按最终论文口径审计：Local/ERM、FedMD、RHFL、FedProto、AugHFL、FedDF、KT-pFL、
+FCCL、RAHFL。早期12轮排行榜仅作筛选；最终表必须使用`aughfl_fidelity`、`feddf_fidelity`、
+`kt_pfl_fidelity`，并把FedMD/RHFL/FedProto/FCCL准确称为protocol-matched core adapters。
+12轮不能作为最终主表；晋级方法至少需要统一40轮通信。若声称完整RAHFL性能，必须显式处理
+共享40轮预训练与40轮通信预算，不能混用不同初始化预算。
+
+新增五臂共享strict AsymHFL-val通信、single-view输入、相同初始状态和fit/audit/test角色：
+
+```text
+ERM
+JTT: stage-1 ERM fit errors -> same-initialization stage-2 weighted retraining
+CVaR-DRO: upper 20% empirical loss tail, no environment labels
+PEW+GroupDRO: frozen PEW class x environment groups + persistent exponentiated weights
+PEW+BER: same frozen PEW groups + current capped support-balancing objective
+```
+
+JTT/CVaR配置完全不含PEW；PEW+GroupDRO不含BER。JTT错误集合覆盖4/4客户端全部fit样本，不读取
+audit或final-test标签。36项相关回归测试、全新目录五臂真实CUDA smoke、checkpoint、20-source
+DSA分析和逐batch trace匹配全部通过。Smoke数字无科学意义。OpenI benchmark和12轮screen均
+未授权；当前故意没有最终Formal入口。实现提交为`3cfc525`。
+
+```text
+docs/research/baselines/CLE_HFL_FINAL_BASELINE_AUDIT_2026_09_12_ZH.md
+docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
+fedprime/methods/spurious_baselines.py
+scripts/openi_cle_v2_spurious_baselines_entry.py
+```

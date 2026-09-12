@@ -615,9 +615,23 @@ scripts/openi_cle_v2_feddf_plugin_entry.py
 ```
 
 FedDF实验使用修复后的`feddf_fidelity`通信；Base为standard CE，candidate只把CE均值替换为
-coarse PEW分组的hard BER-weighted CE。两臂均禁用AugMix/JSD/DCL，当前仅本地smoke通过，任何
-smoke数值均非科学证据。先前matched-robust设计已作废。OpenI V100 benchmark现已通过，Formal
-仍未授权；benchmark报告位于`deliverables/cle_v2_feddf_plugin_benchmark_20260911/`。
+coarse PEW分组的hard BER-weighted CE。两臂均禁用AugMix/JSD/DCL。先前matched-robust设计已
+作废。native-CE FedDF-fidelity Formal已完成：DSA显著下降，但冻结效用门失败；支持“机制迁移”，
+不支持“通用无损插件”。详见当前handoff与正式结果报告。
+
+当前KT-pFL/FCCL独立插件扩展：
+
+```text
+docs/experiments/current/CLE_V2_KT_FCCL_PEW_BER_PLUGIN_ZH.md
+scripts/run_cle_v2_kt_fccl_plugin.py
+scripts/analyze_cle_v2_kt_fccl_plugin.py
+scripts/openi_cle_v2_kt_fccl_plugin_entry.py
+tests/test_cle_v2_kt_fccl_plugin.py
+```
+
+KT-pFL与FCCL通信实现原本就存在于`fedprime/communication/baselines.py`，本扩展不修改它们，
+只在独立组合层比较`standard CE`和`PEW hard-BER CE`。四臂真实CUDA smoke、配对轨迹和22项
+回归测试已通过；smoke无科学结论。OpenI benchmark与Formal均未授权，Formal门槛仍是草案。
 
 最新 CVRS Method Phase 已完成并归档：
 

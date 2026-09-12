@@ -2,6 +2,29 @@
 
 Updated: 2026-09-12
 
+## KT-pFL/FCCL独立插件扩展已完成本地smoke
+
+KT-pFL与FCCL并非本轮新实现；仓库已有各自的通信策略。本轮没有修改
+`fedprime/communication/baselines.py`，只增加独立四臂协议：
+
+```text
+kt_b = standard CE + kt_pfl_fidelity
+kt_p = PEW hard-BER CE + identical kt_pfl_fidelity
+fc_b = standard CE + FCCL
+fc_p = PEW hard-BER CE + identical FCCL
+```
+
+四臂均禁用AugMix/JSD/DCL/CDep，并共享数据、初始化、私有batch轨迹和各自成对相同的通信预算。
+22项回归测试、本地1-round真实CUDA smoke、四臂checkpoint与paired DSA分析全部通过；KT与FCCL
+两组的Base/Plugin轨迹均完全匹配。smoke未形成可识别shortcut，只证明执行链路，不能作为论文
+证据。OpenI benchmark与Formal均未授权；下一步先由用户确认协议和Formal门槛，若确认再跑
+benchmark估算四臂成本，不能直接启动Formal。
+
+```text
+docs/experiments/current/CLE_V2_KT_FCCL_PEW_BER_PLUGIN_ZH.md
+scripts/openi_cle_v2_kt_fccl_plugin_entry.py
+```
+
 ## Cross-map1 Formal四门全过：跨binding-map复现GO
 
 2026-09-12只改变客户端特定class-operator binding map、固定partition/evaluation/training seed、
@@ -1911,8 +1934,7 @@ GroupDRO/CVaR and CCAD instead of merely renaming their objective.
 
 ## Next Action
 
-Report the ordinal-boundary `NO-GO` and start no implementation. The next independent topic screen
-must begin from an observable target that standard additive federated gradients cannot already
-solve and that existing KD/proxy communication cannot trivially bridge. Homogeneous and
-heterogeneous models are both allowed; architecture heterogeneity alone is not the contribution.
-Do not run local/OpenI experiments or commit during topic selection.
+Review and freeze the KT-pFL/FCCL four-arm protocol and its per-base Formal gates. If the user
+authorizes the next platform step, run benchmark only to estimate runtime and cost. Do not treat
+smoke/benchmark as evidence and do not start Formal, multi-seed, map2, or 40-round work without
+separate explicit authorization.

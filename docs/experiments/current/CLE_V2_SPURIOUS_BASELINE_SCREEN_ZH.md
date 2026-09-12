@@ -71,11 +71,38 @@ CVaR诊断误读为BER字段而中止；修复为独立`spurious_*`诊断命名�
   operator-grid accuracy高`1.5817pp`，说明收益不只是“有了伪环境组”；
 - JTT显著降低DSA但任务效用最弱，未晋级最终长程比较。
 
+逐客户端结果：
+
+```text
+arm             DSA [c0,c1,c2,c3]                                grid-acc [c0,c1,c2,c3]
+ERM             [0.259175,0.097178,0.275026,0.227868]            [17.4800,22.7000,15.3533,18.1400]
+JTT             [0.010634,0.056065,0.077298,0.043338]            [10.5133,14.1467,18.2067,18.1800]
+CVaR-DRO        [0.023476,0.019349,0.050076,0.047020]            [12.2133,20.3333,17.0400,16.7800]
+PEW+GroupDRO    [0.175553,0.124060,0.218501,0.192843]            [18.2200,21.3733,16.0533,22.5333]
+PEW+BER         [0.036596,0.021662,0.064579,0.028719]            [17.5200,26.1533,18.2733,22.5600]
+```
+
+完整预测缓存上5000次source-paired bootstrap（seed `20260913`）为：
+
+```text
+ERM-BER DSA          0.176922; CI95 [0.174556,0.179224]
+GroupDRO-BER DSA     0.139850; CI95 [0.137643,0.142017]
+BER-CVaR DSA         0.002909; CI95 [0.002163,0.003661]
+```
+
+该区间只描述固定训练结果下的source不确定性，不覆盖训练seed或场景不确定性。
+
 最终晋级：`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`。最终协议改用筛选未见的binding map2并
 训练40轮；见`CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md`。本表必须标为selection screen，不进入论文
 最终主结果表冒充Formal。
 
 实测V100训练`3559.602s`、完整分析`88.887s`，总计约60.81分钟。
+
+```text
+artifact: outputs/openi_downloads/cle_v2_spurious_seed0_screen/cle_v2_spurious_seed0_screen_outputs.tar.gz
+bytes: 11192392
+SHA256: 5F38480FD3878037EE25078A84E636BDCEBA1F10500D78D4736C88D9E8D69223
+```
 
 ## 入口
 

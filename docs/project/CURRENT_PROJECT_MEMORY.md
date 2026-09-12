@@ -4480,6 +4480,41 @@ PEW+GroupDRO    0.177739  19.5450        19.2727    14.9640      0.6   32.115
 PEW+BER         0.037889  21.1267        19.3430    16.4133      0.7   19.545
 ```
 
+逐客户端DSA与operator-grid accuracy为：
+
+```text
+arm             client DSA [c0,c1,c2,c3]                         client grid-acc [c0,c1,c2,c3]
+ERM             [0.259175,0.097178,0.275026,0.227868]            [17.4800,22.7000,15.3533,18.1400]
+JTT             [0.010634,0.056065,0.077298,0.043338]            [10.5133,14.1467,18.2067,18.1800]
+CVaR-DRO        [0.023476,0.019349,0.050076,0.047020]            [12.2133,20.3333,17.0400,16.7800]
+PEW+GroupDRO    [0.175553,0.124060,0.218501,0.192843]            [18.2200,21.3733,16.0533,22.5333]
+PEW+BER         [0.036596,0.021662,0.064579,0.028719]            [17.5200,26.1533,18.2733,22.5600]
+```
+
+使用保存的完整source预测缓存、`5000`次source-level paired bootstrap、seed `20260913`独立复算：
+
+```text
+estimand                              point       bootstrap mean  CI95
+DSA(ERM)-DSA(PEW+BER)                0.176922    0.176909        [0.174556,0.179224]
+DSA(PEW+GroupDRO)-DSA(PEW+BER)       0.139850    0.139844        [0.137643,0.142017]
+DSA(PEW+BER)-DSA(CVaR-DRO)           0.002909    0.002906        [0.002163,0.003661]
+```
+
+完整性与成本：五臂local batch traces完全匹配；JTT为两阶段，error mask只由ERM最终checkpoint
+在4/4客户端全部fit样本上生成，未读audit/final-test标签；CVaR/JTT配置不含PEW，
+PEW+GroupDRO配置不含BER。V100训练`3559.602s`，分析`88.887s`，合计约`60.81min`。
+原始screen包：
+
+```text
+outputs/openi_downloads/cle_v2_spurious_seed0_screen/cle_v2_spurious_seed0_screen_outputs.tar.gz
+bytes 11192392
+SHA256 5F38480FD3878037EE25078A84E636BDCEBA1F10500D78D4736C88D9E8D69223
+prediction cache: extracted/analysis/SPURIOUS_BASELINE_PREDICTIONS.npz
+```
+
+上述bootstrap只覆盖固定训练结果下的source不确定性，不覆盖training seed、binding map、partition、
+数据集或超参数选择不确定性；12轮screen的`scientific_evidence=false`，禁止作为最终Formal主张。
+
 PEW+BER相对ERM使DSA降低`0.176922`（82.36%）且operator-grid提高`2.7083pp`。CVaR的DSA
 比BER低`0.002909`，但BER的operator-grid/Avg/Worst分别高`4.5350/2.7377/3.4707pp`，故
 二者形成shortcut—utility Pareto取舍，不能宣称BER在纯DSA上胜过CVaR。共享PEW分组下，BER

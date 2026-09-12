@@ -2,14 +2,32 @@
 
 Updated: 2026-09-12
 
-## Cross-map1 Formal已授权，代码与数据已就绪，等待OpenI启动
+## Cross-map1 Formal四门全过：跨binding-map复现GO
 
-2026-09-12用户明确选择跳过新入口benchmark，授权仅运行`mode=formal, map_seed=1,
-confirm_formal=true`。map2/all未授权。参考同协议旧Stage-2 Formal实测`8116.51 s`，预计新任务
-约`2.3--3.0 V100 GPU-hours`。代码、本地CUDA smoke、输入审计和数据包均已完成；当前本地提交
-已push至`origin/main`。输入包已上传到
-`chujiu/CLE_v2_CrossBindingMaps_Seed0_PEW_20260911`，CLI返回`100% / 1.3 GiB / 2.5 MiB/s /
-00:09:36`。现在可创建map1 Formal；失败时只诊断，不自动重跑或启动map2。
+2026-09-12只改变客户端特定class-operator binding map、固定partition/evaluation/training seed、
+初始权重、public数据、评价grid与同一冻结PEW的map1 Formal完成。纯两臂为`h9_b`与
+`h9_b+PEW/BER`，CDep禁用；输入审计、48条paired local traces和预测缓存独立复算全部通过：
+
+```text
+DSA: 0.113761 -> 0.049531
+reduction: 0.064230 (56.46%), CI95 [0.063105, 0.065328]
+client reductions: [0.064195, 0.047682, 0.085614, 0.059428]
+operator-grid pooled: 20.9450% -> 21.4583%
+last-5 delta: Avg +0.7040, Worst +1.0760, WCCA +0.3500, CFG -9.8550
+gates: I0/L0/C1/C2 all PASS
+verdict: GO_PEW_BER_CROSS_MAP1
+```
+
+该结果允许主张shortcut形成与PEW+BER缓解不依赖唯一一张偶然binding map；它不覆盖新partition、
+训练seed、corruption库、severity、数据集或真实场景。原Stage-2整体NO-GO仍保留，不得被本次
+报告性效用指标覆盖。map2/all仍未授权，不自动续跑。总耗时`8311.44 s`（约2.31 V100小时）。
+原始包4,457,718 bytes，SHA256
+`8DA64B4E6669CE7534ADEA023E54EFAEB51353073EE85261E0F1768F2BD688E1`。
+
+```text
+deliverables/cle_v2_cross_map1_formal_20260912/RESULT_SUMMARY_ZH.md
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
+```
 
 ## BER机制理论与CPU Kill Test完成：失衡压缩PASS，PEW误差界仍平凡
 
@@ -38,7 +56,7 @@ deliverables/ber_mechanism_theory_20260911/
 scripts/audit_ber_mechanism.py
 ```
 
-## DSA识别理论v2与Cross-Binding-Map S2完成：等待OpenI benchmark
+## DSA识别理论v2与Cross-Binding-Map S2完成
 
 DSA理论已从三个代数性质扩展为完整的识别对象与五项验证：paired contrast在
 `m(z,o')=s(z)+r(z,o')`下消除operator-invariant语义基线，识别binding-specific operator
@@ -59,9 +77,8 @@ SHA256: BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5
 entry: scripts/openi_cle_v2_cross_scenario_entry.py
 ```
 
-下一步只运行`map_seed=1, mode=benchmark`验证OpenI链路与成本。不得把benchmark写成证据；
-Formal仍需用户另行明确授权。旧`openi_cle_cross_scenario_40round_entry.py`及seed1_split1/
-seed2_split2包同时改变partition、重训PEW并含CDep，禁止用于本协议。
+map1 Formal的科学结论见本handoff首节。旧`openi_cle_cross_scenario_40round_entry.py`及
+seed1_split1/seed2_split2包同时改变partition、重训PEW并含CDep，禁止用于本协议。
 
 ```text
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md

@@ -2,7 +2,7 @@
 
 日期：2026-09-11
 用途：交给网页端 GPT 进行论文结构审查、创新性讨论和初稿生成
-当前阶段：DSA与BER机制理论均已升级；cross-binding-map已完成S2并等待benchmark
+当前阶段：DSA与BER机制理论均已升级；cross-binding-map map1 Formal已四门全过
 
 ---
 
@@ -584,6 +584,28 @@ formal verdict: NO_GO_PEW_BER_STAGE2_SEED0
 该现象是类别选择性决策重分配，而不是所有类别均匀退化。由于架构与非IID客户端数据绑定，不能
 将其因果归结为“小模型容量”。
 
+### 8.3 新 binding map 的正式复现
+
+为排除结论只依赖一张偶然 class-operator mapping，在固定partition seed0、evaluation seed、
+training seed0、初始权重、公共数据、评价grid和同一冻结PEW的条件下，只更换客户端特定binding
+map。map1 Formal结果为：
+
+```text
+Base DSA: 0.113761
+PEW+BER DSA: 0.049531
+reduction: 0.064230 (56.46%)
+source-bootstrap CI95: [0.063105, 0.065328]
+client reductions: [0.064195, 0.047682, 0.085614, 0.059428]
+operator-grid pooled: 20.9450% -> 21.4583%
+last-5 delta: Avg +0.7040, Worst +1.0760, WCCA +0.3500, CFG -9.8550
+I0/L0/C1/C2: all PASS
+verdict: GO_PEW_BER_CROSS_MAP1
+```
+
+因此可以主张shortcut形成和PEW+BER缓解已跨两张不同binding direction复现；不能写成跨新
+partition、训练seed、corruption库、severity、数据集或真实场景泛化。该GO也不覆盖上节原
+Stage-2的冻结整体NO-GO。
+
 ---
 
 ## 9. PEW+BER 在 native-CE FedDF-fidelity 上的跨底座结果
@@ -706,6 +728,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | BER是否压缩类别—伪环境依赖 | strict-fit TV | 0.487505→0.199744，-59.03% | PASS |
 | 压缩是否传递到真实family | oracle reporting-only TV | 0.634914→0.433513，4/4下降 | PASS |
 | PEW+BER能否抑制AsymHFL中的CLE | matched Stage-2 | DSA降低65.52% | mitigation GO |
+| 结论是否依赖唯一binding map | cross-binding-map map1 | DSA降低56.46%，4/4客户端同向 | replication GO |
 | PEW+BER能否跨第二底座抑制CLE | native-CE FedDF | DSA降低78.82% | cross-base mitigation GO |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
 | 环境对应是否重要 | Oracle operator vs random | DSA差0.052112 | GO |
@@ -725,9 +748,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 3. **机制贡献**：通过matched HFL-vs-Local factorial发现shortcut主要local-first，通信只在
    pooled平均上增加较小附加效应。
 4. **干预与边界贡献**：给出taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
-   两个底座上分别降低DSA 65.52%和78.82%；Oracle/random消融证明真实环境对应重要、粗family
-   足够；有效分布定理与CPU审计进一步说明BER如何压缩CLE的统计来源，同时揭示PEW误差上界
-   可能平凡、shortcut抑制与任务效用可能解耦。
+   两个底座上分别降低DSA 65.52%和78.82%，并在新binding map上再次降低56.46%；
+   Oracle/random消融证明真实环境对应重要、粗family足够；有效分布定理与CPU审计进一步说明
+   BER如何压缩CLE的统计来源，同时揭示PEW误差上界可能平凡、shortcut抑制与任务效用可能解耦。
 
 不建议把贡献写成“提出一个全新的PEW网络”或“提出普适无损HFL插件”。更稳妥的总定位是：
 
@@ -777,8 +800,10 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 1. 纯PEW+BER正式证据目前主要是固定CLE-v2 scenario、training seed 0；历史三seed正结果包含
    CDep，不能冒充纯PEW+BER-only多seed。
-2. 新class-operator binding map的数据、冻结PEW复用和双mapping端到端smoke已经完成；当前只
-   证明协议可执行，尚无benchmark/Formal科学结果，不能宣称跨CLE场景复现。
+2. 新class-operator binding map的map1 Formal已经完成：Base DSA `0.113761`，PEW+BER DSA
+   `0.049531`，下降`0.064230`（56.46%），CI95 `[0.063105,0.065328]`，4/4客户端同向，
+   I0/L0/C1/C2全部通过。可宣称跨binding-map复现，但不能扩写成跨partition、训练seed、
+   corruption库、数据集或真实场景泛化；map2尚未授权。
 3. 架构与客户端数据划分绑定，不能把client2现象单独归因于ShuffleNet容量。
 4. FedDF两臂低于预注册20%学习下限；可作为支持性跨底座机制证据，但主表定位需谨慎。
 5. 应审计主表是否还缺标准ERM/Local/RAHFL/FedDF等必要对照；不要为了“工作量”添加不能回答
@@ -788,8 +813,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 7. novelty仍需要最新文献检索，尤其是federated spurious correlation、group reweighting、
    pseudo-group discovery、corruption robustness与model-heterogeneous FL。
 
-下一步先运行cross-binding-map benchmark检查成本与平台产物；benchmark通过后，是否授权Formal
-仍需用户明确决定。不得把追加实验用于事后翻转已经冻结的NO-GO门槛。
+下一步应先把cross-map1 Formal加入主表、机制图和初稿，再审计投稿前剩余证据缺口。不得把追加
+实验用于事后翻转已经冻结的NO-GO门槛；map2不是自动续跑项。
 
 ---
 
@@ -868,6 +893,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | Base | DSA Base | DSA +PEW/BER | Relative reduction | Utility delta | Gate interpretation |
 |---|---:|---:|---:|---|---|
 | AsymHFL | 0.119644 | 0.041252 | 65.52% | Avg +1.7323; Worst -0.3760 | mitigation GO; uniform utility未建立 |
+| AsymHFL / new binding map | 0.113761 | 0.049531 | 56.46% | Avg +0.7040; Worst +1.0760 | cross-map I0/L0/C1/C2全部PASS |
 | FedDF-fidelity | 0.136989 | 0.029012 | 78.82% | grid -0.04; last-5 Avg -0.6660 | mitigation GO; overall frozen NO-GO |
 
 ### 表3：环境粒度消融

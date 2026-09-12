@@ -1,10 +1,9 @@
 # CLE-HFL v2 Cross-Binding-Map 复现实验
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
-状态：S0协议冻结、S1数据生成与PEW复用完成、S2本地smoke完成。2026-09-12用户明确选择
-跳过OpenI benchmark并授权只运行map1 Formal；map2 Formal尚未授权。代码已push，正式输入包已
-上传OpenI。当前仍无cross-map科学结果。
+状态：map1 Formal已完成且I0/L0/C1/C2全部通过，正式判定`GO_PEW_BER_CROSS_MAP1`。map2/all
+仍未授权，不自动续跑。
 
 ## 实验问题
 
@@ -93,6 +92,32 @@ benchmark: explicitly skipped by user
 同协议旧Stage-2两臂Formal实测训练加分析为`8116.51 s`，即约`2.25 V100 GPU-hours`。新map1
 预计约`2.3--3.0 V100 GPU-hours`；这是参考估算而非新入口benchmark实测。若map1任务失败，先
 诊断失败，不得自动创建map2或重跑Formal。
+
+## map1 Formal结果
+
+```text
+pooled DSA: base 0.113761 -> plugin 0.049531
+reduction: 0.064230 (56.46%)
+source-bootstrap CI95: [0.063105, 0.065328]
+client reductions: [0.064195, 0.047682, 0.085614, 0.059428]
+base shuffled-binding null p95: 0.020252, p=0.000999
+operator-grid pooled: 20.9450% -> 21.4583%
+last-5 delta: Avg +0.7040, Worst +1.0760, WCCA +0.3500, CFG -9.8550
+I0/L0/C1/C2: PASS/PASS/PASS/PASS
+verdict: GO_PEW_BER_CROSS_MAP1
+```
+
+输入审计PASS，48条local trace完全匹配；预测缓存的DSA、bootstrap、null与accuracy已在本地独立
+复算并与平台JSON完全一致。总耗时`8311.44 s`（2.31 V100小时）。结果包4,457,718 bytes，
+SHA256为`8DA64B4E6669CE7534ADEA023E54EFAEB51353073EE85261E0F1768F2BD688E1`。完整报告：
+
+```text
+deliverables/cle_v2_cross_map1_formal_20260912/RESULT_SUMMARY_ZH.md
+```
+
+允许结论：原map中的shortcut形成和PEW+BER缓解在一张新的binding direction上复现。禁止把它
+扩写成跨partition、训练seed、corruption库、severity、数据集或真实场景泛化；source-bootstrap
+也不覆盖训练seed或scenario-level不确定性。原Stage-2冻结整体NO-GO仍然有效。
 
 ## 当前唯一有效入口与数据包
 

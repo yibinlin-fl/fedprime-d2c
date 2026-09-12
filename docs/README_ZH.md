@@ -573,17 +573,20 @@ deliverables/ber_mechanism_theory_20260911/                   JSON与中文结�
 31.72%，4/4客户端一致。但BER加权后的PEW误差使条件上界仍为平凡1.0，不能写成无条件去相关
 保证或替代训练后paired DSA。该结果不授权新方法、Safety-BER或额外Formal。
 
-当前DSA识别理论v2与cross-binding-map S2入口：
+当前DSA识别理论v2与cross-binding-map Formal结果：
 
 ```text
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md   识别定理、假设、统计推断与限制
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md       五项缓存/受控构造验证，全部PASS
-docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md     S0--S2完成，等待OpenI benchmark
+docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md     map1 Formal四门全过，跨binding-map复现GO
 scripts/openi_cle_v2_cross_scenario_entry.py                         当前唯一cross-map OpenI入口
+deliverables/cle_v2_cross_map1_formal_20260912/                      正式结果与独立复算报告
 ```
 
 新协议只改变binding map，固定partition、训练seed、初始权重、评价grid和冻结PEW；只比较
-`AsymHFL base`与`base+PEW/BER`，CDep禁用。当前smoke和输入审计通过但无科学结果。旧
+`AsymHFL base`与`base+PEW/BER`，CDep禁用。map1 Formal中DSA由`0.113761`降至`0.049531`，
+下降`0.064230`（56.46%），CI95为`[0.063105,0.065328]`且4/4客户端同向；I0/L0/C1/C2全部
+通过。该结果只支持跨binding-map复现，不覆盖新partition、训练seed或真实场景。map2未授权。旧
 `scripts/openi_cle_cross_scenario_40round_entry.py`同时更换partition、重训PEW并包含CDep，已被
 本问题替代，禁止混用。
 

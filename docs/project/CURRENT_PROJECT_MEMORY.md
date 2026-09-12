@@ -4366,3 +4366,31 @@ deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HAND
 实测。任务失败时只诊断，不自动重跑或启动map2。随后代码推送至`origin/main`，正式输入包通过
 本机已保存OpenI凭据上传至`chujiu/CLE_v2_CrossBindingMaps_Seed0_PEW_20260911`；CLI返回
 `100% / 1.3 GiB / 2.5 MiB/s / 00:09:36`。Token未写入命令输出、仓库或提交历史。
+
+## Cross-Binding-Map map1 Formal - 2026-09-12
+
+用户授权的map1 Formal完成。协议只改变客户端特定class-operator binding map；partition seed0、
+evaluation seed、training seed0、初始权重、公共数据、评价grid和冻结PEW checkpoint保持不变。
+纯两臂为`h9_b=AugMix/JSD/DCL+strict AsymHFL-val`与`h9_p=h9_b+PEW/BER`，CDep禁用。
+输入审计、配置合同、48条paired local traces、预测合法性及本地缓存独立复算全部通过。
+
+```text
+Base DSA: 0.113761
+PEW+BER DSA: 0.049531
+reduction: 0.064230 (56.46%), CI95 [0.063105, 0.065328]
+client reductions: [0.064195, 0.047682, 0.085614, 0.059428]
+base shuffled null p95: 0.020252, p=0.000999
+operator-grid pooled: 20.9450% -> 21.4583%
+last-5 delta: Avg +0.7040, Worst +1.0760, WCCA +0.3500, CFG -9.8550
+gates: I0 PASS, L0 PASS, C1 PASS, C2 PASS
+verdict: GO_PEW_BER_CROSS_MAP1
+```
+
+该结果使原固定map中的shortcut形成与PEW+BER缓解获得跨binding-map复现：两张map的Base DSA
+分别为`0.119644/0.113761`，插件绝对降低`0.078392/0.064230`，且每张map均4/4客户端同向。
+允许主张不依赖唯一一张偶然mapping；禁止外推到新partition、训练seed、corruption库、severity、
+数据集或真实场景。原Stage-2整体NO-GO与FedDF NO-GO仍保留。map2/all仍未授权。
+
+总耗时`8311.44 s`（约2.31 V100小时）。结果包4,457,718 bytes，SHA256
+`8DA64B4E6669CE7534ADEA023E54EFAEB51353073EE85261E0F1768F2BD688E1`。报告位于
+`deliverables/cle_v2_cross_map1_formal_20260912/RESULT_SUMMARY_ZH.md`。

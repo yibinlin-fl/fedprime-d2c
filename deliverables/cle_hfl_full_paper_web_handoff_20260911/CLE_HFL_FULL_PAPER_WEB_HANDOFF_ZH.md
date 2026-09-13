@@ -744,6 +744,62 @@ CVaR的DSA并明显更高的任务效用。
 
 ---
 
+## 10.2 Proxy non-identifiability：补齐BER到真实CLE行为的理论桥
+
+BER直接控制的是伪环境`Z=E_hat`下的类别内支持结构，而论文目标是潜在真实corruption环境`E`
+及最终模型行为。仅从`P(Y,Z)`不能无条件推出`P(Y,E)`：对相同的可观测`P(Y,Z)`，可以构造
+两个潜在世界，一个令`E`与`Y`独立，另一个令`E=g(Y)`。后者的真实依赖TV为：
+
+\[
+\mathcal D(Y,E)=1-\sum_eP(E=e)^2,
+\]
+
+而二者所有proxy-only观测完全相同。因此不存在只依赖`P(Y,Z)`的无条件非平凡真实环境证书。
+现有条件桥仍然成立：
+
+\[
+\mathcal D_Q(Y,E)
+\le \mathcal D_Q(Y,Z)+2P_Q(Z\ne E),
+\]
+
+但当前BER有效分布PEW误差使其截断为平凡的1.0；WEC-BER又已正式否定简单稳定误差通道假设。
+这不是需要隐藏的失败，而是说明必须保留target-aligned行为评价。
+
+冻结缓存与Formal数值验证全部通过：
+
+```text
+same observed P(Y,Z):                  true
+latent world A/B true TV:              0.000000 / 0.800000
+identical-view JSD / cached DSA:        0 / 0.119644
+CVRS-vs-JSD proxy / DSA change:        -0.088854 / +0.013000
+N0/N1/N2/N3/N4:                        all PASS
+```
+
+由此得到论文协议中的必要性推论：若方法只优化不读取真实binding的proxy目标，则proxy下降不能
+证明CLE directional harm下降；提出CLE缓解主张必须额外报告读取冻结evaluation binding、基于
+同源跨operator响应的target-aligned estimand。本文采用paired DSA，但不声称DSA是所有shortcut
+问题唯一合法指标。
+
+完整理论链为：
+
+```text
+BER压缩伪环境支持
+-> 有PEW误差条件时可传递到真实环境
+-> 无识别条件时proxy-only原则上不可识别
+-> paired DSA直接验证真实binding-directed行为
+-> 多组Formal检验实际缓解
+```
+
+完整证明与图：
+
+```text
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/RESULT_SUMMARY_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEORY.png
+```
+
+---
+
 ## 11. 统一证据表
 
 | 论文问题 | 实验/理论对象 | 结果 | 当前结论 |
@@ -767,6 +823,7 @@ CVaR的DSA并明显更高的任务效用。
 | BER是否只是标准GroupDRO | map2相同PEW分组Formal | BER DSA低0.136834、grid高2.9550pp | 机制对照GO |
 | 四臂结论能否在筛选未见map复现 | held-out map2，40轮 | I0/S0/P1--P5全部通过 | GO |
 | BER能否对抗taxonomy-free CVaR | map2 40轮Formal | pooled DSA低0.011240、grid高3.2867pp | 本协议GO；非所有客户端DSA支配 |
+| proxy下降能否证明真实CLE下降 | 不可识别定理、Stage-1缓存、CVRS Formal | 同观测TV可为0/0.8；CVRS proxy降而DSA升 | 不能；DSA是本文必要评价终点 |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
 | 环境对应是否重要 | Oracle operator vs random | DSA差0.052112 | GO |
 | 是否需要operator级PEW | Oracle family vs operator | 仅差0.001449 | NO-GO |
@@ -781,7 +838,8 @@ CVaR的DSA并明显更高的任务效用。
    class-corruption directional bindings。
 2. **诊断贡献**：提出paired counterfactual operator grid与DSA，直接识别预测概率是否沿训练
    binding方向移动；给出paired cancellation识别定理、零基准、混合线性、binding specificity、
-   source-level推断和JSD不充分性反例。
+   source-level推断和JSD不充分性反例；进一步证明proxy-only不可识别性，由此说明target-aligned
+   DSA在本文证据协议中为何是必要而非可选。
 3. **机制贡献**：通过matched HFL-vs-Local factorial发现shortcut主要local-first，通信只在
    pooled平均上增加较小附加效应。
 4. **干预与边界贡献**：给出由CLE支持结构导出的taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
@@ -935,6 +993,8 @@ deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MAIN_TABLE.csv
 deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.png
 deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.pdf
 deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAIN.svg
+deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEORY.png
+deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEORY.pdf
 ```
 
 ### 表1：CLE机制与local-first归因
@@ -1040,8 +1100,8 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；尤其判断是否必须补
    新CLE mapping、纯PEW+BER多seed或更标准的基线。
 4. 设计一套不把FedDF写成失败、也不把它写成无损成功的结果叙事。
-5. 检查DSA识别定理、五个性质、BER有效分布/失衡压缩定理、PEW误差条件边界和JSD反例是否
-   还存在逻辑缺口；不得把当前平凡PEW误差界写成强保证。
+5. 检查DSA识别定理、五个性质、BER有效分布/失衡压缩定理、proxy不可识别定理、PEW误差
+   条件边界和JSD/CVRS反例是否还存在逻辑缺口；不得把当前平凡PEW误差界写成强保证。
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
@@ -1059,6 +1119,7 @@ deliverables/cle_v2_mechanism_stage1_20260910/RESULT_SUMMARY_ZH.md
 docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
 docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md

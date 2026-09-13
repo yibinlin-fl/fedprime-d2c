@@ -146,7 +146,28 @@ client2的伪环境TV下降`73.35%`、真实family TV下降`38.66%`，所以它�
 训练后的shortcut缓解仍由已有AsymHFL与FedDF Formal DSA结果支撑。该审计补的是“为什么BER
 有理由起作用”，不是第三份训练效果证据。
 
-## 8. 证据位置
+## 8. 2026-09-13代理不可识别性闭环
+
+上述PEW误差界之所以不能通过更强措辞消除，是因为存在原则性的不可识别性：在不约束
+`P(E_hat|E,Y)`时，相同的可观测`P(Y,E_hat)`可以对应`Y`与真实`E`独立或高度绑定的两个潜在
+世界。因此不存在只依赖伪环境分布的无条件非平凡真实环境证书。
+
+这将BER理论的边界统一为：
+
+```text
+无条件：BER压缩有效分布中的P(Y,E_hat)
+有条件：若目标分布PEW误差受控，则由TV传递界约束P(Y,E)
+无该条件：proxy-only不可识别，必须以paired DSA直接验真
+```
+
+构造性定理、证明、CVRS反例和缓存验证见：
+
+```text
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/RESULT_SUMMARY_ZH.md
+```
+
+## 9. 证据位置
 
 ```text
 fedprime/engine/ber_theory.py

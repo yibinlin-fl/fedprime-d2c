@@ -567,6 +567,9 @@ BER有效分布机制理论与CPU审计：
 docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md  定理、假设、PEW误差边界与审计结论
 scripts/audit_ber_mechanism.py                                strict-fit CPU零训练审计
 deliverables/ber_mechanism_theory_20260911/                   JSON与中文结果摘要
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md  proxy不可识别定理、CVRS反例与DSA必要性
+scripts/validate_proxy_nonidentifiability.py                  冻结缓存CPU验证与理论图生成
+deliverables/cle_proxy_nonidentifiability_20260913/            JSON、结果摘要及PNG/PDF理论图
 ```
 
 当前实现被证明精确等价于`Q_gamma`有效分布；伪环境TV依赖下降59.03%，真实family TV离线下降

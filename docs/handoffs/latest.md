@@ -2,6 +2,28 @@
 
 Updated: 2026-09-13
 
+## Proxy不可识别性与DSA必要性理论闭环完成
+
+BER到真实CLE行为之间的唯一显式理论缺口已按诚实边界闭合。新定理证明：在不约束
+`P(E_hat|E,Y)`时，相同`P(Y,E_hat)`可对应真实`Y-E`依赖为0或强依赖的两个潜在世界；因此
+proxy下降不能无条件证明真实CLE下降。现有PEW误差TV界被保留为条件性桥，WEC-BER的误差
+通道迁移失败被纳入前提边界，禁止用混淆矩阵反演换名复活。
+
+CPU零训练验证读取冻结Stage-1概率缓存和CVRS Formal `result.json`：同一可观测proxy构造的
+两个潜在世界真实TV为`0/0.8`；identical-view `JSD=0`但cached `DSA=0.119644`；MobileNetV2
+上CVRS相对Public-JSD的proxy下降`0.088854`，真实DSA反升`0.013000`。N0--N4全部PASS，
+10项聚焦测试全部通过。由此得到限定推论：在本文CLE证据协议中，方法若只优化proxy目标，必须
+额外报告paired DSA或等价target-aligned estimand；不声称DSA是所有shortcut问题唯一指标。
+
+```text
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+scripts/validate_proxy_nonidentifiability.py
+deliverables/cle_proxy_nonidentifiability_20260913/RESULT_SUMMARY_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEORY.png
+```
+
+这完成的是理论逻辑闭环，不是BER无条件性能定理，也不替代training-seed和第二数据集证据。
+
 ## Held-out map2 40轮四臂Formal全部冻结门槛通过
 
 原binding map五臂12轮screen已晋级`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，JTT不进入

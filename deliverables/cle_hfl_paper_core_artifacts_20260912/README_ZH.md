@@ -39,4 +39,6 @@ accuracy `23.7433`和last-10 Avg `24.4518`。主表、四臂CSV与机制图已�
 ```text
 docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEORY.png
 ```

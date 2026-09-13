@@ -4598,3 +4598,46 @@ bytes 9321199
 SHA256 A935094BA8C6DB37E20E0EB22AA54A5F2628C0B0A7B9039E6F7A783E78F7BA4C
 deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
 ```
+
+## Proxy Non-Identifiability and DSA Necessity Closure - 2026-09-13
+
+为闭合“BER平衡PEW伪环境，凭什么能讨论真实CLE”的逻辑缺口，新增构造性不可识别定理。对
+相同可观测`P(Y,Z)`，构造世界A中`Y independent of E`，以及世界B中`E=g(Y)`；二者观察量
+相同，但真实依赖TV分别为0与`1-sum_e P(E=e)^2`。因此proxy-only统计不能在没有PEW误差、
+稳定通道或独立环境审计等附加条件时证明真实环境依赖很小。
+
+现有条件界被保留：
+
+\[
+TV(Q_{Y,E},Q_YQ_E)
+\le TV(Q_{Y,Ehat},Q_YQ_{Ehat})+2P_Q(Ehat\ne E).
+\]
+
+当前BER加权PEW误差使该界截断为1.0；WEC-BER Phase-0已经正式否定简单稳定可逆误差通道，
+因此不得用矩阵反演、调阈值或换名复活。理论闭合方式是证明无条件传递原则上不可识别，并将
+paired DSA确立为本文CLE主张所需的target-aligned评价终点。
+
+CPU验证只读取冻结缓存，不训练、不推理、不使用GPU：
+
+```text
+observable TV(Y,Z):                         0.000000
+latent world A/B true TV(Y,E):              0.000000 / 0.800000
+identical-view JSD / Stage-1 cached DSA:     0 / 0.119644
+CVRS-vs-JSD proxy / DSA change:             -0.088854 / +0.013000
+N0/N1/N2/N3/N4:                             all PASS
+focused tests:                              10 passed
+```
+
+输入SHA256：Stage-1 cache
+`FE8212372A53BC01E5BB51B9B10249ABDF33D2E215170FB021D80EEA930F11C3`；CVRS result
+`D57AE3E3B08BD93D1C8D93F05F5B228B91E7384B8C5B4E2B6C58D0C593737D3A`。
+
+```text
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+scripts/validate_proxy_nonidentifiability.py
+tests/test_proxy_nonidentifiability.py
+deliverables/cle_proxy_nonidentifiability_20260913/
+```
+
+该结果完成理论逻辑闭环，但不构成BER无条件性能保证，也不替代新training seed、partition、
+第二数据集或真实域实验。

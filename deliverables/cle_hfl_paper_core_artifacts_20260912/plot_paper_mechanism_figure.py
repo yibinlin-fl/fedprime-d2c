@@ -73,7 +73,7 @@ boxes = [
     ),
     (
         "2  Paired diagnosis",
-        "Same source across operators\nDSA measures a binding-\ndirected probability shift",
+        "Proxy-only is non-identifiable\nSame source across operators\nDSA tests binding-directed shift",
         "#E8F0FE",
     ),
     (

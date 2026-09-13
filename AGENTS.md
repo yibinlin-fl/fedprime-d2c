@@ -40,6 +40,7 @@ stable navigation pointers:
 ```text
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
 docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 deliverables/cle_hfl_paper_core_artifacts_20260912/README_ZH.md

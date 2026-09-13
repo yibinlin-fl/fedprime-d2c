@@ -1,0 +1,43 @@
+{
+  "protocol": "cle_proxy_nonidentifiability_cache_validation_v1",
+  "training_or_inference_run": false,
+  "inputs": {
+    "stage1_predictions": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\outputs\\openi_downloads\\cle_v2_mechanism_stage1_seed0_benchmark\\extracted_formal\\analysis\\STAGE1_PREDICTIONS.npz",
+    "stage1_sha256": "FE8212372A53BC01E5BB51B9B10249ABDF33D2E215170FB021D80EEA930F11C3",
+    "cvrs_result": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\outputs\\openi_downloads\\cle_cvrs_m0_seed0_formal\\extracted\\outputs\\cle_cvrs_m0_seed0_formal\\result.json",
+    "cvrs_result_sha256": "D57AE3E3B08BD93D1C8D93F05F5B228B91E7384B8C5B4E2B6C58D0C593737D3A"
+  },
+  "constructive_nonidentifiability": {
+    "source_count": 1000,
+    "classes": 10,
+    "proxy_environments": 5,
+    "same_observable_y_proxy": true,
+    "observable_proxy_dependence_tv": 0.0,
+    "world_A_true_dependence_tv": 0.0,
+    "world_B_true_dependence_tv": 0.8000000000000003,
+    "world_B_closed_form": "1-sum_e P(E=e)^2",
+    "interpretation": "The same observed (Y, proxy) distribution admits a latent world with Y independent of E and another with E deterministically bound to Y."
+  },
+  "cached_jsd_counterexample": {
+    "identical_view_jsd": 0.0,
+    "h9_operator_dsa": 0.11964422414530747
+  },
+  "cvrs_formal_counterexample": {
+    "architecture": "Mobilenetv2",
+    "public_jsd_proxy": 0.2440612192843244,
+    "cvrs_proxy": 0.1552075147755685,
+    "cvrs_minus_jsd_proxy": -0.0888537045087559,
+    "public_jsd_dsa": 0.11609811632863462,
+    "cvrs_dsa": 0.12909814358900062,
+    "cvrs_minus_jsd_dsa": 0.013000027260366004
+  },
+  "gates": {
+    "N0_balanced_observable_proxy": true,
+    "N1_same_observable_world_with_zero_true_dependence": true,
+    "N2_same_observable_world_with_strong_true_dependence": true,
+    "N3_cached_zero_jsd_positive_dsa": true,
+    "N4_cvrs_proxy_down_true_dsa_up": true
+  },
+  "all_gates_pass": true,
+  "claim_boundary": "Proxy-only improvement cannot certify true CLE routing without an additional identifiability condition. DSA is the target-aligned validation endpoint in this protocol, not a universally unique shortcut metric."
+}

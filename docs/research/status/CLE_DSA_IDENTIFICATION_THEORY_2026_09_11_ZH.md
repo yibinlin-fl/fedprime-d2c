@@ -1,7 +1,5 @@
 # CLE-HFL 中 DSA 的识别对象、成立假设与统计推断
-DSA 降低必然带来准确率提升；PEW+BER是taxonomy-free或通用无损插件。
-DSA 降低必然带来准确率提升；PEW+BER是taxonomy-free或通用无损插件。
-Updated: 2026-09-11
+Updated: 2026-09-13
 
 ## 1. 结论先行
 
@@ -140,8 +138,22 @@ bootstrap；该区间只覆盖评价 source 抽样不确定性，不覆盖训练
 不可写：DSA 是所有 spurious correlation 的充分统计量；一次固定 mapping 能证明跨场景泛化；
 DSA 降低必然带来准确率提升；PEW+BER是taxonomy-free或通用无损插件。
 
-当前 cross-binding-map S2 已完成数据、冻结PEW复用、端到端smoke与输入打包，但尚无benchmark
-或Formal科学结果。下一步benchmark只检验平台链路和成本；只有预注册Formal才可检验新mapping
-上 directional shortcut 是否再次形成、PEW+BER 是否再次降低DSA。
-上 directional shortcut 是否再次形成、PEW+BER 是否再次降低DSA。
-上 directional shortcut 是否再次形成、PEW+BER 是否再次降低DSA。
+## 9. 2026-09-13：代理不可识别性为何使DSA成为必要终点
+
+最新构造性定理证明：不约束代理误差通道时，相同`P(Y,E_hat)`可对应真实环境独立或高度绑定
+的潜在世界。因此PEW accuracy、Public-JSD、CVRS routing proxy或任何只读取代理环境的统计量
+下降，都不能单独证明真实CLE directional harm下降。CVRS MobileNetV2 Formal进一步给出
+`proxy -0.088854`但`DSA +0.013000`的经验反例。
+
+所以本文所称“DSA必要”是证据协议意义上的：提出CLE缓解主张时，必须额外报告一个直接读取
+冻结binding和同源跨operator响应的target-aligned estimand；本文采用paired DSA，并不声称它是
+所有shortcut问题唯一可能的指标。完整证明与缓存复算见：
+
+```text
+docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+deliverables/cle_proxy_nonidentifiability_20260913/RESULT_SUMMARY_ZH.md
+```
+
+Cross-binding map1 Formal与held-out map2 40轮四臂Formal均已完成。前者DSA降低56.46%；后者
+PEW+BER DSA为`0.077741`，低于CVaR的`0.088982`和matched PEW+GroupDRO的`0.214575`，全部
+冻结门槛通过。它们增强外部复现与机制对照，但不覆盖新partition、training seed或第二数据集。

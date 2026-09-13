@@ -4641,3 +4641,36 @@ deliverables/cle_proxy_nonidentifiability_20260913/
 
 该结果完成理论逻辑闭环，但不构成BER无条件性能保证，也不替代新training seed、partition、
 第二数据集或真实域实验。
+
+## Paper Structure, Reviewer-Risk Matrix, and Venue Watch - 2026-09-13
+
+网页端初稿交接文档已升级为可投稿结构：总叙事固定为`CLE-HFL定义 -> paired DSA识别 ->
+local-first归因 -> PEW+BER干预 -> 受控复现 -> 边界`，并详细给出Introduction五段职责、四组
+Related Work、RQ1--RQ6实验组织、主表/机制图位置及limitations。论文不以“新插件结构”作为
+唯一贡献，而以新具体问题、target-aligned诊断与理论、机制归因和结构匹配干预构成闭环。
+
+新增模拟审稿矩阵，覆盖创新性、合成场景、taxonomy依赖、DSA是否定制/泄露、local-first为何
+仍属FL、PEW误差平凡界、GroupDRO/CVaR/JTT/EIIL、单数据集/seed、FedDF效用边界、逐客户端
+CVaR反例、source-bootstrap解释、架构混杂、未知/复合corruption及超参数选择。冻结回答必须
+保留所有NO-GO边界；最重要投稿实验缺口仍是纯BER matched training-seed稳定性和第二private
+数据集，更现实或unseen/compound corruption stress test为高价值补充。
+
+截至2026-09-13，已核实的候选regular/full paper截止日期：
+
+```text
+AISTATS 2027（CCF-C）: abstract 2026-09-29 AoE; full 2026-10-06 AoE
+IJCNN 2027（CCF-C）:   regular paper 2027-01-31
+ECAI 2027（CCF-B）:    full paper 2027-04-14
+```
+
+AISTATS记为激进冲刺候选而非已确定目标；理论/统计/可信ML适配，但当前只剩约三周。设置
+2026-09-20内部决策点：若届时没有完整英文主文骨架、经核验相关工作矩阵和冻结补实验清单，
+停止赶AISTATS，转向IJCNN或ECAI。CCF-A通常可称该领域顶会层级，但CCF等级不是国际影响力或
+录用难度的绝对刻度；AISTATS虽为CCF-C，仍按严格主流ML会议标准准备。
+
+ECML-PKDD/ICDM/ICME 2027（CCF-B）及PAKDD 2027（CCF-C）保持观察；截至本日期，其2027
+regular/full paper截止日期尚未全部由官方公布，不记录第三方预测日期。
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```

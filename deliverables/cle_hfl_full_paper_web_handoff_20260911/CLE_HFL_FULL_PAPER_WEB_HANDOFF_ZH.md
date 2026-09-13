@@ -921,20 +921,56 @@ deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEO
 
 ## 15. 建议论文结构
 
+### 15.0 总叙事与暂定标题
+
+论文不能以“提出一个PEW+BER插件”为唯一叙事。建议总链条固定为：
+
+```text
+定义CLE-HFL
+-> paired反事实识别
+-> DSA量化与不可识别性边界
+-> HFL-vs-Local local-first归因
+-> PEW+BER本地干预
+-> 跨binding map / 训练随机性 / 通信底座验证
+-> taxonomy-assisted与外部有效性边界
+```
+
+暂定英文标题：
+
+```text
+When Corruption Becomes a Label: Diagnosing and Mitigating
+Class-Corruption Shortcuts in Model-Heterogeneous Federated Learning
+```
+
+摘要按五句话组织：HFL背景；CLE问题；现有accuracy/JSD/proxy诊断缺口；paired DSA、local-first
+和PEW+BER；受控验证结果与taxonomy-assisted边界。
+
 ### 1. Introduction
 
-- corruption在CLE-HFL中从nuisance变成class shortcut；
-- 普通accuracy/JSD不能识别binding-specific harm；
-- 概述DSA、local-first结论、PEW+BER及边界；
-- 列出四项贡献。
+按五段写作：
+
+1. 模型异构FL通过公共数据、logit或蒸馏协作，但现有重点主要是精度、通信和普通鲁棒性。
+2. 用“cat+blur / dog+noise”的客户端定向绑定例子说明corruption从nuisance变成class code；
+   CLE-HFL关注的是沿binding方向的概率迁移，不只是损坏后的accuracy下降。
+3. 说明普通accuracy、同一样本增强一致性的JSD以及generic public proxy为何不能识别
+   binding-specific harm，引出paired operator counterfactual与DSA。
+4. 概述strong CLE证据、local-first归因、PEW+BER本地干预和跨map/底座验证。
+5. 冻结四项贡献：具体CLE-HFL问题；paired DSA及识别/不可识别理论；local-first机制结论；
+   由支持结构理论导出的taxonomy-assisted PEW+BER及受控验证。不得声称首次研究联邦虚假相关。
 
 ### 2. Related Work
 
-- heterogeneous federated learning；
-- corruption robustness与AugMix/JSD；
-- spurious correlation、group robustness和pseudo-group discovery；
-- paired counterfactual diagnostics；
-- 明确本文不是首次提出group reweighting。
+分为四组，并让每组最后一句明确本文缺口：
+
+1. `Model-Heterogeneous Federated Learning`：FedMD/FedDF、异构公共知识蒸馏、RAHFL-like
+   鲁棒底座；缺少客户端特定class-corruption directional shortcut诊断。
+2. `Corruption Robustness and Consistency Learning`：corruption benchmark、AugMix、JSD、
+   DCL；强调“同operator附近一致”不推出“跨operator不利用binding”。
+3. `Spurious Correlation and Group Robustness`：IRM、GroupDRO、JTT、CVaR-DRO、EIIL和
+   pseudo-group discovery；承认伪组与重加权不是首次提出，再区分CLE结构、模型异构和DSA。
+4. `Federated Spurious Learning and Counterfactual Diagnosis`：FedCD、个性化联邦不变学习、
+   联邦域泛化及其他领域counterfactual shortcut evaluation；安全表述是本文把这些思想特化为
+   HFL中的class-corruption定向绑定，并给出paired协议、local-first归因和可行动干预。
 
 ### 3. Problem Setup: CLE-HFL
 
@@ -961,20 +997,28 @@ deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEO
 
 ### 6. Experiments
 
-- CLE-v2协议和指标；
-- strong CLE机制表；
-- AsymHFL PEW+BER主结果；
-- FedDF跨底座结果；
-- Oracle family/operator/random粒度消融；
-- 诚实报告所有冻结gate和负结果。
+按研究问题而不是按运行时间组织：
+
+- RQ1：CLE directional shortcut是否存在？
+- RQ2：shortcut主要在本地优化还是通信阶段形成？
+- RQ3：PEW+BER能否在保留任务效用时降低DSA？
+- RQ4：收益是否只是困难样本重加权或标准group robustness？
+- RQ5：结论能否跨binding map、training seed和HFL底座复现？
+- RQ6：PEW taxonomy粒度、误差和未知/复合corruption带来什么边界？
+
+正文依次放strong CLE/local-first机制表、AsymHFL主结果、held-out map2四臂Formal、FedDF支持性
+跨底座结果和Oracle粒度消融。12轮screen只解释方法选择，不得作为最终主表证据。所有冻结gate
+和负结果必须保持原判定。
 
 ### 7. Discussion and Limitations
 
 - shortcut suppression与in-distribution utility的权衡；
-- taxonomy依赖；
-- 固定scenario/seed限制；
+- PEW依赖预定义corruption taxonomy，但训练不读取私有真实环境标签；
+- 固定scenario/seed限制，以及source-bootstrap不覆盖训练与数据集不确定性；
 - 架构与客户端数据混杂；
-- synthetic CLE到现实场景的外推边界。
+- synthetic CLE到现实场景的外推边界；
+- 未知、复合、连续和自然形成corruption尚未全面验证。任意开放世界corruption可作为未来工作，
+  但投稿前最好增加一个有界的unseen/compound stress test，避免外部有效性完全没有实验证据。
 
 ### 8. Conclusion
 
@@ -1091,7 +1135,54 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 
 ---
 
-## 18. 请网页端 GPT 完成的任务
+## 18. 模拟审稿攻击、当前回答与证据缺口
+
+| 可能攻击 | 当前最强且诚实的回答 | 投稿前还需什么 |
+|---|---|---|
+| PEW只是公共corruption分类器，BER只是重加权，创新不足 | 单个组件并非全新；贡献主体是CLE-HFL问题、paired DSA、local-first归因、proxy不可识别性和结构匹配干预的闭环 | 用相关工作矩阵逐项对比；不要把网络结构创新写成主贡献 |
+| 场景是人为设计的，现实中是否存在CLE未知 | 受控binding用于隔离“corruption被当作class code”的因果机制，对应设备、地域、采集管线与类别共现的现实风险 | 最好补第二数据集或更现实CLE；至少增加unseen/compound stress test |
+| PEW依赖人工taxonomy，不是开放世界方法 | 正确，本文是taxonomy-assisted而非taxonomy-free；公共程序化标签训练PEW，私有样本只用伪环境，不需要私有真实corruption标签 | 摘要、假设和limitations同时披露；加入CVaR/JTT/EIIL等无taxonomy概念对照讨论 |
+| DSA使用真实binding，是否发生测试标签泄露 | binding/operator metadata只在训练封存后构造paired evaluation和报告DSA；fit/audit/test角色隔离，训练与路由不读取最终test标签 | 在算法框图和伪代码中明确seal point，并报告输入审计 |
+| DSA是不是为本方法量身定做 | DSA在PEW+BER之前定义；gamma0近零、shuffled-binding null、强度恢复和source级推断均独立验证；CVRS反例说明generic proxy不能替代target harm | 报告accuracy、Worst/WCCA/CFG和DSA，不用DSA单指标挑赢家 |
+| JSD已经实现corruption invariance，为什么还需要BER | JSD约束同一operator附近的增强视图；它不平衡数据集级类别×环境支持，也不推出跨operator的binding方向不变 | 保留`JSD=0 but DSA>0`构造与缓存反例 |
+| shortcut主要local-first，那为什么还要研究联邦学习 | local-first确定了干预位置；HFL系统仍决定异构客户端、共享知识、公共通信和最终模型行为，通信有较小附加效应但不是主因 | 保留HFL-vs-Local factorial，不宣称通信是主要放大器 |
+| PEW误差高，BER理论上界为1，理论没有作用 | 这恰好说明proxy-only传递原则在无附加假设时不可识别；BER理论解释伪环境有效分布上的支持压缩，真实CLE改善必须由paired DSA验证 | 不伪造PEW必准假设；明确“机制解释+target-aligned验证”而非无条件性能定理 |
+| 为什么不用GroupDRO、CVaR、JTT或EIIL | 已有matched四臂/五臂比较；held-out map2中BER同时优于ERM、matched PEW+GroupDRO和pooled CVaR，说明不是单纯困难样本或worst-group追逐 | EIIL若未实现只能列相关工作，不能声称实证击败；保留公平协议说明 |
+| 结果只有一个数据集、固定partition或少量seed | 当前有跨binding map、历史固定场景多训练seed、两种通信底座，但最强map2四臂仍是seed0且单数据集 | 纯BER matched training-seed稳定性与第二private数据集是最重要实验缺口 |
+| FedDF上效用下降，不能叫通用无损插件 | 同意；FedDF只支持shortcut抑制机制迁移，不支持architecture-uniform utility或无损插件 | 主表显式保留FedDF NO-GO边界；方法定位改为local intervention而非universal no-harm plug-in |
+| CVaR在部分客户端DSA更低，BER并非全面最好 | held-out map2 pooled BER DSA更低且4/4客户端grid accuracy最高，但c0/c1 DSA由CVaR更低；结论是整体shortcut-utility优势而非逐客户端支配 | 报告逐客户端结果和Pareto图，禁止只报pooled赢家 |
+| source-bootstrap区间很窄，是否夸大稳定性 | 区间只覆盖固定checkpoint下evaluation-source抽样，不覆盖训练随机性、partition、场景与数据集不确定性 | 多训练seed必须单独报告；不能把source CI叫作全流程置信区间 |
+| 架构差异是否导致某个小模型受损 | 架构与非IID客户端身份固定绑定，当前不能把client2现象因果归于模型容量 | 删除“小模型受害”因果措辞；若要回答必须做架构×数据交叉实验 |
+| 未知、复合corruption一来方法可能失效 | 当前声明范围是closed-set taxonomy-assisted CLE；开放世界泛化不是已证明结论 | 一个有界stress test适合正文/附录；任意开放世界泛化保留为limitations |
+| 超参数、cap和alpha是否事后调到最好 | 当前Formal使用冻结配置和预注册门槛，不能因结果继续调参翻案 | 补有限灵敏度或明确选择来源；保持held-out map2未用于screen的事实 |
+
+对AI辅助审稿的额外防线：逐项核对定理前提、表格数字、verdict、数据角色、引用和图中主张，确保
+摘要中的每个数字能回溯到正式结果。AISTATS 2027的会议侧AI审查只检查事实正确性，不替代人类
+审稿；其公开政策还明确禁止人类reviewer用LLM生成评审。因此不要把“AI审稿”理解成可以只为机器
+优化文字，真正目标是让事实、公式、配置和结论完全一致。
+
+---
+
+## 19. 当前投稿候选与时间边界（截至2026-09-13）
+
+```text
+AISTATS 2027（CCF-C）: abstract 2026-09-29 AoE; full 2026-10-06 AoE
+IJCNN 2027（CCF-C）:   regular paper 2027-01-31
+ECAI 2027（CCF-B）:    full paper 2027-04-14
+```
+
+AISTATS是激进冲刺候选，不是已经确定的投稿目标：理论、统计与可信ML主题适配，但只剩约三周，
+当前纯BER多seed和第二数据集仍是证据缺口。若在2026-09-20前不能形成完整英文主文骨架、经核验的
+相关工作表和冻结补实验清单，应停止赶AISTATS，转向IJCNN或ECAI。CCF-A通常可口语称为该领域
+顶会层级，但CCF类别不是国际影响力或录用难度的绝对刻度；AISTATS虽为CCF-C，仍是严格的主流
+ML会议，不能按“普通C会”估计难度。
+
+ECML-PKDD 2027（CCF-B）、ICDM 2027（CCF-B）、ICME 2027（CCF-B）和PAKDD 2027（CCF-C）
+应持续关注；截至本日期，其2027 regular/full paper官方截止日期尚未全部公布，禁止写入猜测日期。
+
+---
+
+## 20. 请网页端 GPT 完成的任务
 
 请把自己当作严格的CCF-B类会议审稿人、联邦学习研究者和论文合作者，基于本文件完成以下任务：
 
@@ -1112,7 +1203,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 
 ---
 
-## 19. 仓库内证据来源
+## 21. 仓库内证据来源
 
 ```text
 deliverables/cle_v2_mechanism_stage1_20260910/RESULT_SUMMARY_ZH.md

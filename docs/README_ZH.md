@@ -1,6 +1,18 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-10
+Updated: 2026-09-13
+
+## 当前论文写作与投稿导航
+
+网页端初稿交接文档已包含完整论文结构、Introduction/Related Work写作职责、RQ1--RQ6实验组织、
+主表/机制图、limitations、模拟审稿攻击与回答，以及截至2026-09-13核实的AISTATS/IJCNN/ECAI
+投稿时间。投稿观察记录也已追加到长期记忆；最新状态仍以当前handoff为准。
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+docs/project/CURRENT_PROJECT_MEMORY.md
+docs/handoffs/latest.md
+```
 
 ## 当前 CLE-v2 × PEW+BER Stage-2结果与归因
 

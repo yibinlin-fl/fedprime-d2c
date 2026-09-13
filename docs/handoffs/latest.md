@@ -2,6 +2,23 @@
 
 Updated: 2026-09-13
 
+## 论文结构、模拟审稿与投稿观察表已更新
+
+网页端初稿交接文档已扩展为完整投稿结构：Introduction五段、Related Work四组、RQ1--RQ6
+实验组织、主表/机制图、limitations及16类模拟审稿攻击—回答—待补证据。论文主叙事固定为
+`CLE-HFL问题 + paired DSA理论 + local-first归因 + PEW/BER结构性干预 + 受控复现与边界`，
+不以“新插件结构”作为唯一创新。
+
+截至2026-09-13已核实候选：AISTATS 2027（CCF-C）摘要`2026-09-29`、全文`2026-10-06`
+AoE；IJCNN 2027（CCF-C）regular paper `2027-01-31`；ECAI 2027（CCF-B）full paper
+`2027-04-14`。AISTATS仅为激进冲刺候选，设置`2026-09-20`内部决策点；若完整英文骨架、
+相关工作核验和补实验清单尚未就绪，停止赶该截稿。当前没有因此授权新的付费或Formal实验。
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+docs/project/CURRENT_PROJECT_MEMORY.md
+```
+
 ## Proxy不可识别性与DSA必要性理论闭环完成
 
 BER到真实CLE行为之间的唯一显式理论缺口已按诚实边界闭合。新定理证明：在不约束

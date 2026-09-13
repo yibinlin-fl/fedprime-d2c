@@ -4539,3 +4539,62 @@ docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
 scripts/openi_cle_v2_spurious_final_entry.py
 ```
+
+## Held-Out Map2 Four-Arm 40-Round Formal GO - 2026-09-13
+
+筛选未见的`cle_hfl_v2_cross_map2_seed0_split0`完成40轮四臂Formal。固定partition seed0、
+evaluation seed 20260909、training seed0、initial states、strict AsymHFL-val、single-view输入、
+16 local batches/client/round；AugMix/JSD/DCL/CDep全部禁用。输入审计PASS；四臂各40行metrics、
+各160条local traces且完全匹配；1000 sources x 15 operators完整预测缓存独立复算DSA误差为0。
+
+```text
+arm             DSA       grid acc  last10 Avg  last10 Worst  WCCA   CFG
+ERM             0.260308  20.3067   19.8578     16.3007       0.000  32.8325
+CVaR-DRO        0.088982  20.4567   18.6700     14.0380       0.125  27.7775
+PEW+GroupDRO    0.214575  20.7883   20.9562     17.8140       0.025  31.5275
+PEW+BER         0.077741  23.7433   24.4518     20.4727       2.650  22.8025
+```
+
+5000次source-paired bootstrap：
+
+```text
+DSA(ERM)-DSA(BER)            0.182567; CI95 [0.180596,0.184407]
+DSA(GroupDRO)-DSA(BER)       0.136834; CI95 [0.134952,0.138706]
+DSA(BER)-DSA(CVaR)          -0.011240; CI95 [-0.012355,-0.010092]
+```
+
+ERM DSA `0.260308`高于shuffled-binding null p95 `0.047625`，`p=0.000999`。BER相对ERM降低
+DSA `0.182567`（70.13%），并提高grid `3.4367pp`、last-10 Avg `4.5940pp`、Worst
+`4.1720pp`、WCCA `2.6500pp`，CFG降低`10.0300pp`。BER相对CVaR的pooled DSA低
+`0.011240`（相对CVaR低12.63%），grid高`3.2867pp`，last-10 Avg/Worst高
+`5.7818/6.4347pp`。BER相对matched PEW+GroupDRO的DSA低`0.136834`，grid高`2.9550pp`。
+
+逐客户端DSA：
+
+```text
+ERM             [0.193430,0.265025,0.285601,0.297177]
+CVaR-DRO        [0.034684,0.064317,0.148525,0.108401]
+PEW+GroupDRO    [0.159634,0.169908,0.265515,0.263244]
+PEW+BER         [0.050544,0.075389,0.145263,0.039770]
+```
+
+BER相对ERM和GroupDRO在4/4客户端降低DSA；相对CVaR只在c2/c3更低，c0/c1分别高
+`0.015860/0.011072`，因此不能宣称architecture-uniform DSA dominance。BER的grid accuracy
+在4/4客户端均高于ERM/CVaR/GroupDRO。I0/S0/P1/P2/P3/P4/P5全部PASS，正式verdict为
+`GO_FOUR_ARM_HELDOUT_MAP2`。
+
+这项结果使BER从“经验上有效的伪组加权”升级为具有直接机制对照支持的方法：共享相同PEW分组
+的GroupDRO明显较弱，说明PEW side information本身不能解释收益；按类别内部环境支持量平衡的
+BER目标与CLE形成结构更匹配。论文可定位为“由CLE支持结构理论导出的类别内环境平衡方法”。
+这仍不是无条件性能定理：固定training seed/partition/数据集，source-bootstrap不覆盖训练、场景
+与数据集不确定性；且BER没有在所有客户端DSA上支配CVaR。
+
+运行与产物：
+
+```text
+training 9344.884s; analysis 93.444s; total 9438.328s (2h37m18s)
+outputs/openi_downloads/cle_v2_spurious_final_map2_formal/cle_v2_spurious_final_map2_formal_outputs.tar.gz
+bytes 9321199
+SHA256 A935094BA8C6DB37E20E0EB22AA54A5F2628C0B0A7B9039E6F7A783E78F7BA4C
+deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
+```

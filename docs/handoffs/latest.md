@@ -2,22 +2,35 @@
 
 Updated: 2026-09-13
 
-## Held-out map2 40轮四臂Formal已在OpenI启动
+## Held-out map2 40轮四臂Formal全部冻结门槛通过
 
 原binding map五臂12轮screen已晋级`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，JTT不进入
 最终表。新协议在未参与筛选的binding map2上固定40轮、16 local batches、train seed0和strict
 AsymHFL-val，禁用AugMix/JSD/DCL/CDep。结果前已冻结shortcut、BER-vs-ERM、BER-vs-
 GroupDRO及BER-vs-CVaR准确率—DSA折中门槛。8项单元测试和真实CUDA一轮四臂训练/配对
-分析通过；smoke无科学意义。提交`5ea5861`已push至`origin/main`。用户于2026-09-13已在OpenI
-启动Formal，结果待回收；预计1xV100约2.7--3.2小时，不含排队/安装。结果返回前不得预写结论。
+分析通过；smoke无科学意义。提交`5ea5861`已push至`origin/main`。OpenI Formal完成，输入审计、
+四臂各40行metrics、各160条完全匹配local traces及独立预测缓存复算全部通过：
+
+```text
+                 DSA       grid acc   last10 Avg  last10 Worst  WCCA   CFG
+ERM              0.260308  20.3067    19.8578     16.3007       0.000  32.8325
+CVaR-DRO         0.088982  20.4567    18.6700     14.0380       0.125  27.7775
+PEW+GroupDRO     0.214575  20.7883    20.9562     17.8140       0.025  31.5275
+PEW+BER          0.077741  23.7433    24.4518     20.4727       2.650  22.8025
+```
+
+`ERM-BER=0.182567` CI95 `[0.180596,0.184407]`；`GroupDRO-BER=0.136834` CI95
+`[0.134952,0.138706]`；`BER-CVaR=-0.011240` CI95 `[-0.012355,-0.010092]`。I0/S0/P1--P5
+全部PASS，verdict=`GO_FOUR_ARM_HELDOUT_MAP2`。BER相对ERM/GroupDRO在4/4客户端降低DSA；
+相对CVaR只支持pooled优势，c0/c1 DSA仍由CVaR更低。BER grid accuracy在4/4客户端均最高。
 
 ```text
 scripts/openi_cle_v2_spurious_final_entry.py
 docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
 ```
 
-下载目标为`cle_v2_spurious_final_map2_formal_outputs.tar.gz`和`RUN_TIMING.json`，应放入
-`outputs/openi_downloads/cle_v2_spurious_final_map2_formal/`后再分析。
+正式报告：`deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md`。下一步不扩展
+新方法；先精读最近shortcut文献，再冻结纯BER training-seed稳定性和第二数据集的最小协议。
 
 ## 最终基线审计与spurious-correlation五臂Screen已完成
 
@@ -86,7 +99,8 @@ verdict: GO_PEW_BER_CROSS_MAP1
 
 该结果允许主张shortcut形成与PEW+BER缓解不依赖唯一一张偶然binding map；它不覆盖新partition、
 训练seed、corruption库、severity、数据集或真实场景。原Stage-2整体NO-GO仍保留，不得被本次
-报告性效用指标覆盖。map2/all仍未授权，不自动续跑。总耗时`8311.44 s`（约2.31 V100小时）。
+报告性效用指标覆盖。旧两臂cross-runner的map2/all未单独续跑；map2后来按本handoff首节的
+四臂40轮held-out协议正式运行并GO。总耗时`8311.44 s`（约2.31 V100小时）。
 原始包4,457,718 bytes，SHA256
 `8DA64B4E6669CE7534ADEA023E54EFAEB51353073EE85261E0F1768F2BD688E1`。
 
@@ -113,8 +127,8 @@ deliverables/cle_hfl_paper_core_artifacts_20260912/
   README_ZH.md
 ```
 
-网页端初稿交接文档已写入这些稳定路径及cross-map结果；下一步优先做投稿证据缺口审计，不自动
-启动map2或新的方法扩展。
+网页端初稿交接文档与主表/机制图已加入40轮held-out map2四臂Formal；下一步优先做最新文献与
+投稿证据缺口审计，不自动启动新方法扩展。
 
 ## BER机制理论与CPU Kill Test完成：失衡压缩PASS，PEW误差界仍平凡
 

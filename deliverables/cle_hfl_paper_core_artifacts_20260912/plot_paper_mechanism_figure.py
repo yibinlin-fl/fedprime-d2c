@@ -20,7 +20,7 @@ def box(ax, x, y, w, h, title, body, color):
         linewidth=1.5,
     )
     ax.add_patch(patch)
-    ax.text(x + w / 2, y + h * 0.70, title, ha="center", va="center", fontsize=12, fontweight="bold")
+    ax.text(x + w / 2, y + h * 0.70, title, ha="center", va="center", fontsize=11.5, fontweight="bold")
     ax.text(x + w / 2, y + h * 0.34, body, ha="center", va="center", fontsize=9.3, linespacing=1.32)
 
 
@@ -88,7 +88,7 @@ boxes = [
     ),
     (
         "5  Controlled validation",
-        "New binding map\nSecond communication base\nTwo replication axes",
+        "Held-out binding maps\nSecond communication base\nStrong generic baselines",
         "#EEE9FA",
     ),
 ]
@@ -101,36 +101,43 @@ ax.text(0.025, 0.545, "Formal evidence", fontsize=14, fontweight="bold", color="
 
 cards = [
     (
-        0.025,
+        0.02,
         0.30,
         "Shortcut formation",
         "No-CLE DSA approx 0\nStrong-CLE DSA = 0.1196\nShuffled null p = 0.000999",
         "#F7FAFC",
     ),
     (
-        0.275,
+        0.215,
         0.30,
         "Original AsymHFL map",
         "0.1196 -> 0.0413\nDSA reduction: 65.52%\n4/4 clients improve",
         "#EDF7F1",
     ),
     (
-        0.525,
+        0.410,
         0.30,
         "New binding map1",
         "0.1138 -> 0.0495\nDSA reduction: 56.46%\nI0/L0/C1/C2: all PASS",
         "#EDF7F1",
     ),
     (
-        0.775,
+        0.605,
         0.30,
         "FedDF-fidelity",
         "0.1370 -> 0.0290\nDSA reduction: 78.82%\nUtility trade-off remains",
         "#FFF6E5",
     ),
+    (
+        0.800,
+        0.30,
+        "Held-out map2, 40 rounds",
+        "BER DSA = 0.0777\nCVaR DSA = 0.0890\nAll frozen gates: PASS",
+        "#E7F5EA",
+    ),
 ]
 for x, y0, title, body, color in cards:
-    box(ax, x, y0, 0.20, 0.18, title, body, color)
+    box(ax, x, y0, 0.18, 0.18, title, body, color)
 
 boundary = FancyBboxPatch(
     (0.025, 0.075),
@@ -146,8 +153,8 @@ ax.text(0.05, 0.174, "Claim boundary", fontsize=13, fontweight="bold", color="#1
 ax.text(
     0.05,
     0.122,
-    "Supported: directional shortcut formation, local-first attribution, and mitigation replicated across binding maps and communication bases.\n"
-    "Not supported: taxonomy-free discovery, universally lossless utility, or generalization across partitions, seeds, datasets, and real domains.",
+    "Supported: directional shortcut formation, local-first attribution, and mechanism-matched BER outperforming ERM, CVaR, and matched GroupDRO on held-out map2.\n"
+    "Not supported: taxonomy-free discovery, universal per-architecture dominance, or generalization across partitions, seeds, datasets, and real domains.",
     fontsize=11.2,
     va="center",
     color="#374151",

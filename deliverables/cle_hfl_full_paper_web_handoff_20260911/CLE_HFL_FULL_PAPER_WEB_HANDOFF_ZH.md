@@ -711,6 +711,39 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 
 ---
 
+## 10.1 Held-out Map2 40轮四臂Formal：机制对照闭环
+
+五臂12轮screen完成选择后，map2保持未见，并在结果前冻结40轮四臂协议：ERM、CVaR-DRO、
+PEW+GroupDRO、PEW+BER。四臂共享partition、training/evaluation seed、initial states、private
+batch轨迹和strict AsymHFL-val通信；single-view训练，AugMix/JSD/DCL/CDep全部禁用。
+
+| Arm | DSA↓ | Operator-grid Acc↑ | Last-10 Avg↑ | Last-10 Worst↑ | WCCA↑ | CFG↓ |
+|---|---:|---:|---:|---:|---:|---:|
+| ERM | 0.260308 | 20.3067 | 19.8578 | 16.3007 | 0.000 | 32.8325 |
+| CVaR-DRO | 0.088982 | 20.4567 | 18.6700 | 14.0380 | 0.125 | 27.7775 |
+| PEW+GroupDRO | 0.214575 | 20.7883 | 20.9562 | 17.8140 | 0.025 | 31.5275 |
+| **PEW+BER** | **0.077741** | **23.7433** | **24.4518** | **20.4727** | **2.650** | **22.8025** |
+
+5000次source-paired bootstrap：
+
+```text
+ERM-BER DSA:       0.182567; CI95 [0.180596,0.184407]
+GroupDRO-BER DSA:  0.136834; CI95 [0.134952,0.138706]
+BER-CVaR DSA:     -0.011240; CI95 [-0.012355,-0.010092]
+```
+
+全部冻结门槛I0/S0/P1--P5通过，verdict=`GO_FOUR_ARM_HELDOUT_MAP2`。这使方法归因明显增强：
+共享相同PEW分组的GroupDRO仍有高DSA，因而收益不能仅归于PEW side information；BER针对
+类别内部环境支持失衡的目标与CLE结构更匹配。在本次held-out pooled Formal中BER也取得低于
+CVaR的DSA并明显更高的任务效用。
+
+逐客户端上，BER相对ERM和GroupDRO均4/4降低DSA；相对CVaR只在c2/c3更低，c0/c1仍由CVaR
+更低。BER的operator-grid accuracy在4/4客户端均高于其余三臂。因此允许写pooled胜出，禁止写
+所有架构无条件支配。screen中CVaR曾比BER低`0.002909`，而map2 Formal中BER低`0.011240`；
+总体应写“BER的DSA抑制与CVaR具有竞争力，并在held-out Formal中胜出，同时持续取得更好效用”。
+
+---
+
 ## 11. 统一证据表
 
 | 论文问题 | 实验/理论对象 | 结果 | 当前结论 |
@@ -731,8 +764,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 | 结论是否依赖唯一binding map | cross-binding-map map1 | DSA降低56.46%，4/4客户端同向 | replication GO |
 | PEW+BER能否跨第二底座抑制CLE | native-CE FedDF | DSA降低78.82% | cross-base mitigation GO |
 | 通用困难样本方法能否解释PEW+BER收益 | 12轮五臂selection screen | CVaR DSA最低；BER效用与综合折中更强 | 仅筛选，不是Formal |
-| BER是否只是标准GroupDRO | 相同PEW分组的GroupDRO对照 | BER DSA低0.139850、grid高1.5817pp | screen支持，待map2 Formal |
-| 四臂结论能否在筛选未见map复现 | held-out map2，40轮 | OpenI运行中 | 结果待回收，禁止预写结论 |
+| BER是否只是标准GroupDRO | map2相同PEW分组Formal | BER DSA低0.136834、grid高2.9550pp | 机制对照GO |
+| 四臂结论能否在筛选未见map复现 | held-out map2，40轮 | I0/S0/P1--P5全部通过 | GO |
+| BER能否对抗taxonomy-free CVaR | map2 40轮Formal | pooled DSA低0.011240、grid高3.2867pp | 本协议GO；非所有客户端DSA支配 |
 | 效用是否跨客户端/底座一致 | Worst/Avg/逐客户端 | mixed | 未建立 |
 | 环境对应是否重要 | Oracle operator vs random | DSA差0.052112 | GO |
 | 是否需要operator级PEW | Oracle family vs operator | 仅差0.001449 | NO-GO |
@@ -750,10 +784,12 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
    source-level推断和JSD不充分性反例。
 3. **机制贡献**：通过matched HFL-vs-Local factorial发现shortcut主要local-first，通信只在
    pooled平均上增加较小附加效应。
-4. **干预与边界贡献**：给出taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
+4. **干预与边界贡献**：给出由CLE支持结构导出的taxonomy-assisted PEW+BER本地缓解，在AsymHFL和FedDF-fidelity
    两个底座上分别降低DSA 65.52%和78.82%，并在新binding map上再次降低56.46%；
    Oracle/random消融证明真实环境对应重要、粗family足够；有效分布定理与CPU审计进一步说明
-   BER如何压缩CLE的统计来源，同时揭示PEW误差上界可能平凡、shortcut抑制与任务效用可能解耦。
+   BER如何压缩CLE的统计来源；held-out map2 40轮Formal进一步证明BER不仅优于ERM，而且优于
+   相同PEW分组的GroupDRO，并在pooled DSA与效用上同时优于CVaR。仍保留PEW误差上界可能平凡、
+   shortcut抑制与任务效用可能解耦的边界。
 
 不建议把贡献写成“提出一个全新的PEW网络”或“提出普适无损HFL插件”。更稳妥的总定位是：
 
@@ -780,6 +816,8 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 - 真实环境对应优于随机分组，family细化到operator收益很小；
 - BER在固定strict-fit分布上使伪环境TV依赖下降59.03%、真实family TV下降31.72%；
 - taxonomy-assisted方法有效，但效用收益依赖底座/客户端。
+- held-out map2 40轮Formal中，BER pooled DSA低于CVaR `0.011240`，且operator-grid accuracy
+  高`3.2867pp`；相同PEW信息下BER DSA低于GroupDRO `0.136834`。
 
 ### 13.2 禁止
 
@@ -807,7 +845,7 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
    `0.049531`，下降`0.064230`（56.46%），CI95 `[0.063105,0.065328]`，4/4客户端同向，
    I0/L0/C1/C2全部通过。可宣称跨binding-map复现，但不能扩写成跨partition、训练seed、
    corruption库、数据集或真实场景泛化。用于四臂最终比较的map2在五臂筛选时保持未见；其40轮
-   `ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER` Formal已于2026-09-13启动，结果尚未返回。
+   Formal已完成并全部门槛通过，但仍只有training seed0和固定partition。
 3. 架构与客户端数据划分绑定，不能把client2现象单独归因于ShuffleNet容量。
 4. FedDF两臂低于预注册20%学习下限；可作为支持性跨底座机制证据，但主表定位需谨慎。
 5. 应审计主表是否还缺标准ERM/Local/RAHFL/FedDF等必要对照；不要为了“工作量”添加不能回答
@@ -817,8 +855,9 @@ family `0.017232`。这提示learned PEW与Oracle仍有差距，但不是本次�
 7. novelty仍需要最新文献检索，尤其是federated spurious correlation、group reweighting、
    pseudo-group discovery、corruption robustness与model-heterogeneous FL。
 
-下一步只回收并按预注册门槛分析held-out map2四臂Formal。不得根据运行中间值调参，不得把12轮
-screen写进最终主表冒充Formal，也不得用追加实验事后翻转已经冻结的旧NO-GO门槛。
+下一步先完成FedPIN、FedCD、EIIL、GroupDRO、JTT/CVaR等最近邻文献精读，再冻结投稿前最小实验
+缺口：纯BER training-seed稳定性与第二private数据集/更现实CLE。不得根据本结果调参，也不得用
+追加实验事后翻转已经冻结的旧NO-GO门槛。
 
 ---
 
@@ -917,10 +956,8 @@ deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_MECHANISM_EVIDENCE_CHAI
 
 ### 表4：通用spurious基线与BER机制对照
 
-12轮screen暂时只作为附录式选择依据：CVaR DSA `0.034980`，PEW+BER DSA `0.037889`；后者
-operator-grid accuracy高`4.5350pp`、last-5 Avg高`2.7377pp`。最终表必须等待held-out map2
-40轮四臂结果，只保留`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，并同时报告DSA和utility，禁止
-用单一指标宣称全面胜出。
+12轮screen只作为附录式选择依据。最终表使用held-out map2 40轮Formal，只保留
+`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，并同时报告DSA和utility。
 
 screen完整数字仅用于设计/审计最终表：
 
@@ -936,6 +973,13 @@ screen完整数字仅用于设计/审计最终表：
 `GroupDRO-BER=[0.137643,0.142017]`、`BER-CVaR=[0.002163,0.003661]`。最后一项为正，故
 screen中CVaR的DSA确实略低；但BER相对CVaR的grid/Avg/Worst分别高`4.5350/2.7377/3.4707pp`。
 这些区间不覆盖training seed或场景不确定性，不能将screen升级为最终论文证据。
+
+最终Formal表见本文件第10.1节及：
+
+```text
+deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_FOUR_ARM_FINAL_TABLE.csv
+```
 
 ### 图1：场景与完整证据链
 
@@ -992,7 +1036,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 请把自己当作严格的CCF-B类会议审稿人、联邦学习研究者和论文合作者，基于本文件完成以下任务：
 
 1. 判断上述四项贡献是否足以形成一篇CCF-B会议论文，并指出最可能的三条拒稿理由。
-2. 在不夸大PEW结构创新、不隐瞒Formal NO-GO的前提下，给出最强且诚实的论文定位。
+2. 在不夸大PEW结构创新、不隐瞒FedDF效用边界和当前单partition/单训练seed限制的前提下，给出最强且诚实的论文定位。
 3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；尤其判断是否必须补
    新CLE mapping、纯PEW+BER多seed或更标准的基线。
 4. 设计一套不把FedDF写成失败、也不把它写成无损成功的结果叙事。
@@ -1001,7 +1045,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
-8. 在完成上述审查且map2结果回填后，生成一份英文论文初稿；所有无法由本文件支持的句子标注`[待证据]`，
+8. map2结果已经回填；在完成上述审查后生成一份英文论文初稿。所有无法由本文件支持的句子标注`[待证据]`，
    所有需引用的事实标注`[待引用]`，不得自行编造实验数字或SOTA结论。
 
 建议网页端GPT首先回答“还缺哪些必做实验”，确认后再写全文，以免初稿建立在过度主张上。
@@ -1019,6 +1063,7 @@ docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_FINAL_MAP2_ZH.md
+deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md
 docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md

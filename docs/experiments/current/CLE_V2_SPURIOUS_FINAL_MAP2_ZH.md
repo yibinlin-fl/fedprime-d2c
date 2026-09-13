@@ -49,11 +49,39 @@ P5  BER operator-grid accuracy与last-10 Avg均不低于ERM
 Formal仅在全部门槛通过时记为`GO_FOUR_ARM_HELDOUT_MAP2`。各项结果仍须逐项报告，不能用综合
 verdict掩盖CVaR可能取得最低DSA或某个效用门失败。
 
+## Formal结果：全部冻结门槛通过
+
+```text
+verdict: GO_FOUR_ARM_HELDOUT_MAP2
+I0/S0/P1/P2/P3/P4/P5: all PASS
+```
+
+| Arm | DSA↓ | Grid Acc↑ | Last-10 Avg↑ | Last-10 Worst↑ | WCCA↑ | CFG↓ |
+|---|---:|---:|---:|---:|---:|---:|
+| ERM | 0.260308 | 20.3067 | 19.8578 | 16.3007 | 0.000 | 32.8325 |
+| CVaR-DRO | 0.088982 | 20.4567 | 18.6700 | 14.0380 | 0.125 | 27.7775 |
+| PEW+GroupDRO | 0.214575 | 20.7883 | 20.9562 | 17.8140 | 0.025 | 31.5275 |
+| **PEW+BER** | **0.077741** | **23.7433** | **24.4518** | **20.4727** | **2.650** | **22.8025** |
+
+```text
+ERM-BER DSA:       0.182567 [0.180596,0.184407]
+GroupDRO-BER DSA:  0.136834 [0.134952,0.138706]
+BER-CVaR DSA:     -0.011240 [-0.012355,-0.010092]
+```
+
+BER相对ERM与GroupDRO在4/4客户端均降低DSA；相对CVaR的pooled DSA更低，但c0/c1的CVaR
+DSA更低，故不作architecture-uniform DSA dominance主张。BER的grid accuracy在4/4客户端上
+均高于其余三臂。完整报告：
+
+```text
+deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
+```
+
 ## 已完成验证
 
 2026-09-13，本地真实CUDA一轮四臂训练、checkpoint、20-source DSA、三组source-bootstrap、
 shuffled-binding null和4/4 paired batch trace均执行成功；8项相关单元测试通过。smoke数值不构成
-科学证据。
+科学证据。随后OpenI 40轮Formal、完整预测缓存分析与独立复算均通过。
 
 ## OpenI启动
 
@@ -74,9 +102,7 @@ bytes  1385820059
 SHA256 BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5
 ```
 
-五臂12轮V100 screen总计约60.8分钟。按训练量线性估计，四臂40轮约2.64 GPU小时；计入完整
-评价、打包和波动预计2.7--3.2小时，不含排队和依赖安装。已有screen已提供成本基准，因此无需
-额外付费benchmark。
+Formal实测训练`9344.884s`、分析`93.444s`、总计`9438.328s`（约2小时37分18秒）。
 
 下载：
 

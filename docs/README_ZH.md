@@ -587,7 +587,8 @@ deliverables/cle_hfl_paper_core_artifacts_20260912/                  论文主�
 新协议只改变binding map，固定partition、训练seed、初始权重、评价grid和冻结PEW；只比较
 `AsymHFL base`与`base+PEW/BER`，CDep禁用。map1 Formal中DSA由`0.113761`降至`0.049531`，
 下降`0.064230`（56.46%），CI95为`[0.063105,0.065328]`且4/4客户端同向；I0/L0/C1/C2全部
-通过。该结果只支持跨binding-map复现，不覆盖新partition、训练seed或真实场景。map2未授权。旧
+通过。该结果只支持跨binding-map复现，不覆盖新partition、训练seed或真实场景。旧两臂runner
+未单独续跑map2；map2随后用于筛选未见的40轮四臂Formal，并取得`GO_FOUR_ARM_HELDOUT_MAP2`。旧
 `scripts/openi_cle_cross_scenario_40round_entry.py`同时更换partition、重训PEW并包含CDep，已被
 本问题替代，禁止混用。
 
@@ -648,7 +649,10 @@ scripts/openi_cle_v2_spurious_baselines_entry.py
 九种HFL基线已按历史适配、fidelity修复和最终重跑需要分类。新增ERM/JTT/CVaR-DRO/
 PEW+GroupDRO/PEW+BER五臂对照；JTT和CVaR不读取PEW，PEW+GroupDRO不调用BER。全新目录的
 真实CUDA smoke、fit-only JTT错误集合、checkpoint、20-source DSA分析和五臂配对轨迹全部
-通过。OpenI benchmark及12轮screen均未授权；12轮只筛选，不是最终论文证据。
+通过。12轮screen完成后晋级ERM/CVaR/PEW+GroupDRO/PEW+BER；筛选未见map2上的40轮四臂
+Formal全部冻结门槛通过。PEW+BER DSA `0.077741`，低于CVaR `0.088982`和GroupDRO
+`0.214575`，并取得最高grid/Avg/Worst与最低CFG。完整正式报告：
+`deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md`。
 
 最新 CVRS Method Phase 已完成并归档：
 

@@ -4,6 +4,15 @@ Updated: 2026-09-14
 
 ## 当前论文写作与投稿导航
 
+网页端英文长初稿V0.1已收到，并完成仓库事实审计版V0.2。V0.2明确冻结operator-level
+CLE-v2/DSA与family-level PEW/BER的粒度分工，移除把旧v1 family公式当当前正式定义的歧义，
+补入WCCA/CFG定义并重排RQ实验章节。下一步是逐篇引用核验与会议版压缩，不是开发operator PEW：
+
+```text
+deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
+deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
+```
+
 导师汇报与网页端英文初稿新增一份相关工作发表格局文档。它按正式主会/期刊、workshop和仅预印本
 区分发表状态，覆盖corruption robustness、模型异构HFL、group robustness/伪环境发现、联邦
 spurious learning与counterfactual shortcut诊断，并冻结本文可以和不可以使用的创新性表述：

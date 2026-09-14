@@ -1184,6 +1184,16 @@ ECML-PKDD 2027（CCF-B）、ICDM 2027（CCF-B）、ICME 2027（CCF-B）和PAKDD 
 
 ## 20. 请网页端 GPT 完成的任务
 
+最新英文长初稿已经完成仓库事实审计。后续网页端修改必须以V0.2为稿件底本，不再从V0.1重新生成：
+
+```text
+deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
+deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
+```
+
+其中已经冻结：CLE-v2和DSA为operator-level，PEW+BER为coarse family-level；Oracle operator
+只是不进入训练的边界消融，不是operator-level PEW候选。
+
 在开始英文初稿前，必须先读取并使用最新的相关工作发表格局：
 
 ```text

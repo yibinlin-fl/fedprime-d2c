@@ -1,6 +1,20 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-13
+Updated: 2026-09-14
+
+## 相关工作发表格局已形成导师与网页端双用途材料
+
+已核验并整理CLE-HFL最近邻工作的正式发表状态、时间线、研究重合和不可冒领边界。RAHFL明确为
+IEEE TPAMI 2025正式论文及ICCV 2023 AugHFL扩展；FedPIN为ICML 2024；个性化FL spurious
+features有NeurIPS 2021 workshop早期版和TMLR 2024正式版；FedCD截至本次只核验到arXiv 2024。
+文档同时正面纳入GroupDRO、GEORGE、EIIL、JTT和MIDL counterfactual诊断先例。安全定位仍是
+`具体CLE-HFL问题 + paired DSA理论 + local-first归因 + taxonomy-assisted PEW/BER + 受控边界`，
+禁止声称首次联邦spurious learning、首次伪环境发现或首次反事实shortcut评价。
+
+```text
+docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
 
 ## 论文结构、模拟审稿与投稿观察表已更新
 

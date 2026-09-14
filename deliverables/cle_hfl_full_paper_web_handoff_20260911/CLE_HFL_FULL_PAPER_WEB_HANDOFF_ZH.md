@@ -1184,6 +1184,16 @@ ECML-PKDD 2027（CCF-B）、ICDM 2027（CCF-B）、ICME 2027（CCF-B）和PAKDD 
 
 ## 20. 请网页端 GPT 完成的任务
 
+在开始英文初稿前，必须先读取并使用最新的相关工作发表格局：
+
+```text
+docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
+```
+
+该文档已经区分正式主会/期刊、workshop与仅预印本，并冻结与RAHFL、FedPIN、个性化FL
+spurious features、FedCD、EIIL、GroupDRO、JTT和counterfactual shortcut诊断的创新边界。
+若网页端检索得到更新的正式发表信息，应附官方来源并标明核验日期，不得静默改写本文贡献。
+
 请把自己当作严格的CCF-B类会议审稿人、联邦学习研究者和论文合作者，基于本文件完成以下任务：
 
 1. 判断上述四项贡献是否足以形成一篇CCF-B会议论文，并指出最可能的三条拒稿理由。
@@ -1211,6 +1221,7 @@ docs/experiments/current/CLE_DSA_THEORY_CACHE_VALIDATION_ZH.md
 docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md
 docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md
 docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md
+docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
 docs/experiments/current/CLE_V2_CROSS_SCENARIO_BINDING_MAP_ZH.md
 docs/experiments/current/CLE_V2_PEW_BER_STAGE2_OPENI_ZH.md
 docs/experiments/current/CLE_V2_SPURIOUS_BASELINE_SCREEN_ZH.md

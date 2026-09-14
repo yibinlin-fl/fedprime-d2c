@@ -1,8 +1,16 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-13
+Updated: 2026-09-14
 
 ## 当前论文写作与投稿导航
+
+导师汇报与网页端英文初稿新增一份相关工作发表格局文档。它按正式主会/期刊、workshop和仅预印本
+区分发表状态，覆盖corruption robustness、模型异构HFL、group robustness/伪环境发现、联邦
+spurious learning与counterfactual shortcut诊断，并冻结本文可以和不可以使用的创新性表述：
+
+```text
+docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
+```
 
 网页端初稿交接文档已包含完整论文结构、Introduction/Related Work写作职责、RQ1--RQ6实验组织、
 主表/机制图、limitations、模拟审稿攻击与回答，以及截至2026-09-13核实的AISTATS/IJCNN/ECAI

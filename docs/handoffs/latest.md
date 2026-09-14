@@ -2,17 +2,21 @@
 
 Updated: 2026-09-14
 
-## 英文长初稿V0.2完成事实审计
+## 英文长初稿V0.3完成引用审计
 
-网页端V0.1已纳入`deliverables/cle_hfl_paper_draft_v0_2_20260914/`并修订为V0.2。最终粒度冻结为：
-CLE-v2数据生成和DSA评价使用concrete operator；PEW+BER训练只使用coarse family伪环境；
-Oracle operator仅为不可部署边界消融，不是候选PEW。V0.2已用operator binding替换旧v1 family
-公式作为正式Problem Setup，补入WCCA/CFG定义、重排RQ4/RQ5顺序，并禁止跨不同Formal recipe
-直接比较绝对DSA。CDep仍未进入草稿，没有运行或授权新实验。
+网页端V0.1先修订为事实审计版V0.2，现已形成引用审计版V0.3。最终粒度继续冻结为：CLE-v2
+数据生成和DSA评价使用concrete operator；PEW+BER训练只使用coarse family伪环境；Oracle
+operator仅为不可部署边界消融，不是候选PEW。V0.3已将`[REF TO VERIFY]`清零，正文18个
+citation key均有对应BibTeX；独立审计记录正式发表、workshop、仅预印本和实现忠实度边界。
+FedCD仍只能写成arXiv 2024；FedDF-fidelity和CVaR-DRO均不得写成官方算法逐行复现。
+CDep仍未进入草稿，没有运行或授权新实验。
 
 ```text
 deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
 deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/references.bib
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CITATION_AUDIT_ZH.md
 ```
 
 ## 相关工作发表格局已形成导师与网页端双用途材料

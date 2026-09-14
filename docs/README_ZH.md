@@ -4,13 +4,17 @@ Updated: 2026-09-14
 
 ## 当前论文写作与投稿导航
 
-网页端英文长初稿V0.1已收到，并完成仓库事实审计版V0.2。V0.2明确冻结operator-level
-CLE-v2/DSA与family-level PEW/BER的粒度分工，移除把旧v1 family公式当当前正式定义的歧义，
-补入WCCA/CFG定义并重排RQ实验章节。下一步是逐篇引用核验与会议版压缩，不是开发operator PEW：
+网页端英文长初稿V0.1已收到；仓库事实审计版V0.2和引用审计版V0.3均已完成。V0.3保留
+operator-level CLE-v2/DSA与family-level PEW/BER的粒度分工，并将全部`[REF TO VERIFY]`
+替换为18条可追踪BibTeX记录。引用审计单独区分正式发表、workshop早期版本、仅预印本与
+项目matched baseline的实现忠实度。下一步是会议版压缩和待补证据规划，不是开发operator PEW：
 
 ```text
 deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
 deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/references.bib
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CITATION_AUDIT_ZH.md
 ```
 
 导师汇报与网页端英文初稿新增一份相关工作发表格局文档。它按正式主会/期刊、workshop和仅预印本

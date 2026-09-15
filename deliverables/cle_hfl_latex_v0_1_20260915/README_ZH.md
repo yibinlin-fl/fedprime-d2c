@@ -14,9 +14,11 @@ figures/fig2_dsa_proxy_boundary.pdf
 figures/fig2_dsa_proxy_boundary.svg
 qa/fig1_preview.png
 qa/fig2_preview.png
+CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf
 ```
 
-两张PDF为论文使用的矢量图；SVG用于后续人工编辑；PNG仅用于本地视觉审计。
+两张figure PDF为论文使用的矢量图；SVG用于后续人工编辑；PNG仅用于本地视觉审计。
+`CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf`是用户在Overleaf成功编译并回传的11页V0.1快照。
 
 ## 编译
 
@@ -40,7 +42,7 @@ latexmk -pdf main.tex
 - 这是内部会议稿，不是最终投稿版本；
 - 作者信息仍为`Anonymous Authors`；
 - `[EVIDENCE NEEDED]`仍然保留；
-- 当前环境没有LaTeX发行版，因此已完成静态语法、引用、环境配对和图形PDF视觉检查，但尚未在本机执行完整TeX编译；
+- 当前环境没有LaTeX发行版；V0.1已由用户在Overleaf成功编译，并完成11页逐页视觉检查；
 - 目标会议模板确定后，必须重新进行逐页PDF视觉检查。
 
 ## 可重复生成

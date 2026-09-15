@@ -1,8 +1,21 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-15
+Updated: 2026-09-16
 
 ## 当前论文写作与投稿导航
+
+LaTeX V0.1已在Overleaf成功编译为11页PDF并完成逐页视觉审计；原始V0.1源码和编译PDF均保留。
+网页端第一轮审稿意见已按“必须接受/可选/不接受”完成证据裁决，并生成不覆盖V0.1的LaTeX V0.2。
+V0.2落实seed-0限定、local-first措辞降级、CLE sampling law、pooled DSA公式、BER解释、图1弱化
+及Table 3/4排版修复；所有待补实验标记继续保留。当前source of truth晋级为V0.2：
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf
+deliverables/cle_hfl_latex_v0_2_20260916/main.tex
+deliverables/cle_hfl_latex_v0_2_20260916/WEB_REVIEW_RAW_ZH.md
+deliverables/cle_hfl_latex_v0_2_20260916/WEB_REVIEW_ADJUDICATION_ZH.md
+deliverables/CLE_HFL_LATEX_V0_2_OVERLEAF_20260916.zip
+```
 
 投稿版完整实验矩阵已整理为规划文档，区分已完成、必须补、强烈建议、条件性可选和明确不做；
 该文档不授权任何 OpenI 或 Formal 运行：

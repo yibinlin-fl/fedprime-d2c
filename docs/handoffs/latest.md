@@ -1,12 +1,33 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-15
+Updated: 2026-09-16
+
+## LaTeX V0.2已按网页端第一轮审稿完成证据受控修订
+
+用户已在Overleaf成功编译LaTeX V0.1，11页PDF逐页检查无裁切、重叠、黑块或缺失引用；视觉审计
+发现Table 3字体过小、Oracle Table 4漂移到References之后及占位caption。V0.1源码和编译PDF已
+归档保留。网页端第一轮审稿原文及裁决已归档；V0.2接受seed-0限定、local-first措辞降级、精确
+CLE sampling law、pooled DSA公式、estimand decomposition解释、BER直观解释、图1弱化及表格
+修复，拒绝提前指定第二数据集、删除待补标记或扩展新方法。当前source of truth为V0.2；仍需用户
+上传Overleaf编译后再进行逐页终检。没有启动任何训练实验。
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf
+deliverables/cle_hfl_latex_v0_2_20260916/main.tex
+deliverables/cle_hfl_latex_v0_2_20260916/WEB_REVIEW_ADJUDICATION_ZH.md
+deliverables/CLE_HFL_LATEX_V0_2_OVERLEAF_20260916.zip
+local_runs/paper_compiled_returns/v0_2/
+```
+
+V0.2 Overleaf包完整性：`28806` bytes，SHA256
+`F81084F4A3AAEFE274A9E26334B62DED47BF8791CAEFF9C9F0BD29FDD930DD5A`。包内仅含
+`main.tex`、`references.bib`、`README_ZH.md`及两张图的PDF/SVG，不含网页端原始审稿文本。
 
 ## 论文版本与源码职责已明确
 
 网页端英文V0.1、事实审计V0.2、引用审计V0.3、会议压缩V0.4均已独立保留；早期AAAI PDF也作为
-legacy快照归档。当前论文事实内容以V0.4为基线，当前可编译源码以仓库中的LaTeX V0.1
-`main.tex`为source of truth。Overleaf只用于编译与预览；若在Overleaf手工编辑，必须下载source
+legacy快照归档。当前论文事实内容以V0.4为基线，当前可编译源码已晋级为仓库中的LaTeX V0.2
+`main.tex`。Overleaf只用于编译与预览；若在Overleaf手工编辑，必须下载source
 ZIP交回仓库做diff和合并，禁止仓库与Overleaf同时修改形成双源。
 
 ```text
@@ -14,7 +35,8 @@ deliverables/cle_hfl_paper_draft_v0_1_20260914/CLE_HFL_PAPER_DRAFT_V0_1.md
 deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
 deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
 deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
-deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex       历史排版快照
+deliverables/cle_hfl_latex_v0_2_20260916/main.tex       当前source of truth
 ```
 
 ## 投稿版完整实验矩阵已整理

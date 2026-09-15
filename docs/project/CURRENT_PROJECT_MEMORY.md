@@ -4728,6 +4728,49 @@ scripts/render_cle_hfl_paper_figures.py
 当前Windows环境没有`pdflatex/xelatex/latexmk`，所以只完成静态LaTeX检查：无Markdown残留、
 非ASCII字符清零、花括号与begin/end环境数量匹配、18个引用全部解析。完整论文PDF需上传
 Overleaf或安装TeX Live后编译；目标会议确定后必须替换官方模板并重新逐页视觉QA。
+## LaTeX V0.1 Compile Audit and Evidence-Controlled V0.2 - 2026-09-16
+
+用户已在Overleaf成功编译venue-neutral LaTeX V0.1并将PDF放回指定目录。PDF共11页，逐页视觉
+检查确认无裁切、重叠、黑块或缺失引用；Table 3过宽导致字体过小，Oracle Table 4因双栏float
+漂移到References开始后且caption仍为占位文本，page 11有较大尾部空白。V0.1源码及编译PDF已
+作为历史版本保留：
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf
+```
+
+网页端第一轮审稿原文与项目裁决位于：
+
+```text
+deliverables/cle_hfl_latex_v0_2_20260916/WEB_REVIEW_RAW_ZH.md
+deliverables/cle_hfl_latex_v0_2_20260916/WEB_REVIEW_ADJUDICATION_ZH.md
+```
+
+审稿意见总体可信。V0.2已落实：local-first所有关键陈述加入seed-0限定；section/contribution从
+mechanism attribution降级为formation analysis；补CLE-v2精确operator sampling law和pooled
+DSA公式；明确`m=s+r`不是神经网络生成假设；明确BER不均匀化环境组而是次线性压缩支持优势；
+图1改为`Shortcut-prone local training`；Table 3缩为可读的DSA表；Oracle Table 4改为单栏并
+修复caption；数值误差标明为identity checks。FedDF learning-floor/utility失败、CVaR逐客户端
+例外、JTT screen-only、source-bootstrap条件性和全部`[EVIDENCE NEEDED]`均保留。
+
+当前论文可编译源码source of truth晋级为：
+
+```text
+deliverables/cle_hfl_latex_v0_2_20260916/main.tex
+deliverables/CLE_HFL_LATEX_V0_2_OVERLEAF_20260916.zip
+```
+
+V0.2 Overleaf包为`28806` bytes，SHA256为
+`F81084F4A3AAEFE274A9E26334B62DED47BF8791CAEFF9C9F0BD29FDD930DD5A`。包内只包含可编译论文源码、
+参考文献、说明文件和两张论文图，不包含网页端原始审稿意见。
+
+V0.2尚未在Overleaf编译，必须在用户回传PDF后进行逐页终检。当前没有运行或授权训练实验。
+投稿实验顺序继续以
+`docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md`为唯一规划入口：
+M1 map2四臂40轮training seeds 1/2，M2 HFL-vs-Local seeds 1/2，M3第二private dataset，
+随后才考虑bounded taxonomy stress和精简faithful HFL context table。
+
 ## Paper Version Preservation and Source-of-Truth Workflow - 2026-09-15
 
 网页端英文初稿V0.1已从原下载位置原样复制进仓库归档；V0.2事实审计版、V0.3引用审计版、V0.4

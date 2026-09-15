@@ -4,6 +4,13 @@ Updated: 2026-09-15
 
 ## 当前论文写作与投稿导航
 
+投稿版完整实验矩阵已整理为规划文档，区分已完成、必须补、强烈建议、条件性可选和明确不做；
+该文档不授权任何 OpenI 或 Formal 运行：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+```
+
 V0.4已转换为与具体venue解耦的双栏LaTeX会议稿，并生成两张可编辑矢量机制图及Overleaf上传包。
 当前机器缺少TeX发行版，因此已完成静态语法/引用/环境配对检查和两张PDF图的逐图视觉审计，
 但完整论文PDF仍需在Overleaf或安装TeX Live后编译：

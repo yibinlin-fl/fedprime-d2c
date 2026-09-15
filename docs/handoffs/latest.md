@@ -2,6 +2,18 @@
 
 Updated: 2026-09-15
 
+## 投稿版完整实验矩阵已整理
+
+当前论文实验按优先级整理为单一规划入口：M1 held-out map2四臂40轮training seeds 1/2、
+M2 HFL-vs-Local四臂training seeds 1/2、M3第二private dataset为投稿前必须补；bounded taxonomy
+stress与精简faithful HFL context table为强烈建议；JTT Formal、partition seed及更多插件底座为
+条件性可选。CDep、operator/hierarchical PEW及新loss明确不做。该规划不构成实验授权，当前仍
+没有运行中的训练任务。
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+```
+
 ## V0.4已转换为LaTeX会议稿并生成两张论文图
 
 当前V0.4已机械转换为venue-neutral双栏LaTeX，保留18个citation key、7处内部

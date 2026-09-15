@@ -4728,3 +4728,38 @@ scripts/render_cle_hfl_paper_figures.py
 当前Windows环境没有`pdflatex/xelatex/latexmk`，所以只完成静态LaTeX检查：无Markdown残留、
 非ASCII字符清零、花括号与begin/end环境数量匹配、18个引用全部解析。完整论文PDF需上传
 Overleaf或安装TeX Live后编译；目标会议确定后必须替换官方模板并重新逐页视觉QA。
+## Paper Version Preservation and Source-of-Truth Workflow - 2026-09-15
+
+网页端英文初稿V0.1已从原下载位置原样复制进仓库归档；V0.2事实审计版、V0.3引用审计版、V0.4
+会议压缩版继续分别保留。更早的AAAI PDF作为legacy快照保留，禁止把其中旧方法、旧数字或旧主张
+覆盖到当前论文。
+
+```text
+deliverables/cle_hfl_paper_draft_v0_1_20260914/CLE_HFL_PAPER_DRAFT_V0_1.md
+deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
+deliverables/cle_hfl_legacy_aaai_draft_20260911/CLE_HFL_AAAI_DRAFT_LEGACY.pdf
+```
+
+当前事实内容基线是V0.4；当前可编译论文源码是：
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/references.bib
+```
+
+仓库LaTeX为唯一source of truth，Overleaf只作为编译/预览镜像。若用户在Overleaf修改，必须下载
+source ZIP放入预先创建的返回目录，再由Codex对仓库版本做diff、选择性合并、静态检查与提交。
+禁止同一阶段同时修改Overleaf和仓库版本。网页端GPT只输出审稿意见或候选改写，不直接覆盖
+`main.tex`。
+
+投稿版完整实验矩阵位于：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+```
+
+当前最高优先级缺口为held-out map2四臂40轮training seeds 1/2、HFL-vs-Local四臂training
+seeds 1/2及第二private dataset。bounded taxonomy stress与精简faithful HFL context table为
+强烈建议；当前没有任何已授权或运行中的新训练实验。

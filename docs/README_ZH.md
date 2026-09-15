@@ -39,11 +39,18 @@ operator-level CLE-v2/DSA与family-level PEW/BER的粒度分工，并将全部`[
 项目matched baseline的实现忠实度。下一步是会议版压缩和待补证据规划，不是开发operator PEW：
 
 ```text
+deliverables/cle_hfl_paper_draft_v0_1_20260914/CLE_HFL_PAPER_DRAFT_V0_1.md
 deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
 deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
 deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
 deliverables/cle_hfl_paper_draft_v0_3_20260914/references.bib
 deliverables/cle_hfl_paper_draft_v0_3_20260914/CITATION_AUDIT_ZH.md
+```
+
+更早的AAAI方向PDF初稿按历史快照保留，不作为当前事实源：
+
+```text
+deliverables/cle_hfl_legacy_aaai_draft_20260911/CLE_HFL_AAAI_DRAFT_LEGACY.pdf
 ```
 
 导师汇报与网页端英文初稿新增一份相关工作发表格局文档。它按正式主会/期刊、workshop和仅预印本

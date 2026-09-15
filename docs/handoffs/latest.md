@@ -2,6 +2,21 @@
 
 Updated: 2026-09-15
 
+## 论文版本与源码职责已明确
+
+网页端英文V0.1、事实审计V0.2、引用审计V0.3、会议压缩V0.4均已独立保留；早期AAAI PDF也作为
+legacy快照归档。当前论文事实内容以V0.4为基线，当前可编译源码以仓库中的LaTeX V0.1
+`main.tex`为source of truth。Overleaf只用于编译与预览；若在Overleaf手工编辑，必须下载source
+ZIP交回仓库做diff和合并，禁止仓库与Overleaf同时修改形成双源。
+
+```text
+deliverables/cle_hfl_paper_draft_v0_1_20260914/CLE_HFL_PAPER_DRAFT_V0_1.md
+deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
+deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+```
+
 ## 投稿版完整实验矩阵已整理
 
 当前论文实验按优先级整理为单一规划入口：M1 held-out map2四臂40轮training seeds 1/2、

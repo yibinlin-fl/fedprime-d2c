@@ -1,0 +1,6 @@
+*.pdf binary
+*.png binary
+*.zip binary
+*.svg text eol=lf
+*.tex text eol=lf
+*.bib text eol=lf

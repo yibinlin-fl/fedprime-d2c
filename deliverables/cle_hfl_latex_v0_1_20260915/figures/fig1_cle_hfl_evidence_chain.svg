@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="950" height="300" preserveAspectRatio="xMinYMin meet" viewBox="0 0 950 300" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="950" height="300"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-300)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="316.4455" y="282" style="font-family: Helvetica-Bold; font-size: 13px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,564) scale(1,-1)">CLE-HFL evidence chain and information boundary</text>
+			<rect x="15" y="157" width="920" height="105" rx="10" ry="10" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,96%,92%); fill-rule: evenodd;"/>
+			<rect x="15" y="25" width="920" height="105" rx="10" ry="10" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(94%,96%,98%); fill-rule: evenodd;"/>
+			<text x="28" y="244" style="font-family: Helvetica-Bold; font-size: 7.5px;fill: rgb(90%,49%,13%); stroke:none;" transform="translate(0,488) scale(1,-1)">TRAIN-TIME PATH</text>
+			<text x="28" y="112" style="font-family: Helvetica-Bold; font-size: 7.5px;fill: rgb(29%,47%,65%); stroke:none;" transform="translate(0,224) scale(1,-1)">SEALED EVALUATION AND ATTRIBUTION</text>
+			<rect x="50" y="173" width="232" height="68" rx="9" ry="9" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(90%,49%,13%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="59" y="228" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(90%,49%,13%); stroke:none;" transform="translate(0,456) scale(1,-1)">CONTROLLED INPUT</text>
+			<text x="114.11200000000001" y="213.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,427) scale(1,-1)">1  CLE-HFL private data</text>
+			<text x="104.7592" y="196.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,392) scale(1,-1)">client-specific class-operator binding</text>
+			<rect x="359" y="173" width="232" height="68" rx="9" ry="9" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(78%,29%,29%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="368" y="228" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(78%,29%,29%); stroke:none;" transform="translate(0,456) scale(1,-1)">OBSERVED FAILURE</text>
+			<text x="415.70140000000004" y="213.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,427) scale(1,-1)">2  Local shortcut formation</text>
+			<text x="401.926" y="196.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,392) scale(1,-1)">robust local learning can still exploit binding</text>
+			<rect x="668" y="173" width="232" height="68" rx="9" ry="9" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(23%,56%,33%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="677" y="228" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(23%,56%,33%); stroke:none;" transform="translate(0,456) scale(1,-1)">LOCAL MITIGATION</text>
+			<text x="753.4514" y="213.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,427) scale(1,-1)">5  PEW + BER</text>
+			<text x="695.8324" y="196.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,392) scale(1,-1)">coarse family witness + within-class support balance</text>
+			<rect x="50" y="41" width="232" height="68" rx="9" ry="9" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(29%,47%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="59" y="96" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(29%,47%,65%); stroke:none;" transform="translate(0,192) scale(1,-1)">REPORTING ONLY</text>
+			<text x="116.918" y="81.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,163) scale(1,-1)">3  Paired operator grid</text>
+			<text x="89.54020000000001" y="64.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,128) scale(1,-1)">same source and label; intervene on operator</text>
+			<rect x="359" y="41" width="232" height="68" rx="9" ry="9" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(56%,38%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="368" y="96" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(56%,38%,65%); stroke:none;" transform="translate(0,192) scale(1,-1)">TARGET-ALIGNED</text>
+			<text x="410.2044" y="81.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,163) scale(1,-1)">4  DSA + local-first attribution</text>
+			<text x="398.1298" y="64.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,128) scale(1,-1)">binding-directed mass shift; HFL versus Local</text>
+			<rect x="668" y="41" width="232" height="68" rx="9" ry="9" style="stroke: rgb(12%,22%,37%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(12%,22%,37%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="677" y="96" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,22%,37%); stroke:none;" transform="translate(0,192) scale(1,-1)">BOUNDARY-AWARE</text>
+			<text x="737.4756" y="81.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,163) scale(1,-1)">6  Matched validation</text>
+			<text x="696.999" y="64.12" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,128) scale(1,-1)">ERM, CVaR, shared-PEW GroupDRO, maps/bases</text>
+			<path d="M 282,207 L 359,207 Z" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="359 207, 352 210.85, 352 203.15" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,29%,29%); fill-rule: evenodd;"/>
+			<path d="M 166,173 L 166,109 Z" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="166 109, 169.85 116, 162.15 116" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(29%,47%,65%); fill-rule: evenodd;"/>
+			<path d="M 475,173 L 475,109 Z" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="475 109, 478.85 116, 471.15 116" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(56%,38%,65%); fill-rule: evenodd;"/>
+			<path d="M 282,75 L 359,75 Z" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="359 75, 352 78.85, 352 71.15" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(56%,38%,65%); fill-rule: evenodd;"/>
+			<path d="M 784,173 L 784,109 Z" style="stroke: rgb(12%,22%,37%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="784 109, 787.85 116, 780.15 116" style="stroke: rgb(12%,22%,37%); stroke-linecap: butt; stroke-width: 1; fill: rgb(12%,22%,37%); fill-rule: evenodd;"/>
+			<path d="M 590,109 L 690,173 Z" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="690 173, 682.0287 172.4694, 686.1795 165.9839" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1; fill: rgb(23%,56%,33%); fill-rule: evenodd;"/>
+			<text x="620.932" y="138" style="font-family: Helvetica; font-size: 7.0px;fill: rgb(23%,56%,33%); stroke:none;" transform="translate(0,276) scale(1,-1)">motivates local target</text>
+		</g>
+	</g>
+</svg>

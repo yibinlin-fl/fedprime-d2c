@@ -4,6 +4,18 @@ Updated: 2026-09-15
 
 ## 当前论文写作与投稿导航
 
+V0.4已转换为与具体venue解耦的双栏LaTeX会议稿，并生成两张可编辑矢量机制图及Overleaf上传包。
+当前机器缺少TeX发行版，因此已完成静态语法/引用/环境配对检查和两张PDF图的逐图视觉审计，
+但完整论文PDF仍需在Overleaf或安装TeX Live后编译：
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/references.bib
+deliverables/cle_hfl_latex_v0_1_20260915/figures/
+deliverables/cle_hfl_latex_v0_1_20260915/README_ZH.md
+deliverables/CLE_HFL_LATEX_V0_1_OVERLEAF_20260915.zip
+```
+
 网页端会议压缩稿V0.4已返回并通过仓库事实审计。V0.4约5165词，是当前会议压缩内部主稿；
 V0.3仍作为完整证据长稿。V0.4没有补写不存在的multi-seed、第二数据集或taxonomy stress结果：
 

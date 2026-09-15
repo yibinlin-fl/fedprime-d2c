@@ -2,6 +2,26 @@
 
 Updated: 2026-09-15
 
+## V0.4已转换为LaTeX会议稿并生成两张论文图
+
+当前V0.4已机械转换为venue-neutral双栏LaTeX，保留18个citation key、7处内部
+`[EVIDENCE NEEDED]`标记、四张表及全部冻结边界。两张新矢量图分别展示CLE-HFL证据链/信息
+边界，以及paired DSA/proxy non-identifiability。PDF与SVG均已生成，PDF已转PNG逐图检查，
+未发现文本重叠、裁切或不可读元素。
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/references.bib
+deliverables/cle_hfl_latex_v0_1_20260915/figures/
+deliverables/cle_hfl_latex_v0_1_20260915/README_ZH.md
+deliverables/CLE_HFL_LATEX_V0_1_OVERLEAF_20260915.zip
+scripts/build_cle_hfl_latex.py
+scripts/render_cle_hfl_paper_figures.py
+```
+
+当前主机未安装`pdflatex/xelatex/latexmk`，故完整论文尚未执行TeX编译；Overleaf包可直接上传，
+目标会议确定后再替换官方class/style并进行逐页PDF检查。没有启动或授权任何训练实验。
+
 ## 英文会议压缩稿V0.4已完成事实审计
 
 网页端V0.4已审计并提升为当前会议压缩内部主稿，约5165词；V0.3继续保留为完整证据长稿。

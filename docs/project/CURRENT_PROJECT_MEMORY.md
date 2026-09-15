@@ -4701,3 +4701,30 @@ CVaR逐客户端例外、JTT screen-only、source-bootstrap不覆盖training ran
 
 新增长期协作偏好：未来只要要求用户把文件放入某个workspace文件夹，Codex必须先创建该目标
 文件夹，再给出可直接使用的Windows绝对路径，不得让用户手动创建目录。
+
+## Venue-Neutral LaTeX Draft and Paper Figures - 2026-09-15
+
+事实审计后的V0.4已转换为venue-neutral双栏LaTeX，未重新生成或改变研究结论。正文包含18个
+可解析citation key、7处内部`[EVIDENCE NEEDED]`标记、四张表、完整DSA/BER公式与附录。输出：
+
+```text
+deliverables/cle_hfl_latex_v0_1_20260915/main.tex
+deliverables/cle_hfl_latex_v0_1_20260915/references.bib
+deliverables/cle_hfl_latex_v0_1_20260915/README_ZH.md
+deliverables/CLE_HFL_LATEX_V0_1_OVERLEAF_20260915.zip
+```
+
+新增两张矢量科学图：`fig1_cle_hfl_evidence_chain.pdf/.svg`展示问题、诊断、归因、缓解、验证及
+train-time/sealed-evaluation边界；`fig2_dsa_proxy_boundary.pdf/.svg`展示source-paired DSA和
+proxy non-identifiability two-world构造。两张PDF均已用Poppler转成PNG并逐图视觉检查通过。
+
+生成入口：
+
+```text
+scripts/build_cle_hfl_latex.py
+scripts/render_cle_hfl_paper_figures.py
+```
+
+当前Windows环境没有`pdflatex/xelatex/latexmk`，所以只完成静态LaTeX检查：无Markdown残留、
+非ASCII字符清零、花括号与begin/end环境数量匹配、18个引用全部解析。完整论文PDF需上传
+Overleaf或安装TeX Live后编译；目标会议确定后必须替换官方模板并重新逐页视觉QA。

@@ -203,6 +203,11 @@ result snapshots under `outputs/` and `deliverables/` should not be rewritten
 just to modernize paths. Move files explicitly; never use recursive bulk
 delete or cleanup commands.
 
+Before asking the user to place or download files into a workspace folder,
+create the exact target folder first if it does not already exist. Then provide
+the user with the ready-to-use absolute path; do not make the user create the
+directory manually.
+
 ## Documentation Maintenance
 
 - Keep `docs/handoffs/latest.md` short and factual: current objective, running

@@ -1,8 +1,18 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-14
+Updated: 2026-09-15
 
 ## 当前论文写作与投稿导航
+
+网页端会议压缩稿V0.4已返回并通过仓库事实审计。V0.4约5165词，是当前会议压缩内部主稿；
+V0.3仍作为完整证据长稿。V0.4没有补写不存在的multi-seed、第二数据集或taxonomy stress结果：
+
+```text
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_V0_4_AUTHOR_AUDIT.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/FACT_AUDIT_ZH.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/references.bib
+```
 
 网页端英文长初稿V0.1已收到；仓库事实审计版V0.2和引用审计版V0.3均已完成。V0.3保留
 operator-level CLE-v2/DSA与family-level PEW/BER的粒度分工，并将全部`[REF TO VERIFY]`

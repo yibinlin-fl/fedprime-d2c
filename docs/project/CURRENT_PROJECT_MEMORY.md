@@ -4674,3 +4674,30 @@ regular/full paper截止日期尚未全部由官方公布，不记录第三方�
 ```text
 deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 ```
+
+## Conference-Compressed English Draft V0.4 - 2026-09-15
+
+网页端V0.4已返回并完成仓库事实审计。审计后版本位于：
+
+```text
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_V0_4_AUTHOR_AUDIT.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/FACT_AUDIT_ZH.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/references.bib
+```
+
+V0.4约5165词，是新的会议压缩内部主稿；V0.3继续作为完整证据长稿。V0.4保留operator-level
+CLE-v2/DSA与family-level PEW+BER的粒度边界，CDep仍未进入方法；FedDF-fidelity utility失败、
+CVaR逐客户端例外、JTT screen-only、source-bootstrap不覆盖training randomness等边界均保留。
+关键数字已定位回冻结result summary、paper core artifacts及理论文档。18个真实citation key均可由
+相邻`references.bib`解析。
+
+本轮修复三处措辞：Abstract明确现有对照为seed-0；`private-metadata-free`收窄为
+`private-environment-metadata-free`；删除会被引用检查误识别为真实key的`\citep{key}`示例。
+
+待补实验仍只是候选矩阵，全部未授权、未运行：map2四臂S1/S2、HFL-vs-Local四臂S1/S2、
+第二private dataset和bounded taxonomy stress test。第二数据集未冻结为SVHN，stress protocol
+也未冻结为leave-one-operator-out。下一步先冻结map2多seed协议和成本，再由用户单独授权。
+
+新增长期协作偏好：未来只要要求用户把文件放入某个workspace文件夹，Codex必须先创建该目标
+文件夹，再给出可直接使用的Windows绝对路径，不得让用户手动创建目录。

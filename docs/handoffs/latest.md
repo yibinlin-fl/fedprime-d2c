@@ -1,6 +1,24 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-14
+Updated: 2026-09-15
+
+## 英文会议压缩稿V0.4已完成事实审计
+
+网页端V0.4已审计并提升为当前会议压缩内部主稿，约5165词；V0.3继续保留为完整证据长稿。
+V0.4保持operator-level CLE-v2/DSA、family-level PEW+BER、Oracle operator仅边界消融、
+CDep缺席、FedDF utility失败、CVaR逐客户端例外、JTT screen-only和source-bootstrap条件性等
+冻结边界。关键数字全部可定位回现有冻结证据，18个真实引用key均能解析。
+
+```text
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_V0_4_AUTHOR_AUDIT.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/FACT_AUDIT_ZH.md
+deliverables/cle_hfl_paper_draft_v0_4_20260915/references.bib
+```
+
+当前待补实验仍全部未授权、未运行。优先顺序是：先冻结map2四臂40轮S1/S2协议和成本；再决定
+HFL-vs-Local S1/S2；第二private dataset及bounded taxonomy stress需另行设计，未冻结为SVHN
+或leave-one-operator-out。新增协作规则：以后指定用户放置文件前，先创建目标文件夹并提供绝对路径。
 
 ## 英文长初稿V0.3完成引用审计
 

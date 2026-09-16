@@ -2,14 +2,33 @@
 
 Updated: 2026-09-16
 
+## LaTeX V0.2已终检，V0.3完成两处纯排版修复
+
+用户回传的V0.2 Overleaf PDF共11页，逐页视觉检查确认无缺页、裁切、重叠、黑块或未解析引用；
+V0.1中的Table 3过小、Oracle表漂移到References之后和占位caption问题已修复。终检仅发现两处
+剩余排版问题：第4页JSD/DSA逻辑式跨越双栏并挤入页脚，第9页Oracle五列表字体仍偏小。V0.3
+已将逻辑式拆为两行，并将Oracle表缩为三列、把last-five数字移入紧邻正文。所有实验小数、18个
+citation key和科学边界与V0.2保持一致。V0.3当前等待Overleaf编译确认，没有启动训练实验。
+
+```text
+deliverables/cle_hfl_latex_v0_2_20260916/CLE_HFL_LATEX_V0_2_OVERLEAF_COMPILED.pdf
+deliverables/cle_hfl_latex_v0_3_20260916/main.tex
+deliverables/cle_hfl_latex_v0_3_20260916/V0_2_COMPILE_AUDIT_ZH.md
+deliverables/CLE_HFL_LATEX_V0_3_OVERLEAF_20260916.zip
+local_runs/paper_compiled_returns/v0_3/
+```
+
+V0.3 Overleaf包为`28746` bytes，SHA256
+`83CADA48B868E34374B417D9BCECEA59702DD0AC9A1A2AB798E4EEB4FA979443`。
+
 ## LaTeX V0.2已按网页端第一轮审稿完成证据受控修订
 
 用户已在Overleaf成功编译LaTeX V0.1，11页PDF逐页检查无裁切、重叠、黑块或缺失引用；视觉审计
 发现Table 3字体过小、Oracle Table 4漂移到References之后及占位caption。V0.1源码和编译PDF已
 归档保留。网页端第一轮审稿原文及裁决已归档；V0.2接受seed-0限定、local-first措辞降级、精确
 CLE sampling law、pooled DSA公式、estimand decomposition解释、BER直观解释、图1弱化及表格
-修复，拒绝提前指定第二数据集、删除待补标记或扩展新方法。当前source of truth为V0.2；仍需用户
-上传Overleaf编译后再进行逐页终检。没有启动任何训练实验。
+修复，拒绝提前指定第二数据集、删除待补标记或扩展新方法。V0.2现作为已编译历史版本保留；
+当前source of truth已晋级为仅含排版修复的V0.3。没有启动任何训练实验。
 
 ```text
 deliverables/cle_hfl_latex_v0_1_20260915/CLE_HFL_LATEX_V0_1_OVERLEAF_COMPILED.pdf
@@ -36,7 +55,8 @@ deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
 deliverables/cle_hfl_paper_draft_v0_3_20260914/CLE_HFL_PAPER_DRAFT_V0_3.md
 deliverables/cle_hfl_paper_draft_v0_4_20260915/CLE_HFL_PAPER_DRAFT_V0_4.md
 deliverables/cle_hfl_latex_v0_1_20260915/main.tex       历史排版快照
-deliverables/cle_hfl_latex_v0_2_20260916/main.tex       当前source of truth
+deliverables/cle_hfl_latex_v0_2_20260916/main.tex       已编译历史版本
+deliverables/cle_hfl_latex_v0_3_20260916/main.tex       当前source of truth
 ```
 
 ## 投稿版完整实验矩阵已整理

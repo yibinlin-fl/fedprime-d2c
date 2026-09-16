@@ -2,6 +2,17 @@
 
 Updated: 2026-09-16
 
+## LaTeX V0.2终检与V0.3排版修复
+
+V0.2编译PDF已归档并完成11页视觉终检；V0.3只修复一个跨栏公式和一个过小Oracle表，不改变
+科学内容、数字或引用。当前可编译源码入口：
+
+```text
+deliverables/cle_hfl_latex_v0_3_20260916/main.tex
+deliverables/cle_hfl_latex_v0_3_20260916/V0_2_COMPILE_AUDIT_ZH.md
+deliverables/CLE_HFL_LATEX_V0_3_OVERLEAF_20260916.zip
+```
+
 ## 当前论文写作与投稿导航
 
 LaTeX V0.1已在Overleaf成功编译为11页PDF并完成逐页视觉审计；原始V0.1源码和编译PDF均保留。

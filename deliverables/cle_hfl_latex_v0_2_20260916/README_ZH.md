@@ -27,3 +27,11 @@ Overleaf根目录上传包：
 ```text
 deliverables/CLE_HFL_LATEX_V0_2_OVERLEAF_20260916.zip
 ```
+
+V0.2已于2026-09-16在Overleaf编译并归档为：
+
+```text
+CLE_HFL_LATEX_V0_2_OVERLEAF_COMPILED.pdf
+```
+
+逐页终检发现第4页过宽公式和第9页Oracle表可读性问题；两处均在独立保留的V0.3源码中修复。

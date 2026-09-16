@@ -4771,6 +4771,26 @@ V0.2尚未在Overleaf编译，必须在用户回传PDF后进行逐页终检。�
 M1 map2四臂40轮training seeds 1/2，M2 HFL-vs-Local seeds 1/2，M3第二private dataset，
 随后才考虑bounded taxonomy stress和精简faithful HFL context table。
 
+## LaTeX V0.2 Compile Audit and Layout-Only V0.3 - 2026-09-16
+
+V0.2 Overleaf返回PDF为11页、`463996` bytes，SHA256
+`EDF18CA84509BFB1732389F3E244A81C63DB9C3F1430C0A0CB643D74B55B8357`。逐页渲染检查确认无
+缺页、裁切、黑块或未解析引用；V0.1的Table 3可读性、Oracle float漂移和占位caption问题均已
+修复。终检仍发现第4页逻辑公式跨栏挤入页脚、第9页Oracle五列表过小。
+
+V0.3只做两处排版修复：拆分过宽逻辑式；将Oracle表缩为三列并把全部last-five Avg/Worst数值
+移入紧邻正文。V0.2与V0.3的小数实验数字multiset完全一致，18个citation key完全一致，7处
+`[EVIDENCE NEEDED]`全部保留。当前source of truth为：
+
+```text
+deliverables/cle_hfl_latex_v0_3_20260916/main.tex
+deliverables/CLE_HFL_LATEX_V0_3_OVERLEAF_20260916.zip
+```
+
+V0.3包为`28746` bytes，SHA256
+`83CADA48B868E34374B417D9BCECEA59702DD0AC9A1A2AB798E4EEB4FA979443`。当前没有运行或授权
+任何训练实验；论文线完成这次排版封存后可暂停，实验线仍按M1、M2、M3顺序推进。
+
 ## Paper Version Preservation and Source-of-Truth Workflow - 2026-09-15
 
 网页端英文初稿V0.1已从原下载位置原样复制进仓库归档；V0.2事实审计版、V0.3引用审计版、V0.4

@@ -4791,6 +4791,16 @@ V0.3包为`28746` bytes，SHA256
 `83CADA48B868E34374B417D9BCECEA59702DD0AC9A1A2AB798E4EEB4FA979443`。当前没有运行或授权
 任何训练实验；论文线完成这次排版封存后可暂停，实验线仍按M1、M2、M3顺序推进。
 
+## User-Confirmed Mainline After LaTeX V0.3 - 2026-09-17
+
+用户明确确认：近期FedPIN英文组会PPT只是旁支，不得在未来上下文压缩或恢复项目时被提升为主线。
+PPT相关多轮提示词、30页结构和模板生成过程无需进入详细长期记忆，只保留曾准备相关汇报这一事实。
+
+当前主线暂停顺序为：用户先学习LaTeX，再完整阅读V0.3并理解CLE-HFL论文框架与闭环；完成后恢复
+投稿前实验。论文润色当前主动停止，不继续生成新版本；方法扩展同样停止。实验恢复后按唯一冻结矩阵
+依次推进M1 map2四臂40轮training seeds 1/2、M2 HFL-vs-Local seeds 1/2、M3第二private
+dataset。尚未授权任何新benchmark或Formal。
+
 ## Paper Version Preservation and Source-of-Truth Workflow - 2026-09-15
 
 网页端英文初稿V0.1已从原下载位置原样复制进仓库归档；V0.2事实审计版、V0.3引用审计版、V0.4

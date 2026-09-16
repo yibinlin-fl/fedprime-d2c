@@ -1,6 +1,16 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-16
+Updated: 2026-09-17
+
+## 当前主线与暂停点（用户于2026-09-17再次确认）
+
+当前研究主线不是组会PPT。近期FedPIN英文汇报PPT仅为一次性旁支任务；未来上下文压缩时只需保留
+“用户曾准备FedPIN组会汇报”这一句，不保留多轮PPT提示词、页数设计或生成过程。
+
+论文线目前主动暂停在LaTeX V0.3：用户将先学习LaTeX，并完整阅读V0.3以理解CLE-HFL的论文
+结构和证据闭环。完成这两项后，主线恢复为投稿前实验，不继续无休止润色，也不新增方法。实验恢复
+顺序仍以冻结矩阵为准：M1 held-out map2四臂40轮training seeds 1/2，随后M2 HFL-vs-Local
+seeds 1/2，再设计与审计M3第二private dataset。任何benchmark、Formal或长任务仍需单独授权。
 
 ## LaTeX V0.2已终检，V0.3完成两处纯排版修复
 

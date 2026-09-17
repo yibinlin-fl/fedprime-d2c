@@ -9,8 +9,17 @@ Updated: 2026-09-17
 
 论文线目前主动暂停在LaTeX V0.3：用户将先学习LaTeX，并完整阅读V0.3以理解CLE-HFL的论文
 结构和证据闭环。完成这两项后，主线恢复为投稿前实验，不继续无休止润色，也不新增方法。实验恢复
-顺序仍以冻结矩阵为准：M1 held-out map2四臂40轮training seeds 1/2，随后M2 HFL-vs-Local
-seeds 1/2，再设计与审计M3第二private dataset。任何benchmark、Formal或长任务仍需单独授权。
+顺序仍以冻结矩阵为准。2026-09-17已按用户要求完成待补实验工程：M1 held-out map2四臂40轮
+training seeds 1/2、M2 HFL-vs-Local seeds 1/2、M3 CIFAR-100第二private dataset、S1 bounded
+taxonomy stress、S2 faithful HFL context以及条件性JTT Formal均已有runner、审计、分析和OpenI
+入口。新CIFAR-100 clean输入包已生成并通过数据审计；它不复用由CIFAR-100公共图像训练的主实验
+PEW，而是在OpenI用CIFAR-10公共图像训练一次新PEW，以避免公共/私有source重叠。当前没有运行
+中的训练任务；benchmark、Formal或
+长任务仍需单独授权。统一执行入口：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+```
 
 ## LaTeX V0.2已终检，V0.3完成两处纯排版修复
 

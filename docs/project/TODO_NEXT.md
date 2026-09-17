@@ -2502,3 +2502,37 @@ python scripts/openi_cle_public_carrier_k0a_entry.py --mode=smoke
 Download `cle_public_carrier_k0a_seed0_smoke_outputs.tar.gz` and audit its manifest/result. Smoke is
 execution-only. Run `--mode=formal` only after the smoke artifact passes review. Do not implement
 K0-B or train DME before a formal K0-A `GO_TO_K0_B`.
+
+## 2026-09-17 Current Paper-Mainline TODO
+
+This section supersedes the historical active-next-step text above. Implementation is complete;
+the remaining work is controlled execution and result audit, not new method development.
+
+```text
+1. User finishes the planned LaTeX/V0.3 reading pause.
+2. With explicit authorization, run M1 map2 seeds 1/2 Formal.
+3. Audit both M1 archives and aggregate seed-level DSA/utility; do not use source bootstrap as seed CI.
+4. With explicit authorization, run M2 local-first seeds 1/2 Formal.
+5. Audit delta_HFL, delta_Local and delta_Comm across seeds; local-share is descriptive only.
+6. Run M3 CIFAR-100 benchmark first; review runtime/cost before requesting Formal authorization.
+7. If authorized after benchmark, run M3 Formal seeds 0/1/2 and aggregate seed-level results.
+8. Then consider S1 taxonomy stress and S2 HFL context, each benchmark-first.
+9. Run O1 JTT only if the paper makes a formal empirical superiority claim over JTT.
+10. Run O3 KT-pFL/FCCL only if the paper retains a strong cross-base plugin claim.
+```
+
+Scientific purpose and allowed conclusions:
+
+```text
+M1: training-randomness stability of held-out-map2 BER suppression; not partition/dataset stability.
+M2: training-randomness replication of local-first formation; not a causal mediation theorem.
+M3: replication on a second controlled image task; not real-world external validity.
+S1: one bounded missing-taxonomy operator; not open-world/compound-corruption robustness.
+S2: HFL context and communication-method comparison; not BER attribution or official-recipe SOTA.
+O1: rule out a generic hard-example-reweighting explanation; cost is an unequal two-stage pipeline.
+O3: matched plugin transfer across KT-pFL/FCCL; only needed for a strong plugin-generalization claim.
+```
+
+Do not start paid, benchmark, Formal, multi-seed or 40-round jobs implicitly. The exact commands,
+datasets, hashes, parameters, output archives and ready-made download directories are recorded in
+`docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md`.

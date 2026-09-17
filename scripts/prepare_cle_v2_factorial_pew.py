@@ -32,6 +32,11 @@ from fedprime.utils.env import seed_everything  # noqa: E402
 
 
 DATA_PROTOCOL = "cle_hfl_v2_paired_factorial_seed0_split0_v1"
+SUPPORTED_DATA_PROTOCOLS = {
+    DATA_PROTOCOL,
+    "cle_hfl_v2_cifar100_factorial_seed0_split0_v1",
+    "cle_hfl_v2_taxonomy_stress_heldout_operator_v1",
+}
 ANNOTATION_PROTOCOL = "cle_v2_factorial_frozen_pew_annotations_v1"
 
 
@@ -45,6 +50,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--inference-batch-size", type=int, default=512)
     parser.add_argument("--num-workers", type=int, default=2)
     parser.add_argument("--max-batches", type=int)
+    parser.add_argument("--asset-name", default="pew_standard")
+    parser.add_argument(
+        "--excluded-operators",
+        default="",
+        help="Comma-separated public synthetic operators excluded from PEW training.",
+    )
     parser.add_argument(
         "--reuse-pew-root",
         type=Path,
@@ -87,9 +98,17 @@ def main() -> None:
     package_root = args.package_root.resolve()
     manifest_path = package_root / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("protocol") != DATA_PROTOCOL:
+    if manifest.get("protocol") not in SUPPORTED_DATA_PROTOCOLS:
         raise ValueError("Unexpected paired factorial data protocol")
-    asset_root = package_root / "pew_standard"
+    asset_name = str(args.asset_name).strip()
+    if not asset_name or Path(asset_name).name != asset_name:
+        raise ValueError("--asset-name must be one directory name")
+    excluded_operators = tuple(
+        value.strip() for value in str(args.excluded_operators).split(",") if value.strip()
+    )
+    if args.reuse_pew_root is not None and excluded_operators:
+        raise ValueError("Cannot request new exclusions while reusing a frozen PEW")
+    asset_root = package_root / asset_name
     if asset_root.exists():
         raise FileExistsError(f"Refusing to overwrite frozen PEW assets: {asset_root}")
     asset_root.mkdir(parents=True)
@@ -138,8 +157,8 @@ def main() -> None:
             num_workers=int(args.num_workers),
             seed=0,
             validation_fraction=0.2,
-            public_dataset="cifar100",
-            excluded_operators=(),
+            public_dataset=str(manifest.get("public_dataset", "cifar100")),
+            excluded_operators=excluded_operators,
             label_mode="hard",
         )
         witness = PublicEnvironmentWitness(
@@ -157,7 +176,9 @@ def main() -> None:
             severity_weight=0.25,
             max_batches=args.max_batches,
         )
-        save_environment_witness(witness, checkpoint, excluded_operators=(), label_mode="hard")
+        save_environment_witness(
+            witness, checkpoint, excluded_operators=excluded_operators, label_mode="hard"
+        )
         calibration = calibrate_unknown_threshold(witness, validation_loader, device)
         threshold = float(calibration["threshold"])
         validation = evaluate_environment_witness(witness, validation_loader, device).as_dict()
@@ -241,6 +262,7 @@ def main() -> None:
         "checkpoint_bytes": checkpoint.stat().st_size,
         "checkpoint_sha256": sha256_file(checkpoint),
         "reused_from": reused_from,
+        "excluded_public_operators": list(excluded_operators),
         "conditions": condition_reports,
         "elapsed_seconds": time.perf_counter() - started,
     }

@@ -29,6 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--outputs-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--mode", choices=("smoke", "formal"), required=True)
+    parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--bootstrap-samples", type=int, default=5000)
@@ -38,8 +39,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def experiment_root(outputs_root: Path, arm: str) -> Path:
-    return outputs_root / f"cle_v2_spurious_final_map2_{arm}_trainseed0"
+def experiment_root(outputs_root: Path, arm: str, train_seed: int = 0) -> Path:
+    return outputs_root / f"cle_v2_spurious_final_map2_{arm}_trainseed{train_seed}"
 
 
 def bootstrap_contrast(results: dict, positive: str, negative: str, samples: int) -> dict:
@@ -72,7 +73,7 @@ def main() -> None:
     device = resolve_device(args.device)
     predictions, results, accuracy, metrics, traces = {}, {}, {}, {}, {}
     for arm in ARMS:
-        root = experiment_root(outputs_root, arm)
+        root = experiment_root(outputs_root, arm, int(args.train_seed))
         predictions[arm] = infer_arm(root / "checkpoints", grid, device, int(args.batch_size))
         results[arm] = compute_operator_dsa(predictions[arm], labels, binding)
         accuracy[arm] = grid_accuracy(predictions[arm], labels)
@@ -140,6 +141,7 @@ def main() -> None:
         "protocol": "cle_v2_spurious_final_map2_analysis_v1",
         "mode": args.mode,
         "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+        "train_seed": int(args.train_seed),
         "rounds": 40 if args.mode == "formal" else 1,
         "arms": list(ARMS),
         "pooled_dsa": dsa,

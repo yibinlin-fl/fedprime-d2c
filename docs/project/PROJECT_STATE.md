@@ -2163,3 +2163,33 @@ classifier SCDW integration or Phase-B1. Full report:
 ```text
 deliverables/cle_public_canonicalization_phase_b0_20260831/RESULT_SUMMARY_ZH.md
 ```
+
+## 2026-09-17 Current Implementation State: Submission Experiment Suite
+
+This section supersedes older active-method/TODO sections above for the current paper mainline.
+No training job was started in this engineering stage.
+
+```text
+M1 map2 seeds 1/2                 READY FOR AUTHORIZED FORMAL
+M2 local-first seeds 1/2          READY FOR AUTHORIZED FORMAL
+M3 CIFAR-100 second dataset       READY FOR BENCHMARK; FORMAL NOT AUTHORIZED
+S1 bounded taxonomy stress        READY FOR BENCHMARK; FORMAL NOT AUTHORIZED
+S2 faithful HFL context           READY FOR BENCHMARK; FORMAL NOT AUTHORIZED
+O1 JTT Formal                     IMPLEMENTED, OPTIONAL, NOT AUTHORIZED
+O3 KT-pFL/FCCL plugin Formal      EXISTING RUNNER/SMOKE, OPTIONAL, NOT AUTHORIZED
+active OpenI/local training       NONE
+```
+
+M1/M2 use existing audited packages. M3 has a new clean 681493067-byte input package with SHA256
+`650C3363B708554EB164BDEB94A3566B98CADBFF697FC093B9DE7F061C7DA708`; it trains PEW from
+CIFAR-10 public images and uses CIFAR-100 only as the private task. S1 deliberately withholds
+`motion_blur` from public PEW training while retaining it in private CLE. S2 is a standalone
+HFL-context comparison and must not be described as a PEW/BER attribution experiment.
+
+Verification status: focused compilation PASS, 38 focused tests PASS, real-package prepare-only
+contracts PASS for M1/M2/S2/JTT, and M3 data audit PASS. Smoke and benchmark values remain
+non-scientific. Full launch cards, exact parameters, output names and download folders are in:
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+```

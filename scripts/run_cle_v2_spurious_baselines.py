@@ -50,6 +50,7 @@ def spurious_arm_config(
     device: str,
     output_root: Path,
     jtt_annotation_root: Path,
+    train_seed: int = 0,
 ) -> dict:
     if arm not in ARMS:
         raise ValueError(f"Unknown spurious baseline arm: {arm}")
@@ -57,14 +58,14 @@ def spurious_arm_config(
     config = arm_config(
         "h9_p" if uses_pew else "h9_b",
         package_root=package_root,
-        train_seed=0,
+        train_seed=int(train_seed),
         rounds=ROUND_BUDGET[mode],
         device=device,
         output_root=output_root,
         smoke=mode == "smoke",
         benchmark=mode == "benchmark",
     )
-    config["experiment_name"] = f"cle_v2_spurious_{arm}_trainseed0"
+    config["experiment_name"] = f"cle_v2_spurious_{arm}_trainseed{train_seed}"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
     config["train"]["max_test_batches"] = 1 if mode != "screen" else None
     config["method"]["strict_fit_audit"]["max_audit_batches"] = (

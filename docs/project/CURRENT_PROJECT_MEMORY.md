@@ -4836,3 +4836,46 @@ docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
 当前最高优先级缺口为held-out map2四臂40轮training seeds 1/2、HFL-vs-Local四臂training
 seeds 1/2及第二private dataset。bounded taxonomy stress与精简faithful HFL context table为
 强烈建议；当前没有任何已授权或运行中的新训练实验。
+
+## Submission Experiment Engineering Completed - 2026-09-17
+
+断网前后的投稿实验工程现已统一收口。实现不改变PEW/BER方法、不恢复CDep，也没有启动任何
+benchmark或Formal。唯一执行与启动卡入口为：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+```
+
+已实现并完成静态/契约验证：
+
+```text
+M1  map2四臂40轮training seeds 1/2：可直接Formal，seed0已完成
+M2  HFL-vs-Local四臂training seeds 1/2：可直接Formal，seed0已完成
+M3  CIFAR-100第二private dataset：数据、审计、runner、分析及OpenI入口完成
+S1  held-out motion_blur bounded taxonomy stress：runner、分析及OpenI入口完成
+S2  faithful HFL context table：runner、分析及OpenI入口完成
+O1  JTT 40轮Formal：条件性实现，仅在正文需要正式JTT比较时运行
+O3  KT-pFL/FCCL插件四臂：此前已有runner和本地smoke，Formal仍未运行
+```
+
+M3唯一有效clean输入包为：
+
+```text
+C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\cle_cifar100_submission_clean\cle_hfl_v2_cifar100_factorial_seed0_split0_input.tar.gz
+bytes: 681493067
+sha256: 650C3363B708554EB164BDEB94A3566B98CADBFF697FC093B9DE7F061C7DA708
+```
+
+它以CIFAR-100作为private task，以CIFAR-10作为公共PEW训练源，避免复用主实验中由CIFAR-100
+公共图像训练的PEW造成source重叠。两个相似旧包均禁止用于M3。数据审计为100类、1000个
+paired source、15个operator、severity 3，结果PASS。
+
+聚焦验证：Python静态编译通过，38项相关测试通过；M1、M2、S2与JTT使用真实输入完成
+prepare-only契约检查；M3 clean数据生成与独立审计通过。S1只完成代码与测试，新的leave-one-
+operator PEW将在OpenI benchmark中训练，尚未形成训练smoke或科学证据。当前没有运行中实验，
+所有长任务仍需用户逐项授权。
+
+实验的科学职责被冻结为：M1覆盖training randomness；M2复现local-first formation；M3检验
+是否仅为CIFAR-10受控任务现象；S1量化taxonomy不完全覆盖时的退化；S2提供standalone HFL文献
+坐标；O1检验hard-example reweighting解释；O3仅在保留强插件主张时检验跨通信底座迁移。任何
+单项都不能证明真实医院/汽车部署、开放世界corruption或partition稳定性。

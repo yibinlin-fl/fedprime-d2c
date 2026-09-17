@@ -18,6 +18,10 @@ DATA_PROTOCOL = "cle_hfl_v2_paired_factorial_seed0_split0_v1"
 PEW_PROTOCOL = "cle_v2_factorial_standard_pew_v1"
 ANNOTATION_PROTOCOL = "cle_v2_factorial_frozen_pew_annotations_v1"
 ARMS = ("h0_b", "h9_b", "l0_b", "l9_b", "h0_p", "h9_p", "l0_p", "l9_p")
+ARM_SETS = {
+    "mechanism": ("h0_b", "h9_b", "l0_b", "l9_b"),
+    "all": ARMS,
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,6 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-sources", type=int, default=1000)
     parser.add_argument("--outputs-root", type=Path)
     parser.add_argument("--train-seed", type=int, default=0)
+    parser.add_argument("--arm-set", choices=ARM_SETS, default="all")
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--skip-pew",
@@ -194,17 +199,18 @@ def main() -> None:
     trace_audit = None
     if args.outputs_root is not None:
         outputs_root = args.outputs_root.resolve()
+        selected_arms = ARM_SETS[args.arm_set]
         traces = {
             arm: load_trace(
                 outputs_root
                 / f"cle_v2_factorial_{arm}_trainseed{args.train_seed}"
                 / "local_batch_trace.jsonl"
             )
-            for arm in ARMS
+            for arm in selected_arms
         }
         groups = {
-            "gamma00": ("h0_b", "l0_b", "h0_p", "l0_p"),
-            "gamma09": ("h9_b", "l9_b", "h9_p", "l9_p"),
+            "gamma00": tuple(arm for arm in ("h0_b", "l0_b", "h0_p", "l0_p") if arm in traces),
+            "gamma09": tuple(arm for arm in ("h9_b", "l9_b", "h9_p", "l9_p") if arm in traces),
         }
         for condition, arms in groups.items():
             reference = traces[arms[0]]
@@ -223,6 +229,7 @@ def main() -> None:
         "pew_audited": not args.skip_pew,
         "pew_checkpoint_sha256": None if pew is None else pew["checkpoint_sha256"],
         "paired_local_traces": trace_audit,
+        "arm_set": args.arm_set,
         "scientific_evidence": False,
     }
     output = args.output.resolve() if args.output else package_root / "integrity_audit.json"

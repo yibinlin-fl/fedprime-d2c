@@ -1,5 +1,10 @@
 # CLE-HFL 投稿版完整实验矩阵
 
+> 2026-09-17 implementation update：M1、M2、M3、S1、S2及条件性JTT Formal的runner、
+> 审计、分析与OpenI入口已完成；M3新输入包已生成并通过数据审计。执行参数、文件hash与结果
+> 落盘位置见`CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md`。这不代表任何新
+> benchmark或Formal已获授权或已经运行。
+
 Updated: 2026-09-15
 
 ## 0. 用途与纪律

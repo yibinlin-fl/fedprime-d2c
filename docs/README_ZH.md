@@ -1,6 +1,17 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-16
+Updated: 2026-09-17
+
+## 投稿前实验已工程就绪
+
+M1/M2多training-seed、M3 CIFAR-100第二private task、S1 bounded taxonomy stress、S2 HFL
+context table及条件性JTT Formal均已有独立runner、分析器和OpenI入口。新CIFAR-100输入包已生成
+并通过数据审计；当前没有启动benchmark或Formal。统一执行卡与科学边界：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+```
 
 ## LaTeX V0.2终检与V0.3排版修复
 

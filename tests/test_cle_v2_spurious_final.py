@@ -33,6 +33,7 @@ def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) ->
             mode=mode,
             device="cpu",
             output_root=tmp_path / "outputs",
+            train_seed=2,
         )
         for arm in ARMS
     }
@@ -51,6 +52,8 @@ def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) ->
     assert configs["pew_groupdro"]["method"]["fedease"]["objective"] == "pew_groupdro"
     assert configs["pew_ber"]["method"]["fedease"]["objective"] == "ce_ber"
     assert not any("cdep" in str(config).lower() for config in configs.values())
+    assert all(config["seed"] == 2 for config in configs.values())
+    assert all(config["experiment_name"].endswith("trainseed2") for config in configs.values())
 
 
 def test_formal_budget_is_frozen() -> None:

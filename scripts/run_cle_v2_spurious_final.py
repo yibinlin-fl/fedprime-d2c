@@ -28,6 +28,7 @@ def final_arm_config(
     mode: str,
     device: str,
     output_root: Path,
+    train_seed: int = 0,
 ) -> dict:
     # Reuse the frozen screen objective definitions, then change only the
     # pre-registered duration and held-out scenario identity.
@@ -38,8 +39,9 @@ def final_arm_config(
         device=device,
         output_root=output_root,
         jtt_annotation_root=output_root / "unused_jtt_annotations",
+        train_seed=int(train_seed),
     )
-    config["experiment_name"] = f"cle_v2_spurious_final_map2_{arm}_trainseed0"
+    config["experiment_name"] = f"cle_v2_spurious_final_map2_{arm}_trainseed{train_seed}"
     config["data"]["scenario"] = "cle_hfl_v2"
     config["data"]["scenario_id"] = "cle_hfl_v2_cross_map2_seed0_split0"
     config["train"]["rounds"] = ROUND_BUDGET[mode]
@@ -60,6 +62,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="auto")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--config-root", type=Path, required=True)
+    parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--confirm-formal", action="store_true")
     return parser.parse_args()
@@ -83,9 +86,10 @@ def main() -> None:
             mode=args.mode,
             device=args.device,
             output_root=output_root,
+            train_seed=int(args.train_seed),
         )
         configs[arm] = config
-        path = config_root / f"map2_{arm}_trainseed0.json"
+        path = config_root / f"map2_{arm}_trainseed{args.train_seed}.json"
         path.write_text(json.dumps(config, indent=2), encoding="utf-8")
         records[arm] = {"config": str(path), "sha256": sha256_file(path)}
     contract = {
@@ -95,7 +99,7 @@ def main() -> None:
         "partition_seed": 0,
         "binding_map_seed": MAP_SEED,
         "evaluation_seed": 20260909,
-        "train_seed": 0,
+        "train_seed": int(args.train_seed),
         "rounds": ROUND_BUDGET[args.mode],
         "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
         "arms": records,
@@ -105,14 +109,14 @@ def main() -> None:
         "map2_was_not_used_for_five_arm_selection": True,
         "formal_requires_explicit_confirmation": True,
     }
-    (config_root / "SPURIOUS_FINAL_MAP2_CONTRACT.json").write_text(
+    (config_root / f"SPURIOUS_FINAL_MAP2_CONTRACT_TRAINSEED{args.train_seed}.json").write_text(
         json.dumps(contract, indent=2), encoding="utf-8"
     )
     if args.prepare_only:
         print(json.dumps(contract, indent=2), flush=True)
         return
     for arm in ARMS:
-        path = config_root / f"map2_{arm}_trainseed0.json"
+        path = config_root / f"map2_{arm}_trainseed{args.train_seed}.json"
         print(f"[spurious-final] arm={arm} config={path}", flush=True)
         subprocess.check_call(
             [sys.executable, "-u", "scripts/run_experiment.py", "--config", str(path)], cwd=ROOT

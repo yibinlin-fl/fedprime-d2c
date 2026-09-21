@@ -1,6 +1,30 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-21
+Updated: 2026-09-22
+
+## 相邻论文实验图审计完成，待补实验再次确认可执行
+
+2026-09-22逐页审计RHFL、AugHFL、RAHFL、FedERL与DART PDF。RAHFL/AugHFL核心private
+task仍主要是CIFAR-10/CIFAR-10-C，公共数据为CIFAR-100；其说服力来自corruption/noise轴、
+逐客户端大表、消融和同构/异构设置，并非大量数据集或结果图。较新的DART扩展到第二private
+task、多个robust benchmark、public dataset、架构和resource Pareto图，提高了2026年的实验
+覆盖预期。完整审计：
+
+```text
+docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH.md
+```
+
+V0.4当前两图均为概念/理论图，投稿终稿至少需要新增：M2解锁的local-first effect plot和M1解锁
+的map2 DSA--utility trade-off plot。M3完成后可增加跨场景DSA forest plot；S1/S2及PEW/BER审计
+图优先放附录。待补实验统一执行卡仍为：
+
+```text
+docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+```
+
+M1/M2实现与输入契约已完成，可在代码push后经用户逐项启动；M3/S1/S2/JTT必须benchmark-first。
+核心matched实验保持`pretrain_epochs=0`；PEW独立公共预训练。S2当前是protocol-matched 40轮
+context table，不是RAHFL官方40+40 recipe。没有自动启动任何OpenI任务。
 
 ## LaTeX V0.4已模块化，等待Overleaf编译与作者化改写
 

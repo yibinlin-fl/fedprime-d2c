@@ -1,6 +1,13 @@
 # CLE-HFL 投稿前实验：执行就绪清单
 
-Updated: 2026-09-17
+Updated: 2026-09-22
+
+> 2026-09-22 readiness reconfirmation：M1/M2可在推送当前提交后按本文参数直接Formal；M3、S1、
+> S2和JTT必须benchmark-first。核心matched实验从共同`initial_states`开始，任务模型
+> `pretrain_epochs=0`，不得临时加入RAHFL式40轮本地预训练破坏归因。PEW是独立公共预训练对象：
+> M1/M2复用冻结PEW，M3在CIFAR-10公共图像上训练一次并冻结，S1训练排除motion_blur的新PEW。
+> 当前S2是40轮protocol-matched context table，不是RAHFL官方40+40完整recipe；若论文需要
+> official-budget参考，必须另立S2b协议、先benchmark并单独报告，不能混入M1主表。
 
 ## 1. 状态边界
 

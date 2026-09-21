@@ -4904,3 +4904,26 @@ LaTeX文件，随后由仓库diff核验数字、公式、引用和科学边界�
 ```text
 deliverables/cle_hfl_latex_v0_4_20260921/WEB_REVISION_AND_FIGURE_GUIDE_ZH.md
 ```
+
+## Related-Paper Dataset/Figure Audit and Result-Figure Plan - 2026-09-22
+
+用户提供的RHFL、AugHFL、RAHFL、FedERL v1和DART v2 PDF已完成全文文本与关键实验页视觉审计。
+FedERL v1与DART v2共享arXiv:2508.17381，不能当作两篇独立方法重复计数。RHFL/AugHFL/RAHFL
+核心数据集并不多：主要是CIFAR-10/CIFAR-10-C private与CIFAR-100 public，通过noise/corruption
+强度、clean/corrupted评价、逐客户端、消融和异构/同构设置建立证据。DART v2才进一步覆盖
+CIFAR-10-C/CIFAR-10-bar-C/CIFAR-10-P、第二CIFAR-100 private task、不同server data、架构、
+FL算法、Dirichlet异质性和time/energy Pareto。
+
+V0.4目前只有setting/evidence-chain和DSA/proxy-boundary两张概念图，没有直接结果图。终稿正文
+冻结为优先四图：CLE setting、paired DSA/null、local-first effect plot、map2 DSA--utility trade-off。
+跨场景forest plot视M3结果和页数作为第五图或附录。Figure 3依赖M2 seeds 1/2，Figure 4依赖M1
+seeds 1/2；M3/S1/S2分别解锁第二任务复现、taxonomy stress和HFL context图。完整规划：
+
+```text
+docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH.md
+```
+
+实验ready状态重新核对：M1/M2可按现有入口直接Formal；M3/S1/S2/JTT必须benchmark-first。核心
+matched任务模型保持`pretrain_epochs=0`并加载共同initial states；PEW是独立公共预训练对象。
+S2当前为40轮protocol-matched HFL context，不是RAHFL官方40+40完整recipe。若需要official-
+budget RAHFL参考，必须单独设计S2b并隔离报告，不能污染M1--M3归因表。当前没有启动OpenI实验。

@@ -1,6 +1,15 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-21
+Updated: 2026-09-22
+
+## 相关论文实验图与数据集审计
+
+已逐页核对RHFL、AugHFL、RAHFL、FedERL和DART五份PDF的数据集、表格与结果图，形成V0.4
+实验图缺口、正文四图方案、附录图方案及其与M1--S2的依赖关系：
+
+```text
+docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH.md
+```
 
 ## 当前模块化LaTeX论文
 

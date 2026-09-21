@@ -13,17 +13,18 @@ docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH
 
 ## 当前模块化LaTeX论文
 
-LaTeX V0.3已机械拆分为V0.4模块化源码，正文分置于`sections/`、数值表分置于`tables/`，图和
-BibTeX保持独立。展开全部输入后与V0.3内容等价；V0.4尚待Overleaf编译和PDF终检。当前入口：
+V0.5已在V0.4不可变快照上建立投稿版实验表骨架：五张正文主表、Oracle表及五类附录审计表均有
+独立文件；已完成数字保留，未完成结果统一显示红色`pending`。当前source of truth：
 
 ```text
-deliverables/cle_hfl_latex_v0_4_20260921/main.tex
-deliverables/cle_hfl_latex_v0_4_20260921/README_ZH.md
-deliverables/cle_hfl_latex_v0_4_20260921/WEB_REVISION_AND_FIGURE_GUIDE_ZH.md
-deliverables/CLE_HFL_LATEX_V0_4_MODULAR_OVERLEAF_20260921.zip
+deliverables/cle_hfl_latex_v0_5_20260922/main.tex
+deliverables/cle_hfl_latex_v0_5_20260922/README_ZH.md
+deliverables/cle_hfl_latex_v0_5_20260922/EXPERIMENT_TABLE_MATRIX_ZH.md
+deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
 ```
 
-V0.3作为拆分前历史对照继续保留，不再作为后续编辑起点。
+V0.4作为模块化内容等价快照继续保留，不再作为后续编辑起点。当前机器无LaTeX编译器；V0.5已
+通过input、label/ref、环境/括号、ZIP CRC静态检查，仍需Overleaf编译和PDF视觉终检。
 
 ## 投稿前实验已工程就绪
 

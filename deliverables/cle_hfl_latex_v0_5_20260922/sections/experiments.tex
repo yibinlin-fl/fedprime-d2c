@@ -1,0 +1,81 @@
+\section{Experiments}
+
+\subsection{Protocol and Metrics}
+
+We organize the main evidence around four questions: whether CLE induces binding-aligned behavior; whether formation is predominantly local-first; whether PEW+BER suppresses DSA beyond generic ERM/group/tail-risk alternatives; and whether suppression persists under controlled changes of the binding map or communication base.
+
+DSA is the primary shortcut metric. We also report operator-grid accuracy and frozen task utility metrics: client-average accuracy (Avg), minimum client accuracy (Worst), worst valid class--operator-cell accuracy (WCCA), and mean within-class accuracy range across operators (CFG, lower is better). Absolute values across different protocols are not compared directly; attribution relies on matched within-setting contrasts. This distinction is especially important because the original-map intervention experiment, the held-out map2 control experiment, and the FedDF-fidelity experiment intentionally use different controlled recipes. We therefore use each experiment to answer a specific scientific question rather than ranking all checkpoints in a single global leaderboard. The held-out map2 table is the primary comparison for alternative risk objectives; map1 tests dependence on one particular binding assignment; and FedDF-fidelity tests whether the shortcut-suppression effect is tied to the primary HFL communication stack. This organization prevents protocol changes from being misinterpreted as treatment effects.
+
+\input{tables/protocol_information_boundary}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig1_cle_hfl_evidence_chain.pdf}
+\caption{CLE-HFL evidence chain and information boundary. Training-time PEW+BER uses only a coarse family proxy, whereas operator metadata and the binding map are reserved for sealed, reporting-only DSA evaluation.}
+\label{fig:evidence-chain}
+\end{figure*}
+
+\subsection{Held-Out Matched Controls}
+
+A five-arm 12-round screen was used only for design and method selection; it is not treated as final scientific evidence. In particular, JTT remains a screening-only comparison and we do not claim a Formal empirical victory over JTT.
+
+The final held-out map2 comparison uses a frozen 40-round protocol with ERM, protocol-matched CVaR-DRO, PEW+GroupDRO, and PEW+BER. The four arms share the same partition, training/evaluation seed, initial states, private batch trajectory, and strict HFL communication protocol. PEW+GroupDRO and PEW+BER receive the same PEW grouping information.
+
+\input{tables/map2_method_comparison}
+
+Source-paired bootstrap differences are
+
+\[
+\mathrm{DSA(ERM)}-\mathrm{DSA(BER)}=0.182567
+\]
+
+with 95\% interval \([0.180596,0.184407]\),
+
+\[
+\mathrm{DSA(GroupDRO)}-\mathrm{DSA(BER)}=0.136834
+\]
+
+with \([0.134952,0.138706]\), and
+
+\[
+\mathrm{DSA(BER)}-\mathrm{DSA(CVaR)}=-0.011240
+\]
+
+with \([-0.012355,-0.010092]\).
+
+The matched PEW+GroupDRO result shows that shared PEW grouping alone is insufficient to reproduce BER's lower pooled DSA under this protocol. Relative to CVaR-DRO, BER has lower pooled DSA and substantially higher pooled task utility on the held-out map2 Formal. The conclusion is not uniform at client level: CVaR-DRO still has lower DSA on clients c0 and c1, while BER has lower DSA on c2 and c3; BER's operator-grid accuracy is higher on all four clients. We therefore state only that \textbf{PEW+BER achieves a better pooled shortcut--utility trade-off than CVaR-DRO on held-out map2, without uniformly dominating CVaR-DRO in per-client DSA.}
+
+\evidenceneeded{M1 multi-training-seed stability for the held-out map2 four-arm comparison. Seeds 1/2 are implemented but are not reported until Formal artifacts are returned and audited.}
+
+\subsection{Controlled Replication and Communication-Base Boundary}
+
+We next summarize matched PEW+BER comparisons under three completed settings.
+
+\input{tables/cross_setting_dataset}
+
+Matched utility deltas are not uniformly positive. On the original map they are Avg \(+1.7323\) and Worst \(-0.3760\); on map1 they are Avg \(+0.7040\) and Worst \(+1.0760\). Under FedDF-fidelity, operator-grid accuracy changes by \(-0.0400\) points and Avg by \(-0.6660\), and the frozen utility gate fails. We therefore use Table~\ref{tab:cross-setting-dataset} only to summarize within-setting DSA suppression, not to claim uniform utility improvement or a global leaderboard.
+
+On map1, only the client-specific class--operator binding map is changed while the partition, evaluation seed, training seed, initial weights, public data, evaluation grid, and frozen PEW remain fixed. All four clients reduce DSA, and pooled operator-grid accuracy changes from \(20.9450\%\) to \(21.4583\%\). This supports replication across two controlled binding directions at seed 0; it does not establish cross-partition, cross-seed, cross-dataset, or real-world generalization.
+
+The second communication-base experiment uses native single-view CE with a protocol-matched \textbf{FedDF-fidelity} adapter. Base and BER arms share initialization, private batches, public distillation, and training budget. DSA changes from \(0.136989\) to \(0.029012\), but utility is mixed: operator-grid accuracy changes by \(-0.0400\) points, last-five Avg by \(-0.6660\), and the frozen overall utility gate fails; both arms also fall below the pre-registered 20\% operator-grid learning floor. The safe interpretation is therefore: \textbf{the DSA-suppression effect is also observed under a second protocol-matched HFL communication base, although its utility gate fails.} This is not evidence for a lossless universal plugin or consistent cross-base utility improvement.
+
+\subsection{HFL Context Baselines}
+
+The final paper separates method attribution from literature context. Table~\ref{tab:map2-methods} compares alternative local risk objectives under one matched HFL protocol. The planned context table instead asks whether CLE behavior is visible across representative heterogeneous-FL communication stacks. Fidelity labels describe the implementation scope and do not imply exact reproduction of every official training budget.
+
+\input{tables/hfl_context_baselines}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig2_dsa_proxy_boundary.pdf}
+\caption{Paired directional diagnosis and proxy-identifiability boundary. DSA compares bound-class probability mass across operators for the same source; identical observable label--proxy evidence can correspond to latent worlds with different true dependence.}
+\label{fig:dsa-proxy}
+\end{figure*}
+
+\subsection{Environment Correspondence and Granularity}
+
+A non-deployable Oracle audit compares true family grouping, true operator grouping, and a random operator correspondence. Correct environment correspondence materially affects DSA in this controlled audit: Random operator DSA exceeds Oracle operator DSA by \(0.052112\), with source-bootstrap 95\% interval \([0.051231,0.052983]\). The Oracle family--operator DSA gap is only \(0.001449\), with \([0.001086,0.001790]\). This does \textbf{not} establish that operator-level environment models are universally unhelpful. It only means that the present Oracle granularity experiment does not provide sufficient evidence to justify developing an operator-level PEW for this paper. The complete Oracle table is moved to Appendix C.
+
+\subsection{Remaining Evidence Placeholders}
+
+The remaining table cells are deliberately marked pending. M1 and M2 are implemented Formal repetitions; M3 is an implemented second-private-task protocol that still requires benchmark-first execution; S1 is a bounded leave-one-operator-out taxonomy stress; S2 is a protocol-matched HFL context table; and O1 is a conditional JTT Formal. None should be described as launched, in progress, or successful until returned artifacts are audited. The paper does not add a new loss, communication mechanism, hierarchical PEW, or operator-level PEW in response to these gaps.

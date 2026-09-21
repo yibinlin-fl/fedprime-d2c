@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Held-out map2 matched method comparison. Numeric entries are completed training-seed-0 Formal results; M1 will add seeds 1/2. JTT remains screening-only until O1 Formal is completed.}
+\label{tab:map2-methods}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Arm & DSA $\downarrow$ & Operator-grid Acc. $\uparrow$ & Last-10 Avg $\uparrow$ & Last-10 Worst $\uparrow$ & WCCA $\uparrow$ & CFG $\downarrow$ \\
+\midrule
+ERM & 0.260308 & 20.3067 & 19.8578 & 16.3007 & 0.000 & 32.8325 \\
+CVaR-DRO & 0.088982 & 20.4567 & 18.6700 & 14.0380 & 0.125 & 27.7775 \\
+JTT Formal & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+PEW+GroupDRO & 0.214575 & 20.7883 & 20.9562 & 17.8140 & 0.025 & 31.5275 \\
+\textbf{PEW+BER} & \textbf{0.077741} & \textbf{23.7433} & \textbf{24.4518} & \textbf{20.4727} & \textbf{2.650} & \textbf{22.8025} \\
+\bottomrule
+\end{tabular}%
+}
+\ifdraftskeleton
+\par\smallskip
+\evidenceneeded{M1 Formal training seeds 1/2 for mean$\pm$std; O1 JTT Formal only if the final paper makes an empirical JTT comparison.}
+\fi
+\end{table*}

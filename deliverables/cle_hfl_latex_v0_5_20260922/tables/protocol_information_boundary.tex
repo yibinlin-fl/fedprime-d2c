@@ -1,0 +1,18 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Controlled protocols and information boundary. Operator metadata and binding maps are sealed from deployable training and used only for controlled construction or post-training evaluation.}
+\label{tab:protocol-boundary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllllll}
+\toprule
+Protocol & Private task & Public PEW carriers & Architectures & Rounds & Train-time environment information & Evaluation-only information \\
+\midrule
+Primary CLE / M1--M2 & CIFAR--10 & CIFAR--100 & R10/R12/ShuffleNet/MobileNetV2 & 12 or 40 & PEW family proxy & operator, binding, paired grid \\
+Second task / M3 & CIFAR--100 & CIFAR--10 & same heterogeneous set & 40 & newly trained PEW family proxy & operator, binding, paired grid \\
+Taxonomy stress / S1 & CIFAR--10 & CIFAR--100 minus motion blur & same heterogeneous set & 40 & leave-one-operator-out PEW proxy & held-out operator, binding, paired grid \\
+HFL context / S2 & CIFAR--10 & protocol-specific public data & same heterogeneous set & 40 & method-specific, no BER & operator, binding, paired grid \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Cross-binding-map, communication-base, and private-task summary. Completed rows are within-setting matched comparisons and must not be read as a global leaderboard.}
+\label{tab:cross-setting-dataset}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrrr}
+\toprule
+Private task & Binding / protocol & HFL base & Base DSA & PEW+BER DSA & Relative reduction & Avg delta \\
+\midrule
+CIFAR--10 & original map & Asymmetric HFL & 0.119644 & 0.041252 & 65.52\% & +1.7323 \\
+CIFAR--10 & map1 & Asymmetric HFL & 0.113761 & 0.049531 & 56.46\% & +0.7040 \\
+CIFAR--10 & held-out map2 (seed 0) & Asymmetric HFL & 0.260308 & 0.077741 & 70.13\% & +4.5940 \\
+CIFAR--10 & original map & FedDF-fidelity & 0.136989 & 0.029012 & 78.82\% & -0.6660 \\
+CIFAR--100 & frozen second-task map & Asymmetric HFL & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+\bottomrule
+\end{tabular}%
+}
+\ifdraftskeleton
+\par\smallskip
+\evidenceneeded{M1 seeds 1/2 for the held-out map2 summary and M3 benchmark/Formal for the CIFAR--100 row.}
+\fi
+\end{table*}

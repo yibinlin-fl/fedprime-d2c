@@ -1,0 +1,19 @@
+\ifdraftskeleton
+\begin{table*}[t]
+\centering
+\small
+\caption{Planned separation of training-seed and evaluation-source uncertainty.}
+\label{tab:seed-uncertainty}
+\begin{tabular}{llll}
+\toprule
+Experiment & Training seeds & Seed-level summary & Source-level interval \\
+\midrule
+M1 map2 methods & 0/1/2 & \pendingcell & clustered bootstrap per checkpoint \\
+M2 local-first & 0/1/2 & \pendingcell & clustered bootstrap per checkpoint \\
+M3 CIFAR--100 & 0/1/2 & \pendingcell & clustered bootstrap per checkpoint \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\evidenceneeded{Report seed mean$\pm$std separately from checkpoint-conditional source-bootstrap intervals.}
+\end{table*}
+\fi

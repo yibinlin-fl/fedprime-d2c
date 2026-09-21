@@ -2,6 +2,24 @@
 
 Updated: 2026-09-22
 
+## LaTeX V0.5实验表骨架已建立
+
+2026-09-22在不覆盖V0.4的前提下新建V0.5，并将最终实验职责写入可编译LaTeX骨架。当前正文
+五表为：协议/信息边界、M2 local-first、M1 map2方法比较、跨map/base/dataset复现、S2 HFL
+context；附录包含Oracle、S1 taxonomy stress、PEW/BER distribution audit、per-client架构审计、
+seed/source不确定性分离和计算/通信成本。JTT只保留条件性O1 Formal槽位。
+
+```text
+source: deliverables/cle_hfl_latex_v0_5_20260922/main.tex
+matrix: deliverables/cle_hfl_latex_v0_5_20260922/EXPERIMENT_TABLE_MATRIX_ZH.md
+zip:    deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
+```
+
+已完成seed-0数字原样保留；未完成单元用红色`pending`，smoke/benchmark不得填入。设置
+`\draftskeletonfalse`可隐藏完全pending的整张表。静态检查通过：input解析、label唯一性、ref解析、
+LaTeX括号/环境平衡和ZIP CRC；本机无`pdflatex/latexmk/tectonic`，所以Overleaf编译和PDF视觉终检
+仍待用户返回。当前没有启动OpenI任务，下一科学执行项仍为M1 Formal seeds 1/2。
+
 ## 相邻论文实验图审计完成，待补实验再次确认可执行
 
 2026-09-22逐页审计RHFL、AugHFL、RAHFL、FedERL与DART PDF。RAHFL/AugHFL核心private
@@ -26,9 +44,9 @@ M1/M2实现与输入契约已完成，可在代码push后经用户逐项启动�
 核心matched实验保持`pretrain_epochs=0`；PEW独立公共预训练。S2当前是protocol-matched 40轮
 context table，不是RAHFL官方40+40 recipe。没有自动启动任何OpenI任务。
 
-## LaTeX V0.4已模块化，等待Overleaf编译与作者化改写
+## LaTeX V0.4历史模块化快照
 
-2026-09-21按用户要求将单文件LaTeX V0.3机械拆分为模块化V0.4。当前source of truth已晋级为：
+2026-09-21按用户要求将单文件LaTeX V0.3机械拆分为模块化V0.4。当时的入口为：
 
 ```text
 deliverables/cle_hfl_latex_v0_4_20260921/main.tex
@@ -39,8 +57,7 @@ V0.4包含独立`sections/`、`tables/`、`figures/`和`references.bib`。递归
 忽略空白后，与V0.3全文完全一致，`CONTENT_EQUIVALENCE=PASS`；本步没有修改论文数字、公式、
 引用、证据占位符或科学边界。ZIP共19个文件、`40266` bytes，SHA256为
 `E31D53FFDCA2D59E10BC22B364CB277BC0337A70414F78B57A8C3B4B1D425108`，压缩包CRC检查通过。
-当前机器仍无`pdflatex`，故V0.4尚未完成Overleaf编译和逐页PDF终检。V0.3保留为拆分前对照，
-不得覆盖。
+V0.4现作为V0.5之前的不可变模块化快照；V0.3保留为拆分前对照，两者均不得覆盖。
 
 网页端去AI味改写、逐节提示词、科研图重设计原则和四张建议核心图记录在：
 

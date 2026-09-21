@@ -1,0 +1,22 @@
+\ifdraftskeleton
+\begin{table*}[t]
+\centering
+\small
+\caption{Planned protocol-matched HFL context table. All metric cells remain pending until S2 benchmark and Formal complete; this table is not an official-recipe leaderboard.}
+\label{tab:hfl-context}
+\begin{tabular}{llllrrr}
+\toprule
+Method & Model heterogeneity & Local robustness & Communication & DSA $\downarrow$ & Operator Acc. $\uparrow$ & Avg $\uparrow$ \\
+\midrule
+Local/ERM & yes & none & none & \pendingcell & \pendingcell & \pendingcell \\
+FedDF-fidelity & yes & none & public distillation & \pendingcell & \pendingcell & \pendingcell \\
+KT-pFL-fidelity & yes & none & knowledge transfer & \pendingcell & \pendingcell & \pendingcell \\
+FCCL protocol adapter & yes & none & logit collaboration & \pendingcell & \pendingcell & \pendingcell \\
+AugHFL-fidelity & yes & AugMix/JSD & heterogeneous collaboration & \pendingcell & \pendingcell & \pendingcell \\
+RAHFL anchor & yes & AugMix/JSD/DCL & asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\evidenceneeded{S2 benchmark-first, followed by separately authorized 40-round Formal.}
+\end{table*}
+\fi

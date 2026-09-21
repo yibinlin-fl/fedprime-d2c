@@ -4927,3 +4927,31 @@ docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH
 matched任务模型保持`pretrain_epochs=0`并加载共同initial states；PEW是独立公共预训练对象。
 S2当前为40轮protocol-matched HFL context，不是RAHFL官方40+40完整recipe。若需要official-
 budget RAHFL参考，必须单独设计S2b并隔离报告，不能污染M1--M3归因表。当前没有启动OpenI实验。
+
+## LaTeX V0.5 Submission Table Skeleton - 2026-09-22
+
+用户要求将实验表规划立即落实到论文，而不是只留在聊天。V0.4保持不可变，新建V0.5作为当前
+source of truth。正文冻结五张实验表：protocol/information boundary、local-first、held-out map2
+methods、cross-setting/dataset、HFL context。附录冻结Oracle granularity、bounded taxonomy stress、
+PEW/BER distribution audit、per-client architecture、training-seed vs source uncertainty、computation
+and communication cost。表格与实验对应关系记录在：
+
+```text
+deliverables/cle_hfl_latex_v0_5_20260922/EXPERIMENT_TABLE_MATRIX_ZH.md
+```
+
+V0.5保留全部已审核seed-0数字；M1/M2/M3/S1/S2/O1未完成字段只显示红色`pending`，不得当作
+预期值或结果。`\draftskeletontrue`用于内部骨架审阅，切换为`false`可隐藏完全pending的表。旧
+V0.4主表被保存在V0.5的`tables/legacy_v0_4/`且不被正文引用。静态input、label/ref、括号/环境及
+ZIP CRC检查通过；本机无TeX编译器，仍需Overleaf编译和返回PDF做视觉审计。
+
+```text
+source: deliverables/cle_hfl_latex_v0_5_20260922/main.tex
+zip: deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
+bytes: 48639
+sha256: 848C7ACC312AD42DC6B151F5FACC54DA756BC78A36613A76CDFB05E6A7BB3D7A
+entries: 30
+```
+
+V0.5建立不改变实验优先级：下一项仍是M1 held-out map2四臂40轮training seeds 1/2，然后M2、
+M3、S2、条件性O1和S1。当前没有启动训练任务。

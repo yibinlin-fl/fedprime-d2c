@@ -1,0 +1,40 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=0.72in,columnsep=0.24in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\definecolor{evidencered}{HTML}{A32020}
+\newcommand{\evidenceneeded}[1]{\textcolor{evidencered}{\textbf{[EVIDENCE NEEDED: #1]}}}
+
+\title{When Corruption Becomes a Label: Diagnosing and Mitigating\\
+Class--Corruption Shortcuts in Model-Heterogeneous Federated Learning}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/discussion}
+\input{sections/conclusion}
+\input{sections/appendix}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}

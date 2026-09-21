@@ -4879,3 +4879,28 @@ operator PEW将在OpenI benchmark中训练，尚未形成训练smoke或科学证
 是否仅为CIFAR-10受控任务现象；S1量化taxonomy不完全覆盖时的退化；S2提供standalone HFL文献
 坐标；O1检验hard-example reweighting解释；O3仅在保留强插件主张时检验跨通信底座迁移。任何
 单项都不能证明真实医院/汽车部署、开放世界corruption或partition稳定性。
+
+## Modular LaTeX V0.4 and Author-Voice Workflow - 2026-09-21
+
+用户决定立即将论文改为可换会议模板的模块化结构，并随后在网页端逐节降低模板化AI文风。V0.3
+已机械拆分为V0.4，正文、表格、图片与BibTeX分别管理。递归展开后的非空白内容与V0.3完全一致，
+所以V0.4是结构升级，不是新的科学修订版本。
+
+```text
+source of truth: deliverables/cle_hfl_latex_v0_4_20260921/main.tex
+Overleaf ZIP:    deliverables/CLE_HFL_LATEX_V0_4_MODULAR_OVERLEAF_20260921.zip
+bytes:           40266
+sha256:          E31D53FFDCA2D59E10BC22B364CB277BC0337A70414F78B57A8C3B4B1D425108
+equivalence:     PASS
+Overleaf compile/PDF visual audit: PENDING
+```
+
+V0.3必须保留为拆分前对照。网页端与仓库不能同时编辑；网页端每轮只处理一个section并返回完整
+LaTeX文件，随后由仓库diff核验数字、公式、引用和科学边界。去AI味不是同义词降重，也不是规避
+检测器，而是删除重复元话语、打破机械平行结构、用具体estimand和实验contrast驱动论证。绘图禁止
+先自由生成“漂亮图”；应先冻结科学问题、panel变量、统计单位、真实数据来源和视觉映射，再生成
+可复现SVG/PDF。完整网页端提示词与绘图规范位于：
+
+```text
+deliverables/cle_hfl_latex_v0_4_20260921/WEB_REVISION_AND_FIGURE_GUIDE_ZH.md
+```

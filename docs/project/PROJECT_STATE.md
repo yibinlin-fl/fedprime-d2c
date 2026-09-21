@@ -2193,3 +2193,20 @@ non-scientific. Full launch cards, exact parameters, output names and download f
 ```text
 docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
 ```
+
+## 2026-09-21 Current Paper Source State
+
+```text
+current LaTeX source: deliverables/cle_hfl_latex_v0_4_20260921/main.tex
+current upload ZIP:  deliverables/CLE_HFL_LATEX_V0_4_MODULAR_OVERLEAF_20260921.zip
+V0.3 relation:       immutable pre-modularization reference
+content equivalence: PASS after recursive input expansion and whitespace normalization
+ZIP integrity:       PASS, 19 files, 40266 bytes
+local TeX compile:   unavailable (pdflatex not installed)
+Overleaf compile:    pending
+PDF visual audit:    pending
+```
+
+The paper now separates `sections/`, `tables/`, `figures/`, and `references.bib`. Future venue
+changes should primarily modify the template layer in `main.tex`. Scientific prose revisions must
+remain section-scoped and evidence-audited; do not edit the repository and Overleaf concurrently.

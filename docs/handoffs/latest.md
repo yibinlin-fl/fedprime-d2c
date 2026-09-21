@@ -1,6 +1,32 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-17
+Updated: 2026-09-21
+
+## LaTeX V0.4已模块化，等待Overleaf编译与作者化改写
+
+2026-09-21按用户要求将单文件LaTeX V0.3机械拆分为模块化V0.4。当前source of truth已晋级为：
+
+```text
+deliverables/cle_hfl_latex_v0_4_20260921/main.tex
+deliverables/CLE_HFL_LATEX_V0_4_MODULAR_OVERLEAF_20260921.zip
+```
+
+V0.4包含独立`sections/`、`tables/`、`figures/`和`references.bib`。递归展开全部`\input`并
+忽略空白后，与V0.3全文完全一致，`CONTENT_EQUIVALENCE=PASS`；本步没有修改论文数字、公式、
+引用、证据占位符或科学边界。ZIP共19个文件、`40266` bytes，SHA256为
+`E31D53FFDCA2D59E10BC22B364CB277BC0337A70414F78B57A8C3B4B1D425108`，压缩包CRC检查通过。
+当前机器仍无`pdflatex`，故V0.4尚未完成Overleaf编译和逐页PDF终检。V0.3保留为拆分前对照，
+不得覆盖。
+
+网页端去AI味改写、逐节提示词、科研图重设计原则和四张建议核心图记录在：
+
+```text
+deliverables/cle_hfl_latex_v0_4_20260921/WEB_REVISION_AND_FIGURE_GUIDE_ZH.md
+```
+
+网页端每次只改一个`sections/*.tex`，不得改数字、公式、citation key、`[EVIDENCE NEEDED]`或
+扩大seed/dataset/taxonomy边界。当前两张图暂时保留；后续图稿应先冻结科学问题和真实数据输入，
+再用可复现Matplotlib/TikZ/SVG实现，避免生成式宣传图风格。没有启动任何实验。
 
 ## 当前主线与暂停点（用户于2026-09-17再次确认）
 

@@ -1,6 +1,20 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-17
+Updated: 2026-09-21
+
+## 当前模块化LaTeX论文
+
+LaTeX V0.3已机械拆分为V0.4模块化源码，正文分置于`sections/`、数值表分置于`tables/`，图和
+BibTeX保持独立。展开全部输入后与V0.3内容等价；V0.4尚待Overleaf编译和PDF终检。当前入口：
+
+```text
+deliverables/cle_hfl_latex_v0_4_20260921/main.tex
+deliverables/cle_hfl_latex_v0_4_20260921/README_ZH.md
+deliverables/cle_hfl_latex_v0_4_20260921/WEB_REVISION_AND_FIGURE_GUIDE_ZH.md
+deliverables/CLE_HFL_LATEX_V0_4_MODULAR_OVERLEAF_20260921.zip
+```
+
+V0.3作为拆分前历史对照继续保留，不再作为后续编辑起点。
 
 ## 投稿前实验已工程就绪
 

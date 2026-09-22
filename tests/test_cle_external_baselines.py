@@ -13,6 +13,8 @@ from fedprime.communication.baselines import (
 from fedprime.communication.public_logits import CommunicationContext
 from fedprime.data.loaders import DatasetStats
 from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_configs
+from scripts.run_cle_hfl_context import ARMS, context_arm_config
+from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 
 
 def test_baseline_registry_uses_distinct_official_core_mechanisms() -> None:
@@ -123,3 +125,45 @@ def test_fedtgp_trains_finite_global_prototypes_and_local_loss() -> None:
     local_loss = strategy.local_loss(model=models[0], clean_images=images0, labels=labels)
     assert torch.isfinite(local_loss)
     assert local_loss.requires_grad
+
+
+def test_private_loader_generator_state_is_restored_across_two_rounds() -> None:
+    def build_loader(seed: int) -> DataLoader:
+        generator = torch.Generator().manual_seed(seed)
+        values = torch.arange(24)
+        return DataLoader(
+            TensorDataset(values, values),
+            batch_size=4,
+            shuffle=True,
+            generator=generator,
+        )
+
+    control = build_loader(20260923)
+    inspected = build_loader(20260923)
+    control_trace = []
+    inspected_trace = []
+    for _ in range(2):
+        snapshots = AsymHFLExperiment._capture_private_loader_generator_states([inspected])
+        list(inspected)
+        AsymHFLExperiment._restore_private_loader_generator_states(snapshots)
+        inspected_trace.append(next(iter(inspected))[0].clone())
+        control_trace.append(next(iter(control))[0].clone())
+
+    assert all(torch.equal(left, right) for left, right in zip(control_trace, inspected_trace))
+
+
+def test_hfl_pairing_mode_is_two_rounds_and_cheap(tmp_path) -> None:
+    configs = {
+        arm: context_arm_config(
+            arm,
+            package_root=tmp_path,
+            mode="pairing",
+            output_root=tmp_path / "outputs",
+            device="cpu",
+        )
+        for arm in ARMS
+    }
+    assert all(config["train"]["rounds"] == 2 for config in configs.values())
+    assert all(config["train"]["max_local_batches"] == 2 for config in configs.values())
+    assert configs["fedtgp_adapter"]["method"]["baseline"]["server_epochs"] == 1
+    assert configs["rhfl_adapter"]["method"]["baseline"]["max_quality_batches"] == 1

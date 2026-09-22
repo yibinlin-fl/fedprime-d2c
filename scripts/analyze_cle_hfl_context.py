@@ -18,12 +18,31 @@ from scripts.analyze_cle_v2_mechanism_stage1 import grid_accuracy  # noqa: E402
 from scripts.run_cle_hfl_context import ARMS, fidelity_manifest  # noqa: E402
 
 
+def audit_local_batch_pairing(outputs_root: Path) -> dict:
+    traces = {}
+    for arm in ARMS:
+        path = outputs_root / f"cle_hfl_context_{arm}_trainseed0" / "local_batch_trace.jsonl"
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        traces[arm] = {
+            (int(row["round"]), int(row["client"]), int(row["batch"])): str(row["sha256"])
+            for row in rows
+        }
+    reference = traces["local_erm"]
+    arm_matches = {arm: trace == reference for arm, trace in traces.items()}
+    return {
+        "reference_arm": "local_erm",
+        "trace_rows": {arm: len(trace) for arm, trace in traces.items()},
+        "arm_matches": arm_matches,
+        "all_arms_match": all(arm_matches.values()),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Analyze the HFL context table.")
     parser.add_argument("--package-root", type=Path, required=True)
     parser.add_argument("--outputs-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--mode", choices=("benchmark", "formal"), required=True)
+    parser.add_argument("--mode", choices=("pairing", "benchmark", "formal"), required=True)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--confirm-formal", action="store_true")
     args = parser.parse_args()
@@ -45,6 +64,9 @@ def main() -> None:
             "last10": trailing_metrics(root / "metrics.csv", 10),
         }
     rahfl_null = shuffled_binding_null(probabilities[-1], labels, binding, permutations=1000, seed=20260917)
+    pairing_audit = audit_local_batch_pairing(args.outputs_root.resolve())
+    if args.mode == "pairing" and not pairing_audit["all_arms_match"]:
+        raise RuntimeError(f"Local-batch pairing audit failed: {pairing_audit}")
     summary = {
         "protocol": "cle_hfl_context_table_analysis_v2",
         "mode": args.mode,
@@ -55,6 +77,7 @@ def main() -> None:
             "null_p95": float(rahfl_null["null_p95"]),
             "p_value": float(rahfl_null["p_value"]),
         },
+        "local_batch_pairing": pairing_audit,
         "scientific_evidence": args.mode == "formal",
         "claim_boundary": "Context table only; it does not identify BER's causal contribution.",
     }

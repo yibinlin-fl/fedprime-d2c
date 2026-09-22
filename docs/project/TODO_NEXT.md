@@ -1,6 +1,18 @@
 # TODO Next
 
-## Current - M2 Running / S2-v2 Engineering Complete - 2026-09-22
+## Current - S2 pairing fix complete / real-data Kill Test pending - 2026-09-23
+
+- 已完成通用private-loader generator状态隔离及两轮合成Kill Test。
+- 下一步在最终选定的计算平台运行S2 `mode=pairing`；要求十臂、2轮、4客户端共8条trace/arm，
+  全部与Local/ERM完全相同。
+- pairing通过后，在同一实验室服务器运行短benchmark并据此评估十臂40轮Formal成本。
+- S2 Formal必须在同一平台完整运行十臂；禁止混用OpenI benchmark和实验室Formal数值。
+- 不要求为硬件统一而重跑M1、map1、FedDF、Oracle等已经完成的独立OpenI证据。
+
+M2 seeds 1/2原始full-fit任务因成本超预算已由用户停止；partial输出没有科学意义。M3/S1/S2/JTT
+仍遵守benchmark-first，当前没有长任务或Formal获得启动授权。
+
+## Previous - M2 launch / S2-v2 engineering - 2026-09-22
 
 M1 held-out map2 four-arm training-seed stability is complete with
 `GO_MAP2_TRAINING_SEED_STABILITY`; do not rerun or tune it. The next experiment is M2: repeat the

@@ -27,7 +27,7 @@ from scripts.openi_cle_v2_plugin_stage2_entry import package_light_outputs  # no
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="OpenI submission HFL context table.")
-    parser.add_argument("--mode", choices=("benchmark", "formal"), default="benchmark")
+    parser.add_argument("--mode", choices=("pairing", "benchmark", "formal"), default="benchmark")
     parser.add_argument("--confirm_formal", choices=("false", "true"), default="false")
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", choices=("false", "true"), default="false")
@@ -103,7 +103,7 @@ def main() -> None:
                 "training_seconds": training_seconds,
                 "analysis_seconds": analysis_seconds,
                 "scientific_evidence": args.mode == "formal",
-                "warning": None if args.mode == "formal" else "Benchmark is not scientific evidence.",
+                "warning": None if args.mode == "formal" else f"{args.mode.title()} is not scientific evidence.",
             },
             indent=2,
         ),

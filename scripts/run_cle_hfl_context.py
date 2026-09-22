@@ -27,8 +27,8 @@ ARMS = (
     "aughfl_fidelity",
     "rahfl_fidelity",
 )
-ROUND_BUDGET = {"benchmark": 1, "formal": 40}
-LOCAL_BATCH_BUDGET = {"benchmark": 8, "formal": 16}
+ROUND_BUDGET = {"pairing": 2, "benchmark": 1, "formal": 40}
+LOCAL_BATCH_BUDGET = {"pairing": 2, "benchmark": 8, "formal": 16}
 
 
 def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: Path, device: str) -> dict:
@@ -42,12 +42,12 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
         device=device,
         output_root=output_root,
         smoke=False,
-        benchmark=mode == "benchmark",
+        benchmark=mode != "formal",
     )
     config["experiment_name"] = f"cle_hfl_context_{arm}_trainseed0"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
-    config["train"]["max_test_batches"] = 1 if mode == "benchmark" else None
-    config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode == "benchmark" else None
+    config["train"]["max_test_batches"] = 1 if mode != "formal" else None
+    config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode != "formal" else None
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
     if arm == "local_erm":
@@ -56,13 +56,17 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
         config["method"].update({"communication": "fedmd", "cl_module": "none", "lambda_jsd": 0.0})
     elif arm == "fedproto_adapter":
         config["method"].update({"communication": "fedproto", "cl_module": "none", "lambda_jsd": 0.0})
-        config["method"]["baseline"] = {"proto_weight": 1.0}
+        config["method"]["baseline"] = {
+            "proto_weight": 1.0,
+            "max_proto_batches": 1 if mode == "pairing" else None,
+        }
     elif arm == "fedtgp_adapter":
         config["method"].update({"communication": "fedtgp", "cl_module": "none", "lambda_jsd": 0.0})
         config["method"]["baseline"] = {
             "proto_weight": 10.0,
             "server_learning_rate": 0.01,
-            "server_epochs": 100,
+            "max_proto_batches": 1 if mode == "pairing" else None,
+            "server_epochs": 1 if mode == "pairing" else 100,
             "server_batch_size": 10,
             "margin_threshold": 100.0,
         }
@@ -88,7 +92,10 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
         config["method"]["baseline"] = {"offdiag_weight": 0.0051, "eps": 1.0e-6}
     elif arm == "rhfl_adapter":
         config["method"].update({"communication": "rhfl", "cl_module": "rhfl_sce", "lambda_jsd": 0.0})
-        config["method"]["baseline"] = {"beta": 0.5}
+        config["method"]["baseline"] = {
+            "beta": 0.5,
+            "max_quality_batches": 1 if mode == "pairing" else None,
+        }
     elif arm == "aughfl_fidelity":
         config["method"].update({"communication": "aughfl_fidelity", "cl_module": "none", "lambda_jsd": 12.0})
         config["method"]["baseline"] = {"collaborative_lr": 1.0e-3}

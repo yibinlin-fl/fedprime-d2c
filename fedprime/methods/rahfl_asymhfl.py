@@ -617,7 +617,7 @@ class AsymHFLExperiment:
                     col_loss = 0.0
                 else:
                     print(f"[heartbeat] round {round_idx:03d} collaborative phase", flush=True)
-                    col_loss = self._collaborative_phase(
+                    col_loss = self._collaborative_phase_with_loader_isolation(
                         models=models,
                         optimizers=optimizers,
                         public_loader=public_loader,
@@ -643,7 +643,7 @@ class AsymHFLExperiment:
                 )
                 if communication_phase == "post_local":
                     print(f"[heartbeat] round {round_idx:03d} post-local collaborative phase", flush=True)
-                    col_loss = self._collaborative_phase(
+                    col_loss = self._collaborative_phase_with_loader_isolation(
                         models=models,
                         optimizers=optimizers,
                         public_loader=public_loader,
@@ -972,6 +972,54 @@ class AsymHFLExperiment:
                 optimizers[client_id].step()
                 losses.append(float(loss.detach().cpu()))
         return sum(losses) / max(len(losses), 1)
+
+    @staticmethod
+    def _capture_private_loader_generator_states(private_loaders):
+        """Snapshot distinct generators that can control private-loader order.
+
+        Communication baselines may inspect private fit loaders before or after
+        local optimization. Iterating a shuffled DataLoader advances its
+        generator and would otherwise change the next local minibatch order.
+        Loader and sampler objects commonly share one generator, so snapshots
+        are de-duplicated by identity.
+        """
+        if private_loaders is None:
+            return []
+        loaders = private_loaders.values() if isinstance(private_loaders, dict) else private_loaders
+        snapshots = []
+        seen = set()
+        for loader in loaders:
+            candidates = [
+                getattr(loader, "generator", None),
+                getattr(getattr(loader, "sampler", None), "generator", None),
+                getattr(getattr(loader, "batch_sampler", None), "generator", None),
+                getattr(
+                    getattr(getattr(loader, "batch_sampler", None), "sampler", None),
+                    "generator",
+                    None,
+                ),
+            ]
+            for generator in candidates:
+                if not isinstance(generator, torch.Generator) or id(generator) in seen:
+                    continue
+                seen.add(id(generator))
+                snapshots.append((generator, generator.get_state().clone()))
+        return snapshots
+
+    @staticmethod
+    def _restore_private_loader_generator_states(snapshots) -> None:
+        for generator, state in snapshots:
+            generator.set_state(state)
+
+    def _collaborative_phase_with_loader_isolation(self, **kwargs) -> float:
+        """Run communication without allowing it to perturb local data order."""
+        snapshots = self._capture_private_loader_generator_states(
+            self._communication_private_loaders
+        )
+        try:
+            return self._collaborative_phase(**kwargs)
+        finally:
+            self._restore_private_loader_generator_states(snapshots)
 
     def _cs_public_views(self, images: torch.Tensor, stats, cs_cfg: dict) -> dict[str, torch.Tensor]:
         probe_groups = list(cs_cfg.get("probe_groups", ["clean", "noise", "blur", "weather", "digital"]))

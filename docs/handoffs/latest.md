@@ -1,6 +1,19 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-22
+Updated: 2026-09-23
+
+## S2 loader配对修复完成，待真实两轮Kill Test
+
+S2 benchmark发现的private DataLoader generator污染已由通用通信隔离层修复：任何pre-local或
+post-local通信读取private fit loader后都会恢复loader/sampler generator状态，防止改变本地训练
+batch顺序；FedProto后续轮次也被覆盖。新增`mode=pairing`固定2轮、每客户端2个local batches，
+并将FedTGP/RHFL/FedProto的昂贵私有扫描压到1；只验证十臂local trace是否逐项匹配，不产生性能
+证据。26项相关回归测试、静态编译和两轮合成generator Kill Test通过。S2 Formal仍未授权，必须
+先取得真实输入上的`10/10 arm trace match`并在目标服务器重新benchmark成本。
+
+若转到实验室服务器，无需重跑既有OpenI论文证据；但S2 Formal尚未存在，因此必须在实验室服务器
+从同一commit、同一输入哈希和同一协议完整运行十臂，不能把OpenI benchmark臂与实验室Formal臂
+拼成一张表。不同GPU/软件栈需披露；同一matched比较内部必须同平台、同配置成组完成。
 
 ## S2-v2十臂benchmark完成：执行PASS，当前Formal NO-GO
 

@@ -1,6 +1,6 @@
 # CLE-HFL 投稿前实验：执行就绪清单
 
-Updated: 2026-09-22
+Updated: 2026-09-23
 
 > 2026-09-22 result update：M1 seeds 1/2已完成并与seed 0聚合为
 > `GO_MAP2_TRAINING_SEED_STABILITY`。M2可按本文参数直接Formal；M3、S1、
@@ -180,7 +180,10 @@ download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s1_t
 2026-09-22 benchmark更新：十臂均完成且输入/输出完整，但总训练约117.3分钟。FedTGP和RHFL各
 约46分钟；40轮Formal乐观成本下限约78.2小时，超过当前额度。此外FedTGP/RHFL因pre-local
 通信推进private DataLoader generator，local batch trace与其余八臂不匹配。当前
-`FORMAL_AUTHORIZED=false`；修复loader-state隔离并通过至少2轮配对Kill Test前，禁止启动Formal。
+`FORMAL_AUTHORIZED=false`。2026-09-23已实现通用loader-generator状态隔离：pre-local通信后在
+local phase前恢复，post-local通信后恢复到通信前状态；该实现同时覆盖FedProto后续轮次，而非
+只对FedTGP/RHFL按名称打补丁。26项相关回归测试（含两轮合成配对测试）通过。仍需先运行新增的
+S2 `pairing`模式，取得真实十臂、两轮、4客户端的`10/10 arm trace match`，才能解除公平性阻塞。
 单轮FedProto与Local一致是round-0无global prototype的预期warm-up，不是方法等价证据。
 
 回答：CLE不是只在一个自定义通信实现上出现，并将论文放回HFL文献坐标。十个独立方法为
@@ -192,16 +195,40 @@ PEW+BER，也不承担BER归因。FedTGP只能称protocol-matched core adapter�
 ```text
 dataset display/upload/hash: 与M2相同，复用
 entry: scripts/openi_cle_hfl_context_entry.py
+pairing:   mode=pairing,   confirm_formal=false, data_source="", skip_install=false
 benchmark: mode=benchmark, confirm_formal=false, data_source="", skip_install=false
 formal:    mode=formal,    confirm_formal=true,  data_source="", skip_install=false
 GPU: 1 x V100 32GB
-output: cle_hfl_context_{benchmark|formal}_outputs.tar.gz
+output: cle_hfl_context_{pairing|benchmark|formal}_outputs.tar.gz
 download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s2_hfl_context
 ```
+
+`pairing`固定2轮、2 local batches/client/round，并把FedTGP server epochs、FedProto prototype
+scan和RHFL quality scan压到1，仅验证数据轨迹隔离；它不是性能benchmark，更不是论文证据。
+通过条件是每臂8条trace（2轮×4客户端）且十臂逐项与Local/ERM完全相同。
 
 Formal固定40轮。FedDF/KT-pFL/AugHFL标为fidelity adapter；FedMD/FedProto/FedTGP/FCCL/RHFL
 只能写protocol-matched adapter或core adapter，不得写成各论文完整官方recipe复现。当前不运行
 单独的AugHFL/RAHFL官方40+40表。
+
+### 7.1 从OpenI迁移到实验室服务器的证据边界
+
+无需把已经完成的M1、map1、FedDF、Oracle、DSA/BER审计等OpenI证据全部重跑。硬件变化本身
+不会使旧结果失效；论文可以在不同硬件上运行不同实验，只需逐实验披露硬件与软件环境。
+
+但同一张matched比较表不得把不同平台产生的arms拼接。若S2 Formal改在实验室服务器运行，必须：
+
+1. 在该服务器从同一Git commit启动完整十臂，不能复用OpenI benchmark某些臂的数值；
+2. 使用同一694118746-byte输入包及其SHA256、同一train seed、initial states、partition、40轮和
+   16 local batches/client/round；
+3. 固定并记录GPU型号/数量、驱动、CUDA、cuDNN、PyTorch、Python和依赖锁定结果；
+4. 先在实验室服务器运行`mode=pairing`，再运行该服务器自己的短benchmark估算真实成本；
+5. 每个matched实验内部的所有arms必须在同一软件栈和同类GPU上完成；不得跨平台挑选最好结果；
+6. 保存完整resolved configs、Git commit、输入哈希、local traces、checkpoint、metrics和环境清单。
+
+不同GPU即使seed相同也可能因浮点内核产生轻微差异；这属于可报告的实现环境差异，不要求重跑
+历史实验。若未来为同一实验补training seeds，优先让该实验的所有新增arms在同一实验室环境成组
+运行，并把seed-level结果作为独立重复，而不是声称bitwise复现OpenI。
 
 ## 8. 条件性O1：JTT Formal
 

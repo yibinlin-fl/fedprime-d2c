@@ -130,6 +130,11 @@ mean ± std；source-bootstrap 与 seed variation 分开报告。
 
 ### M2. HFL-vs-Local 四臂 training-seed stability
 
+2026-09-22执行更新：seeds 1/2任务因完整fit epoch导致预计50--70小时成本而由用户主动停止。
+日志在8.5小时处仅完成seed 1首臂`h0_b`的round 11附近；没有形成四臂配对结果，不得作为证据，
+也不构成NO-GO。M2暂缓。未来若恢复，必须给所有arms和seeds设置相同显式local-batch预算、
+重新运行seed 0/1/2，并与历史full-fit seed-0分开报告。
+
 目的：把 local-first 从 seed-0 机制发现提升为训练随机性下可复现结论。
 
 协议：

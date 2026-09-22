@@ -9,6 +9,11 @@ Updated: 2026-09-22
 > M1/M2复用冻结PEW，M3在CIFAR-10公共图像上训练一次并冻结，S1训练排除motion_blur的新PEW。
 > 当前S2是40轮protocol-matched context table，不是RAHFL官方40+40完整recipe；若论文需要
 > official-budget参考，必须另立S2b协议、先benchmark并单独报告，不能混入M1主表。
+>
+> 2026-09-22 cost incident：M2 seeds 1/2 Formal因未设置`max_local_batches`而使用完整fit epoch，
+> 8.5小时后仍只到seed 1首臂round 11，预计完整任务约50--70小时。用户已主动停止；partial输出
+> 无科学意义，M2暂缓且不得原样重启。用户剩余OpenI额度约9小时，下一项只运行M3 seed-0
+> benchmark，Formal需依据真实分段计时重新授权。
 
 ## 1. 状态边界
 
@@ -23,15 +28,15 @@ operator、固定severity=3的完整paired grid，状态`PASS`。
 ## 2. 推荐执行顺序
 
 ```text
-M2 local-first training seeds 1/2
--> M3 CIFAR-100 benchmark
+M2 local-first training seeds 1/2（成本超预算，已停止并暂缓）
+-> M3 CIFAR-100 seed-0 benchmark
 -> 经成本确认后 M3 Formal seeds 0/1/2
 -> S1 bounded taxonomy benchmark/Formal
 -> S2-v2 ten-arm HFL context benchmark/Formal
 -> 仅在正文需要正式比较时运行 O1 JTT 或 O3 KT/FCCL插件实验
 ```
 
-M1已经完成；M2已有同协议历史成本信息，可在用户明确授权后直接Formal；M3/S1/S2/JTT是新的长协议，
+M1已经完成；M2原成本估计已被真实Formal日志否定，恢复前必须显式冻结local-batch上限并重新benchmark；M3/S1/S2/JTT是新的长协议，
 必须先benchmark。不要一次性提交所有Formal。
 
 ## 3. M1：held-out map2 四臂40轮多training-seed（完成）

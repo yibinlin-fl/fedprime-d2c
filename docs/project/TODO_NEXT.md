@@ -2552,3 +2552,11 @@ O3: matched plugin transfer across KT-pFL/FCCL; only needed for a strong plugin-
 Do not start paid, benchmark, Formal, multi-seed or 40-round jobs implicitly. The exact commands,
 datasets, hashes, parameters, output archives and ready-made download directories are recorded in
 `docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md`.
+
+# 2026-09-22 M2成本中止后的当前顺序
+
+- M2 seeds 1/2 full-fit Formal已由用户停止：8.5小时仅到seed1首臂round11，partial结果禁用；
+- 下一项只运行M3 CIFAR-100 seed-0 benchmark，获取PEW/训练/分析分段计时；
+- 未看M3 benchmark前，不授权M3 Formal，也不启动S1/S2/JTT；
+- 用户当前OpenI剩余额度约9小时，所有后续Formal必须显式核对round与local-batch预算；
+- M2若未来恢复，另立统一batch-capped三seed协议，不与full-fit seed-0混合。

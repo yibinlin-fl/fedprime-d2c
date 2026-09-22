@@ -2,6 +2,18 @@
 
 Updated: 2026-09-22
 
+## M2多seed Formal因成本超预算主动停止
+
+用户于2026-09-22停止M2 local-first seeds 1/2任务。回传日志显示任务无报错，但Formal未设置
+`max_local_batches`，每客户端约8500个fit样本、batch size 64，即每轮约133个local batches；
+运行8.5小时后仍仅位于train seed 1首臂`h0_b`的round 11 local phase。完整八臂预计需要约
+50--70小时，超过用户剩余9小时OpenI额度。该中止不产生完整配对contrast，无科学结论，也不是
+NO-GO。禁止把partial h0结果纳入论文。M2暂缓，若未来恢复必须重新冻结显式local-batch预算并
+benchmark-first，不能与既有full-fit seed-0直接混合。
+
+当前下一执行项改为M3 CIFAR-100 `mode=benchmark, train_seed=0`，仅用于测量PEW训练、四臂
+1-round/8-batch训练和分析成本；benchmark不是科学证据。M3 Formal仍未授权。
+
 ## S2-v2十臂HFL context与FedTGP Kill Test完成
 
 当前S2从六臂扩展为十臂：Local/ERM、FedMD、FedProto、FedTGP、FedDF、KT-pFL、FCCL、RHFL、

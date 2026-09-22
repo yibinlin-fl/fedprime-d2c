@@ -1,6 +1,21 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-09-06
+Last updated: 2026-09-22
+
+## Current Paper State: M1 Multi-Seed GO / M2 Next - 2026-09-22
+
+```text
+M1 map2 four-arm seeds 0/1/2: GO_MAP2_TRAINING_SEED_STABILITY
+single-seed gates:               PASS for 0/1/2
+multi-seed gates:                4/4 PASS
+V0.5 method table:               UPDATED WITH MEAN +/- STD
+next experiment:                 M2 local-first seeds 1/2 Formal
+active OpenI task:               NONE
+```
+
+M1 establishes training-randomness stability only for the fixed map2/partition/CIFAR-10 controlled
+scenario. It does not cover partitions, a second dataset, open-world corruptions, or real deployment.
+See `deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md`.
 
 ## Current Implementation State: LCRE M0 Ready Through Local Benchmark - 2026-09-06
 

@@ -4923,7 +4923,7 @@ seeds 1/2；M3/S1/S2分别解锁第二任务复现、taxonomy stress和HFL conte
 docs/research/status/CLE_HFL_RELATED_PAPER_EXPERIMENT_FIGURE_AUDIT_2026_09_22_ZH.md
 ```
 
-实验ready状态重新核对：M1/M2可按现有入口直接Formal；M3/S1/S2/JTT必须benchmark-first。核心
+当时实验ready状态重新核对为：M1/M2可按现有入口直接Formal；M3/S1/S2/JTT必须benchmark-first。核心
 matched任务模型保持`pretrain_epochs=0`并加载共同initial states；PEW是独立公共预训练对象。
 S2当前为40轮protocol-matched HFL context，不是RAHFL官方40+40完整recipe。若需要official-
 budget RAHFL参考，必须单独设计S2b并隔离报告，不能污染M1--M3归因表。当前没有启动OpenI实验。
@@ -4948,10 +4948,63 @@ ZIP CRC检查通过；本机无TeX编译器，仍需Overleaf编译和返回PDF�
 ```text
 source: deliverables/cle_hfl_latex_v0_5_20260922/main.tex
 zip: deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
-bytes: 48639
-sha256: 848C7ACC312AD42DC6B151F5FACC54DA756BC78A36613A76CDFB05E6A7BB3D7A
+bytes: 49216
+sha256: B399A7A3967906EDBC39E18D32FA99775C19D033F109C75B583870B2CF775E33
 entries: 30
 ```
 
-V0.5建立不改变实验优先级：下一项仍是M1 held-out map2四臂40轮training seeds 1/2，然后M2、
-M3、S2、条件性O1和S1。当前没有启动训练任务。
+V0.5建立时的实验优先级为M1 held-out map2四臂40轮training seeds 1/2，然后M2、M3、S2、
+条件性O1和S1；M1随后已按下一节记录完成。
+
+## Held-Out Map2 Multi-Training-Seed Stability GO - 2026-09-22
+
+M1新增training seeds 1/2 Formal包已返回，与2026-09-13完成的seed 0按冻结分析器合并。两个新包
+输入审计PASS；每个seed四臂各40行metrics、160条local traces且轨迹匹配；prediction cache均为
+`[4,4,1000,15,10]`且finite；`scientific_evidence=true`、`cdep_used=false`。seeds 1/2各自的
+I0/S0/P1/P2/P3/P4/P5全部PASS，verdict均为`GO_FOUR_ARM_HELDOUT_MAP2`。
+
+三seed mean +/- sample std：
+
+```text
+arm             DSA                  grid acc              last10 Avg
+ERM             0.250530+/-0.008670  20.4950+/-0.3718      19.9589+/-0.1212
+CVaR-DRO        0.086654+/-0.005514  19.2206+/-1.1055      18.5788+/-0.3102
+PEW+GroupDRO    0.205417+/-0.008045  21.4517+/-0.5783      20.9963+/-0.0924
+PEW+BER         0.071470+/-0.011288  25.1772+/-1.2522      24.5466+/-0.1098
+```
+
+冻结contrast：
+
+```text
+ERM-BER DSA          0.179060+/-0.008594; favorable 3/3 seeds
+GroupDRO-BER DSA     0.133947+/-0.011518; favorable 3/3 seeds
+BER-CVaR DSA        -0.015184+/-0.015411; BER lower 3/3 seeds
+BER-CVaR grid       +5.9567+/-2.3151 pp
+BER-ERM grid        +4.6822+/-1.0925 pp
+BER-ERM last10 Avg  +4.5877+/-0.1569 pp
+```
+
+四项multi-seed稳定性门槛全部PASS，正式verdict为`GO_MAP2_TRAINING_SEED_STABILITY`。这证明
+固定map2/partition/CIFAR-10受控CLE下方法结论跨training randomness稳定；不能证明跨partition、
+dataset、binding-map population或真实部署。三seed均值下BER对CVaR的pooled DSA和utility更好，
+但per-client DSA仍非统一支配：c0/c1由CVaR更低，c2/c3由BER更低。
+
+```text
+seed1 archive: 9325283 bytes
+SHA256: DAA0C775E00589FA0A4CBE1AD077C7A53FBBB8879B132542B0C3C09F2AF01253
+seed2 archive: 9309538 bytes
+SHA256: 465D87D4B1121AD640F365BC1AAB3C504FE62A7413F35E513CEEA81F3CF557BB
+seed1 runtime: 9810.711 s
+seed2 runtime: 9757.306 s
+combined runtime: 19568.017 s (5 h 26 m 08 s)
+```
+
+正式报告与机器可读聚合结果：
+
+```text
+deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json
+```
+
+V0.5论文的method table、cross-setting table、per-client appendix、seed uncertainty、摘要、实验、
+讨论与结论已同步更新。M1完成后下一实验为M2 local-first training seeds 1/2 Formal。

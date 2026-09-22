@@ -1,0 +1,75 @@
+{
+  "protocol": "cle_map2_four_arm_multiseed_v1",
+  "per_seed_key_deltas": {
+    "0": {
+      "erm_minus_pew_ber_dsa": 0.18256703947349817,
+      "pew_groupdro_minus_pew_ber_dsa": 0.13683388637063,
+      "pew_ber_minus_cvar_dsa": -0.011240106688525778,
+      "pew_ber_minus_cvar_operator_accuracy_pp": 3.286666666666669,
+      "pew_ber_minus_erm_operator_accuracy_pp": 3.436666666666671,
+      "pew_ber_minus_erm_last10_avg_pp": 4.593999999999998
+    },
+    "1": {
+      "erm_minus_pew_ber_dsa": 0.18534529681175632,
+      "pew_groupdro_minus_pew_ber_dsa": 0.14374617285174865,
+      "pew_ber_minus_cvar_dsa": -0.03218362562485464,
+      "pew_ber_minus_cvar_operator_accuracy_pp": 7.176666666666666,
+      "pew_ber_minus_erm_operator_accuracy_pp": 5.131666666666668,
+      "pew_ber_minus_erm_last10_avg_pp": 4.427666666666667
+    },
+    "2": {
+      "erm_minus_pew_ber_dsa": 0.1692668869486883,
+      "pew_groupdro_minus_pew_ber_dsa": 0.1212602441040221,
+      "pew_ber_minus_cvar_dsa": -0.0021281882094000004,
+      "pew_ber_minus_cvar_operator_accuracy_pp": 7.406666666666666,
+      "pew_ber_minus_erm_operator_accuracy_pp": 5.478333333333335,
+      "pew_ber_minus_erm_last10_avg_pp": 4.741333333333333
+    }
+  },
+  "aggregate": {
+    "erm_minus_pew_ber_dsa": {
+      "mean": 0.17905974107798092,
+      "sample_std": 0.008593874123909374,
+      "min": 0.1692668869486883,
+      "max": 0.18534529681175632
+    },
+    "pew_groupdro_minus_pew_ber_dsa": {
+      "mean": 0.1339467677754669,
+      "sample_std": 0.011517631624985283,
+      "min": 0.1212602441040221,
+      "max": 0.14374617285174865
+    },
+    "pew_ber_minus_cvar_dsa": {
+      "mean": -0.015183973507593472,
+      "sample_std": 0.015410966669014798,
+      "min": -0.03218362562485464,
+      "max": -0.0021281882094000004
+    },
+    "pew_ber_minus_cvar_operator_accuracy_pp": {
+      "mean": 5.956666666666667,
+      "sample_std": 2.3151457837466722,
+      "min": 3.286666666666669,
+      "max": 7.406666666666666
+    },
+    "pew_ber_minus_erm_operator_accuracy_pp": {
+      "mean": 4.682222222222225,
+      "sample_std": 1.0925204464566889,
+      "min": 3.436666666666671,
+      "max": 5.478333333333335
+    },
+    "pew_ber_minus_erm_last10_avg_pp": {
+      "mean": 4.587666666666666,
+      "sample_std": 0.15692921263352375,
+      "min": 4.427666666666667,
+      "max": 4.741333333333333
+    }
+  },
+  "frozen_stability_gates": {
+    "mean_ber_vs_erm_dsa_positive": true,
+    "mean_ber_vs_groupdro_dsa_positive": true,
+    "ber_vs_erm_positive_at_least_two_seeds": true,
+    "ber_vs_groupdro_positive_at_least_two_seeds": true
+  },
+  "verdict": "GO_MAP2_TRAINING_SEED_STABILITY",
+  "cvar_interpretation": "Report shortcut-utility trade-off; no post-hoc all-metrics win requirement."
+}

@@ -23,7 +23,7 @@ The final held-out map2 comparison uses a frozen 40-round protocol with ERM, pro
 
 \input{tables/map2_method_comparison}
 
-Source-paired bootstrap differences are
+For training seed 0, source-paired bootstrap differences are
 
 \[
 \mathrm{DSA(ERM)}-\mathrm{DSA(BER)}=0.182567
@@ -43,13 +43,13 @@ with \([0.134952,0.138706]\), and
 
 with \([-0.012355,-0.010092]\).
 
-The matched PEW+GroupDRO result shows that shared PEW grouping alone is insufficient to reproduce BER's lower pooled DSA under this protocol. Relative to CVaR-DRO, BER has lower pooled DSA and substantially higher pooled task utility on the held-out map2 Formal. The conclusion is not uniform at client level: CVaR-DRO still has lower DSA on clients c0 and c1, while BER has lower DSA on c2 and c3; BER's operator-grid accuracy is higher on all four clients. We therefore state only that \textbf{PEW+BER achieves a better pooled shortcut--utility trade-off than CVaR-DRO on held-out map2, without uniformly dominating CVaR-DRO in per-client DSA.}
+Across training seeds 0/1/2, DSA(ERM)$-$DSA(BER) is (0.179060\pm0.008594), and DSA(GroupDRO)$-$DSA(BER) is (0.133947\pm0.011518); both contrasts have the favorable direction in all three seeds. DSA(BER)$-$DSA(CVaR) is (-0.015184\pm0.015411), while BER improves operator-grid accuracy over CVaR by (5.9567\pm2.3151) percentage points. All pre-registered multi-seed gates pass, yielding \texttt{GO\_MAP2\_TRAINING\_SEED\_STABILITY}.
 
-\evidenceneeded{M1 multi-training-seed stability for the held-out map2 four-arm comparison. Seeds 1/2 are implemented but are not reported until Formal artifacts are returned and audited.}
+The matched PEW+GroupDRO result shows that shared PEW grouping alone is insufficient to reproduce BER's lower pooled DSA under this protocol. Relative to CVaR-DRO, BER has lower pooled DSA and substantially higher pooled task utility on held-out map2. The conclusion is not uniform at client level: in the three-seed means, CVaR-DRO still has lower DSA on clients c0 and c1, while BER has lower DSA on c2 and c3. We therefore state only that \textbf{PEW+BER achieves a better pooled shortcut--utility trade-off than CVaR-DRO on held-out map2, without uniformly dominating CVaR-DRO in per-client DSA.}
 
 \subsection{Controlled Replication and Communication-Base Boundary}
 
-We next summarize matched PEW+BER comparisons under three completed settings.
+We next summarize matched PEW+BER comparisons across completed binding-map and communication-base settings, while reserving the second-private-task row for M3.
 
 \input{tables/cross_setting_dataset}
 
@@ -78,4 +78,4 @@ A non-deployable Oracle audit compares true family grouping, true operator group
 
 \subsection{Remaining Evidence Placeholders}
 
-The remaining table cells are deliberately marked pending. M1 and M2 are implemented Formal repetitions; M3 is an implemented second-private-task protocol that still requires benchmark-first execution; S1 is a bounded leave-one-operator-out taxonomy stress; S2 is a protocol-matched HFL context table; and O1 is a conditional JTT Formal. None should be described as launched, in progress, or successful until returned artifacts are audited. The paper does not add a new loss, communication mechanism, hierarchical PEW, or operator-level PEW in response to these gaps.
+The remaining table cells are deliberately marked pending. M1 is complete. M2 is an implemented Formal repetition; M3 is an implemented second-private-task protocol that still requires benchmark-first execution; S1 is a bounded leave-one-operator-out taxonomy stress; S2 is a protocol-matched HFL context table; and O1 is a conditional JTT Formal. None of M2/M3/S1/S2/O1 should be described as launched, in progress, or successful until returned artifacts are audited. The paper does not add a new loss, communication mechanism, hierarchical PEW, or operator-level PEW in response to these gaps.

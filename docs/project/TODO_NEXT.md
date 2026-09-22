@@ -1,5 +1,19 @@
 # TODO Next
 
+## Current - M2 Local-First Multi-Seed Formal - 2026-09-22
+
+M1 held-out map2 four-arm training-seed stability is complete with
+`GO_MAP2_TRAINING_SEED_STABILITY`; do not rerun or tune it. The next experiment is M2: repeat the
+12-round HFL/Local x gamma=0/0.9 factorial for training seeds 1/2, keeping partition, scenario,
+initialization policy, batches and evaluation fixed. It may run directly as Formal using the existing
+cost evidence, but only after explicit user launch. M3/S1/S2/JTT remain benchmark-first.
+
+```text
+entry: scripts/openi_cle_v2_factorial_entry.py
+guide: docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+latest result: deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+```
+
 ## Current - Spurious Baseline Cost Gate - 2026-09-12
 
 The five-arm ERM/JTT/CVaR-DRO/PEW+GroupDRO/PEW+BER implementation and a fresh-output CUDA smoke

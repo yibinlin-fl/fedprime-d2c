@@ -26,15 +26,22 @@ deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
 V0.4作为模块化内容等价快照继续保留，不再作为后续编辑起点。当前机器无LaTeX编译器；V0.5已
 通过input、label/ref、环境/括号、ZIP CRC静态检查，仍需Overleaf编译和PDF视觉终检。
 
-## 投稿前实验已工程就绪
+## 投稿前实验状态
 
-M1/M2多training-seed、M3 CIFAR-100第二private task、S1 bounded taxonomy stress、S2 HFL
-context table及条件性JTT Formal均已有独立runner、分析器和OpenI入口。新CIFAR-100输入包已生成
-并通过数据审计；当前没有启动benchmark或Formal。统一执行卡与科学边界：
+M1 held-out map2四臂training seeds 0/1/2已完成并通过全部冻结稳定性门槛，verdict为
+`GO_MAP2_TRAINING_SEED_STABILITY`。M2、M3 CIFAR-100、S1 taxonomy stress、S2 HFL context及
+条件性JTT Formal已有独立runner、分析器和OpenI入口；当前下一项为M2。统一执行卡与科学边界：
 
 ```text
 docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
 docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+```
+
+M1正式报告：
+
+```text
+deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json
 ```
 
 ## LaTeX V0.2终检与V0.3排版修复

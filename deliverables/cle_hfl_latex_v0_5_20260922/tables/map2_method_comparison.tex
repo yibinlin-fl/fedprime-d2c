@@ -1,23 +1,23 @@
 \begin{table*}[t]
 \centering
 \small
-\caption{Held-out map2 matched method comparison. Numeric entries are completed training-seed-0 Formal results; M1 will add seeds 1/2. JTT remains screening-only until O1 Formal is completed.}
+\caption{Held-out map2 matched method comparison over training seeds 0/1/2 (mean $\pm$ sample standard deviation). JTT remains screening-only until O1 Formal is completed.}
 \label{tab:map2-methods}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrrr}
 \toprule
 Arm & DSA $\downarrow$ & Operator-grid Acc. $\uparrow$ & Last-10 Avg $\uparrow$ & Last-10 Worst $\uparrow$ & WCCA $\uparrow$ & CFG $\downarrow$ \\
 \midrule
-ERM & 0.260308 & 20.3067 & 19.8578 & 16.3007 & 0.000 & 32.8325 \\
-CVaR-DRO & 0.088982 & 20.4567 & 18.6700 & 14.0380 & 0.125 & 27.7775 \\
+ERM & $0.2505\pm0.0087$ & $20.4950\pm0.3718$ & $19.9589\pm0.1212$ & $16.3780\pm0.1259$ & $0.0000\pm0.0000$ & $32.7467\pm0.1708$ \\
+CVaR-DRO & $0.0867\pm0.0055$ & $19.2206\pm1.1055$ & $18.5788\pm0.3102$ & $14.2636\pm0.2640$ & $0.1167\pm0.0629$ & $27.6750\pm0.1885$ \\
 JTT Formal & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-PEW+GroupDRO & 0.214575 & 20.7883 & 20.9562 & 17.8140 & 0.025 & 31.5275 \\
-\textbf{PEW+BER} & \textbf{0.077741} & \textbf{23.7433} & \textbf{24.4518} & \textbf{20.4727} & \textbf{2.650} & \textbf{22.8025} \\
+PEW+GroupDRO & $0.2054\pm0.0080$ & $21.4517\pm0.5783$ & $20.9963\pm0.0924$ & $17.5309\pm0.5148$ & $0.0333\pm0.0144$ & $31.8950\pm0.9747$ \\
+\textbf{PEW+BER} & $\mathbf{0.0715\pm0.0113}$ & $\mathbf{25.1772\pm1.2522}$ & $\mathbf{24.5466\pm0.1098}$ & $\mathbf{20.7516\pm0.6126}$ & $\mathbf{2.6500\pm0.0750}$ & $\mathbf{22.7825\pm0.5428}$ \\
 \bottomrule
 \end{tabular}%
 }
 \ifdraftskeleton
 \par\smallskip
-\evidenceneeded{M1 Formal training seeds 1/2 for mean$\pm$std; O1 JTT Formal only if the final paper makes an empirical JTT comparison.}
+\evidenceneeded{O1 JTT Formal only if the final paper makes an empirical JTT comparison.}
 \fi
 \end{table*}

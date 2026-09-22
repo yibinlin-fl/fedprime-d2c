@@ -2,6 +2,33 @@
 
 Updated: 2026-09-22
 
+## M1 held-out map2多训练种子Formal完成并GO
+
+2026-09-22收到training seeds 1/2两个Formal包，并与既有seed 0合并。三个seed均通过单seed
+I0/S0/P1--P5门槛，聚合四项稳定性门槛全部通过：
+
+```text
+verdict = GO_MAP2_TRAINING_SEED_STABILITY
+ERM-BER DSA contrast       0.179060 +/- 0.008594
+GroupDRO-BER DSA contrast  0.133947 +/- 0.011518
+BER-CVaR DSA contrast     -0.015184 +/- 0.015411
+BER-CVaR grid delta       +5.9567 +/- 2.3151 pp
+BER-ERM last10 Avg delta  +4.5877 +/- 0.1569 pp
+```
+
+三seed主结果为：ERM DSA `0.250530+/-0.008670`、CVaR `0.086654+/-0.005514`、PEW+GroupDRO
+`0.205417+/-0.008045`、PEW+BER `0.071470+/-0.011288`。BER相对ERM和GroupDRO在3/3 seeds
+均降低DSA；相对CVaR在3/3 seeds pooled DSA也更低且utility更高，但per-client DSA并非统一支配。
+本结论限于固定map2、partition seed0和CIFAR-10受控CLE，不覆盖partition/dataset/真实部署。
+
+```text
+deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json
+```
+
+V0.5方法主表、跨设置表、per-client表、seed uncertainty表、摘要/实验/讨论/结论已同步更新。
+下一实验为M2 local-first seeds 1/2 Formal；当前没有运行中任务。
+
 ## LaTeX V0.5实验表骨架已建立
 
 2026-09-22在不覆盖V0.4的前提下新建V0.5，并将最终实验职责写入可编译LaTeX骨架。当前正文
@@ -18,7 +45,7 @@ zip:    deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zi
 已完成seed-0数字原样保留；未完成单元用红色`pending`，smoke/benchmark不得填入。设置
 `\draftskeletonfalse`可隐藏完全pending的整张表。静态检查通过：input解析、label唯一性、ref解析、
 LaTeX括号/环境平衡和ZIP CRC；本机无`pdflatex/latexmk/tectonic`，所以Overleaf编译和PDF视觉终检
-仍待用户返回。当前没有启动OpenI任务，下一科学执行项仍为M1 Formal seeds 1/2。
+仍待用户返回。当前没有启动OpenI任务；M1已完成，下一科学执行项为M2 Formal seeds 1/2。
 
 ## 相邻论文实验图审计完成，待补实验再次确认可执行
 
@@ -40,7 +67,7 @@ V0.4当前两图均为概念/理论图，投稿终稿至少需要新增：M2解�
 docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
 ```
 
-M1/M2实现与输入契约已完成，可在代码push后经用户逐项启动；M3/S1/S2/JTT必须benchmark-first。
+M1已完成并GO；M2实现与输入契约已完成，可在用户授权后启动；M3/S1/S2/JTT必须benchmark-first。
 核心matched实验保持`pretrain_epochs=0`；PEW独立公共预训练。S2当前是protocol-matched 40轮
 context table，不是RAHFL官方40+40 recipe。没有自动启动任何OpenI任务。
 

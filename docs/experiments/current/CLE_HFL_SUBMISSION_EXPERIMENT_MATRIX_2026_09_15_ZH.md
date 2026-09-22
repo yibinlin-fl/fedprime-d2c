@@ -92,9 +92,14 @@ seed 0 下 PEW+BER 取得最低 pooled DSA、最高 grid/Avg/Worst 和最低 CFG
 
 ## 3. 投稿前必须补的实验
 
-### M1. held-out map2 四臂 40 轮 training-seed stability
+### M1. held-out map2 四臂 40 轮 training-seed stability（2026-09-22完成）
 
-这是最高优先级，解决“最强方法结果主要来自 training seed 0”的问题。
+本实验已解决“最强方法结果主要来自 training seed 0”的问题，正式verdict为
+`GO_MAP2_TRAINING_SEED_STABILITY`。完整结果：
+
+```text
+deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+```
 
 冻结对象：
 

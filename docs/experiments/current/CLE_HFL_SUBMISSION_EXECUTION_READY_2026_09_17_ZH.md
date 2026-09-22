@@ -2,7 +2,8 @@
 
 Updated: 2026-09-22
 
-> 2026-09-22 readiness reconfirmation：M1/M2可在推送当前提交后按本文参数直接Formal；M3、S1、
+> 2026-09-22 result update：M1 seeds 1/2已完成并与seed 0聚合为
+> `GO_MAP2_TRAINING_SEED_STABILITY`。M2可按本文参数直接Formal；M3、S1、
 > S2和JTT必须benchmark-first。核心matched实验从共同`initial_states`开始，任务模型
 > `pretrain_epochs=0`，不得临时加入RAHFL式40轮本地预训练破坏归因。PEW是独立公共预训练对象：
 > M1/M2复用冻结PEW，M3在CIFAR-10公共图像上训练一次并冻结，S1训练排除motion_blur的新PEW。
@@ -22,8 +23,7 @@ operator、固定severity=3的完整paired grid，状态`PASS`。
 ## 2. 推荐执行顺序
 
 ```text
-M1 map2 training seeds 1/2
--> M2 local-first training seeds 1/2
+M2 local-first training seeds 1/2
 -> M3 CIFAR-100 benchmark
 -> 经成本确认后 M3 Formal seeds 0/1/2
 -> S1 bounded taxonomy benchmark/Formal
@@ -31,10 +31,17 @@ M1 map2 training seeds 1/2
 -> 仅在正文需要正式比较时运行 O1 JTT 或 O3 KT/FCCL插件实验
 ```
 
-M1/M2已有同协议历史成本信息，可在用户明确授权后直接Formal；M3/S1/S2/JTT是新的长协议，
+M1已经完成；M2已有同协议历史成本信息，可在用户明确授权后直接Formal；M3/S1/S2/JTT是新的长协议，
 必须先benchmark。不要一次性提交所有Formal。
 
-## 3. M1：held-out map2 四臂40轮多training-seed
+## 3. M1：held-out map2 四臂40轮多training-seed（完成）
+
+2026-09-22 training seeds 1/2返回并通过审计，与seed 0聚合后四项稳定性门槛全部PASS：
+
+```text
+verdict: GO_MAP2_TRAINING_SEED_STABILITY
+report: deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+```
 
 回答：seed-0最强结果是否可跨训练随机性复现；BER降低DSA是否仍优于ERM和共享同一PEW分组的
 GroupDRO；相对CVaR报告shortcut--utility trade-off，不要求每客户端DSA全胜。

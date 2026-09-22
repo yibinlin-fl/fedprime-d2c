@@ -2560,3 +2560,11 @@ datasets, hashes, parameters, output archives and ready-made download directorie
 - 未看M3 benchmark前，不授权M3 Formal，也不启动S1/S2/JTT；
 - 用户当前OpenI剩余额度约9小时，所有后续Formal必须显式核对round与local-batch预算；
 - M2若未来恢复，另立统一batch-capped三seed协议，不与full-fit seed-0混合。
+
+# 2026-09-22 S2-v2 benchmark结论
+
+- 十臂执行PASS，但40轮Formal乐观下限约78.2小时，当前不运行；
+- FedTGP/RHFL的pre-local private-loader消费破坏local trace配对，先修复generator state隔离；
+- 修复后只做至少2轮低batch pairing Kill Test，先验证10/10 trace一致和FedProto非首轮路径；
+- benchmark准确率/DSA全部禁用，不填V0.5；
+- 剩余额度优先给M3/S1 benchmark。

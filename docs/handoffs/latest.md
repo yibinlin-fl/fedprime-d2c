@@ -2,6 +2,24 @@
 
 Updated: 2026-09-22
 
+## S2-v2十臂benchmark完成：执行PASS，当前Formal NO-GO
+
+OpenI S2-v2 benchmark完成，输入审计、十臂输出、config和分析均完整，无NaN；总训练
+`7039.47s`、分析`191.91s`。FedTGP与RHFL各约46分钟，其余每臂约3分钟。按逐轮成本估计，
+40轮Formal乐观下限约78.2小时，且Formal还增加local/test/audit预算，远超用户剩余额度。
+
+独立检查还发现公平性阻塞：8臂local trace完全一致，但FedTGP/RHFL形成另一组trace。两者在
+pre-local通信中遍历private fit loader并推进DataLoader generator，而`paired_local_rng`没有恢复
+loader generator state。FedProto与Local首轮相同则是预期warm-up：round 0尚无global prototype。
+判定`EXECUTION_BENCHMARK_PASS / FORMAL_NO_GO_UNDER_9H / PAIRING_FIX_REQUIRED`，所有benchmark
+数值禁止作为论文证据。完整报告：
+
+```text
+deliverables/cle_hfl_context_benchmark_20260922/RESULT_SUMMARY_ZH.md
+```
+
+当前不得启动S2 Formal。若未来继续，先修复loader-state隔离，再做至少2轮低成本配对Kill Test。
+
 ## M2多seed Formal因成本超预算主动停止
 
 用户于2026-09-22停止M2 local-first seeds 1/2任务。回传日志显示任务无报错，但Formal未设置
@@ -11,7 +29,7 @@ Updated: 2026-09-22
 NO-GO。禁止把partial h0结果纳入论文。M2暂缓，若未来恢复必须重新冻结显式local-batch预算并
 benchmark-first，不能与既有full-fit seed-0直接混合。
 
-当前下一执行项改为M3 CIFAR-100 `mode=benchmark, train_seed=0`，仅用于测量PEW训练、四臂
+当前下一科学执行项仍为M3 CIFAR-100 `mode=benchmark, train_seed=0`，仅用于测量PEW训练、四臂
 1-round/8-batch训练和分析成本；benchmark不是科学证据。M3 Formal仍未授权。
 
 ## S2-v2十臂HFL context与FedTGP Kill Test完成

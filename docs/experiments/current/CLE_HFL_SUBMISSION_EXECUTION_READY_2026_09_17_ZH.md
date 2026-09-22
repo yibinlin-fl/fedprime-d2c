@@ -177,6 +177,12 @@ download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s1_t
 
 ## 7. S2-v2：protocol-matched HFL context table
 
+2026-09-22 benchmark更新：十臂均完成且输入/输出完整，但总训练约117.3分钟。FedTGP和RHFL各
+约46分钟；40轮Formal乐观成本下限约78.2小时，超过当前额度。此外FedTGP/RHFL因pre-local
+通信推进private DataLoader generator，local batch trace与其余八臂不匹配。当前
+`FORMAL_AUTHORIZED=false`；修复loader-state隔离并通过至少2轮配对Kill Test前，禁止启动Formal。
+单轮FedProto与Local一致是round-0无global prototype的预期warm-up，不是方法等价证据。
+
 回答：CLE不是只在一个自定义通信实现上出现，并将论文放回HFL文献坐标。十个独立方法为
 Local/ERM、FedMD adapter、FedProto adapter、FedTGP adapter、FedDF-fidelity、KT-pFL-fidelity、
 FCCL protocol-matched adapter、RHFL adapter、AugHFL-fidelity、RAHFL anchor。该表不安装

@@ -27,7 +27,7 @@ M2 local-first training seeds 1/2
 -> M3 CIFAR-100 benchmark
 -> 经成本确认后 M3 Formal seeds 0/1/2
 -> S1 bounded taxonomy benchmark/Formal
--> S2 HFL context benchmark/Formal
+-> S2-v2 ten-arm HFL context benchmark/Formal
 -> 仅在正文需要正式比较时运行 O1 JTT 或 O3 KT/FCCL插件实验
 ```
 
@@ -170,11 +170,13 @@ download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s1_t
 无论成功或失败都只确定一个预注册operator的适用边界，不证明未知、复合、连续corruption的
 开放世界鲁棒性。
 
-## 7. S2：faithful HFL context table
+## 7. S2-v2：protocol-matched HFL context table
 
-回答：CLE不是只在一个自定义通信实现上出现，并将论文放回HFL文献坐标。独立方法为
-Local/ERM、FedDF-fidelity、KT-pFL-fidelity、FCCL protocol-matched adapter、AugHFL-fidelity、
-RAHFL anchor。该表不安装PEW+BER，也不承担BER归因。
+回答：CLE不是只在一个自定义通信实现上出现，并将论文放回HFL文献坐标。十个独立方法为
+Local/ERM、FedMD adapter、FedProto adapter、FedTGP adapter、FedDF-fidelity、KT-pFL-fidelity、
+FCCL protocol-matched adapter、RHFL adapter、AugHFL-fidelity、RAHFL anchor。该表不安装
+PEW+BER，也不承担BER归因。FedTGP只能称protocol-matched core adapter；完整审计见
+`docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md`。
 
 ```text
 dataset display/upload/hash: 与M2相同，复用
@@ -186,8 +188,9 @@ output: cle_hfl_context_{benchmark|formal}_outputs.tar.gz
 download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s2_hfl_context
 ```
 
-Formal固定40轮。FedDF/KT-pFL/AugHFL标为fidelity adapter；FCCL只能写protocol-matched adapter，
-不得写成各论文完整官方recipe复现。
+Formal固定40轮。FedDF/KT-pFL/AugHFL标为fidelity adapter；FedMD/FedProto/FedTGP/FCCL/RHFL
+只能写protocol-matched adapter或core adapter，不得写成各论文完整官方recipe复现。当前不运行
+单独的AugHFL/RAHFL官方40+40表。
 
 ## 8. 条件性O1：JTT Formal
 

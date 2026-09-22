@@ -8,7 +8,7 @@ Updated: 2026-09-22
 | Main Table 2 | `local_first_multiseed.tex` | seed 0 | M2 seeds 1/2 | local-first在训练随机性下是否复现 |
 | Main Table 3 | `map2_method_comparison.tex` | 四臂seeds 0/1/2 Formal完成 | O1可选 | BER与ERM/CVaR/共享PEW-GroupDRO的matched比较及训练随机性稳定性 |
 | Main Table 4 | `cross_setting_dataset.tex` | original/map1/FedDF seed 0；map2三seed | M3 | 跨binding、通信底座和第二private task边界 |
-| Main Table 5 | `hfl_context_baselines.tex` | 无正式数字 | S2 | CLE在代表性HFL协议中的文献坐标 |
+| Main Table 5 | `hfl_context_baselines.tex` | 无正式数字 | S2-v2 | CLE在十种代表性HFL协议与机制家族中的文献坐标；FedTGP为protocol-matched core adapter |
 | Appendix | `oracle_granularity.tex` | 已完成 | 无 | correspondence重要、operator粒度增益有限 |
 | Appendix | `appendix/taxonomy_stress.tex` | 无 | S1 | 一个预注册未见operator下的退化边界 |
 | Appendix | `appendix/pew_audit.tex` | 已完成distribution audit | 可补PEW confusion | BER改变有效支持结构，不保证模型性能 |

@@ -11,7 +11,7 @@ V0.4保持不可变，V0.5成为当前LaTeX source of truth。
 2. 将local-first表从正文抽离为独立文件，并明确M2 seeds 1/2；
 3. map2四臂表已填入M1 seeds 0/1/2 mean$\pm$std，并为条件性JTT Formal保留行；
 4. 跨设置表已填入held-out map2三seed结果，并为CIFAR-100第二private task保留行；
-5. 新增S2 HFL context基线表；
+5. 新增S2-v2十臂HFL context基线表，覆盖FedMD/FedProto/FedTGP/FedDF/KT-pFL/FCCL/RHFL/AugHFL/RAHFL与Local；
 6. 新增taxonomy stress、PEW审计、逐客户端、seed不确定性、计算成本等附录表；
 7. 所有未完成单元均显示红色`pending`，不得当作实验结果。
 
@@ -53,7 +53,7 @@ EXPERIMENT_TABLE_MATRIX_ZH.md              表格—实验—科学结论映射
 - `pending`不是零、不是缺失值估计，也不是预期结果；
 - smoke/benchmark数字不得填入论文表；
 - M1已提供training-seed稳定性；M2完成前仍不得把local-first的seed-0 source bootstrap解释为训练稳定性；
-- S2是protocol-matched context，不是所有原论文official-recipe leaderboard；
+- S2-v2是统一40轮protocol-matched context，不是所有原论文official-recipe leaderboard；FedTGP只称core adapter；
 - M3只能支持第二个受控图像任务，不能支持真实医院或汽车部署；
 - JTT只有完成O1 Formal后才能进入经验胜负结论。
 

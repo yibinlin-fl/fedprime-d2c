@@ -2,6 +2,21 @@
 
 Updated: 2026-09-22
 
+## S2-v2十臂HFL context与FedTGP Kill Test完成
+
+当前S2从六臂扩展为十臂：Local/ERM、FedMD、FedProto、FedTGP、FedDF、KT-pFL、FCCL、RHFL、
+AugHFL、RAHFL。FedMD/FedProto/RHFL为已有核心实现回接；FedTGP依据AAAI 2024原论文与官方代码
+实现trainable global prototypes和adaptive-margin服务器目标。20项相关回归测试通过，FedTGP一轮真实
+CLE CPU smoke完成并保存4客户端checkpoint。判定`GO_AS_PROTOCOL_MATCHED_FEDTGP_CORE_ADAPTER`，
+不得称官方完整recipe；smoke数值无科学意义。S2-v2仍固定统一40轮、`pretrain_epochs=0`，当前不做
+单独AugHFL/RAHFL官方40+40表。S2-v2尚未运行OpenI benchmark/Formal；M2仍由用户在OpenI运行，
+本地工作未启动任何付费任务。
+
+```text
+docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md
+scripts/run_cle_hfl_context.py
+```
+
 ## M1 held-out map2多训练种子Formal完成并GO
 
 2026-09-22收到training seeds 1/2两个Formal包，并与既有seed 0合并。三个seed均通过单seed

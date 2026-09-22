@@ -860,6 +860,159 @@ class FedProtoFeatureStrategy:
         return self.proto_weight * F.mse_loss(embeddings[supported], targets)
 
 
+class TrainableGlobalPrototypes(torch.nn.Module):
+    """FedTGP's trainable class-prototype generator."""
+
+    def __init__(self, num_classes: int, feature_dim: int) -> None:
+        super().__init__()
+        self.embeddings = torch.nn.Embedding(int(num_classes), int(feature_dim))
+        self.middle = torch.nn.Sequential(
+            torch.nn.Linear(int(feature_dim), int(feature_dim)),
+            torch.nn.ReLU(),
+        )
+        self.output = torch.nn.Linear(int(feature_dim), int(feature_dim))
+
+    def forward(self, class_ids: torch.Tensor) -> torch.Tensor:
+        return self.output(self.middle(self.embeddings(class_ids.long())))
+
+
+class FedTGPCommunicationStrategy(FedProtoFeatureStrategy):
+    """Protocol-matched FedTGP core with trainable global prototypes.
+
+    The implementation follows the released FedTGP server objective: collect
+    one prototype per observed client/class pair, compute the adaptive margin
+    from class-average prototype gaps, and train a persistent server-side
+    prototype generator with cross entropy over negative distances.  It uses
+    the repository's common local optimizer and round budget, so it is an
+    adapter for the CLE context table rather than an untouched official recipe.
+    """
+
+    name = "fedtgp"
+
+    def __init__(
+        self,
+        *,
+        proto_weight: float = 10.0,
+        max_batches: int | None = None,
+        server_learning_rate: float = 0.01,
+        server_epochs: int = 100,
+        server_batch_size: int = 10,
+        margin_threshold: float = 100.0,
+    ) -> None:
+        super().__init__(proto_weight=proto_weight, max_batches=max_batches)
+        if server_epochs <= 0 or server_batch_size <= 0:
+            raise ValueError("FedTGP server epochs and batch size must be positive")
+        self.server_learning_rate = float(server_learning_rate)
+        self.server_epochs = int(server_epochs)
+        self.server_batch_size = int(server_batch_size)
+        self.margin_threshold = float(margin_threshold)
+        self.prototype_generator: TrainableGlobalPrototypes | None = None
+        self.last_metrics: dict[str, float] = {}
+
+    @staticmethod
+    def _adaptive_margin(
+        local_prototypes: list[torch.Tensor],
+        local_validity: list[torch.Tensor],
+        *,
+        threshold: float,
+    ) -> float:
+        prototype_stack = torch.stack(local_prototypes)
+        validity_stack = torch.stack(local_validity)
+        counts = validity_stack.sum(dim=0)
+        observed = counts.gt(0)
+        if int(observed.sum()) < 2:
+            return 0.0
+        averages = (
+            prototype_stack * validity_stack.unsqueeze(2)
+        ).sum(dim=0) / counts.clamp_min(1).unsqueeze(1)
+        observed_averages = averages[observed]
+        distances = torch.cdist(observed_averages, observed_averages, p=2)
+        distances.fill_diagonal_(float("inf"))
+        class_gaps = distances.min(dim=1).values
+        return min(float(class_gaps.max().detach().cpu()), float(threshold))
+
+    def step(self, context: CommunicationContext) -> float:
+        local_prototypes: list[torch.Tensor] = []
+        local_validity: list[torch.Tensor] = []
+        uploaded: list[torch.Tensor] = []
+        uploaded_labels: list[torch.Tensor] = []
+        feature_dim: int | None = None
+        for client_id in sorted(context.models):
+            prototypes, valid = self._client_prototypes(context, client_id)
+            if feature_dim is None:
+                feature_dim = int(prototypes.shape[1])
+            elif int(prototypes.shape[1]) != feature_dim:
+                raise ValueError(
+                    "FedTGP clients must expose the same embedding dimension; "
+                    f"expected {feature_dim}, got {prototypes.shape[1]} for client {client_id}."
+                )
+            local_prototypes.append(prototypes)
+            local_validity.append(valid)
+            class_ids = torch.nonzero(valid, as_tuple=False).flatten()
+            if class_ids.numel():
+                uploaded.append(prototypes[class_ids].detach())
+                uploaded_labels.append(class_ids.detach())
+        if feature_dim is None or not uploaded:
+            raise RuntimeError("FedTGP received no client prototypes")
+
+        prototype_batch = torch.cat(uploaded, dim=0)
+        label_batch = torch.cat(uploaded_labels, dim=0).long()
+        margin = self._adaptive_margin(
+            local_prototypes,
+            local_validity,
+            threshold=self.margin_threshold,
+        )
+        if self.prototype_generator is None:
+            self.prototype_generator = TrainableGlobalPrototypes(
+                context.num_classes, feature_dim
+            ).to(context.device)
+        elif self.prototype_generator.embeddings.embedding_dim != feature_dim:
+            raise ValueError("FedTGP embedding dimension changed after initialization")
+
+        generator = self.prototype_generator
+        generator.train()
+        optimizer = torch.optim.SGD(
+            generator.parameters(), lr=self.server_learning_rate
+        )
+        final_loss = prototype_batch.new_zeros(())
+        for _ in range(self.server_epochs):
+            permutation = torch.randperm(prototype_batch.shape[0], device=context.device)
+            for start in range(0, prototype_batch.shape[0], self.server_batch_size):
+                indices = permutation[start : start + self.server_batch_size]
+                features = prototype_batch[indices]
+                labels = label_batch[indices]
+                class_ids = torch.arange(context.num_classes, device=context.device)
+                centers = generator(class_ids)
+                distances = torch.sqrt(
+                    (
+                        features.square().sum(dim=1, keepdim=True)
+                        - 2.0 * features @ centers.T
+                        + centers.square().sum(dim=1).unsqueeze(0)
+                    ).clamp_min(1.0e-12)
+                )
+                adjusted = distances + F.one_hot(
+                    labels, context.num_classes
+                ).to(distances.dtype) * margin
+                final_loss = F.cross_entropy(-adjusted, labels)
+                optimizer.zero_grad(set_to_none=True)
+                final_loss.backward()
+                optimizer.step()
+
+        generator.eval()
+        with torch.no_grad():
+            self.global_prototypes = generator(
+                torch.arange(context.num_classes, device=context.device)
+            ).detach()
+        observed_classes = torch.stack(local_validity).any(dim=0)
+        self.valid_classes = observed_classes.detach()
+        self.last_metrics = {
+            "server_loss": float(final_loss.detach().cpu()),
+            "adaptive_margin": float(margin),
+            "uploaded_prototypes": float(prototype_batch.shape[0]),
+        }
+        return float(final_loss.detach().cpu())
+
+
 def build_baseline_communication_strategy(name: str, method_cfg: dict):
     normalized = str(name).lower()
     baseline_cfg = method_cfg.get("baseline", {})
@@ -880,6 +1033,15 @@ def build_baseline_communication_strategy(name: str, method_cfg: dict):
         return FedProtoFeatureStrategy(
             proto_weight=float(baseline_cfg.get("proto_weight", 1.0)),
             max_batches=baseline_cfg.get("max_proto_batches"),
+        )
+    if normalized == "fedtgp":
+        return FedTGPCommunicationStrategy(
+            proto_weight=float(baseline_cfg.get("proto_weight", 10.0)),
+            max_batches=baseline_cfg.get("max_proto_batches"),
+            server_learning_rate=float(baseline_cfg.get("server_learning_rate", 0.01)),
+            server_epochs=int(baseline_cfg.get("server_epochs", 100)),
+            server_batch_size=int(baseline_cfg.get("server_batch_size", 10)),
+            margin_threshold=float(baseline_cfg.get("margin_threshold", 100.0)),
         )
     if normalized == "feddf":
         return FedDFCommunicationStrategy(

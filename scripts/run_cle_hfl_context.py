@@ -17,9 +17,13 @@ from scripts.run_cle_v2_factorial import arm_config, verify_package  # noqa: E40
 
 ARMS = (
     "local_erm",
+    "fedmd_adapter",
+    "fedproto_adapter",
+    "fedtgp_adapter",
     "feddf_fidelity",
     "kt_pfl_fidelity",
     "fccl_adapter",
+    "rhfl_adapter",
     "aughfl_fidelity",
     "rahfl_fidelity",
 )
@@ -48,6 +52,20 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
     config["checkpoints"]["save_final"] = True
     if arm == "local_erm":
         config["method"].update({"communication": "none", "cl_module": "none", "lambda_jsd": 0.0})
+    elif arm == "fedmd_adapter":
+        config["method"].update({"communication": "fedmd", "cl_module": "none", "lambda_jsd": 0.0})
+    elif arm == "fedproto_adapter":
+        config["method"].update({"communication": "fedproto", "cl_module": "none", "lambda_jsd": 0.0})
+        config["method"]["baseline"] = {"proto_weight": 1.0}
+    elif arm == "fedtgp_adapter":
+        config["method"].update({"communication": "fedtgp", "cl_module": "none", "lambda_jsd": 0.0})
+        config["method"]["baseline"] = {
+            "proto_weight": 10.0,
+            "server_learning_rate": 0.01,
+            "server_epochs": 100,
+            "server_batch_size": 10,
+            "margin_threshold": 100.0,
+        }
     elif arm == "feddf_fidelity":
         config["method"].update({"communication": "feddf_fidelity", "cl_module": "none", "lambda_jsd": 0.0})
         config["method"]["baseline"] = {
@@ -68,6 +86,9 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
     elif arm == "fccl_adapter":
         config["method"].update({"communication": "fccl", "cl_module": "none", "lambda_jsd": 0.0})
         config["method"]["baseline"] = {"offdiag_weight": 0.0051, "eps": 1.0e-6}
+    elif arm == "rhfl_adapter":
+        config["method"].update({"communication": "rhfl", "cl_module": "rhfl_sce", "lambda_jsd": 0.0})
+        config["method"]["baseline"] = {"beta": 0.5}
     elif arm == "aughfl_fidelity":
         config["method"].update({"communication": "aughfl_fidelity", "cl_module": "none", "lambda_jsd": 12.0})
         config["method"]["baseline"] = {"collaborative_lr": 1.0e-3}
@@ -79,9 +100,13 @@ def fidelity_manifest() -> dict:
         "scope": "Protocol-matched CLE context table; not untouched official full-recipe runs.",
         "arms": {
             "local_erm": "No communication; ERM local objective.",
+            "fedmd_adapter": "Protocol-matched FedMD symmetric public-logit exchange.",
+            "fedproto_adapter": "Protocol-matched FedProto class-prototype aggregation.",
+            "fedtgp_adapter": "Protocol-matched FedTGP trainable global-prototype core; not an untouched official recipe.",
             "feddf_fidelity": "Post-local frozen-teacher FedDF fidelity adapter.",
             "kt_pfl_fidelity": "Post-local alternating KT-pFL fidelity adapter.",
             "fccl_adapter": "Protocol-matched FCCL cross-correlation adapter; not claimed official fidelity.",
+            "rhfl_adapter": "Protocol-matched RHFL SCE and client-confidence reweighting core.",
             "aughfl_fidelity": "Participant-specific public AugMix views and released-style collaboration.",
             "rahfl_fidelity": "Repository RAHFL/AugHFL-JSD/DCL plus strict AsymHFL-val anchor.",
         },
@@ -121,7 +146,7 @@ def main() -> None:
         json.dumps(fidelity_manifest(), indent=2), encoding="utf-8"
     )
     contract = {
-        "protocol": "cle_hfl_context_table_v1",
+        "protocol": "cle_hfl_context_table_v2",
         "mode": args.mode,
         "rounds": ROUND_BUDGET[args.mode],
         "train_seed": 0,

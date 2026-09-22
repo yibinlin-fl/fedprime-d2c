@@ -1244,3 +1244,47 @@ docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
 
 原始输出位于`outputs/`，解析报告位于`deliverables/`。Smoke与benchmark只验证执行或成本，不是
 科学证据。本文所有正式数字均应回到以上正式报告及其冻结协议核验。
+
+---
+
+## 22. 2026-09-22双轴实验结构更新
+
+论文的基线比较必须分成两条轴，二者回答不同问题，禁止混成一张无条件排行榜。
+
+### Axis I：通用shortcut与group-risk目标
+
+在完全匹配的AsymHFL协议下比较`ERM / CVaR-DRO / PEW+GroupDRO / PEW+BER`。held-out map2
+已经完成40轮、training seeds 0/1/2 Formal；它回答BER收益是否只是通用高损失样本优化或标准
+GroupDRO。三seed pooled DSA分别为`0.250530 / 0.086654 / 0.205417 / 0.071470`。安全结论是
+PEW+BER在这四个正式方法中取得最佳pooled shortcut--utility trade-off；不能写成对所有shortcut
+方法的普遍最优。JTT仍是12轮screen-only，EIIL未做Formal迁移。
+
+### Axis II：HFL机制家族背景比较
+
+S2-v2统一40轮、相同初始化和local batch预算，比较：
+
+```text
+Local/ERM / FedMD / FedProto / FedTGP / FedDF
+KT-pFL / FCCL / RHFL / AugHFL / RAHFL
+```
+
+它回答普通模型异构通信、标签噪声鲁棒和corruption鲁棒HFL是否会自然消除CLE。FedMD、
+FedProto和RHFL为已有核心实现回接；FedTGP依据AAAI 2024官方核心完成最小实现Kill Test和一轮
+真实CLE smoke，当前只能称`protocol-matched core adapter`。S2-v2尚无benchmark或Formal数字，
+所有结果必须保持`[待证据]`。当前不做单独AugHFL/RAHFL官方40+40表；S2不能声称逐行复现各
+论文完整recipe，也不承担BER因果归因。
+
+V0.5已经包含Axis I正式表和Axis II待填表。网页端后续改稿应把Experiments明确组织为：
+
+```text
+Axis I: matched shortcut-objective attribution
+Axis II: protocol-matched HFL mechanism context
+Shared validation: local-first / cross-map / M3 second dataset / S1 taxonomy stress
+```
+
+最新S2-v2工程与忠实度边界：
+
+```text
+docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md
+deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
+```

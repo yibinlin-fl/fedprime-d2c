@@ -2,20 +2,27 @@
 
 Last updated: 2026-09-22
 
-## Current Paper State: M1 Multi-Seed GO / M2 Next - 2026-09-22
+## Current Paper State: M1 Multi-Seed GO / M2 Running / S2-v2 Ready - 2026-09-22
 
 ```text
 M1 map2 four-arm seeds 0/1/2: GO_MAP2_TRAINING_SEED_STABILITY
 single-seed gates:               PASS for 0/1/2
 multi-seed gates:                4/4 PASS
 V0.5 method table:               UPDATED WITH MEAN +/- STD
-next experiment:                 M2 local-first seeds 1/2 Formal
-active OpenI task:               NONE
+active experiment:               M2 local-first seeds 1/2 Formal (user-launched OpenI)
+S2-v2 implementation:           ten arms ready; benchmark not started
+FedTGP status:                   protocol-matched core adapter Kill Test GO
 ```
 
 M1 establishes training-randomness stability only for the fixed map2/partition/CIFAR-10 controlled
 scenario. It does not cover partitions, a second dataset, open-world corruptions, or real deployment.
 See `deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md`.
+
+S2-v2 now covers Local/ERM, FedMD, FedProto, FedTGP, FedDF, KT-pFL, FCCL, RHFL, AugHFL and
+RAHFL. FedMD/FedProto/RHFL reuse audited existing cores; FedTGP follows the AAAI 2024 released
+server objective and passed 20 related regression tests plus one real-CLE CPU smoke. No S2 benchmark
+or Formal has been started. See
+`docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md`.
 
 ## Current Implementation State: LCRE M0 Ready Through Local Benchmark - 2026-09-06
 

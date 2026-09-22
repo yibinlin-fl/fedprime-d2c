@@ -61,7 +61,7 @@ The second communication-base experiment uses native single-view CE with a proto
 
 \subsection{HFL Context Baselines}
 
-The final paper separates method attribution from literature context. Table~\ref{tab:map2-methods} compares alternative local risk objectives under one matched HFL protocol. The planned context table instead asks whether CLE behavior is visible across representative heterogeneous-FL communication stacks. Fidelity labels describe the implementation scope and do not imply exact reproduction of every official training budget.
+The final paper separates two comparison axes. Axis I, Table~\ref{tab:map2-methods}, compares generic shortcut and group-risk objectives under one matched HFL protocol. Axis II, Table~\ref{tab:hfl-context}, asks whether CLE behavior is visible across representative heterogeneous-FL mechanism families: no collaboration, public-logit exchange, server distillation, prototype communication, personalized transfer, cross-correlation collaboration, label-noise robustness, and corruption-robust HFL. Fidelity labels describe the implementation scope and do not imply exact reproduction of every official training budget. This protocol-matched 40-round table is distinct from the 40-local-pretraining-plus-40-collaboration recipe used by AugHFL/RAHFL in their original studies.
 
 \input{tables/hfl_context_baselines}
 

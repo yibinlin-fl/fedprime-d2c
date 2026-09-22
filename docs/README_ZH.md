@@ -2,6 +2,14 @@
 
 Updated: 2026-09-22
 
+## S2-v2 HFL机制覆盖与FedTGP审计
+
+S2-v2十臂HFL机制覆盖、FedMD/FedProto/RHFL回接及FedTGP AAAI 2024纸面/最小实现Kill Test：
+
+```text
+docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md
+```
+
 ## 相关论文实验图与数据集审计
 
 已逐页核对RHFL、AugHFL、RAHFL、FedERL和DART五份PDF的数据集、表格与结果图，形成V0.4

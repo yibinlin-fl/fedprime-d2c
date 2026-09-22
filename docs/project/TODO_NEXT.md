@@ -1,12 +1,14 @@
 # TODO Next
 
-## Current - M2 Local-First Multi-Seed Formal - 2026-09-22
+## Current - M2 Running / S2-v2 Engineering Complete - 2026-09-22
 
 M1 held-out map2 four-arm training-seed stability is complete with
 `GO_MAP2_TRAINING_SEED_STABILITY`; do not rerun or tune it. The next experiment is M2: repeat the
 12-round HFL/Local x gamma=0/0.9 factorial for training seeds 1/2, keeping partition, scenario,
-initialization policy, batches and evaluation fixed. It may run directly as Formal using the existing
-cost evidence, but only after explicit user launch. M3/S1/S2/JTT remain benchmark-first.
+initialization policy, batches and evaluation fixed. The user has launched M2 on OpenI; wait for its
+returned artifacts before changing its protocol. S2-v2 engineering is complete with ten context arms,
+including the FedTGP protocol-matched core adapter. M3/S1/S2/JTT remain benchmark-first and no paid
+follow-up is authorized.
 
 ```text
 entry: scripts/openi_cle_v2_factorial_entry.py

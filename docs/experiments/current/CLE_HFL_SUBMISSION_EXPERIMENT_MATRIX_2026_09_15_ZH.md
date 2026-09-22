@@ -189,17 +189,22 @@ delta_Comm  = delta_HFL - delta_Local
 
 无论结果好坏都可进入论文：成功说明有限覆盖鲁棒性，失败则定量确定 applicability boundary。
 
-### S2. 精简的 faithful HFL context table
+### S2. 十臂protocol-matched HFL context table
 
 目的：说明 CLE 不是只在一个自定义通信实现上出现，并把工作放回 HFL 文献坐标。
 
-建议选择代表性而非给每个基座都安装插件：
+当前冻结的机制家族代表为：
 
 - Local/ERM；
+- FedMD protocol-matched adapter；
+- FedProto protocol-matched adapter；
+- FedTGP protocol-matched core adapter；
 - FedDF-fidelity；
 - KT-pFL-fidelity；
 - FCCL protocol-matched adapter；
-- AugHFL-fidelity 或 RAHFL-fidelity。
+- RHFL protocol-matched adapter；
+- AugHFL-fidelity；
+- RAHFL anchor。
 
 先审计算法忠实度，再在相同 CLE scenario 下报告 standalone baseline 的 DSA 与 utility。早期 12-round
 适配器结果只作筛选，不能进入最终胜负表。该表用于“背景比较”，不承担 BER 因果归因；BER 的

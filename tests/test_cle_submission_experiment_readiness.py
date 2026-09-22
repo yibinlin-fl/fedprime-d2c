@@ -82,9 +82,13 @@ def test_hfl_context_is_standalone_not_plugin_comparison(tmp_path: Path) -> None
         for arm in CONTEXT_ARMS
     }
     assert configs["local_erm"]["method"]["communication"] == "none"
+    assert configs["fedmd_adapter"]["method"]["communication"] == "fedmd"
+    assert configs["fedproto_adapter"]["method"]["communication"] == "fedproto"
+    assert configs["fedtgp_adapter"]["method"]["communication"] == "fedtgp"
     assert configs["feddf_fidelity"]["method"]["communication"] == "feddf_fidelity"
     assert configs["kt_pfl_fidelity"]["method"]["communication"] == "kt_pfl_fidelity"
     assert configs["fccl_adapter"]["method"]["communication"] == "fccl"
+    assert configs["rhfl_adapter"]["method"]["communication"] == "rhfl"
     assert configs["aughfl_fidelity"]["method"]["communication"] == "aughfl_fidelity"
     assert configs["rahfl_fidelity"]["method"]["communication"] == "asymhfl_val"
     assert all("fedease" not in config["method"] for config in configs.values())

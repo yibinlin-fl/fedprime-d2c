@@ -46,7 +46,7 @@ def main() -> None:
         }
     rahfl_null = shuffled_binding_null(probabilities[-1], labels, binding, permutations=1000, seed=20260917)
     summary = {
-        "protocol": "cle_hfl_context_table_analysis_v1",
+        "protocol": "cle_hfl_context_table_analysis_v2",
         "mode": args.mode,
         "rows": rows,
         "fidelity_manifest": fidelity_manifest(),

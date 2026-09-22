@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from fedprime.communication.baselines import (
     FedProtoFeatureStrategy,
+    FedTGPCommunicationStrategy,
     RHFLCommunicationStrategy,
     build_baseline_communication_strategy,
     symmetric_cross_entropy,
@@ -19,6 +20,7 @@ def test_baseline_registry_uses_distinct_official_core_mechanisms() -> None:
     assert isinstance(build_baseline_communication_strategy("rhfl", {}), RHFLCommunicationStrategy)
     assert build_baseline_communication_strategy("aughfl", {}).name == "aughfl"
     assert isinstance(build_baseline_communication_strategy("fedproto", {}), FedProtoFeatureStrategy)
+    assert isinstance(build_baseline_communication_strategy("fedtgp", {}), FedTGPCommunicationStrategy)
 
 
 def test_symmetric_cross_entropy_matches_ce_plus_reverse_ce_definition() -> None:
@@ -83,3 +85,41 @@ def test_fedproto_aggregates_feature_prototypes_and_builds_local_mse() -> None:
     loss = strategy.local_loss(model=models[0], clean_images=images0, labels=labels)
     assert torch.isfinite(loss)
     assert loss.requires_grad
+
+
+def test_fedtgp_trains_finite_global_prototypes_and_local_loss() -> None:
+    images0 = torch.tensor([[[[1.0]], [[0.0]]], [[[0.0]], [[1.0]]]])
+    images1 = torch.tensor([[[[2.0]], [[0.0]]], [[[0.0]], [[2.0]]]])
+    labels = torch.tensor([0, 1])
+    loaders = [
+        DataLoader(TensorDataset(images0[:1], labels[:1]), batch_size=1),
+        DataLoader(TensorDataset(images1[1:], labels[1:]), batch_size=1),
+    ]
+    models = {0: _FeatureModel(), 1: _FeatureModel()}
+    strategy = FedTGPCommunicationStrategy(
+        proto_weight=10.0,
+        server_epochs=3,
+        server_batch_size=2,
+    )
+    context = CommunicationContext(
+        models=models,
+        optimizers={key: torch.optim.SGD(model.parameters(), lr=0.1) for key, model in models.items()},
+        public_loader=None,
+        public_iter=None,
+        accuracies=[0.0, 0.0],
+        stats=DatasetStats([0.0, 0.0], [1.0, 1.0]),
+        device=torch.device("cpu"),
+        public_batches_per_round=0,
+        private_loaders=loaders,
+        num_classes=2,
+        round_idx=0,
+    )
+
+    server_loss = strategy.step(context)
+    assert torch.isfinite(torch.tensor(server_loss))
+    assert strategy.global_prototypes is not None
+    assert strategy.global_prototypes.shape == (2, 4)
+    assert strategy.last_metrics["uploaded_prototypes"] == 2.0
+    local_loss = strategy.local_loss(model=models[0], clean_images=images0, labels=labels)
+    assert torch.isfinite(local_loss)
+    assert local_loss.requires_grad

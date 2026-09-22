@@ -4948,10 +4948,14 @@ ZIP CRC检查通过；本机无TeX编译器，仍需Overleaf编译和返回PDF�
 ```text
 source: deliverables/cle_hfl_latex_v0_5_20260922/main.tex
 zip: deliverables/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip
-bytes: 49216
-sha256: B399A7A3967906EDBC39E18D32FA99775C19D033F109C75B583870B2CF775E33
+bytes: 50002
+sha256: C1B816F530170E8DE1FE9BBC509FE72E8EE78A988D870C6F7AAA7968BBF7352E
 entries: 30
 ```
+
+2026-09-22同日S2-v2更新后重打包：主表5由六臂扩展为十臂HFL context，新增FedProto/FedTGP
+引用与双轴实验说明；未完成数字仍全部为`pending`。上述bytes/SHA256指向当前有效ZIP，初始
+pre-S2-v2 ZIP的旧hash不再用于上传。
 
 V0.5建立时的实验优先级为M1 held-out map2四臂40轮training seeds 1/2，然后M2、M3、S2、
 条件性O1和S1；M1随后已按下一节记录完成。

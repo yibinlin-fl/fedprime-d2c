@@ -4960,6 +4960,32 @@ pre-S2-v2 ZIP的旧hash不再用于上传。
 V0.5建立时的实验优先级为M1 held-out map2四臂40轮training seeds 1/2，然后M2、M3、S2、
 条件性O1和S1；M1随后已按下一节记录完成。
 
+## 投稿候选与双账号S2公平拆分 - 2026-09-24
+
+投稿候选冻结为以下规划顺序（会议等级按当前CCF第七版目录，截稿日期以会议官网为准）：
+
+```text
+主目标       ECAI 2027       CCF-B   full paper 2027-04-14
+第二目标     ECML PKDD 2027  CCF-B   官网已上线，正式截稿日待公布
+稳妥备选     IJCNN 2027      CCF-C   regular paper 2027-01-31
+条件性候选   UAI 2027        CCF-B   正式截稿日待公布；需更突出识别/统计理论
+不建议赶投   AISTATS 2027    CCF-C   abstract 2026-09-29 / full 2026-10-06
+```
+
+不为赶AISTATS压缩或跳过尚缺的科学证据。当前最现实路线是以ECAI 2027为主目标，同时观察
+ECML PKDD/UAI 2027正式CFP，IJCNN 2027作为较早的CCF-C备选。
+
+用户确认两个OpenI账号可使用相同数据集、V100型号、镜像和training seed。跨账号运行不同完整
+arms在科学上允许，前提是同一commit、输入SHA256、依赖环境、初始化、partition、公共batch、
+训练/评价预算全部冻结，并在两边重复运行一个预注册Local/ERM锚点检查平台漂移。账号身份不得
+与方法身份混淆；不允许把单个arm的轮次拆到两个账号，也不能事后选择较优的重复锚点。S2保持
+training seed 0；M1已经承担方法的三training-seed稳定性证据。
+
+当前40轮十臂估算下限约78.2 V100小时，31小时总额度不足，跨账号拆分不能减少aggregate GPU
+hours。现有runner/OpenI入口也尚未支持arm子集或安全分片合并，故双账号Formal当前不是run-ready。
+若继续该路线，先实现arm manifest、分片contract、重复锚点、哈希/trace一致性和统一合并分析，
+两账号均通过pairing后再benchmark；Formal仍需用户单独明确授权。
+
 ## Held-Out Map2 Multi-Training-Seed Stability GO - 2026-09-22
 
 M1新增training seeds 1/2 Formal包已返回，与2026-09-13完成的seed 0按冻结分析器合并。两个新包

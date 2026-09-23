@@ -4982,9 +4982,12 @@ arms在科学上允许，前提是同一commit、输入SHA256、依赖环境、�
 training seed 0；M1已经承担方法的三training-seed稳定性证据。
 
 当前40轮十臂估算下限约78.2 V100小时，31小时总额度不足，跨账号拆分不能减少aggregate GPU
-hours。现有runner/OpenI入口也尚未支持arm子集或安全分片合并，故双账号Formal当前不是run-ready。
-若继续该路线，先实现arm manifest、分片contract、重复锚点、哈希/trace一致性和统一合并分析，
-两账号均通过pairing后再benchmark；Formal仍需用户单独明确授权。
+hours。2026-09-24已完成分片工程：`cheap_a`为Local/FedMD/FedProto/AugHFL，`cheap_b`为
+FedDF/KT-pFL/FCCL/RAHFL，FedTGP与RHFL各自独立；pairing会自动为非Local分片加入Local校准，
+Formal不重复Local。runner写入分片contract和逐臂completion；OpenI产物按shard隔离命名；新增
+`scripts/merge_cle_hfl_context_shards.py`，强制校验四个Formal分片、输入审计、config SHA256、
+十臂覆盖、evaluation grid及跨分片local batch trace后才生成合并结果。15项测试和CLI smoke通过，
+但真实输入双账号pairing尚未执行，所以Formal仍非run-ready并需用户单独明确授权。
 
 ## Held-Out Map2 Multi-Training-Seed Stability GO - 2026-09-22
 

@@ -23,11 +23,13 @@ from scripts.openi_cle_v2_factorial_entry import (  # noqa: E402
     upload,
 )
 from scripts.openi_cle_v2_plugin_stage2_entry import package_light_outputs  # noqa: E402
+from scripts.run_cle_hfl_context import SHARDS  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="OpenI submission HFL context table.")
     parser.add_argument("--mode", choices=("pairing", "benchmark", "formal"), default="benchmark")
+    parser.add_argument("--shard", choices=SHARDS, default="all")
     parser.add_argument("--confirm_formal", choices=("false", "true"), default="false")
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", choices=("false", "true"), default="false")
@@ -46,9 +48,10 @@ def main() -> None:
         run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], environment)
     source = find_archive(candidate_roots(args, context))
     package_root = safe_extract(source, ROOT / "local_runs/openi_cle_hfl_context_input")
-    outputs_root = ROOT / f"outputs/cle_hfl_context_{args.mode}"
-    configs_root = ROOT / f"local_runs/cle_hfl_context_{args.mode}_configs"
-    analysis_root = ROOT / f"outputs/cle_hfl_context_{args.mode}_analysis"
+    run_name = f"cle_hfl_context_{args.shard}_{args.mode}"
+    outputs_root = ROOT / f"outputs/{run_name}"
+    configs_root = ROOT / f"local_runs/{run_name}_configs"
+    analysis_root = ROOT / f"outputs/{run_name}_analysis"
     outputs_root.mkdir(parents=True, exist_ok=True)
     run(
         [sys.executable, "-u", "scripts/audit_cle_v2_factorial.py", "--package-root", str(package_root), "--skip-pew", "--output", str(outputs_root / "INPUT_AUDIT.json")],
@@ -62,6 +65,8 @@ def main() -> None:
         str(package_root),
         "--mode",
         args.mode,
+        "--shard",
+        args.shard,
         "--device",
         "cuda",
         "--output-root",
@@ -87,6 +92,8 @@ def main() -> None:
         str(analysis_root),
         "--mode",
         args.mode,
+        "--shard",
+        args.shard,
         "--device",
         "cuda",
     ]
@@ -100,6 +107,7 @@ def main() -> None:
         json.dumps(
             {
                 "mode": args.mode,
+                "execution_shard": args.shard,
                 "training_seconds": training_seconds,
                 "analysis_seconds": analysis_seconds,
                 "scientific_evidence": args.mode == "formal",
@@ -114,7 +122,7 @@ def main() -> None:
         outputs_root,
         configs_root,
         analysis_root,
-        ROOT / f"cle_hfl_context_{args.mode}_outputs.tar.gz",
+        ROOT / f"cle_hfl_context_{args.shard}_{args.mode}_outputs.tar.gz",
     )
     upload(context, [archive, timing])
     log(f"Complete: {archive}")

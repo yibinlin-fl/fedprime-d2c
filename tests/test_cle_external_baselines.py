@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import json
+
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -13,7 +17,8 @@ from fedprime.communication.baselines import (
 from fedprime.communication.public_logits import CommunicationContext
 from fedprime.data.loaders import DatasetStats
 from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_configs
-from scripts.run_cle_hfl_context import ARMS, context_arm_config
+from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots
+from scripts.run_cle_hfl_context import ARMS, SHARDS, context_arm_config, selected_arms
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 
 
@@ -167,3 +172,78 @@ def test_hfl_pairing_mode_is_two_rounds_and_cheap(tmp_path) -> None:
     assert all(config["train"]["max_local_batches"] == 2 for config in configs.values())
     assert configs["fedtgp_adapter"]["method"]["baseline"]["server_epochs"] == 1
     assert configs["rhfl_adapter"]["method"]["baseline"]["max_quality_batches"] == 1
+
+
+def test_hfl_context_shards_are_disjoint_and_cover_all_arms() -> None:
+    execution_shards = ("cheap_a", "cheap_b", "fedtgp", "rhfl")
+    flattened = tuple(arm for shard in execution_shards for arm in SHARDS[shard])
+    assert len(flattened) == len(set(flattened))
+    assert set(flattened) == set(ARMS)
+    assert selected_arms("cheap_b", "formal") == SHARDS["cheap_b"]
+    assert selected_arms("cheap_b", "pairing") == ("local_erm", *SHARDS["cheap_b"])
+
+
+def test_hfl_shard_root_parser_requires_exact_merge_partition(tmp_path) -> None:
+    values = [f"{shard}={tmp_path / shard}" for shard in ("cheap_a", "cheap_b", "fedtgp", "rhfl")]
+    roots = parse_shard_roots(values)
+    assert tuple(roots) == ("cheap_a", "cheap_b", "fedtgp", "rhfl")
+
+
+def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path) -> None:
+    roots = {}
+    trace_line = json.dumps({"round": 0, "client": 0, "batch": 0, "sha256": "matched"}) + "\n"
+    for shard in ("cheap_a", "cheap_b", "fedtgp", "rhfl"):
+        root = tmp_path / shard
+        roots[shard] = root
+        for directory in ("configs", "outputs", "analysis"):
+            (root / directory).mkdir(parents=True, exist_ok=True)
+        records = {}
+        rows = {}
+        for arm in SHARDS[shard]:
+            config_path = root / "configs" / f"{arm}.json"
+            config_path.write_text("{}", encoding="utf-8")
+            records[arm] = {
+                "config": str(config_path),
+                "sha256": hashlib.sha256(config_path.read_bytes()).hexdigest().upper(),
+            }
+            rows[arm] = {"pooled_dsa": 0.1}
+            arm_root = root / "outputs" / f"cle_hfl_context_{arm}_trainseed0"
+            arm_root.mkdir(parents=True)
+            (arm_root / "local_batch_trace.jsonl").write_text(trace_line, encoding="utf-8")
+        contract = {
+            "protocol": "cle_hfl_context_table_v2",
+            "mode": "formal",
+            "rounds": 40,
+            "train_seed": 0,
+            "execution_shard": shard,
+            "selected_arms": list(SHARDS[shard]),
+            "arms": records,
+        }
+        completion = {
+            "execution_shard": shard,
+            "selected_arms": list(SHARDS[shard]),
+            "completed_arms": list(SHARDS[shard]),
+            "complete": True,
+        }
+        summary = {
+            "mode": "formal",
+            "execution_shard": shard,
+            "selected_arms": list(SHARDS[shard]),
+            "rows": rows,
+            "scientific_evidence": True,
+        }
+        (root / "configs" / f"CONTRACT_{shard}.json").write_text(json.dumps(contract), encoding="utf-8")
+        (root / "configs" / f"COMPLETION_{shard}.json").write_text(json.dumps(completion), encoding="utf-8")
+        (root / "analysis" / "RESULT_SUMMARY.json").write_text(json.dumps(summary), encoding="utf-8")
+        (root / "outputs" / "INPUT_AUDIT.json").write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+        np.savez_compressed(
+            root / "analysis" / "HFL_CONTEXT_PREDICTIONS.npz",
+            probabilities=np.zeros((len(SHARDS[shard]), 1, 1, 1, 2)),
+            arms=np.asarray(SHARDS[shard]),
+            labels=np.asarray([0]),
+            binding=np.asarray([[0]]),
+            operator_names=np.asarray(["blur"]),
+        )
+    merged = merge_shards(roots, tmp_path / "merged")
+    assert tuple(merged["rows"]) == ARMS
+    assert merged["cross_shard_local_batch_pairing"]["all_arms_match"] is True

@@ -1,6 +1,6 @@
 # CLE-HFL 投稿前实验：执行就绪清单
 
-Updated: 2026-09-23
+Updated: 2026-09-24
 
 > 2026-09-22 result update：M1 seeds 1/2已完成并与seed 0聚合为
 > `GO_MAP2_TRAINING_SEED_STABILITY`。M2可按本文参数直接Formal；M3、S1、
@@ -277,3 +277,19 @@ scripts/run_cle_jtt_formal.py
 scripts/analyze_cle_jtt_formal.py
 scripts/openi_cle_jtt_formal_entry.py
 ```
+# S2双账号分片补充（2026-09-24）
+
+S2十臂现支持以下冻结执行分片：
+
+```text
+cheap_a = local_erm, fedmd_adapter, fedproto_adapter, aughfl_fidelity
+cheap_b = feddf_fidelity, kt_pfl_fidelity, fccl_adapter, rahfl_fidelity
+fedtgp  = fedtgp_adapter
+rhfl    = rhfl_adapter
+```
+
+入口新增`shard`参数。pairing模式会为`cheap_b/fedtgp/rhfl`自动加入`local_erm`校准臂；Formal按
+上述分片执行，不重复40轮Local。每个分片保存独立contract与逐臂completion，输出包名包含shard。
+四分片返回后使用`scripts/merge_cle_hfl_context_shards.py`统一审计；输入、配置哈希、完成状态、
+十臂覆盖、评价grid或local batch trace任一不一致均拒绝合并。当前仅完成本地静态/单元/CLI验证，
+尚未完成真实输入pairing，故本节不是OpenI Formal启动卡。

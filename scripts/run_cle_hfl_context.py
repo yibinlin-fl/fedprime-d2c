@@ -27,8 +27,24 @@ ARMS = (
     "aughfl_fidelity",
     "rahfl_fidelity",
 )
+SHARDS = {
+    "all": ARMS,
+    "cheap_a": ("local_erm", "fedmd_adapter", "fedproto_adapter", "aughfl_fidelity"),
+    "cheap_b": ("feddf_fidelity", "kt_pfl_fidelity", "fccl_adapter", "rahfl_fidelity"),
+    "fedtgp": ("fedtgp_adapter",),
+    "rhfl": ("rhfl_adapter",),
+}
 ROUND_BUDGET = {"pairing": 2, "benchmark": 1, "formal": 40}
 LOCAL_BATCH_BUDGET = {"pairing": 2, "benchmark": 8, "formal": 16}
+
+
+def selected_arms(shard: str, mode: str) -> tuple[str, ...]:
+    if shard not in SHARDS:
+        raise ValueError(f"Unknown HFL context shard: {shard}")
+    arms = SHARDS[shard]
+    if mode == "pairing" and "local_erm" not in arms:
+        return ("local_erm", *arms)
+    return tuple(arms)
 
 
 def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: Path, device: str) -> dict:
@@ -125,6 +141,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the submission HFL context table.")
     parser.add_argument("--package-root", type=Path, required=True)
     parser.add_argument("--mode", choices=ROUND_BUDGET, default="benchmark")
+    parser.add_argument("--shard", choices=SHARDS, default="all")
     parser.add_argument("--device", default="auto")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--config-root", type=Path, required=True)
@@ -141,8 +158,9 @@ def main() -> None:
     verify_package(package_root)
     output_root, config_root = args.output_root.resolve(), args.config_root.resolve()
     config_root.mkdir(parents=True, exist_ok=True)
+    arms = selected_arms(args.shard, args.mode)
     records = {}
-    for arm in ARMS:
+    for arm in arms:
         config = context_arm_config(
             arm, package_root=package_root, mode=args.mode, output_root=output_root, device=args.device
         )
@@ -157,16 +175,34 @@ def main() -> None:
         "mode": args.mode,
         "rounds": ROUND_BUDGET[args.mode],
         "train_seed": 0,
+        "execution_shard": args.shard,
+        "selected_arms": list(arms),
         "arms": records,
         "not_a_plugin_attribution_experiment": True,
     }
-    (config_root / "CONTRACT.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
+    (config_root / f"CONTRACT_{args.shard}.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
     if args.prepare_only:
         print(json.dumps(contract, indent=2), flush=True)
         return
-    for arm in ARMS:
+    completed = []
+    completion_path = config_root / f"COMPLETION_{args.shard}.json"
+    for arm in arms:
         subprocess.check_call(
             [sys.executable, "-u", "scripts/run_experiment.py", "--config", str(config_root / f"{arm}.json")], cwd=ROOT
+        )
+        completed.append(arm)
+        completion_path.write_text(
+            json.dumps(
+                {
+                    "protocol": contract["protocol"],
+                    "execution_shard": args.shard,
+                    "selected_arms": list(arms),
+                    "completed_arms": completed,
+                    "complete": completed == list(arms),
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
         )
     print(json.dumps(contract, indent=2), flush=True)
 

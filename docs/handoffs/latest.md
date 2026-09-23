@@ -22,10 +22,13 @@ DSA识别/统计理论后作为条件性候选；`AISTATS 2027 (CCF-C)`虽主题
 服务器完成统一40轮Formal；若最终只能使用31小时，必须在看正式结果前另行冻结成本受控的
 S2-v3协议并重新benchmark，不能把短预算结果冒充原40轮Formal。
 
-工程状态：`scripts/run_cle_hfl_context.py`与OpenI入口当前固定遍历全部十臂，尚无arm子集选择、
-分片contract或跨分片合并审计。因此“双账号各跑一半”科学上可行，但目前不能直接启动；需先
-实现显式arm manifest、重复锚点、配置/输入哈希校验、分片结果完整性检查和只在全部分片通过后
-运行的统一分析器，再做两账号`mode=pairing`验证。此记录不构成Formal授权。
+工程状态（2026-09-24更新）：已实现`all/cheap_a/cheap_b/fedtgp/rhfl`显式分片、分片contract、
+逐臂完成清单、独立输出命名和四分片离线合并审计。`cheap_a`固定为Local/FedMD/FedProto/
+AugHFL，`cheap_b`固定为FedDF/KT-pFL/FCCL/RAHFL；pairing模式会为无Local的分片自动加入
+Local校准臂，Formal不会重复训练Local。合并器只有在四分片Formal、输入审计、config SHA256、
+arm覆盖、预测grid及十臂local batch trace全部一致时才产出总表。15项聚焦测试、静态编译和CLI
+参数smoke通过；尚未在真实输入上完成双账号pairing，因此还不能给Formal启动卡或启动付费任务。
+此记录不构成Formal授权。
 
 ## LaTeX V0.6-SKILL已归档并完成独立审查
 

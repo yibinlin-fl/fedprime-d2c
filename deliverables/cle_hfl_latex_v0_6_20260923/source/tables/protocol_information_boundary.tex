@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Information boundary for completed and frozen comparison protocols. Operator identities and binding maps are sealed from deployable training.}
+\label{tab:protocol-boundary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllll}
+\toprule
+Protocol role & Private task & Train-time environment information & Communication context & Evaluation-only information \\
+\midrule
+CLE formation / local-first & CIFAR--10 & none & Local or strict AsymHFL & operator, binding, paired grid \\
+Axis I map2 objectives & CIFAR--10 & none or PEW family proxy, by arm & strict AsymHFL & operator, binding, paired grid \\
+Cross-binding map1 & CIFAR--10 & PEW family proxy for PEW+BER & strict AsymHFL & operator, binding, paired grid \\
+Second communication base & CIFAR--10 & PEW family proxy for PEW+BER & FedDF-fidelity & operator, binding, paired grid \\
+Axis II S2-v2 context & CIFAR--10 & method-specific; no BER & protocol-matched HFL family & operator, binding, paired grid \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

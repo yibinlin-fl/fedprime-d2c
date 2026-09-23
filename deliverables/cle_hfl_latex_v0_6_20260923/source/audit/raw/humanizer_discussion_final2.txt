@@ -1,0 +1,25 @@
+================================================================
+AI-WRITING DETECTOR   (258 words, 13 sentences, 4 paragraphs)
+================================================================
+metric                value   human     llm  lean
+emdash_per_1k          0.00    1.11    7.02  ..........
+chars_per_word         6.26    6.93    7.32  ..........
+copula_per_1k         23.26   24.20   19.10  ##........
+words_per_para        64.50  136.00   53.00  #########. <-LLM
+sent_len_stdev         8.47   12.30   10.10  ########## <-LLM
+pct_short_sent         7.69    5.60    3.30  ..........
+pct_long_sent         15.38   22.10   18.40  ########## <-LLM
+semicolon_per_1k      15.50    1.40    1.76  (info)
+colon_per_1k           0.00    3.83    4.58  (info)
+
+LEXICAL TELLS (over-used by LLM)  ->  suggested swap
+  none
+
+PHRASE / CONSTRUCTION TELLS  ->  suggested fix
+  none
+
+================================================================
+AI-LIKENESS SCORE:  17.4/100   (structure 44, lexical 0, phrasing 0)
+VERDICT: reads human
+Tip: best signal comes from passages of 150+ words. Use hits above as a checklist.
+================================================================

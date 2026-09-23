@@ -1,0 +1,476 @@
+{
+  "schema_version": "1.1",
+  "project": {
+    "id": "cle-hfl-v06-skill",
+    "title": "When Corruption Becomes a Label: Diagnosing and Mitigating Class--Corruption Shortcuts in Model-Heterogeneous Federated Learning",
+    "archetype": "empirical-methods-theory",
+    "study_designs": [
+      "controlled computational experiments",
+      "paired diagnostic evaluation",
+      "theoretical identification analysis"
+    ],
+    "lifecycle_stage": "revision",
+    "review_maturity": "integration",
+    "target_venue": "CCF-B/CCF-C machine-learning or federated-learning conference; ML-conference style",
+    "active_release": "V0.6-SKILL working candidate"
+  },
+  "artifacts": [
+    {
+      "id": "main",
+      "path": "main.tex",
+      "role": "main_manuscript",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-abstract",
+      "path": "sections/abstract.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-introduction",
+      "path": "sections/introduction.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-related_work",
+      "path": "sections/related_work.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-method",
+      "path": "sections/method.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-experiments",
+      "path": "sections/experiments.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-discussion",
+      "path": "sections/discussion.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-conclusion",
+      "path": "sections/conclusion.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "section-appendix",
+      "path": "sections/appendix.tex",
+      "role": "manuscript_section",
+      "status": "ACTIVE",
+      "required_for_release": true
+    },
+    {
+      "id": "refs",
+      "path": "references.bib",
+      "role": "references",
+      "status": "ACTIVE",
+      "required_for_release": true
+    }
+  ],
+  "authority_sources": [
+    {
+      "id": "latest-handoff",
+      "kind": "verified_project_evidence_handoff",
+      "path_or_reference": "/mnt/data/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH(1).md",
+      "scope": [
+        "contract",
+        "methods",
+        "results",
+        "numbers",
+        "evidence status",
+        "nonclaims"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-23"
+    },
+    {
+      "id": "experiment-matrix",
+      "kind": "verified_project_experiment_matrix",
+      "path_or_reference": "/mnt/data/EXPERIMENT_TABLE_MATRIX_ZH.md",
+      "scope": [
+        "experiment status",
+        "table status",
+        "pending evidence"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-23"
+    },
+    {
+      "id": "citation-audit",
+      "kind": "verified_citation_audit",
+      "path_or_reference": "/mnt/data/CITATION_AUDIT_ZH.md",
+      "scope": [
+        "citations",
+        "publication status",
+        "implementation fidelity boundaries"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-23"
+    },
+    {
+      "id": "v05-source",
+      "kind": "active_source_manuscript",
+      "path_or_reference": "/mnt/data/CLE_HFL_LATEX_V0_5_EXPERIMENT_SKELETON_OVERLEAF_20260922.zip",
+      "scope": [
+        "current prose",
+        "equations",
+        "labels",
+        "refs",
+        "figures",
+        "tables"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-23"
+    },
+    {
+      "id": "rahfl-style-reference",
+      "kind": "reference_only_prior_paper",
+      "path_or_reference": "/mnt/data/2503.09206v1.pdf",
+      "scope": [
+        "organization",
+        "technical pacing",
+        "experiment narration"
+      ],
+      "status": "VERIFIED",
+      "last_verified": "2026-09-23"
+    }
+  ],
+  "contract": {
+    "gap": "Existing corruption-robust HFL mainly treats corruption as nuisance variation; the manuscript studies client-specific class--corruption bindings that can turn operators into directional class cues and require target-aligned diagnosis.",
+    "task": "Define CLE-HFL, diagnose binding-directed shortcuts with paired DSA, attribute formation with matched HFL-versus-Local analysis, mitigate locally with taxonomy-assisted coarse-family PEW+BER, and test alternative explanations and boundaries.",
+    "outcomes": [
+      "Directional Shortcut Alignment (DSA)",
+      "operator-grid accuracy",
+      "Avg",
+      "Worst",
+      "WCCA",
+      "CFG",
+      "matched HFL/Local CLE contrasts"
+    ],
+    "questions": [
+      {
+        "id": "Q1",
+        "text": "Does strong CLE induce a binding-specific directional shortcut?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q2",
+        "text": "Is the observed shortcut predominantly local-first rather than communication-first?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q3",
+        "text": "Can taxonomy-assisted coarse-family PEW+BER suppress CLE without private true corruption metadata?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q4",
+        "text": "Is BER benefit distinguishable from generic ERM, tail-risk, or shared-group robust objectives?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q5",
+        "text": "Does shortcut suppression replicate across controlled binding maps and another protocol-matched HFL communication base, and what utility boundary remains?",
+        "lock": "SEMANTIC"
+      },
+      {
+        "id": "Q6",
+        "text": "What do proxy non-identifiability, PEW error, and Oracle granularity audits imply about the limits of proxy-only certification and environment granularity?",
+        "lock": "SEMANTIC"
+      }
+    ],
+    "contribution": "A four-part evidence chain: CLE-HFL formulation; paired DSA plus identification/proxy non-identifiability; local-versus-communication formation analysis; taxonomy-assisted PEW+BER with matched controls and boundary validation.",
+    "nonclaims": [
+      "Not first federated spurious correlation work.",
+      "Not first environment inference, pseudo-group discovery, group reweighting, or counterfactual shortcut evaluation.",
+      "PEW is not taxonomy-free.",
+      "No operator-level PEW is proposed or implemented.",
+      "CDep is not part of the current pure PEW+BER method.",
+      "Source bootstrap is not training-seed uncertainty.",
+      "FedDF-fidelity does not establish uniform utility improvement or an official FedDF reproduction.",
+      "CVaR-DRO is protocol-matched and is not uniformly dominated per client.",
+      "JTT screen is not Formal evidence.",
+      "Smoke and benchmark accuracy are not scientific results.",
+      "Controlled CLE does not establish real-world deployment effectiveness."
+    ]
+  },
+  "semantic_locks": [
+    {
+      "id": "dsa-name",
+      "kind": "EXACT",
+      "canonical": "Directional Shortcut Alignment",
+      "forbidden_variants": [
+        "Directional Shortcut Attribution"
+      ]
+    },
+    {
+      "id": "pew-scope",
+      "kind": "SEMANTIC",
+      "canonical": "PEW is coarse family-level and taxonomy-assisted; operator-level metadata is not used by the deployable method.",
+      "forbidden_variants": [
+        "taxonomy-free PEW"
+      ]
+    },
+    {
+      "id": "dsa-scope",
+      "kind": "SEMANTIC",
+      "canonical": "DSA identifies a binding-direction operator-response contrast under explicit assumptions; it does not recover the full internal causal mechanism."
+    },
+    {
+      "id": "source-bootstrap",
+      "kind": "SEMANTIC",
+      "canonical": "Source-clustered bootstrap quantifies evaluation-source uncertainty conditional on the trained checkpoint, not training-seed uncertainty."
+    },
+    {
+      "id": "feddf-boundary",
+      "kind": "SEMANTIC",
+      "canonical": "FedDF-fidelity supports DSA suppression under a second protocol-matched communication base; utility gate fails and both arms are below the learning floor."
+    },
+    {
+      "id": "jtt-boundary",
+      "kind": "SEMANTIC",
+      "canonical": "JTT is screen-only unless a future Formal comparison is authorized and completed."
+    },
+    {
+      "id": "cdep-removed",
+      "kind": "SEMANTIC",
+      "canonical": "CDep is disabled and absent from the current pure PEW+BER method."
+    }
+  ],
+  "terminology": [
+    {
+      "id": "term-cle",
+      "preferred": "class--corruption entanglement (CLE)",
+      "prohibited": [
+        "corruption-label entanglement"
+      ]
+    },
+    {
+      "id": "term-dsa",
+      "preferred": "Directional Shortcut Alignment (DSA)",
+      "prohibited": [
+        "Directional Shortcut Attribution"
+      ]
+    },
+    {
+      "id": "term-pew",
+      "preferred": "taxonomy-assisted coarse family-level Public Environment Witness (PEW)",
+      "prohibited": [
+        "taxonomy-free PEW"
+      ]
+    },
+    {
+      "id": "term-ber",
+      "preferred": "Balanced Environment Risk (BER)",
+      "prohibited": []
+    },
+    {
+      "id": "term-feddf",
+      "preferred": "FedDF-fidelity",
+      "prohibited": [
+        "official FedDF reproduction",
+        "exact FedDF reproduction"
+      ]
+    }
+  ],
+  "style_profile": {
+    "language_variant": "American English",
+    "protected_terms": [
+      "class--corruption entanglement",
+      "Directional Shortcut Alignment",
+      "Public Environment Witness",
+      "Balanced Environment Risk",
+      "FedDF-fidelity",
+      "source-clustered bootstrap"
+    ],
+    "discouraged_phrases": [
+      "We emphasize that",
+      "It should be noted that",
+      "Importantly",
+      "Taken together",
+      "These findings demonstrate",
+      "This provides a concrete foundation",
+      "For a fair comparison"
+    ],
+    "preferred_open_compounds": [],
+    "allowed_repetitions": [
+      "DSA",
+      "PEW",
+      "BER",
+      "CLE",
+      "taxonomy-assisted",
+      "source bootstrap"
+    ],
+    "sentence_opening_words": 4,
+    "phrase_words": 5,
+    "phrase_min_occurrences": 3
+  },
+  "facts": [
+    {
+      "id": "map2-means",
+      "value": "ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER pooled DSA over seeds 0/1/2 = 0.250530 / 0.086654 / 0.205417 / 0.071470",
+      "source_id": "latest-handoff"
+    },
+    {
+      "id": "localfirst-s0",
+      "value": "Delta_HFL=0.119889; Delta_Local=0.107960; Delta_comm=0.011929; descriptive ratio=90.05%; seed0 only",
+      "source_id": "latest-handoff"
+    },
+    {
+      "id": "feddf-result",
+      "value": "DSA 0.136989->0.029012; grid -0.0400pp; last5 Avg -0.6660pp; utility gate fail; learning floor fail",
+      "source_id": "latest-handoff"
+    },
+    {
+      "id": "map1-result",
+      "value": "DSA 0.113761->0.049531, 56.46% reduction, seed0 controlled map1",
+      "source_id": "latest-handoff"
+    },
+    {
+      "id": "operator-family-boundary",
+      "value": "Oracle family DSA 0.017232; operator 0.015783; random 0.067895; family-operator gap 0.001449",
+      "source_id": "latest-handoff"
+    }
+  ],
+  "alignment": [
+    {
+      "question_id": "Q1",
+      "method": "CLE-v2 gamma0/gamma0.9 source-paired operator evaluation and shuffled-binding null",
+      "evidence": "seed0 HFL factorial and prediction-cache permutation",
+      "result": "HFL CLE effect 0.119889; true-binding DSA 0.119644 > shuffled null p95 0.029559",
+      "interpretation": "strong controlled CLE induces binding-directed probability shifts",
+      "limitation": "seed0 mechanism experiment and controlled synthetic CLE",
+      "contribution": "C1/C2",
+      "status": "CONFIRMED"
+    },
+    {
+      "question_id": "Q2",
+      "method": "matched HFL-vs-Local 2x2 factorial",
+      "evidence": "seed0 four-arm Formal",
+      "result": "Delta_HFL 0.119889, Delta_Local 0.107960, Delta_comm 0.011929",
+      "interpretation": "predominantly local-first in evaluated setting",
+      "limitation": "M2 multi-seed pending; ratio not causal mediation",
+      "contribution": "C3",
+      "status": "CONFIRMED"
+    },
+    {
+      "question_id": "Q3",
+      "method": "public coarse-family PEW plus BER local risk",
+      "evidence": "original map, map1, map2 Formal, FedDF-fidelity supporting experiment",
+      "result": "DSA reductions in completed controlled settings",
+      "interpretation": "local intervention suppresses CLE without private true corruption metadata",
+      "limitation": "utility mixed; taxonomy-assisted; one private task",
+      "contribution": "C4",
+      "status": "CONFIRMED"
+    },
+    {
+      "question_id": "Q4",
+      "method": "held-out map2 ERM/CVaR/PEW+GroupDRO/PEW+BER, seeds0/1/2",
+      "evidence": "M1 three-seed Formal",
+      "result": "pooled DSA 0.250530/0.086654/0.205417/0.071470",
+      "interpretation": "BER has best pooled shortcut--utility trade-off among these four matched objectives",
+      "limitation": "not universal method dominance; CVaR lower DSA on c0/c1",
+      "contribution": "C4",
+      "status": "CONFIRMED"
+    },
+    {
+      "question_id": "Q5",
+      "method": "map1 binding change and FedDF-fidelity communication-base change",
+      "evidence": "seed0 Formal/supporting experiments",
+      "result": "map1 56.46% DSA reduction; FedDF-fidelity 78.82% DSA reduction with utility gate fail",
+      "interpretation": "suppression replicates across another controlled map and appears under second protocol-matched base",
+      "limitation": "seed0; FedDF learning-floor fail; not global generalization",
+      "contribution": "C4",
+      "status": "CONFIRMED"
+    },
+    {
+      "question_id": "Q6",
+      "method": "proxy non-identifiability theorem, conditional bridge, Oracle family/operator/random audit",
+      "evidence": "theory plus frozen audit",
+      "result": "proxy-only non-identifiability; current PEW bridge trivial; operator-vs-family DSA gap 0.001449",
+      "interpretation": "proxy improvements cannot certify true CLE harm without extra assumptions; current audit does not motivate operator-level PEW",
+      "limitation": "closed taxonomy and synthetic setting",
+      "contribution": "C2/C4",
+      "status": "CONFIRMED"
+    }
+  ],
+  "dimensions": [],
+  "decisions": [],
+  "issues": [
+    {
+      "id": "M2",
+      "status": "OPEN",
+      "severity": "S3",
+      "evidence_status": "UNVERIFIED",
+      "blocking_stage": "submission",
+      "description": "Local-first multi-training-seed stability remains pending."
+    },
+    {
+      "id": "M3",
+      "status": "OPEN",
+      "severity": "S3",
+      "evidence_status": "UNVERIFIED",
+      "blocking_stage": "submission",
+      "description": "Second private dataset and protocol/result remain pending; do not freeze a dataset from the old skeleton."
+    },
+    {
+      "id": "S1",
+      "status": "OPEN",
+      "severity": "S2",
+      "evidence_status": "UNVERIFIED",
+      "blocking_stage": "optional_submission_strengthening",
+      "description": "Bounded taxonomy stress remains pending; protocol is not frozen by latest authority."
+    },
+    {
+      "id": "S2",
+      "status": "OPEN",
+      "severity": "S2",
+      "evidence_status": "UNVERIFIED",
+      "blocking_stage": "submission_if_claimed",
+      "description": "HFL context Axis II has engineering benchmark/pairing work but no Formal scientific metrics in current authority."
+    }
+  ],
+  "release": {
+    "status": "WORKING",
+    "candidate_artifact_ids": [
+      "main"
+    ],
+    "required_checks": [
+      "argument_structure",
+      "evidence_scope",
+      "scholarly_writing",
+      "delivery_integrity",
+      "functional_completeness"
+    ],
+    "completed_checks": [
+      "argument_structure",
+      "evidence_scope",
+      "scholarly_writing",
+      "delivery_integrity",
+      "functional_completeness"
+    ],
+    "checked_hashes": {
+      "main": "02b1ea1a6043027fd31536caf6f542a36ec202aa8feaf723296670d71ba91c14"
+    },
+    "visual_check": "PASSED"
+  }
+}

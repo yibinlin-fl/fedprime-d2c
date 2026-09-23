@@ -1,0 +1,164 @@
+{
+  "status": "FINDINGS",
+  "findings": [
+    {
+      "code": "PROSE005",
+      "artifact": "main",
+      "match": "usepackage",
+      "count": 13,
+      "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+    },
+    {
+      "code": "PROSE005",
+      "artifact": "main",
+      "match": "input",
+      "count": 8,
+      "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+    },
+    {
+      "code": "PROSE005",
+      "artifact": "main",
+      "match": "sections",
+      "count": 8,
+      "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-abstract",
+      "match": "pre-registered, operator-response, non-identifiability, pseudo-environment",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-introduction",
+      "match": "family-level, support-induced, risk-mass, pseudo-environments",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-introduction",
+      "match": "source-paired, source-level, non-identifiability, target-aligned",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-introduction",
+      "match": "Local-versus-communication, HFL-versus-Local, local-first, add-on",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-related_work",
+      "match": "taxonomy-assisted, corruption-family, pseudo-environment, pseudo-group",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-related_work",
+      "match": "CVaR-DRO, protocol-matched, tail-risk, line-by-line",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE005",
+      "artifact": "section-related_work",
+      "match": "citep",
+      "count": 16,
+      "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-method",
+      "match": "CLE-HFL, client-specific, pre-registered, client-specific",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-method",
+      "match": "evaluation-source, training-seed, binding-map, model-selection, cross-dataset",
+      "count": 5,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-method",
+      "match": "multi-training-seed, HFL-versus-Local, four-arm, Taxonomy-Assisted",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE004",
+      "artifact": "section-method",
+      "match": "m k o z o",
+      "count": 3,
+      "message": "repeated multiword phrase across sentences"
+    },
+    {
+      "code": "PROSE005",
+      "artifact": "section-method",
+      "match": "mathrm",
+      "count": 36,
+      "message": "candidate nontechnical word overuse; preserve it if conceptually required"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-experiments",
+      "match": "operator-grid, client-average, operator-cell, within-class",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-experiments",
+      "match": "post-training, evidence-chain, Shortcut-Objective, five-arm",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-experiments",
+      "match": "trade-off, held-out, per-client, CVaR-DRO",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-experiments",
+      "match": "communication-base, single-view, protocol-matched, FedDF-fidelity",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-discussion",
+      "match": "Source-clustered, evaluation-source, training-seed, dataset-level",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-conclusion",
+      "match": "Source-paired, binding-directed, non-identifiability, pseudo-environment",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "section-appendix",
+      "match": "Reporting-only, true-family, true-family, environment-only",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE000",
+      "artifact": "refs",
+      "message": "unsupported file type: .bib"
+    }
+  ]
+}

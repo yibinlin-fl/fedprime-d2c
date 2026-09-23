@@ -1,0 +1,23 @@
+{
+  "v5_citation_count": 20,
+  "v6_citation_count": 20,
+  "citation_added": [],
+  "citation_removed": [],
+  "citation_missing_from_bib": [],
+  "v5_labels": 15,
+  "v6_labels": 15,
+  "labels_added": [],
+  "labels_removed": [],
+  "refs_without_labels": [],
+  "numeric_tokens_new": [],
+  "forbidden": {
+    "CDep_active_mentions": 0,
+    "wrong_DSA_name": 0,
+    "taxonomy_free_PEW": 0,
+    "operator_level_PEW": 1,
+    "unicode_em_dash": 0,
+    "source_bootstrap_phrase": 3,
+    "training_seed_phrase": 22
+  },
+  "sha256_maintex": "02b1ea1a6043027fd31536caf6f542a36ec202aa8feaf723296670d71ba91c14"
+}

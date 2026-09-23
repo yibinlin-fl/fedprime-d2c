@@ -1,0 +1,17 @@
+\section{Related Work}
+
+\subsection{Model-Heterogeneous Federated Learning}
+
+Model heterogeneity prevents direct parameter averaging across clients with different architectures. FedDF uses ensemble distillation over unlabeled data \citep{lin2020feddf}. Prototype-based methods communicate class representations: FedProto aggregates client prototypes, whereas FedTGP learns trainable global prototypes with an adaptive-margin contrastive server objective \citep{tan2022fedproto,zhang2024fedtgp}. RHFL addresses noisy labels with confidence-weighted collaboration \citep{fang2022rhfl}. AugHFL studies common corruption under model heterogeneity, and RAHFL extends this line with diversity-enhanced local representation learning and asymmetric collaboration \citep{fang2023aughfl,fang2025rahfl}. Our setting keeps model heterogeneity but asks whether client-specific class--corruption associations create directional class cues and whether those cues arise mainly during local learning or collaboration.
+
+\subsection{Corruption Robustness and Consistency Learning}
+
+CIFAR-C and ImageNet-C established common-corruption evaluation across noise, blur, weather, and digital distortions \citep{hendrycks2019corruptions}. AugMix combines stochastic augmentations with Jensen--Shannon consistency to improve corruption robustness and uncertainty \citep{cubuk2020augmix}. CLE-HFL changes the statistical structure: corruption operators are associated with task classes during client training. The diagnostic therefore compares different operators for the same semantic source rather than only enforcing consistency around one corrupted observation.
+
+\subsection{Spurious Correlation, Group Robustness, and Environment Inference}
+
+Shortcut learning and group distribution shift are well studied \citep{geirhos2020shortcut}. GroupDRO optimizes worst-group risk with known groups \citep{sagawa2020groupdro}; GEORGE recovers hidden subclasses before group-robust training \citep{sohoni2020george}; EIIL infers environments without a predefined taxonomy \citep{creager2021eiil}; and JTT upweights examples misclassified by an initial ERM model \citep{liu2021jtt}. CVaR and related DRO objectives emphasize upper-tail loss \citep{rockafellar2000cvar,duchi2021uniform}. In our setting, PEW supplies a taxonomy-assisted corruption-family proxy, and BER changes the effective risk mass assigned to class--pseudo-environment supports; pseudo-group discovery and group reweighting themselves are established ideas. Our CVaR-DRO arm is a protocol-matched empirical tail-risk control rather than a line-by-line reproduction of either cited formulation.
+
+\subsection{Federated Spurious Learning and Counterfactual Diagnosis}
+
+Federated spurious features have direct precedents. Personalized federated learning can exploit client-specific spurious features \citep{wang2024pflspurious}; FedPIN targets shortcut-averse personalized invariant learning \citep{tang2024fedpin}; and FedCD studies spurious correlation in federated domain generalization \citep{ma2024fedcd}. The current citation audit treats FedCD as an arXiv preprint. Counterfactual shortcut evaluation also appears in other domains, including medical imaging \citep{vigneshwaran2026counterfactual,jabbour2020chestxray}. We specialize this idea to paired interventions that change only the corruption operator for a fixed source, score the response along a pre-registered client binding, and pair that diagnostic with local-versus-federated formation analysis and a local mitigation objective.

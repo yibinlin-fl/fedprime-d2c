@@ -2,6 +2,26 @@
 
 Updated: 2026-09-23
 
+## LaTeX V0.6-SKILL已归档并完成独立审查
+
+网页端返回的V0.6源码ZIP与13页PDF已原样归档到
+`deliverables/cle_hfl_latex_v0_6_20260923/`，ZIP SHA256为
+`F441A814B88E921FE36DE632D99E9DBCA16D9A1063B43FDD5B5533570C8B011B`，PDF SHA256为
+`0E3F91A7B9196AA32FF50DC6BBC61B3D81CC19DA374F8F53779F008DAF6E6896`。V0.6相对V0.5在
+会议稿结构、叙事和去重复防御表达上明显提升，但暂不晋升为唯一事实source of truth：网页端使用
+2026-09-11旧handoff，错误地把已冻结并实现、仅缺结果的M3 CIFAR-100协议和S1 motion-blur
+taxonomy stress降回`dataset/protocol pending`。此外包内label审计称15->15，实际交付源码为
+15->13（仅删除两个未引用legacy labels）；`draftskeletonfalse`也不能隐藏全部正文证据占位符。
+逐页视觉检查无裁切/重叠/缺页，但13页internal PDF仍含红色pending，最后一页留白明显，且尚未
+使用目标会议官方模板。完整审查：
+
+```text
+deliverables/cle_hfl_latex_v0_6_20260923/ARCHIVE_AND_REVIEW_ZH.md
+```
+
+下一稿先做V0.6.1/V0.7事实状态同步与内部术语清理，不覆盖V0.6；关键实验未完成前不得称
+submission-ready。
+
 ## S2 loader配对修复完成，待真实两轮Kill Test
 
 S2 benchmark发现的private DataLoader generator污染已由通用通信隔离层修复：任何pre-local或

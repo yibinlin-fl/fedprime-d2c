@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Within-setting PEW+BER comparisons across binding maps and communication bases.}
+\label{tab:cross-setting-dataset}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrrr}
+\toprule
+Private task & Binding / protocol & HFL base & Base DSA & PEW+BER DSA & Relative reduction & Avg delta \\
+\midrule
+CIFAR--10 & original map & Asymmetric HFL & 0.119644 & 0.041252 & 65.52\% & +1.7323 \\
+CIFAR--10 & map1 & Asymmetric HFL & 0.113761 & 0.049531 & 56.46\% & +0.7040 \\
+CIFAR--10 & held-out map2 (3 seeds) & Asymmetric HFL & 0.250530 & 0.071470 & 71.47\% & +4.5877 \\
+CIFAR--10 & original map & FedDF-fidelity & 0.136989 & 0.029012 & 78.82\% & -0.6660 \\
+\ifdraftskeleton
+Second private task & dataset/protocol pending & pending & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+\fi
+\bottomrule
+\end{tabular}%
+}
+\ifdraftskeleton
+\par\smallskip
+\evidenceneeded{second private dataset; dataset and protocol pending.}
+\fi
+\end{table*}

@@ -1,0 +1,48 @@
+{
+  "status": "BLOCKED",
+  "blockers": 2,
+  "findings": [
+    {
+      "code": "STATE104",
+      "severity": "S1",
+      "blocker": false,
+      "message": "fact map2-means is registered for manual use but has no machine-auditable text strings"
+    },
+    {
+      "code": "STATE104",
+      "severity": "S1",
+      "blocker": false,
+      "message": "fact localfirst-s0 is registered for manual use but has no machine-auditable text strings"
+    },
+    {
+      "code": "STATE104",
+      "severity": "S1",
+      "blocker": false,
+      "message": "fact feddf-result is registered for manual use but has no machine-auditable text strings"
+    },
+    {
+      "code": "STATE104",
+      "severity": "S1",
+      "blocker": false,
+      "message": "fact map1-result is registered for manual use but has no machine-auditable text strings"
+    },
+    {
+      "code": "STATE104",
+      "severity": "S1",
+      "blocker": false,
+      "message": "fact operator-family-boundary is registered for manual use but has no machine-auditable text strings"
+    },
+    {
+      "code": "ISSUE002",
+      "severity": "S3",
+      "blocker": true,
+      "message": "open blocker M2: Local-first multi-training-seed stability remains pending."
+    },
+    {
+      "code": "ISSUE002",
+      "severity": "S3",
+      "blocker": true,
+      "message": "open blocker M3: Second private dataset and protocol/result remain pending; do not freeze a dataset from the old skeleton."
+    }
+  ]
+}

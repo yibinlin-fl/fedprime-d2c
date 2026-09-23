@@ -1,0 +1,153 @@
+{
+  "status": "FINDINGS",
+  "candidate_sha256": "e73227b0c38eefc7edb297cf5df9b2530e79cba9b2eb69591bd004c89ec73f98",
+  "profile_loaded": true,
+  "findings": [
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "pre-registered, operator-response, non-identifiability, pseudo-environment",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "family-level, support-induced, risk-mass, pseudo-environments",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "source-paired, source-level, non-identifiability, target-aligned",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "Local-versus-communication, HFL-versus-Local, local-first, add-on",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "taxonomy-assisted, corruption-family, pseudo-environment, pseudo-group",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "CVaR-DRO, protocol-matched, tail-risk, line-by-line",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "CLE-HFL, client-specific, pre-registered, client-specific",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "evaluation-source, training-seed, binding-map, model-selection, cross-dataset",
+      "count": 5,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "multi-training-seed, HFL-versus-Local, four-arm, Taxonomy-Assisted",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "operator-grid, client-average, operator-cell, within-class",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "post-training, evidence-chain, Shortcut-Objective, five-arm",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "trade-off, held-out, per-client, CVaR-DRO",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "communication-base, single-view, protocol-matched, FedDF-fidelity",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "Source-clustered, evaluation-source, training-seed, dataset-level",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "Source-paired, binding-directed, non-identifiability, pseudo-environment",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE010",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "Reporting-only, true-family, true-family, environment-only",
+      "count": 4,
+      "message": "dense lexical hyphenation in one sentence; inspect clarity and field convention"
+    },
+    {
+      "code": "PROSE004",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "for the same semantic source",
+      "count": 3,
+      "message": "repeated multiword phrase across sentences"
+    },
+    {
+      "code": "PROSE004",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "m k o z o",
+      "count": 3,
+      "message": "repeated multiword phrase across sentences"
+    },
+    {
+      "code": "PROSE004",
+      "artifact": "V0.6-SKILL final exact candidate",
+      "match": "toward the classes associated with",
+      "count": 3,
+      "message": "repeated multiword phrase across sentences"
+    }
+  ],
+  "manual_checks_required": [
+    "paragraph contract and adjacent-paragraph flow",
+    "claim scope and preservation of locked meaning",
+    "functional transitions and cumulative information flow",
+    "literature-example ordering from broad context to the closest precedent and gap, or another explicit evidentiary logic",
+    "function-preserving concision and sentence rhythm",
+    "natural scholarly subjects, syntax, and disciplinary accessibility",
+    "reader accessibility, including nonessential field shorthand, transition templates, and indirect verbs",
+    "claim-to-citation support and reference-list changes",
+    "observable stock or AI-like prose features without authorship inference",
+    "dash and hyphen style, including grammatical role, established open compounds, density, and suspended compounds",
+    "necessary technical repetition versus avoidable restatement"
+  ]
+}

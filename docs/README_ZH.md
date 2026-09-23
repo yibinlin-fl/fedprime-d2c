@@ -704,6 +704,17 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前最新论文内部稿与独立审查：
+
+```text
+deliverables/cle_hfl_latex_v0_6_20260923/source/                    V0.6-SKILL解压源码
+deliverables/cle_hfl_latex_v0_6_20260923/CLE_HFL_LATEX_V0_6_SKILL_OVERLEAF_20260923.pdf
+deliverables/cle_hfl_latex_v0_6_20260923/ARCHIVE_AND_REVIEW_ZH.md   归档、V0.5对比与事实/视觉审查
+```
+
+V0.6写作结构优于V0.5，但因旧handoff导致M3/S1状态回退，当前仅是内部写作候选，不是唯一事实
+source of truth或submission-ready稿；先按审查报告做小范围事实同步，再继续实验结果回填。
+
 BER有效分布机制理论与CPU审计：
 
 ```text

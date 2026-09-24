@@ -42,6 +42,7 @@ M1 held-out map2四臂training seeds 0/1/2已完成并通过全部冻结稳定�
 
 ```text
 docs/experiments/current/CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md
+docs/experiments/current/CLE_HFL_MAP2_FINAL_EXPERIMENT_PROTOCOL_2026_09_25_ZH.md
 docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
 ```
 
@@ -141,6 +142,7 @@ docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
 
 ```text
 deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20260925/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 docs/project/CURRENT_PROJECT_MEMORY.md
 docs/handoffs/latest.md
 ```
@@ -710,6 +712,8 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 deliverables/cle_hfl_latex_v0_6_20260923/source/                    V0.6-SKILL解压源码
 deliverables/cle_hfl_latex_v0_6_20260923/CLE_HFL_LATEX_V0_6_SKILL_OVERLEAF_20260923.pdf
 deliverables/cle_hfl_latex_v0_6_20260923/ARCHIVE_AND_REVIEW_ZH.md   归档、V0.5对比与事实/视觉审查
+deliverables/cle_hfl_latex_v0_7_20260925/source/                    V0.7最终定位与实验骨架源码
+docs/research/status/CLE_HFL_FINAL_POSITIONING_2026_09_25_ZH.md     最终论文身份、六段证据链与map1/map2职责
 ```
 
 V0.6写作结构优于V0.5，但因旧handoff导致M3/S1状态回退，当前仅是内部写作候选，不是唯一事实

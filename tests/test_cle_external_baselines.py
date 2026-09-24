@@ -17,8 +17,10 @@ from fedprime.communication.baselines import (
 from fedprime.communication.public_logits import CommunicationContext
 from fedprime.data.loaders import DatasetStats
 from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_configs
-from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots
+from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots, trace_digest
+from scripts.merge_cle_hfl_domain_table import FINAL_ROWS, merge_domain_table
 from scripts.run_cle_hfl_context import ARMS, SHARDS, context_arm_config, selected_arms
+from scripts.run_cle_v2_fedmd_objectives import ARMS as FEDMD_OBJECTIVE_ARMS, fedmd_arm_config
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 
 
@@ -172,6 +174,32 @@ def test_hfl_pairing_mode_is_two_rounds_and_cheap(tmp_path) -> None:
     assert all(config["train"]["max_local_batches"] == 2 for config in configs.values())
     assert configs["fedtgp_adapter"]["method"]["baseline"]["server_epochs"] == 1
     assert configs["rhfl_adapter"]["method"]["baseline"]["max_quality_batches"] == 1
+    assert all(
+        config["data"]["scenario_id"] == "cle_hfl_v2_cross_map2_seed0_split0"
+        for config in configs.values()
+    )
+
+
+def test_fedmd_four_objective_replication_changes_only_local_objective(tmp_path) -> None:
+    configs = {
+        arm: fedmd_arm_config(
+            arm,
+            package_root=tmp_path,
+            mode="formal",
+            output_root=tmp_path / "outputs",
+            device="cpu",
+            train_seed=0,
+        )
+        for arm in FEDMD_OBJECTIVE_ARMS
+    }
+    assert all(config["method"]["communication"] == "fedmd" for config in configs.values())
+    assert all(config["train"]["rounds"] == 40 for config in configs.values())
+    assert all(config["train"]["max_local_batches"] == 16 for config in configs.values())
+    assert configs["erm"]["method"]["cl_module"] == "none"
+    assert configs["cvar_dro"]["method"]["cl_module"] == "cvar_dro"
+    assert configs["pew_groupdro"]["method"]["fedease"]["objective"] == "pew_groupdro"
+    assert configs["pew_ber"]["method"]["fedease"]["objective"] == "ce_ber"
+    assert all("cdep" not in json.dumps(config).lower() for config in configs.values())
 
 
 def test_hfl_context_shards_are_disjoint_and_cover_all_arms() -> None:
@@ -211,8 +239,12 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path)
             arm_root.mkdir(parents=True)
             (arm_root / "local_batch_trace.jsonl").write_text(trace_line, encoding="utf-8")
         contract = {
-            "protocol": "cle_hfl_context_table_v2",
+            "protocol": "cle_hfl_context_table_map2_v3",
             "mode": "formal",
+            "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+            "partition_seed": 0,
+            "binding_map_seed": 2,
+            "evaluation_seed": 20260909,
             "rounds": 40,
             "train_seed": 0,
             "execution_shard": shard,
@@ -247,3 +279,77 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path)
     merged = merge_shards(roots, tmp_path / "merged")
     assert tuple(merged["rows"]) == ARMS
     assert merged["cross_shard_local_batch_pairing"]["all_arms_match"] is True
+
+
+def test_domain_table_merger_adds_only_matched_asymhfl_rows(tmp_path) -> None:
+    context_root = tmp_path / "context"
+    asym_root = tmp_path / "asym"
+    output_root = tmp_path / "domain"
+    context_root.mkdir()
+    (asym_root / "analysis").mkdir(parents=True)
+    (asym_root / "configs").mkdir(parents=True)
+    trace = {(0, 0, 0): "matched"}
+    context = {
+        "mode": "formal",
+        "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+        "partition_seed": 0,
+        "binding_map_seed": 2,
+        "evaluation_seed": 20260909,
+        "train_seed": 0,
+        "rounds": 40,
+        "rows": {arm: {"pooled_dsa": 0.1} for arm in ARMS},
+        "cross_shard_local_batch_pairing": {
+            "reference_trace_sha256": trace_digest(trace),
+        },
+        "scientific_evidence": True,
+    }
+    (context_root / "RESULT_SUMMARY_MERGED.json").write_text(json.dumps(context), encoding="utf-8")
+    common = {
+        "labels": np.asarray([0]),
+        "binding": np.asarray([[0]]),
+        "operator_names": np.asarray(["blur"]),
+    }
+    np.savez_compressed(
+        context_root / "HFL_CONTEXT_PREDICTIONS_MERGED.npz",
+        probabilities=np.zeros((len(ARMS), 1, 1, 1, 2)),
+        arms=np.asarray(ARMS),
+        **common,
+    )
+    asym = {
+        "mode": "formal",
+        "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+        "train_seed": 0,
+        "rounds": 40,
+        "scientific_evidence": True,
+        "pooled_dsa": {arm: 0.1 for arm in ("erm", "cvar_dro", "pew_groupdro", "pew_ber")},
+        "client_dsa": {arm: [0.1] for arm in ("erm", "cvar_dro", "pew_groupdro", "pew_ber")},
+        "operator_grid_accuracy": {arm: {"pooled": 20.0} for arm in ("erm", "cvar_dro", "pew_groupdro", "pew_ber")},
+        "reporting_metrics": {arm: {"last10": {"avg_acc": 20.0}} for arm in ("erm", "cvar_dro", "pew_groupdro", "pew_ber")},
+    }
+    (asym_root / "analysis" / "RESULT_SUMMARY.json").write_text(json.dumps(asym), encoding="utf-8")
+    contract = {
+        "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+        "binding_map_seed": 2,
+        "partition_seed": 0,
+        "evaluation_seed": 20260909,
+        "rounds": 40,
+        "train_seed": 0,
+    }
+    (asym_root / "configs" / "SPURIOUS_FINAL_MAP2_CONTRACT_TRAINSEED0.json").write_text(
+        json.dumps(contract), encoding="utf-8"
+    )
+    arm_root = asym_root / "outputs" / "cle_v2_spurious_final_map2_erm_trainseed0"
+    arm_root.mkdir(parents=True)
+    (arm_root / "local_batch_trace.jsonl").write_text(
+        json.dumps({"round": 0, "client": 0, "batch": 0, "sha256": "matched"}) + "\n",
+        encoding="utf-8",
+    )
+    np.savez_compressed(
+        asym_root / "analysis" / "SPURIOUS_FINAL_MAP2_PREDICTIONS.npz",
+        probabilities=np.zeros((4, 1, 1, 1, 2)),
+        arms=np.asarray(("erm", "cvar_dro", "pew_groupdro", "pew_ber")),
+        **common,
+    )
+    merged = merge_domain_table(context_root, asym_root, output_root)
+    assert tuple(merged["rows"]) == FINAL_ROWS
+    assert merged["local_batch_pairing"]["matched"] is True

@@ -1,0 +1,23 @@
+\ifdraftskeleton
+\begin{table*}[t]
+\centering
+\small
+\caption{Planned computation and communication audit. PEW is a one-time public pretraining cost; BER does not alter the communication protocol.}
+\label{tab:computation-cost}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrl}
+\toprule
+Method & Training stages & Extra public model & GPU time & Communication change & Status \\
+\midrule
+ERM & 1 & no & \pendingcell & none & pending benchmark accounting \\
+CVaR-DRO & 1 & no & \pendingcell & none & pending benchmark accounting \\
+JTT & 2 & no & \pendingcell & none & O1 pending \\
+PEW+GroupDRO & 1 + frozen PEW & yes & \pendingcell & none & pending accounting \\
+PEW+BER & 1 + frozen PEW & yes & \pendingcell & none & pending accounting \\
+\bottomrule
+\end{tabular}%
+}
+\par\smallskip
+\evidenceneeded{Populate only from benchmark/Formal timing manifests; do not estimate missing runtimes.}
+\end{table*}
+\fi

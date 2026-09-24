@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -50,6 +51,14 @@ def trace_map(path: Path) -> dict[tuple[int, int, int], str]:
         (int(row["round"]), int(row["client"]), int(row["batch"])): str(row["sha256"])
         for row in rows
     }
+
+
+def trace_digest(trace: dict[tuple[int, int, int], str]) -> str:
+    payload = "\n".join(
+        f"{round_idx},{client},{batch},{digest}"
+        for (round_idx, client, batch), digest in sorted(trace.items())
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest().upper()
 
 
 def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
@@ -115,7 +124,16 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
         summaries[shard] = summary
         input_audits[shard] = audit
 
-    protocol_keys = ("protocol", "mode", "rounds", "train_seed")
+    protocol_keys = (
+        "protocol",
+        "mode",
+        "scenario_id",
+        "partition_seed",
+        "binding_map_seed",
+        "evaluation_seed",
+        "rounds",
+        "train_seed",
+    )
     reference_contract = contracts[REQUIRED_SHARDS[0]]
     for shard, contract in contracts.items():
         if any(contract.get(key) != reference_contract.get(key) for key in protocol_keys):
@@ -145,12 +163,18 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
         "mode": "formal",
         "train_seed": reference_contract["train_seed"],
         "rounds": reference_contract["rounds"],
+        "scenario_id": reference_contract["scenario_id"],
+        "partition_seed": reference_contract["partition_seed"],
+        "binding_map_seed": reference_contract["binding_map_seed"],
+        "evaluation_seed": reference_contract["evaluation_seed"],
         "rows": {arm: rows[arm] for arm in ARMS},
         "source_shards": {shard: str(roots[shard]) for shard in REQUIRED_SHARDS},
         "cross_shard_local_batch_pairing": {
             "reference_arm": "local_erm",
             "arm_matches": pairing_matches,
             "all_arms_match": True,
+            "reference_trace_sha256": trace_digest(reference_trace),
+            "reference_trace_rows": len(reference_trace),
         },
         "scientific_evidence": True,
         "claim_boundary": "Protocol-matched HFL context table; not a plugin attribution experiment.",

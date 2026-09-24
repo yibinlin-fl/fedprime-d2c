@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Held-out map2 matched objective comparison over training seeds 0/1/2 (mean $\pm$ sample standard deviation).}
+\label{tab:map2-methods}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Arm & DSA $\downarrow$ & Operator-grid Acc. $\uparrow$ & Last-10 Avg $\uparrow$ & Last-10 Worst $\uparrow$ & WCCA $\uparrow$ & CFG $\downarrow$ \\
+\midrule
+ERM & $0.2505\pm0.0087$ & $20.4950\pm0.3718$ & $19.9589\pm0.1212$ & $16.3780\pm0.1259$ & $0.0000\pm0.0000$ & $32.7467\pm0.1708$ \\
+CVaR-DRO & $0.0867\pm0.0055$ & $19.2206\pm1.1055$ & $18.5788\pm0.3102$ & $14.2636\pm0.2640$ & $0.1167\pm0.0629$ & $27.6750\pm0.1885$ \\
+\ifdraftskeleton
+JTT Formal & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+\fi
+PEW+GroupDRO & $0.2054\pm0.0080$ & $21.4517\pm0.5783$ & $20.9963\pm0.0924$ & $17.5309\pm0.5148$ & $0.0333\pm0.0144$ & $31.8950\pm0.9747$ \\
+\textbf{PEW+BER} & $\mathbf{0.0715\pm0.0113}$ & $\mathbf{25.1772\pm1.2522}$ & $\mathbf{24.5466\pm0.1098}$ & $\mathbf{20.7516\pm0.6126}$ & $\mathbf{2.6500\pm0.0750}$ & $\mathbf{22.7825\pm0.5428}$ \\
+\bottomrule
+\end{tabular}%
+}
+\ifdraftskeleton
+\par\smallskip
+JTT remains screening-only; an O1 Formal row should be populated only if a formal JTT comparison is later authorized and completed.
+\fi
+\end{table*}

@@ -28,7 +28,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--package-root", type=Path, required=True)
     parser.add_argument("--outputs-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--mode", choices=("smoke", "formal"), required=True)
+    parser.add_argument("--mode", choices=("smoke", "benchmark", "formal"), required=True)
+    parser.add_argument("--experiment-prefix", default="cle_v2_spurious_final_map2")
+    parser.add_argument("--protocol-label", default="cle_v2_spurious_final_map2_analysis_v1")
+    parser.add_argument("--communication-label", default="strict AsymHFL-val")
     parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=256)
@@ -39,8 +42,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def experiment_root(outputs_root: Path, arm: str, train_seed: int = 0) -> Path:
-    return outputs_root / f"cle_v2_spurious_final_map2_{arm}_trainseed{train_seed}"
+def experiment_root(
+    outputs_root: Path,
+    arm: str,
+    train_seed: int = 0,
+    prefix: str = "cle_v2_spurious_final_map2",
+) -> Path:
+    return outputs_root / f"{prefix}_{arm}_trainseed{train_seed}"
 
 
 def bootstrap_contrast(results: dict, positive: str, negative: str, samples: int) -> dict:
@@ -73,7 +81,9 @@ def main() -> None:
     device = resolve_device(args.device)
     predictions, results, accuracy, metrics, traces = {}, {}, {}, {}, {}
     for arm in ARMS:
-        root = experiment_root(outputs_root, arm, int(args.train_seed))
+        root = experiment_root(
+            outputs_root, arm, int(args.train_seed), str(args.experiment_prefix)
+        )
         predictions[arm] = infer_arm(root / "checkpoints", grid, device, int(args.batch_size))
         results[arm] = compute_operator_dsa(predictions[arm], labels, binding)
         accuracy[arm] = grid_accuracy(predictions[arm], labels)
@@ -138,11 +148,12 @@ def main() -> None:
     else:
         verdict = "NO_GO_FOUR_ARM_HELDOUT_MAP2"
     summary = {
-        "protocol": "cle_v2_spurious_final_map2_analysis_v1",
+        "protocol": str(args.protocol_label),
         "mode": args.mode,
         "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
         "train_seed": int(args.train_seed),
         "rounds": 40 if args.mode == "formal" else 1,
+        "common_communication": str(args.communication_label),
         "arms": list(ARMS),
         "pooled_dsa": dsa,
         "client_dsa": client_dsa,

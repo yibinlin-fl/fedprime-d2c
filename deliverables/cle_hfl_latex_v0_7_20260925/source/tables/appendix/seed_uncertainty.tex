@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Separation of training-seed and evaluation-source uncertainty.}
+\label{tab:seed-uncertainty}
+\begin{tabular}{llll}
+\toprule
+Experiment & Training seeds & Seed-level summary & Source-level interval \\
+\midrule
+M1 map2 objectives & 0/1/2 & GO; ERM--BER $0.1791\pm0.0086$ & clustered bootstrap per checkpoint \\
+M2 local-first & 0 complete; 1/2 pending & \pendingcell & clustered bootstrap per checkpoint \\
+Second private task & dataset/protocol pending & \pendingcell & pending \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\evidenceneeded{M2 and second-private-task seed summaries; keep seed-level variation separate from checkpoint-conditional source-bootstrap intervals.}
+\end{table*}

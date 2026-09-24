@@ -92,6 +92,10 @@ def test_hfl_context_is_standalone_not_plugin_comparison(tmp_path: Path) -> None
     assert configs["aughfl_fidelity"]["method"]["communication"] == "aughfl_fidelity"
     assert configs["rahfl_fidelity"]["method"]["communication"] == "asymhfl_val"
     assert all("fedease" not in config["method"] for config in configs.values())
+    assert all(
+        config["data"]["scenario_id"] == "cle_hfl_v2_cross_map2_seed0_split0"
+        for config in configs.values()
+    )
 
 
 def test_multiseed_aggregators_encode_claim_boundaries() -> None:

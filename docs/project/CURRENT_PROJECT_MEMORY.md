@@ -5041,3 +5041,16 @@ deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json
 
 V0.5论文的method table、cross-setting table、per-client appendix、seed uncertainty、摘要、实验、
 讨论与结论已同步更新。M1完成后下一实验为M2 local-first training seeds 1/2 Formal。
+
+## 2026-09-25：最终论文定位与held-out map2统一实验职责
+
+- 论文统一定位为CLE-HFL的diagnosis--attribution--mitigation study；PEW+BER是taxonomy-assisted、
+  communication-agnostic local mitigation module，不宣称任意HFL算法上的通用无损插件。
+- 最终证据链冻结为：存在 -> 形成归因 -> 匹配方法比较 -> 跨通信复现 -> HFL领域位置 -> 外部边界。
+- map1保留为cross-binding replication；map2因为未参与五臂筛选且已有40轮三training-seed主方法结果，
+  被选为FedMD四目标复现与十二行HFL领域表的统一held-out场景。
+- HFL领域表为十个代表性HFL机制加两行匹配AsymHFL结果；BER归因仍由固定通信的四目标表承担，
+  领域表不承担“万能插件”证明。
+- 新增FedMD固定通信的ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER四目标runner与OpenI入口；尚未运行，
+  Formal未授权。
+- LaTeX V0.7内部骨架与2026-09-25网页端交接已建立，V0.6保持不可变。

@@ -1,6 +1,30 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-24
+Updated: 2026-09-25
+
+## 最终定位、held-out map2统一协议与V0.7骨架
+
+论文定位已冻结为CLE-HFL的`diagnosis--attribution--mitigation study`；PEW+BER是其中
+taxonomy-assisted、communication-agnostic的本地缓解模块，不宣称任意HFL算法上的通用无损
+插件。最终证据链为：`存在 -> 归因 -> 方法 -> 跨通信 -> 领域比较 -> 外部边界`。local-first
+的准确表述是shortcut主要在本地优化形成并在异构联邦协作中持续存在，现有通信不能可靠洗掉；
+禁止写成“通信无关”或“不是联邦问题”。
+
+最终HFL领域表固定使用held-out map2，而不是map1：map1继续承担cross-binding复现；map2未参与
+五臂筛选，且已有40轮三training-seed主方法结果，因此十个HFL方法只需在同一map2协议运行，
+即可复用seed-0的`AsymHFL--ERM`与`AsymHFL+PEW+BER`形成十二行表。S2入口已经迁移到
+`cle_hfl_v2_cross_map2_seed0_split0`，分片合并器新增scenario/partition/map/evaluation-seed及
+batch-trace哈希审计；`scripts/merge_cle_hfl_domain_table.py`只有在既有AsymHFL结果与十臂表的
+场景、轮数、seed、评价grid和batch轨迹全部一致时才允许合并。
+
+新增FedMD四目标跨通信复现入口：`scripts/openi_cle_v2_fedmd_objectives_entry.py`，比较
+`ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER`，固定FedMD通信、map2、40轮和16 local batches。
+该实验尚未运行，Formal未授权；必须先完成真实map2输入上的smoke/benchmark与配对审计。
+
+V0.7内部LaTeX骨架位于`deliverables/cle_hfl_latex_v0_7_20260925/source/`，已同步上述定位、
+FedMD跨通信槽位和十二行领域表；V0.6保持不可变。新的网页端交接为
+`deliverables/cle_hfl_full_paper_web_handoff_20260925/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md`。
+20项聚焦测试已通过；尚未启动OpenI或其他付费实验。
 
 ## 投稿候选与S2双OpenI账号拆臂决策
 

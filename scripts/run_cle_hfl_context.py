@@ -12,7 +12,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.prepare_cle_v2_factorial_data import sha256_file  # noqa: E402
-from scripts.run_cle_v2_factorial import arm_config, verify_package  # noqa: E402
+from scripts.run_cle_v2_cross_scenario import verify_cross_scenario  # noqa: E402
+from scripts.run_cle_v2_factorial import arm_config  # noqa: E402
 
 
 ARMS = (
@@ -36,6 +37,7 @@ SHARDS = {
 }
 ROUND_BUDGET = {"pairing": 2, "benchmark": 1, "formal": 40}
 LOCAL_BATCH_BUDGET = {"pairing": 2, "benchmark": 8, "formal": 16}
+MAP_SEED = 2
 
 
 def selected_arms(shard: str, mode: str) -> tuple[str, ...]:
@@ -61,6 +63,8 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
         benchmark=mode != "formal",
     )
     config["experiment_name"] = f"cle_hfl_context_{arm}_trainseed0"
+    config["data"]["scenario"] = "cle_hfl_v2"
+    config["data"]["scenario_id"] = "cle_hfl_v2_cross_map2_seed0_split0"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
     config["train"]["max_test_batches"] = 1 if mode != "formal" else None
     config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode != "formal" else None
@@ -155,7 +159,7 @@ def main() -> None:
     if args.mode == "formal" and not args.confirm_formal:
         raise PermissionError("HFL context Formal requires --confirm-formal")
     package_root = args.package_root.resolve()
-    verify_package(package_root)
+    manifest = verify_cross_scenario(package_root, MAP_SEED)
     output_root, config_root = args.output_root.resolve(), args.config_root.resolve()
     config_root.mkdir(parents=True, exist_ok=True)
     arms = selected_arms(args.shard, args.mode)
@@ -171,14 +175,19 @@ def main() -> None:
         json.dumps(fidelity_manifest(), indent=2), encoding="utf-8"
     )
     contract = {
-        "protocol": "cle_hfl_context_table_v2",
+        "protocol": "cle_hfl_context_table_map2_v3",
         "mode": args.mode,
+        "scenario_id": manifest["scenario_id"],
+        "partition_seed": 0,
+        "binding_map_seed": MAP_SEED,
+        "evaluation_seed": 20260909,
         "rounds": ROUND_BUDGET[args.mode],
         "train_seed": 0,
         "execution_shard": args.shard,
         "selected_arms": list(arms),
         "arms": records,
         "not_a_plugin_attribution_experiment": True,
+        "map2_was_not_used_for_five_arm_selection": True,
     }
     (config_root / f"CONTRACT_{args.shard}.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
     if args.prepare_only:

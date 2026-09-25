@@ -288,6 +288,56 @@ fedtgp  = fedtgp_adapter
 rhfl    = rhfl_adapter
 ```
 
+## S2 practical单臂Formal补充（2026-09-25）
+
+真实map2 benchmark表明`cheap_a/cheap_b`各约需16小时Formal，整组任务接近账号上限；FedTGP与
+RHFL单轮各约46分钟、40轮各约31小时。最终必做领域表改为以下八个单臂shard：
+
+```text
+local    = local_erm
+fedmd    = fedmd_adapter
+fedproto = fedproto_adapter
+feddf    = feddf_fidelity
+kt_pfl   = kt_pfl_fidelity
+fccl     = fccl_adapter
+aughfl   = aughfl_fidelity
+rahfl    = rahfl_fidelity
+```
+
+统一入口仍为：
+
+```text
+scripts/openi_cle_hfl_context_entry.py
+mode=formal
+shard=<上述单臂名>
+confirm_formal=true
+data_source=""
+skip_install=false
+```
+
+八包下载并解压后必须使用：
+
+```text
+python scripts/merge_cle_hfl_context_shards.py \
+  --profile practical \
+  --shard-root local=<PATH> \
+  --shard-root fedmd=<PATH> \
+  --shard-root fedproto=<PATH> \
+  --shard-root feddf=<PATH> \
+  --shard-root kt_pfl=<PATH> \
+  --shard-root fccl=<PATH> \
+  --shard-root aughfl=<PATH> \
+  --shard-root rahfl=<PATH> \
+  --output-dir <OUTPUT>
+```
+
+合并器冻结检查Formal标志、map2场景、training seed 0、40轮、16 local batches、batch size 64、
+public batch size 128、输入指纹、config SHA256、评价grid及跨账号batch trace。FedTGP/RHFL只在
+长算力可用时走保留的`--profile full`，不得以缩短预算结果混入practical表。
+
+四目标FedMD的ERM使用`standard` loader；领域表FedMD沿用领域表既有AugMix-view loader协议，
+两份resolved config不等价，因此不能复用四目标结果替代领域表FedMD。
+
 入口新增`shard`参数。pairing模式会为`cheap_b/fedtgp/rhfl`自动加入`local_erm`校准臂；Formal按
 上述分片执行，不重复40轮Local。每个分片保存独立contract与逐臂completion，输出包名包含shard。
 四分片返回后使用`scripts/merge_cle_hfl_context_shards.py`统一审计；输入、配置哈希、完成状态、

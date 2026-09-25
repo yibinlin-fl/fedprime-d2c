@@ -2,6 +2,25 @@
 
 Updated: 2026-09-25
 
+## 2026-09-25 FedMD Formal运行中；HFL领域表改为可负担单臂协议
+
+用户已启动held-out map2、training seed 0、40轮FedMD四目标Formal；当前等待结果，不得把benchmark
+数字当证据，也不预先承诺seed 1/2。若seed 0通过全部冻结门槛，它首先承担跨通信复现；只有结果
+临界、训练随机性成为核心质疑或正文升级为FedMD稳定性主张时，才补额外seed。
+
+五组benchmark均完成且输入/pairing通过：FedMD四目标训练`170.10s`，`cheap_a`训练`749.02s`，
+`cheap_b`训练`750.83s`，FedTGP训练`2732.72s`，RHFL训练`2776.35s`。FedTGP与RHFL单轮均约
+46分钟，40轮各需约31小时，因此从当前必做主表移为条件性长算力扩展，不允许通过事后削减server
+epochs、quality scan、轮数或batch混入40轮表。
+
+HFL context现保留原`cheap_a/cheap_b/fedtgp/rhfl` benchmark入口，并新增八个单臂Formal shard：
+`local/fedmd/fedproto/feddf/kt_pfl/fccl/aughfl/rahfl`。practical merge严格要求八个40轮、seed-0、
+map2 Formal包，跨账号核验contract、input fingerprint、config SHA256、评价grid与batch trace；再与
+既有两条AsymHFL锚点形成十行领域表。审计确认四目标FedMD使用`standard` loader，而领域表FedMD
+沿用现有统一AugMix-view loader协议，两者不得静默复用。当前工程已通过19项聚焦测试、八单臂
+真实map2 `prepare-only`合同审计及`local`单臂两轮CUDA pairing smoke；下一步只需提交推送后
+按单臂启动Formal。所有smoke数值均非科学证据。
+
 ## 2026-09-25真实map2 smoke与pairing全部通过
 
 真实`cle_hfl_v2_cross_map2_seed0_split0`输入审计PASS。输入包大小`1385820059` bytes，SHA256

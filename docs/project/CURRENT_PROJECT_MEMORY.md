@@ -5062,3 +5062,15 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
   PEW训练器通信白名单缺少`fedmd`的组合层阻塞。修复不改变任何方法公式。
 - FedMD四臂local batch trace匹配；十个HFL方法两轮pairing为10/10匹配，每臂8条trace。
 - smoke/pairing不构成科学证据；当前仅进入benchmark-ready，Formal仍需用户明确授权。
+
+## 2026-09-25：map2 benchmark成本与practical HFL领域表
+
+- FedMD四目标、`cheap_a`、`cheap_b`、FedTGP、RHFL benchmark全部完成，输入审计与跨账号首批
+  batch哈希一致；训练时间依次为`170.10s / 749.02s / 750.83s / 2732.72s / 2776.35s`。
+- FedTGP和RHFL单轮均约46分钟，40轮各约31小时；当前不通过削减算法内部预算强行纳入主表，
+  改为实验室长算力条件性扩展。
+- HFL context新增`local/fedmd/fedproto/feddf/kt_pfl/fccl/aughfl/rahfl`八个单臂Formal shard；
+  practical合并后与两条AsymHFL锚点形成十行领域表，full十二行能力继续保留。
+- FedMD四目标ERM与领域表FedMD的loader协议不同，resolved config不等价，禁止复用同一结果行。
+- 用户已启动FedMD四目标map2、seed-0、40轮Formal；是否补seed 1/2由seed-0冻结门槛与论文主张
+  决定，不自动扩展。

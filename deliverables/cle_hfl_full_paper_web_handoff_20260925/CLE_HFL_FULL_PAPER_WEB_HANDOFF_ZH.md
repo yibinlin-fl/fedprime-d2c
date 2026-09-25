@@ -25,7 +25,8 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 
 - map1 已完成，用于证明改变 client-specific binding map 后，PEW+BER 的 DSA suppression 仍复现。
 - map2 未参与早期五臂筛选，并已有 40 轮三 training-seed 主方法结果，因此用于最终 matched
-  objective comparison、FedMD 跨通信复现和十二行 HFL 领域表。
+  objective comparison、FedMD 跨通信复现和十行 practical HFL 领域表；FedTGP/RHFL因40轮各约31小时
+  暂列为长算力条件性扩展，full十二行能力保留。
 - map1 不是不能用于领域表；若使用它，必须重跑主方法锚点，增加成本而不增加新科学问题。
 
 ## 已完成、可写入正文的核心事实
@@ -42,7 +43,7 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 ## 待补实验，禁止写成已完成
 
 1. FedMD 固定通信的四目标复现；
-2. held-out map2 十二行 HFL 领域表 Formal；
+2. held-out map2 十行 practical HFL 领域表 Formal（八个HFL context臂加两条AsymHFL锚点）；
 3. local-first training seeds 1/2 的成本重构后复验；
 4. 第二受控私有数据集；
 5. bounded taxonomy stress；

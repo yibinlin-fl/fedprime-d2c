@@ -14,27 +14,54 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.prepare_cle_v2_factorial_data import sha256_file  # noqa: E402
-from scripts.run_cle_hfl_context import ARMS, SHARDS  # noqa: E402
+from scripts.run_cle_hfl_context import ARMS, PRACTICAL_ARMS, SHARDS  # noqa: E402
 
 
-REQUIRED_SHARDS = ("cheap_a", "cheap_b", "fedtgp", "rhfl")
+FULL_REQUIRED_SHARDS = ("cheap_a", "cheap_b", "fedtgp", "rhfl")
+PRACTICAL_REQUIRED_SHARDS = (
+    "local",
+    "fedmd",
+    "fedproto",
+    "feddf",
+    "kt_pfl",
+    "fccl",
+    "aughfl",
+    "rahfl",
+)
+MERGE_PROFILES = {
+    "full": (FULL_REQUIRED_SHARDS, ARMS),
+    "practical": (PRACTICAL_REQUIRED_SHARDS, PRACTICAL_ARMS),
+}
 
 
-def parse_shard_roots(values: list[str]) -> dict[str, Path]:
+def infer_merge_profile(shards: set[str]) -> str:
+    matches = [name for name, (required, _) in MERGE_PROFILES.items() if shards == set(required)]
+    if len(matches) != 1:
+        expected = {name: list(required) for name, (required, _) in MERGE_PROFILES.items()}
+        raise ValueError(f"Shard set does not match one merge profile: got={sorted(shards)}, expected={expected}")
+    return matches[0]
+
+
+def parse_shard_roots(values: list[str], profile: str | None = None) -> dict[str, Path]:
     roots: dict[str, Path] = {}
     for value in values:
         if "=" not in value:
             raise ValueError(f"Expected SHARD=PATH, got: {value}")
         shard, raw_path = value.split("=", 1)
-        if shard not in REQUIRED_SHARDS:
-            raise ValueError(f"Unknown or non-mergeable shard: {shard}")
         if shard in roots:
             raise ValueError(f"Duplicate shard: {shard}")
         roots[shard] = Path(raw_path).resolve()
-    missing = set(REQUIRED_SHARDS) - set(roots)
+    selected_profile = profile or infer_merge_profile(set(roots))
+    if selected_profile not in MERGE_PROFILES:
+        raise ValueError(f"Unknown merge profile: {selected_profile}")
+    required, _ = MERGE_PROFILES[selected_profile]
+    unknown = set(roots) - set(required)
+    if unknown:
+        raise ValueError(f"Unknown shards for {selected_profile}: {sorted(unknown)}")
+    missing = set(required) - set(roots)
     if missing:
         raise ValueError(f"Missing shards: {sorted(missing)}")
-    return roots
+    return {shard: roots[shard] for shard in required}
 
 
 def read_json(path: Path) -> dict:
@@ -61,7 +88,24 @@ def trace_digest(trace: dict[tuple[int, int, int], str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest().upper()
 
 
-def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
+def input_audit_fingerprint(audit: dict) -> dict:
+    keys = (
+        "status",
+        "manifest_sha256",
+        "private_samples",
+        "dsa_sources",
+        "dsa_operators",
+        "pew_audited",
+        "pew_checkpoint_sha256",
+    )
+    return {key: audit.get(key) for key in keys}
+
+
+def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None = None) -> dict:
+    selected_profile = profile or infer_merge_profile(set(roots))
+    if selected_profile not in MERGE_PROFILES:
+        raise ValueError(f"Unknown merge profile: {selected_profile}")
+    required_shards, merged_arms = MERGE_PROFILES[selected_profile]
     contracts: dict[str, dict] = {}
     summaries: dict[str, dict] = {}
     input_audits: dict[str, dict] = {}
@@ -70,7 +114,7 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
     prediction_by_arm: dict[str, np.ndarray] = {}
     common_arrays: dict[str, np.ndarray] | None = None
 
-    for shard in REQUIRED_SHARDS:
+    for shard in required_shards:
         root = roots[shard]
         contract = read_json(root / "configs" / f"CONTRACT_{shard}.json")
         completion = read_json(root / "configs" / f"COMPLETION_{shard}.json")
@@ -132,16 +176,36 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
         "binding_map_seed",
         "evaluation_seed",
         "rounds",
+        "local_batches_per_client_round",
+        "batch_size",
+        "public_batch_size",
         "train_seed",
     )
-    reference_contract = contracts[REQUIRED_SHARDS[0]]
+    reference_contract = contracts[required_shards[0]]
+    frozen_contract = {
+        "mode": "formal",
+        "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+        "partition_seed": 0,
+        "binding_map_seed": 2,
+        "evaluation_seed": 20260909,
+        "rounds": 40,
+        "local_batches_per_client_round": 16,
+        "batch_size": 64,
+        "public_batch_size": 128,
+        "train_seed": 0,
+    }
+    for key, value in frozen_contract.items():
+        if reference_contract.get(key) != value:
+            raise ValueError(f"Frozen Formal contract mismatch at {key}")
     for shard, contract in contracts.items():
         if any(contract.get(key) != reference_contract.get(key) for key in protocol_keys):
             raise ValueError(f"Protocol mismatch for {shard}")
-    reference_audit = input_audits[REQUIRED_SHARDS[0]]
-    if any(audit != reference_audit for audit in input_audits.values()):
+    reference_audit = input_audit_fingerprint(input_audits[required_shards[0]])
+    if reference_audit.get("status") != "PASS":
+        raise ValueError("Reference input audit did not pass")
+    if any(input_audit_fingerprint(audit) != reference_audit for audit in input_audits.values()):
         raise ValueError("Input audits differ across shards")
-    if set(rows) != set(ARMS):
+    if set(rows) != set(merged_arms):
         raise ValueError(f"Merged arm coverage mismatch: {sorted(rows)}")
 
     reference_trace = traces["local_erm"]
@@ -153,12 +217,13 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         output_dir / "HFL_CONTEXT_PREDICTIONS_MERGED.npz",
-        probabilities=np.stack([prediction_by_arm[arm] for arm in ARMS]),
-        arms=np.asarray(ARMS),
+        probabilities=np.stack([prediction_by_arm[arm] for arm in merged_arms]),
+        arms=np.asarray(merged_arms),
         **common_arrays,
     )
     merged = {
-        "protocol": "cle_hfl_context_table_merged_v2",
+        "protocol": "cle_hfl_context_table_merged_v3",
+        "merge_profile": selected_profile,
         "source_protocol": reference_contract["protocol"],
         "mode": "formal",
         "train_seed": reference_contract["train_seed"],
@@ -167,8 +232,8 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
         "partition_seed": reference_contract["partition_seed"],
         "binding_map_seed": reference_contract["binding_map_seed"],
         "evaluation_seed": reference_contract["evaluation_seed"],
-        "rows": {arm: rows[arm] for arm in ARMS},
-        "source_shards": {shard: str(roots[shard]) for shard in REQUIRED_SHARDS},
+        "rows": {arm: rows[arm] for arm in merged_arms},
+        "source_shards": {shard: str(roots[shard]) for shard in required_shards},
         "cross_shard_local_batch_pairing": {
             "reference_arm": "local_erm",
             "arm_matches": pairing_matches,
@@ -186,17 +251,19 @@ def merge_shards(roots: dict[str, Path], output_dir: Path) -> dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Audit and merge four S2 HFL context shards.")
+    parser = argparse.ArgumentParser(description="Audit and merge full or practical S2 HFL context shards.")
+    parser.add_argument("--profile", choices=MERGE_PROFILES, default="practical")
     parser.add_argument(
         "--shard-root",
         action="append",
         default=[],
         metavar="SHARD=PATH",
-        help="Extracted shard archive root; provide cheap_a, cheap_b, fedtgp, and rhfl.",
+        help="Extracted shard archive root as SHARD=PATH; provide every shard required by --profile.",
     )
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
-    merged = merge_shards(parse_shard_roots(args.shard_root), args.output_dir.resolve())
+    roots = parse_shard_roots(args.shard_root, args.profile)
+    merged = merge_shards(roots, args.output_dir.resolve(), args.profile)
     print(json.dumps(merged, indent=2), flush=True)
 
 

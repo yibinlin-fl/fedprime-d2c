@@ -4,6 +4,7 @@ import hashlib
 import json
 
 import numpy as np
+import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -19,7 +20,7 @@ from fedprime.data.loaders import DatasetStats
 from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_configs
 from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots, trace_digest
 from scripts.merge_cle_hfl_domain_table import FINAL_ROWS, merge_domain_table
-from scripts.run_cle_hfl_context import ARMS, SHARDS, context_arm_config, selected_arms
+from scripts.run_cle_hfl_context import ARMS, PRACTICAL_ARMS, SHARDS, context_arm_config, selected_arms
 from scripts.run_cle_v2_fedmd_objectives import ARMS as FEDMD_OBJECTIVE_ARMS, fedmd_arm_config
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.methods.fedease import FedEASEExperiment
@@ -213,18 +214,54 @@ def test_hfl_context_shards_are_disjoint_and_cover_all_arms() -> None:
     assert selected_arms("cheap_b", "formal") == SHARDS["cheap_b"]
     assert selected_arms("cheap_b", "pairing") == ("local_erm", *SHARDS["cheap_b"])
 
+    practical_shards = ("local", "fedmd", "fedproto", "feddf", "kt_pfl", "fccl", "aughfl", "rahfl")
+    practical = tuple(arm for shard in practical_shards for arm in SHARDS[shard])
+    assert practical == PRACTICAL_ARMS
+    assert selected_arms("feddf", "formal") == ("feddf_fidelity",)
+
+
+def test_fedmd_four_objective_erm_is_not_silently_reused_as_context_fedmd(tmp_path) -> None:
+    common = {
+        "package_root": tmp_path / "package",
+        "mode": "formal",
+        "output_root": tmp_path / "outputs",
+        "device": "cpu",
+    }
+    objective = fedmd_arm_config("erm", train_seed=0, **common)
+    context = context_arm_config("fedmd_adapter", **common)
+    assert objective["method"]["local_loader_mode"] == "standard"
+    assert context["method"].get("local_loader_mode", "augmix") == "augmix"
+    assert objective != context
+
 
 def test_hfl_shard_root_parser_requires_exact_merge_partition(tmp_path) -> None:
     values = [f"{shard}={tmp_path / shard}" for shard in ("cheap_a", "cheap_b", "fedtgp", "rhfl")]
     roots = parse_shard_roots(values)
     assert tuple(roots) == ("cheap_a", "cheap_b", "fedtgp", "rhfl")
 
+    practical = ("local", "fedmd", "fedproto", "feddf", "kt_pfl", "fccl", "aughfl", "rahfl")
+    roots = parse_shard_roots([f"{shard}={tmp_path / shard}" for shard in practical])
+    assert tuple(roots) == practical
 
-def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path) -> None:
+
+@pytest.mark.parametrize(
+    ("profile", "shard_names", "expected_arms"),
+    (
+        ("full", ("cheap_a", "cheap_b", "fedtgp", "rhfl"), ARMS),
+        (
+            "practical",
+            ("local", "fedmd", "fedproto", "feddf", "kt_pfl", "fccl", "aughfl", "rahfl"),
+            PRACTICAL_ARMS,
+        ),
+    ),
+)
+def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
+    tmp_path, profile, shard_names, expected_arms
+) -> None:
     roots = {}
     trace_line = json.dumps({"round": 0, "client": 0, "batch": 0, "sha256": "matched"}) + "\n"
-    for shard in ("cheap_a", "cheap_b", "fedtgp", "rhfl"):
-        root = tmp_path / shard
+    for shard in shard_names:
+        root = tmp_path / profile / shard
         roots[shard] = root
         for directory in ("configs", "outputs", "analysis"):
             (root / directory).mkdir(parents=True, exist_ok=True)
@@ -249,6 +286,9 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path)
             "binding_map_seed": 2,
             "evaluation_seed": 20260909,
             "rounds": 40,
+            "local_batches_per_client_round": 16,
+            "batch_size": 64,
+            "public_batch_size": 128,
             "train_seed": 0,
             "execution_shard": shard,
             "selected_arms": list(SHARDS[shard]),
@@ -279,8 +319,9 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(tmp_path)
             binding=np.asarray([[0]]),
             operator_names=np.asarray(["blur"]),
         )
-    merged = merge_shards(roots, tmp_path / "merged")
-    assert tuple(merged["rows"]) == ARMS
+    merged = merge_shards(roots, tmp_path / profile / "merged", profile)
+    assert tuple(merged["rows"]) == expected_arms
+    assert merged["merge_profile"] == profile
     assert merged["cross_shard_local_batch_pairing"]["all_arms_match"] is True
 
 

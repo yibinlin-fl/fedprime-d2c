@@ -26,7 +26,7 @@ ERM / CVaR-DRO / PEW+GroupDRO / PEW+BER
 40轮、training seeds 0/1/2 已完成。该实验回答 BER 是否优于普通 ERM、generic tail-risk 和
 共享同一 PEW 分组的 GroupDRO；它不是任意通信算法上的万能插件实验。
 
-## B. 待运行 FedMD 跨通信四目标复现
+## B. 运行中的 FedMD 跨通信四目标复现
 
 固定 FedMD symmetric public-logit exchange，重复同一四目标：
 
@@ -43,22 +43,22 @@ FedMD+PEW+BER
 scripts/openi_cle_v2_fedmd_objectives_entry.py
 ```
 
-必须先做 smoke/benchmark 和配对审计；Formal 仍需用户明确授权。该实验回答主方法排序是否依赖
-strict AsymHFL-val 通信，不声称覆盖所有 HFL 通信机制。
+smoke、benchmark和配对审计已通过；用户已启动map2、training seed 0、40轮Formal。该实验回答
+主方法排序是否依赖strict AsymHFL-val通信，不声称覆盖所有HFL通信机制。seed 1/2不自动启动：
+若seed 0通过全部冻结门槛，它已承担跨通信复现；只有结果临界或正文要提出FedMD训练稳定性主张时
+才追加。
 
-## C. 待运行十二行 HFL 领域比较
+## C. 待运行十行 practical HFL 领域比较
 
-十个原生/协议匹配 HFL 行：
+八个原生/协议匹配 HFL 行：
 
 ```text
 Local/ERM
 FedMD
 FedProto
-FedTGP
 FedDF
 KT-pFL
 FCCL
-RHFL
 AugHFL
 RAHFL
 ```
@@ -76,10 +76,19 @@ AsymHFL+PEW+BER
 scripts/openi_cle_hfl_context_entry.py
 ```
 
-十臂可按 `cheap_a / cheap_b / fedtgp / rhfl` 分片跨两个相同 OpenI 环境运行。分片结果先由
-`scripts/merge_cle_hfl_context_shards.py` 审计合并，再由
+八臂必须按 `local / fedmd / fedproto / feddf / kt_pfl / fccl / aughfl / rahfl` 单臂分片运行。
+原`cheap_a/cheap_b`继续用于benchmark，不用于最终Formal打包。分片结果先由
+`scripts/merge_cle_hfl_context_shards.py --profile practical`审计合并，再由
 `scripts/merge_cle_hfl_domain_table.py` 与既有 AsymHFL seed-0 Formal 合并。最终合并要求场景、
-轮数、training seed、evaluation grid 和本地 batch 轨迹全部一致。
+轮数、training seed、batch预算、evaluation grid和本地batch轨迹全部一致。
+
+FedTGP与RHFL benchmark单轮分别约45.5和46.3分钟，40轮各约31小时，当前移为条件性实验室
+服务器扩展。不得降低其内部计算预算后混入40轮主表。原full profile与合并能力保留，未来长算力
+齐备时仍可生成十二行表。
+
+四目标FedMD中的ERM不能直接复用为领域表FedMD：前者明确使用`standard`本地loader，后者属于
+领域表既有统一AugMix-view loader协议；虽然都不启用JSD/DCL，但resolved config并不等价，必须
+独立运行。
 
 该表回答现有 HFL 通信/鲁棒机制是否自然消除 CLE，以及本文方法在领域中的位置。它不是
 untouched official-recipe leaderboard，也不识别 BER 的因果贡献；BER 的归因由四目标表承担。

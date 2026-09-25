@@ -28,10 +28,28 @@ ARMS = (
     "aughfl_fidelity",
     "rahfl_fidelity",
 )
+PRACTICAL_ARMS = (
+    "local_erm",
+    "fedmd_adapter",
+    "fedproto_adapter",
+    "feddf_fidelity",
+    "kt_pfl_fidelity",
+    "fccl_adapter",
+    "aughfl_fidelity",
+    "rahfl_fidelity",
+)
 SHARDS = {
     "all": ARMS,
     "cheap_a": ("local_erm", "fedmd_adapter", "fedproto_adapter", "aughfl_fidelity"),
     "cheap_b": ("feddf_fidelity", "kt_pfl_fidelity", "fccl_adapter", "rahfl_fidelity"),
+    "local": ("local_erm",),
+    "fedmd": ("fedmd_adapter",),
+    "fedproto": ("fedproto_adapter",),
+    "feddf": ("feddf_fidelity",),
+    "kt_pfl": ("kt_pfl_fidelity",),
+    "fccl": ("fccl_adapter",),
+    "aughfl": ("aughfl_fidelity",),
+    "rahfl": ("rahfl_fidelity",),
     "fedtgp": ("fedtgp_adapter",),
     "rhfl": ("rhfl_adapter",),
 }
@@ -182,6 +200,9 @@ def main() -> None:
         "binding_map_seed": MAP_SEED,
         "evaluation_seed": 20260909,
         "rounds": ROUND_BUDGET[args.mode],
+        "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
+        "batch_size": 64,
+        "public_batch_size": 128,
         "train_seed": 0,
         "execution_shard": args.shard,
         "selected_arms": list(arms),

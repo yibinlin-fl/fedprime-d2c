@@ -2,6 +2,21 @@
 
 Updated: 2026-09-25
 
+## 2026-09-25真实map2 smoke与pairing全部通过
+
+真实`cle_hfl_v2_cross_map2_seed0_split0`输入审计PASS。输入包大小`1385820059` bytes，SHA256
+为`BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5`；manifest与PEW
+checkpoint哈希均通过，包含40000条私有训练样本、1000个paired sources和15个operators。
+
+FedMD四目标smoke首次发现PEW本地训练器的通信白名单未登记已有`fedmd`策略；最小修复只扩展
+组合白名单，不改变FedMD/PEW/BER目标。修复后ERM、CVaR-DRO、PEW+GroupDRO、PEW+BER四臂
+均完成1轮真实CUDA smoke、4客户端checkpoint与paired DSA分析，四臂local trace匹配。
+
+十个HFL方法随后完成真实map2两轮pairing：每臂8条`round/client/batch`记录，10/10逐项匹配，
+`all_arms_match=true`。此前FedTGP/RHFL通信读取private loader造成的batch顺序漂移已在真实输入上
+确认消除。所有smoke/pairing数值均非科学证据。当前状态为`BENCHMARK_READY / FORMAL_NOT_AUTHORIZED`。
+完整报告：`deliverables/cle_hfl_map2_execution_validation_20260925/RESULT_SUMMARY_ZH.md`。
+
 ## 最终定位、held-out map2统一协议与V0.7骨架
 
 论文定位已冻结为CLE-HFL的`diagnosis--attribution--mitigation study`；PEW+BER是其中

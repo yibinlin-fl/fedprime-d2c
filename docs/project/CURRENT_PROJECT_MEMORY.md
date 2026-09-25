@@ -5054,3 +5054,11 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - 新增FedMD固定通信的ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER四目标runner与OpenI入口；尚未运行，
   Formal未授权。
 - LaTeX V0.7内部骨架与2026-09-25网页端交接已建立，V0.6保持不可变。
+## 2026-09-25：真实map2执行与batch配对验证通过
+
+- 输入包`cle_hfl_v2_cross_maps1_2_seed0_split0_with_pew.tar.gz`为`1385820059` bytes，SHA256
+  `BEA8E98737BF881C701DCFFF05F4E04C3A1E6095B7CF7702A5177260C2F186F5`；map2输入审计PASS。
+- FedMD固定通信的ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER四臂真实CUDA smoke完成；首次暴露并修复
+  PEW训练器通信白名单缺少`fedmd`的组合层阻塞。修复不改变任何方法公式。
+- FedMD四臂local batch trace匹配；十个HFL方法两轮pairing为10/10匹配，每臂8条trace。
+- smoke/pairing不构成科学证据；当前仅进入benchmark-ready，Formal仍需用户明确授权。

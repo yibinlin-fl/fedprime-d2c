@@ -22,6 +22,7 @@ from scripts.merge_cle_hfl_domain_table import FINAL_ROWS, merge_domain_table
 from scripts.run_cle_hfl_context import ARMS, SHARDS, context_arm_config, selected_arms
 from scripts.run_cle_v2_fedmd_objectives import ARMS as FEDMD_OBJECTIVE_ARMS, fedmd_arm_config
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
+from fedprime.methods.fedease import FedEASEExperiment
 
 
 def test_baseline_registry_uses_distinct_official_core_mechanisms() -> None:
@@ -200,6 +201,8 @@ def test_fedmd_four_objective_replication_changes_only_local_objective(tmp_path)
     assert configs["pew_groupdro"]["method"]["fedease"]["objective"] == "pew_groupdro"
     assert configs["pew_ber"]["method"]["fedease"]["objective"] == "ce_ber"
     assert all("cdep" not in json.dumps(config).lower() for config in configs.values())
+    experiment = FedEASEExperiment(configs["pew_ber"])
+    assert experiment._communication_strategy.routing == "symmetric"
 
 
 def test_hfl_context_shards_are_disjoint_and_cover_all_arms() -> None:

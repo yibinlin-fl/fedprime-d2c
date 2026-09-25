@@ -143,6 +143,7 @@ docs/research/status/CLE_HFL_RELATED_WORK_PUBLICATION_LANDSCAPE_2026_09_14_ZH.md
 ```text
 deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 deliverables/cle_hfl_full_paper_web_handoff_20260925/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+deliverables/cle_hfl_map2_execution_validation_20260925/RESULT_SUMMARY_ZH.md
 docs/project/CURRENT_PROJECT_MEMORY.md
 docs/handoffs/latest.md
 ```

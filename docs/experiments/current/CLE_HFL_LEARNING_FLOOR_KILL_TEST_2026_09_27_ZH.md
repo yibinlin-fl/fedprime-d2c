@@ -75,7 +75,10 @@ benchmark不能作为学习水平证据。
   trace，分析器确认`all_arms_match=true`。
 - FedProto在第2轮成功执行基于上一轮本地训练批次累计prototype的通信，不再触发旧版全量
   private-fit扫描。
+- 修复后的AugHFL与RAHFL分别完成真实map2两轮pairing；两者均未出现非有限loss/gradient或
+  skip，且分析器分别确认与Local锚点的8条batch trace完全匹配。
 - 以上smoke/pairing数字均设置`scientific_evidence=false`，不得进入论文结果表。
 
 因此代码已具备OpenI b32/b64两项benchmark条件；40轮Formal仍未授权。AugHFL/RAHFL修复后的
-独立真实benchmark尚未完成，在其完成前不得复用旧AugHFL包或把修复后方法列入最终领域表。
+独立真实pairing已经通过，但目标预算benchmark尚未完成；在其完成前不得复用旧AugHFL包或把
+修复后方法列入最终领域表。

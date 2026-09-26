@@ -4,6 +4,9 @@
 > 低学习水平；旧AugHFL包含486次非有限梯度跳过而无效；旧FedProto运行因每轮完整private-fit
 > prototype扫描在第7轮被主动停止。先执行
 > `CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md`，再决定本表最终预算。
+> 2026-09-27补充：修复后FedProto已通过真实map2两轮pairing，batch trace完全匹配；这只解除
+> 工程阻塞，不恢复旧中止运行的科学效力。Local b32真实smoke也已通过，下一步仍是b32/b64
+> benchmark，而不是直接启动Formal。
 
 ## 冻结公共条件
 

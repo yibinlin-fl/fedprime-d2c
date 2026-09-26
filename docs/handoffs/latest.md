@@ -17,8 +17,11 @@ private fit集，运行约5小时仅到round 7，用户主动停止；无科学�
 
 代码现已将RAHFL/AugHFL JSD切换为数值稳定实现，并在HFL context强制
 `skip_nonfinite=false`；FedProto改为从实际本地训练批次累计prototype，下一轮聚合，不再额外扫描
-private fit集。新增Local b32/b64学习水平Kill Test入口，只允许先跑2-round benchmark；Formal未
-授权。完整协议：
+private fit集。真实map2本地验证已经完成：Local b32 smoke运行通过；FedProto的2-round pairing
+运行通过，Local与FedProto各8条本地batch trace逐项匹配，`all_arms_match=true`，且第二轮成功使用
+由本地训练批次累计的prototype。上述结果只证明工程执行与配对，不是科学证据。
+
+新增Local b32/b64学习水平Kill Test入口，只允许先跑2-round benchmark；Formal未授权。完整协议：
 
 ```text
 docs/experiments/current/CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md

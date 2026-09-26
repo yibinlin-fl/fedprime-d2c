@@ -65,3 +65,17 @@ benchmark不能作为学习水平证据。
   扫描private fit集。FedTGP保留原private-scan路径，不受此次修改影响。
 
 修复后的AugHFL、RAHFL和FedProto必须重新smoke/benchmark；未经新结果不得进入最终表。
+
+## 6. 本地真实输入验证
+
+2026-09-27使用真实held-out map2输入完成以下验证：
+
+- Local b32 smoke：1轮、每客户端2个batch，训练、checkpoint与分析全部完成；该结果仅验证执行。
+- FedProto pairing：Local与FedProto均运行2轮、每客户端每轮2个batch；两臂各产生8条local-batch
+  trace，分析器确认`all_arms_match=true`。
+- FedProto在第2轮成功执行基于上一轮本地训练批次累计prototype的通信，不再触发旧版全量
+  private-fit扫描。
+- 以上smoke/pairing数字均设置`scientific_evidence=false`，不得进入论文结果表。
+
+因此代码已具备OpenI b32/b64两项benchmark条件；40轮Formal仍未授权。AugHFL/RAHFL修复后的
+独立真实benchmark尚未完成，在其完成前不得复用旧AugHFL包或把修复后方法列入最终领域表。

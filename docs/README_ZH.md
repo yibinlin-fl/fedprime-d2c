@@ -11,6 +11,8 @@ scripts/openi_cle_hfl_learning_floor_entry.py
 
 现有16-batch协议每客户端仅约4.8个epoch-equivalent；Local/FedMD/RAHFL-style共同处于约20--23%
 last-10 Avg。旧AugHFL Formal因486次非有限梯度跳过而无效；旧FedProto中止且无科学结果。新增
+Local b32/b64学习水平Kill Test；真实map2下Local b32 smoke与修复后FedProto两轮pairing已通过，
+但均不是科学证据。当前只允许先跑b32/b64 benchmark，Formal未授权。
 Local b32/b64 Kill Test尚未运行benchmark或Formal；领域表其他新Formal暂停。
 
 ## S2-v2 HFL机制覆盖与FedTGP审计

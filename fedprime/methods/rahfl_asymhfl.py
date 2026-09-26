@@ -1555,6 +1555,7 @@ class AsymHFLExperiment:
                                     model=_model,
                                     clean_images=clean_images,
                                     labels=labels,
+                                    client_id=client_id,
                                 )
                             )
                             if hasattr(self._communication_strategy, "local_loss")

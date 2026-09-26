@@ -1,6 +1,17 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-22
+Updated: 2026-09-27
+
+## HFL领域表学习水平与数值/成本修复
+
+```text
+docs/experiments/current/CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md
+scripts/openi_cle_hfl_learning_floor_entry.py
+```
+
+现有16-batch协议每客户端仅约4.8个epoch-equivalent；Local/FedMD/RAHFL-style共同处于约20--23%
+last-10 Avg。旧AugHFL Formal因486次非有限梯度跳过而无效；旧FedProto中止且无科学结果。新增
+Local b32/b64 Kill Test尚未运行benchmark或Formal；领域表其他新Formal暂停。
 
 ## S2-v2 HFL机制覆盖与FedTGP审计
 

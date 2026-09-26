@@ -1,6 +1,32 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-25
+Updated: 2026-09-27
+
+## 2026-09-27 HFL领域表暂停：共同低学习水平、AugHFL数值失败与FedProto成本修复
+
+held-out map2领域表已收到Local、FedMD、RAHFL-style和AugHFL四个40轮seed-0包。Local/FedMD/
+RAHFL-style的last-10 Avg分别为`21.4993/19.9177/22.9247`，共同处于低学习水平；固定
+`16 batches/client/round`在40轮内只相当于每客户端约4.8个完整epoch，不能称充分训练或官方
+RAHFL 40+40复现。RAHFL完整日志无NaN、无非有限梯度和跳batch，当前结果只可作为统一低预算
+adapter证据。
+
+旧AugHFL虽完成40轮和DSA分析，但日志累计`486/2560=18.98%`次非有限梯度跳过；分析器错误将其
+标为scientific evidence。该包永久禁止进入论文表。旧FedProto因第1轮后每轮完整扫描四客户端
+private fit集，运行约5小时仅到round 7，用户主动停止；无科学结果。原1-round benchmark在round 0
+跳过prototype聚合，未测到steady-state成本。
+
+代码现已将RAHFL/AugHFL JSD切换为数值稳定实现，并在HFL context强制
+`skip_nonfinite=false`；FedProto改为从实际本地训练批次累计prototype，下一轮聚合，不再额外扫描
+private fit集。新增Local b32/b64学习水平Kill Test入口，只允许先跑2-round benchmark；Formal未
+授权。完整协议：
+
+```text
+docs/experiments/current/CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md
+scripts/openi_cle_hfl_learning_floor_entry.py
+```
+
+在Kill Test决定最终优化预算之前，暂停所有新的S2领域表Formal；M1 map2四臂三training-seed
+matched结论不撤销。
 
 ## 2026-09-25 FedMD Formal运行中；HFL领域表改为可负担单臂协议
 

@@ -1,5 +1,10 @@
 # CLE-HFL held-out map2 最终实验协议（2026-09-25）
 
+> 2026-09-27状态：领域表暂停新增Formal。已完成Local/FedMD/RAHFL-style显示约20--23%的共同
+> 低学习水平；旧AugHFL包含486次非有限梯度跳过而无效；旧FedProto运行因每轮完整private-fit
+> prototype扫描在第7轮被主动停止。先执行
+> `CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md`，再决定本表最终预算。
+
 ## 冻结公共条件
 
 ```text

@@ -84,6 +84,9 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
     config["data"]["scenario"] = "cle_hfl_v2"
     config["data"]["scenario_id"] = "cle_hfl_v2_cross_map2_seed0_split0"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
+    # Context-table evidence must never silently skip non-finite updates.  A
+    # numerical failure invalidates the arm and must stop the task.
+    config["train"]["skip_nonfinite"] = False
     config["train"]["max_test_batches"] = 1 if mode != "formal" else None
     config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode != "formal" else None
     config["checkpoints"]["save_rounds"] = []
@@ -96,7 +99,8 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
         config["method"].update({"communication": "fedproto", "cl_module": "none", "lambda_jsd": 0.0})
         config["method"]["baseline"] = {
             "proto_weight": 1.0,
-            "max_proto_batches": 1 if mode == "pairing" else None,
+            "prototype_source": "local_batches",
+            "max_proto_batches": None,
         }
     elif arm == "fedtgp_adapter":
         config["method"].update({"communication": "fedtgp", "cl_module": "none", "lambda_jsd": 0.0})

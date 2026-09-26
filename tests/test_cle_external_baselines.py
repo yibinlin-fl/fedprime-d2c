@@ -21,9 +21,11 @@ from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_conf
 from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots, trace_digest
 from scripts.merge_cle_hfl_domain_table import FINAL_ROWS, merge_domain_table
 from scripts.run_cle_hfl_context import ARMS, PRACTICAL_ARMS, SHARDS, context_arm_config, selected_arms
+from scripts.run_cle_hfl_learning_floor import BUDGETS as LEARNING_FLOOR_BUDGETS, learning_floor_config
 from scripts.run_cle_v2_fedmd_objectives import ARMS as FEDMD_OBJECTIVE_ARMS, fedmd_arm_config
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.methods.fedease import FedEASEExperiment
+from fedprime.methods.local_prime import jsd_loss_from_logits
 
 
 def test_baseline_registry_uses_distinct_official_core_mechanisms() -> None:
@@ -85,17 +87,46 @@ def test_fedproto_aggregates_feature_prototypes_and_builds_local_mse() -> None:
         stats=DatasetStats([0.0, 0.0], [1.0, 1.0]),
         device=torch.device("cpu"),
         public_batches_per_round=0,
-        private_loaders=loaders,
+        # Local-batch FedProto must not rescan the private DataLoader during
+        # communication; prototypes come from the exact optimization batches.
+        private_loaders=None,
         num_classes=2,
-        round_idx=1,
+        round_idx=0,
     )
 
     assert strategy.step(context) == 0.0
+    for client_id in sorted(models):
+        warmup_loss = strategy.local_loss(
+            model=models[client_id],
+            clean_images=(images0 if client_id == 0 else images1),
+            labels=labels,
+            client_id=client_id,
+        )
+        assert torch.isfinite(warmup_loss)
+    context.round_idx = 1
+    assert strategy.step(context) == 0.0
     assert strategy.global_prototypes is not None
     assert strategy.global_prototypes.shape == (2, 4)
-    loss = strategy.local_loss(model=models[0], clean_images=images0, labels=labels)
+    assert strategy.last_metrics["prototype_source"] == "local_batches"
+    assert strategy.last_metrics["prototype_batches"] == 2.0
+    assert strategy.last_metrics["prototype_samples"] == 4.0
+    loss = strategy.local_loss(
+        model=models[0], clean_images=images0, labels=labels, client_id=0
+    )
     assert torch.isfinite(loss)
     assert loss.requires_grad
+
+
+def test_augmix_jsd_has_finite_gradients_for_extreme_logits() -> None:
+    logits = [
+        torch.tensor([[1000.0, -1000.0]], requires_grad=True),
+        torch.tensor([[-1000.0, 1000.0]], requires_grad=True),
+        torch.tensor([[1000.0, -1000.0]], requires_grad=True),
+    ]
+    loss = jsd_loss_from_logits(*logits)
+    assert torch.isfinite(loss)
+    loss.backward()
+    assert all(item.grad is not None and torch.isfinite(item.grad).all() for item in logits)
 
 
 def test_fedtgp_trains_finite_global_prototypes_and_local_loss() -> None:
@@ -176,10 +207,32 @@ def test_hfl_pairing_mode_is_two_rounds_and_cheap(tmp_path) -> None:
     assert all(config["train"]["max_local_batches"] == 2 for config in configs.values())
     assert configs["fedtgp_adapter"]["method"]["baseline"]["server_epochs"] == 1
     assert configs["rhfl_adapter"]["method"]["baseline"]["max_quality_batches"] == 1
+    assert configs["fedproto_adapter"]["method"]["baseline"]["prototype_source"] == "local_batches"
+    assert all(config["train"]["skip_nonfinite"] is False for config in configs.values())
     assert all(
         config["data"]["scenario_id"] == "cle_hfl_v2_cross_map2_seed0_split0"
         for config in configs.values()
     )
+
+
+def test_learning_floor_configs_only_change_local_batch_budget(tmp_path) -> None:
+    assert LEARNING_FLOOR_BUDGETS == (32, 64)
+    for budget in LEARNING_FLOOR_BUDGETS:
+        config = learning_floor_config(
+            package_root=tmp_path,
+            mode="formal",
+            local_batches=budget,
+            output_root=tmp_path / "outputs",
+            device="cpu",
+        )
+        assert config["method"]["communication"] == "none"
+        assert config["method"]["lambda_jsd"] == 0.0
+        assert config["method"]["cl_module"] == "none"
+        assert config["train"]["rounds"] == 40
+        assert config["train"]["max_local_batches"] == budget
+        assert config["train"]["batch_size"] == 64
+        assert config["train"]["skip_nonfinite"] is False
+        assert config["train"]["pretrain_epochs"] == 0
 
 
 def test_fedmd_four_objective_replication_changes_only_local_objective(tmp_path) -> None:

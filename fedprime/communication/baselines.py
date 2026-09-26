@@ -760,11 +760,25 @@ class FedProtoFeatureStrategy:
     requires_public_data = False
     uses_accuracy_routing = False
 
-    def __init__(self, proto_weight: float = 1.0, max_batches: int | None = None) -> None:
+    def __init__(
+        self,
+        proto_weight: float = 1.0,
+        max_batches: int | None = None,
+        prototype_source: str = "local_batches",
+    ) -> None:
         self.proto_weight = float(proto_weight)
         self.max_batches = max_batches
+        normalized_source = str(prototype_source).lower()
+        if normalized_source not in {"local_batches", "private_scan"}:
+            raise ValueError(f"Unknown FedProto prototype source: {prototype_source}")
+        self.prototype_source = normalized_source
         self.global_prototypes: torch.Tensor | None = None
         self.valid_classes: torch.Tensor | None = None
+        self._pending_sums: dict[int, torch.Tensor] = {}
+        self._pending_counts: dict[int, torch.Tensor] = {}
+        self._pending_batches: dict[int, int] = {}
+        self._num_classes: int | None = None
+        self.last_metrics: dict[str, float | str] = {}
 
     @staticmethod
     def _embedding(model: torch.nn.Module, images: torch.Tensor) -> torch.Tensor:
@@ -810,37 +824,119 @@ class FedProtoFeatureStrategy:
             raise RuntimeError(f"FedProto client {client_id} fit loader produced no batches")
         return sums / counts.clamp_min(1.0).unsqueeze(1), counts.gt(0)
 
+    def _accumulate_local_batch(
+        self,
+        *,
+        client_id: int,
+        embeddings: torch.Tensor,
+        labels: torch.Tensor,
+        num_classes: int,
+    ) -> None:
+        detached = embeddings.detach()
+        detached_labels = labels.detach().long()
+        if client_id not in self._pending_sums:
+            self._pending_sums[client_id] = torch.zeros(
+                num_classes,
+                detached.shape[1],
+                device=detached.device,
+                dtype=detached.dtype,
+            )
+            self._pending_counts[client_id] = torch.zeros(
+                num_classes,
+                device=detached.device,
+                dtype=torch.float32,
+            )
+            self._pending_batches[client_id] = 0
+        self._pending_sums[client_id].index_add_(0, detached_labels, detached)
+        self._pending_counts[client_id].index_add_(
+            0,
+            detached_labels,
+            torch.ones_like(detached_labels, dtype=torch.float32),
+        )
+        self._pending_batches[client_id] += 1
+
+    def _consume_local_batch_prototypes(
+        self,
+        context: CommunicationContext,
+    ) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
+        client_ids = sorted(context.models)
+        missing = [client_id for client_id in client_ids if client_id not in self._pending_sums]
+        if missing:
+            raise RuntimeError(
+                "FedProto has no cached local-batch prototypes for clients "
+                f"{missing}; each communication round after round 0 must consume "
+                "the preceding round's actual local training batches."
+            )
+        local_prototypes = []
+        local_validity = []
+        for client_id in client_ids:
+            counts = self._pending_counts[client_id]
+            local_prototypes.append(
+                self._pending_sums[client_id] / counts.clamp_min(1.0).unsqueeze(1)
+            )
+            local_validity.append(counts.gt(0))
+        self.last_metrics = {
+            "prototype_source": self.prototype_source,
+            "prototype_batches": float(sum(self._pending_batches.values())),
+            "prototype_samples": float(
+                sum(float(counts.sum().detach().cpu()) for counts in self._pending_counts.values())
+            ),
+        }
+        self._pending_sums.clear()
+        self._pending_counts.clear()
+        self._pending_batches.clear()
+        return local_prototypes, local_validity
+
+    @staticmethod
+    def _aggregate(
+        local_prototypes: list[torch.Tensor],
+        local_validity: list[torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        embedding_dims = {int(prototypes.shape[1]) for prototypes in local_prototypes}
+        if len(embedding_dims) != 1:
+            raise ValueError(
+                "FedProto clients must expose the same embedding dimension; "
+                f"observed {sorted(embedding_dims)}."
+            )
+        prototype_stack = torch.stack(local_prototypes)
+        validity_stack = torch.stack(local_validity)
+        client_counts = validity_stack.sum(dim=0)
+        global_prototypes = (
+            prototype_stack * validity_stack.unsqueeze(2)
+        ).sum(dim=0) / client_counts.clamp_min(1).unsqueeze(1)
+        return global_prototypes.detach(), client_counts.gt(0).detach()
+
     def step(self, context: CommunicationContext) -> float:
+        self._num_classes = int(context.num_classes)
         # FedProto starts without global prototypes. At round r>0, models here
         # already contain the local update from round r-1, matching the
         # original aggregate-then-regularize schedule.
         if int(context.round_idx) == 0:
             self.global_prototypes = None
             self.valid_classes = None
+            self.last_metrics = {
+                "prototype_source": self.prototype_source,
+                "prototype_batches": 0.0,
+                "prototype_samples": 0.0,
+            }
             return 0.0
-        local_prototypes = []
-        local_validity = []
-        embedding_dim = None
-        for client_id in sorted(context.models):
-            prototypes, valid = self._client_prototypes(context, client_id)
-            if embedding_dim is None:
-                embedding_dim = int(prototypes.shape[1])
-            elif int(prototypes.shape[1]) != embedding_dim:
-                raise ValueError(
-                    "FedProto clients must expose the same embedding dimension; "
-                    f"expected {embedding_dim}, got {prototypes.shape[1]} for client {client_id}."
-                )
-            local_prototypes.append(prototypes)
-            local_validity.append(valid)
-
-        prototype_stack = torch.stack(local_prototypes)
-        validity_stack = torch.stack(local_validity)
-        client_counts = validity_stack.sum(dim=0)
-        self.global_prototypes = (
-            prototype_stack * validity_stack.unsqueeze(2)
-        ).sum(dim=0) / client_counts.clamp_min(1).unsqueeze(1)
-        self.global_prototypes = self.global_prototypes.detach()
-        self.valid_classes = client_counts.gt(0)
+        if self.prototype_source == "local_batches":
+            local_prototypes, local_validity = self._consume_local_batch_prototypes(context)
+        else:
+            local_prototypes = []
+            local_validity = []
+            for client_id in sorted(context.models):
+                prototypes, valid = self._client_prototypes(context, client_id)
+                local_prototypes.append(prototypes)
+                local_validity.append(valid)
+            self.last_metrics = {
+                "prototype_source": self.prototype_source,
+                "prototype_batches": -1.0,
+                "prototype_samples": -1.0,
+            }
+        self.global_prototypes, self.valid_classes = self._aggregate(
+            local_prototypes, local_validity
+        )
         return 0.0
 
     def local_loss(
@@ -849,13 +945,27 @@ class FedProtoFeatureStrategy:
         model: torch.nn.Module,
         clean_images: torch.Tensor,
         labels: torch.Tensor,
+        client_id: int | None = None,
     ) -> torch.Tensor:
+        embeddings = self._embedding(model, clean_images)
+        if self.prototype_source == "local_batches":
+            if client_id is None:
+                raise ValueError("FedProto local-batch accumulation requires client_id")
+            self._accumulate_local_batch(
+                client_id=int(client_id),
+                embeddings=embeddings,
+                labels=labels,
+                num_classes=(
+                    int(self._num_classes)
+                    if self._num_classes is not None
+                    else int(labels.max().detach().cpu()) + 1
+                ),
+            )
         if self.global_prototypes is None or self.valid_classes is None:
-            return clean_images.new_zeros(())
+            return embeddings.sum() * 0.0
         supported = self.valid_classes[labels]
         if not bool(supported.any()):
-            return clean_images.new_zeros(())
-        embeddings = self._embedding(model, clean_images)
+            return embeddings.sum() * 0.0
         targets = self.global_prototypes[labels[supported]].detach()
         return self.proto_weight * F.mse_loss(embeddings[supported], targets)
 
@@ -899,7 +1009,11 @@ class FedTGPCommunicationStrategy(FedProtoFeatureStrategy):
         server_batch_size: int = 10,
         margin_threshold: float = 100.0,
     ) -> None:
-        super().__init__(proto_weight=proto_weight, max_batches=max_batches)
+        super().__init__(
+            proto_weight=proto_weight,
+            max_batches=max_batches,
+            prototype_source="private_scan",
+        )
         if server_epochs <= 0 or server_batch_size <= 0:
             raise ValueError("FedTGP server epochs and batch size must be positive")
         self.server_learning_rate = float(server_learning_rate)
@@ -1033,6 +1147,7 @@ def build_baseline_communication_strategy(name: str, method_cfg: dict):
         return FedProtoFeatureStrategy(
             proto_weight=float(baseline_cfg.get("proto_weight", 1.0)),
             max_batches=baseline_cfg.get("max_proto_batches"),
+            prototype_source=str(baseline_cfg.get("prototype_source", "local_batches")),
         )
     if normalized == "fedtgp":
         return FedTGPCommunicationStrategy(

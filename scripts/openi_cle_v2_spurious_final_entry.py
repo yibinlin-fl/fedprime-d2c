@@ -27,7 +27,7 @@ from scripts.openi_cle_v2_plugin_stage2_entry import package_light_outputs  # no
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="OpenI held-out map2 four-arm Formal.")
-    parser.add_argument("--mode", choices=("smoke", "formal"), default="smoke")
+    parser.add_argument("--mode", choices=("smoke", "benchmark", "formal"), default="smoke")
     parser.add_argument(
         "--train_seed",
         choices=("0", "1", "2", "all"),

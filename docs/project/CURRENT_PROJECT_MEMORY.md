@@ -1,6 +1,37 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-09-12
+Updated: 2026-09-28
+
+## Final Full-Epoch Protocol Repair - 2026-09-28
+
+七月CLE诊断重新核验：`alpha05`表示Dirichlet `alpha=0.5`，当时实际运行
+`gamma=0/0.6/0.9`；`gamma=0.9`的RAHFL-style Avg为`46.72%`。旧配置无预训练，但40轮中
+每轮完整遍历每客户端10,000张私有数据，约40个本地epoch，且每轮4个public batches。
+
+2026-09领域表则把每轮限制为16 batches；在batch 64、strict-fit约8500张时，40轮仅约4.8个
+epoch。Local/FedMD/RAHFL-style共同约20--23%的结果因此不能进入最终accuracy表。该问题属于统一
+实验预算设计不足；旧AugHFL另有486次非有限梯度跳过，旧FedProto另有steady-state全量扫描，均已
+分别修复。所有旧输出保留作pilot/机制筛选，禁止删除或包装成充分训练结果。
+
+Axis I与Axis II均冻结为`0 pretrain + 40 rounds x one full strict-fit epoch`、batch 64、每轮4个
+public batches、非有限值立即失败。当前map2 fit规模为`8498/8500/8499/8497`，即每客户端每轮约
+133 batches、40轮约40个本地epoch。CLE-v2、held-out map2、partition、初始化、paired DSA和
+fit/audit/test信息边界完全不变。
+
+Axis I主表仍为AsymHFL下ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER；FedMD四目标复现作为未来跨通信
+扩展永久保留。Axis II正文优先Local/FedMD/FedProto/FedDF/AugHFL/RAHFL及两条AsymHFL锚点；
+KT-pFL/FCCL/RHFL/FedTGP保留为算力允许后的补充候选。RAHFL官方40-pretrain+40-communication
+属于单独family-fidelity补充，不与统一0+40表混合。
+
+V0.7中已经填入的约19--25% map2 Main Table 3数字不再视为投稿终值；V0.7保持不可变，V0.8必须
+先恢复为pending，再由full-epoch Formal替换。当前未授权任何付费Formal。
+
+真实map2本地工程验证已经完成：Local--FedMD与Local--RAHFL各自的2-round、2-batch pairing均
+得到`all_arms_match=true`；AsymHFL四目标与预留FedMD四目标均完成1-round CUDA smoke、四客户端
+checkpoint和paired DSA分析。prepare-only合同进一步确认，benchmark/formal均将使用full strict-
+fit loader：四客户端每轮各133 batches、合计532个optimizer steps。以上只证明执行、配对与分析链
+完整，绝不作为准确率或方法效果证据。下一步只允许Local/FedMD/RAHFL的2-round full-epoch
+benchmark，用于估算成本与观察是否脱离旧low-budget learning floor。
 
 ## LCRE M0 Implementation and Local Cost Gate - 2026-09-06
 

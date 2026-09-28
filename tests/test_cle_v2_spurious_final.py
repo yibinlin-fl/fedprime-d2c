@@ -4,7 +4,7 @@ import pytest
 
 from scripts.run_cle_v2_spurious_final import (
     ARMS,
-    LOCAL_BATCH_BUDGET,
+    LOCAL_BATCH_CAP,
     ROUND_BUDGET,
     final_arm_config,
 )
@@ -23,7 +23,7 @@ def _fake_package(tmp_path: Path) -> Path:
     return package
 
 
-@pytest.mark.parametrize("mode", ["smoke", "formal"])
+@pytest.mark.parametrize("mode", ["smoke", "benchmark", "formal"])
 def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) -> None:
     package = _fake_package(tmp_path)
     configs = {
@@ -40,7 +40,7 @@ def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) ->
     assert ARMS == ("erm", "cvar_dro", "pew_groupdro", "pew_ber")
     assert all(config["train"]["rounds"] == ROUND_BUDGET[mode] for config in configs.values())
     assert all(
-        config["train"]["max_local_batches"] == LOCAL_BATCH_BUDGET[mode]
+        config["train"]["max_local_batches"] == LOCAL_BATCH_CAP[mode]
         for config in configs.values()
     )
     assert all(
@@ -58,4 +58,24 @@ def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) ->
 
 def test_formal_budget_is_frozen() -> None:
     assert ROUND_BUDGET["formal"] == 40
-    assert LOCAL_BATCH_BUDGET["formal"] == 16
+    assert LOCAL_BATCH_CAP["formal"] is None
+
+
+def test_full_epoch_modes_restore_july_training_intensity(tmp_path: Path) -> None:
+    package = _fake_package(tmp_path)
+    for mode in ("benchmark", "formal"):
+        config = final_arm_config(
+            "erm",
+            package_root=package,
+            mode=mode,
+            device="cpu",
+            output_root=tmp_path / "outputs",
+        )
+        assert config["train"]["pretrain_epochs"] == 0
+        assert config["train"]["local_epochs"] == 1
+        assert config["train"]["max_local_batches"] is None
+        assert config["train"]["batch_size"] == 64
+        assert config["train"]["public_batches_per_round"] == 4
+        assert config["train"]["skip_nonfinite"] is False
+        assert config["train"]["max_test_batches"] is None
+        assert config["method"]["strict_fit_audit"]["max_audit_batches"] is None

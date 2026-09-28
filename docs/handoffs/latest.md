@@ -1,6 +1,45 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-27
+Updated: 2026-09-28
+
+## 2026-09-28 最终训练协议恢复为full epoch；旧16-batch结果降级
+
+七月RAHFL诊断配置复核确认：`alpha05`是Dirichlet `alpha=0.5`，并非`gamma=0.5`；当时实际运行
+`gamma=0/0.6/0.9`。`gamma=0.9`的Avg为`46.72%`。该配置虽无预训练，但40个通信轮中每轮完整
+遍历10,000张私有数据，约40个本地epoch；当前领域表每轮只训练16个batch，40轮仅约4.8个
+epoch。当前约20--23%的共同低准确率首先归因于统一预算不足，不能进入最终论文表。
+
+Axis I与Axis II的CLE-v2/map2/partition/DSA/fit-audit-test协议均不改变；只恢复训练预算：
+
+```text
+pretrain_epochs=0
+rounds=40
+local_epochs=1
+max_local_batches=null       # 每轮完整strict-fit loader
+batch_size=64
+public_batches_per_round=4
+skip_nonfinite=false
+```
+
+当前map2 strict-fit为`8498/8500/8499/8497`张，每客户端每轮均为约133 batches；40轮约40个本地
+epoch。旧b16 map2四臂三seed与旧HFL context结果保留为low-budget pilot/机制筛选，不再作为最终
+accuracy-bearing主表证据。V0.7保持不可变；V0.8必须将低预算Main Table 3数字先恢复为待证据，
+再由full-epoch Formal替换。
+
+Axis I保留AsymHFL四目标主比较；未来可追加相同四目标的FedMD通信复现，但必须使用同一full-
+epoch预算。Axis II正文优先保留Local/FedMD/FedProto/FedDF/AugHFL/RAHFL及两条AsymHFL锚点；
+KT-pFL/FCCL/RHFL/FedTGP实现与候选位置保留，等算力允许再补，不得遗忘或用旧低预算结果填表。
+RAHFL官方`40 pretrain + 40 communication`只作为单独family-fidelity补充，不与0+40统一领域表混表。
+
+代码已升级为full-epoch配置，但付费Formal未授权。真实map2本地验证已经完成：
+
+- Local--FedMD与Local--RAHFL各完成2-round、2-batch pairing，均为`all_arms_match=true`；
+- AsymHFL四目标与预留FedMD四目标各完成1-round CUDA smoke、checkpoint及paired DSA分析；
+- 五个prepare-only合同均确认benchmark/formal使用full strict-fit epoch，四客户端每轮分别为
+  `133/133/133/133` batches，共`532`个optimizer steps。
+
+所有上述smoke/pairing数值均不是科学证据。下一步只运行Local、FedMD、RAHFL的2-round
+full-epoch OpenI benchmark估算真实成本，再决定40轮Formal范围。
 
 ## 2026-09-27 HFL领域表暂停：共同低学习水平、AugHFL数值失败与FedProto成本修复
 

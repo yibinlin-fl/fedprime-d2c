@@ -12,12 +12,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.run_cle_v2_cross_scenario import sha256_file, verify_cross_scenario  # noqa: E402
+from scripts.run_cle_hfl_context import strict_fit_full_epoch_budget  # noqa: E402
 from scripts.run_cle_v2_spurious_baselines import spurious_arm_config  # noqa: E402
 
 
 ARMS = ("erm", "cvar_dro", "pew_groupdro", "pew_ber")
-ROUND_BUDGET = {"smoke": 1, "formal": 40}
-LOCAL_BATCH_BUDGET = {"smoke": 1, "formal": 16}
+ROUND_BUDGET = {"smoke": 1, "benchmark": 2, "formal": 40}
+LOCAL_BATCH_CAP = {"smoke": 1, "benchmark": None, "formal": None}
 MAP_SEED = 2
 
 
@@ -45,13 +46,24 @@ def final_arm_config(
     config["data"]["scenario"] = "cle_hfl_v2"
     config["data"]["scenario_id"] = "cle_hfl_v2_cross_map2_seed0_split0"
     config["train"]["rounds"] = ROUND_BUDGET[mode]
-    config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
+    config["train"].update(
+        {
+            "pretrain_epochs": 0,
+            "local_epochs": 1,
+            "batch_size": 64,
+            "public_batch_size": 128,
+            "public_batches_per_round": 4,
+            "max_local_batches": LOCAL_BATCH_CAP[mode],
+            "skip_nonfinite": False,
+        }
+    )
     config["train"]["max_test_batches"] = 1 if mode == "smoke" else None
     config["method"]["strict_fit_audit"]["max_audit_batches"] = (
         1 if mode == "smoke" else None
     )
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
+    config["method"]["record_local_batch_trace"] = True
     return config
 
 
@@ -93,7 +105,7 @@ def main() -> None:
         path.write_text(json.dumps(config, indent=2), encoding="utf-8")
         records[arm] = {"config": str(path), "sha256": sha256_file(path)}
     contract = {
-        "protocol": "cle_v2_spurious_final_map2_v1",
+        "protocol": "cle_v2_spurious_final_map2_full_epoch_v2",
         "mode": args.mode,
         "scenario_id": manifest["scenario_id"],
         "partition_seed": 0,
@@ -101,7 +113,14 @@ def main() -> None:
         "evaluation_seed": 20260909,
         "train_seed": int(args.train_seed),
         "rounds": ROUND_BUDGET[args.mode],
-        "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
+        "local_training": "1_batch_smoke" if args.mode == "smoke" else "one_full_strict_fit_epoch_per_round",
+        "max_local_batches": LOCAL_BATCH_CAP[args.mode],
+        "batch_size": 64,
+        "public_batch_size": 128,
+        "public_batches_per_round": 4,
+        "pretrain_epochs": 0,
+        "expected_local_epoch_equivalents": None if args.mode == "smoke" else ROUND_BUDGET[args.mode],
+        "full_epoch_budget_audit": strict_fit_full_epoch_budget(package_root),
         "arms": records,
         "common_communication": "strict AsymHFL-val",
         "common_augmentation": "none",

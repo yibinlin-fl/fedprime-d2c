@@ -176,9 +176,12 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         "binding_map_seed",
         "evaluation_seed",
         "rounds",
-        "local_batches_per_client_round",
+        "local_training",
+        "max_local_batches",
         "batch_size",
         "public_batch_size",
+        "public_batches_per_round",
+        "pretrain_epochs",
         "train_seed",
     )
     reference_contract = contracts[required_shards[0]]
@@ -189,9 +192,12 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         "binding_map_seed": 2,
         "evaluation_seed": 20260909,
         "rounds": 40,
-        "local_batches_per_client_round": 16,
+        "local_training": "one_full_strict_fit_epoch_per_round",
+        "max_local_batches": None,
         "batch_size": 64,
         "public_batch_size": 128,
+        "public_batches_per_round": 4,
+        "pretrain_epochs": 0,
         "train_seed": 0,
     }
     for key, value in frozen_contract.items():
@@ -222,7 +228,7 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         **common_arrays,
     )
     merged = {
-        "protocol": "cle_hfl_context_table_merged_v3",
+        "protocol": "cle_hfl_context_table_full_epoch_merged_v4",
         "merge_profile": selected_profile,
         "source_protocol": reference_contract["protocol"],
         "mode": "formal",

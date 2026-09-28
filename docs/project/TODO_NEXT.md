@@ -1,6 +1,18 @@
 # TODO Next
 
-## Current - S2 pairing fix complete / real-data Kill Test pending - 2026-09-23
+## Current - Full-epoch Axis I/II protocol repair - 2026-09-28
+
+- 旧16-batch Formal每客户端40轮仅约4.8个epoch，所有accuracy-bearing结果降级为pilot。
+- Axis I/II统一目标为`pretrain=0, rounds=40, local_epochs=1, max_local_batches=null,
+  batch=64, public_batches_per_round=4`；CLE-v2/map2与严格信息边界不变。
+- 本地配置审计、Local--FedMD/RAHFL pairing、AsymHFL与FedMD四目标smoke均已通过。
+- 下一平台步骤只允许Local/FedMD/RAHFL的2-round full-epoch benchmark；它只回答成本和学习水平，
+  不作方法胜负结论。
+- 根据benchmark成本决定正文保留的代表性HFL基线；40轮或40+40 Formal均需用户再次明确批准。
+- Axis I的FedMD四目标复现以及Axis II的KT-pFL/FCCL/RHFL/FedTGP均保留为待补候选。
+- V0.7保持不可变；V0.8必须撤下旧Main Table 3的低预算数字并等待full-epoch证据。
+
+## Superseded - S2 pairing fix complete / real-data Kill Test pending - 2026-09-23
 
 - 已完成通用private-loader generator状态隔离及两轮合成Kill Test。
 - 下一步在最终选定的计算平台运行S2 `mode=pairing`；要求十臂、2轮、4客户端共8条trace/arm，

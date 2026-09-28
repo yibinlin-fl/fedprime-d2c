@@ -152,7 +152,7 @@ def main() -> None:
         "mode": args.mode,
         "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
         "train_seed": int(args.train_seed),
-        "rounds": 40 if args.mode == "formal" else 1,
+        "rounds": 40 if args.mode == "formal" else (2 if args.mode == "benchmark" else 1),
         "common_communication": str(args.communication_label),
         "arms": list(ARMS),
         "pooled_dsa": dsa,

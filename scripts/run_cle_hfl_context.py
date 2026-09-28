@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
+
+import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,9 +56,36 @@ SHARDS = {
     "fedtgp": ("fedtgp_adapter",),
     "rhfl": ("rhfl_adapter",),
 }
-ROUND_BUDGET = {"pairing": 2, "benchmark": 1, "formal": 40}
-LOCAL_BATCH_BUDGET = {"pairing": 2, "benchmark": 8, "formal": 16}
+ROUND_BUDGET = {"pairing": 2, "benchmark": 2, "formal": 40}
+# Pairing is deliberately tiny.  Benchmark and Formal must traverse the full
+# strict-fit loader once per round; capping them at 8/16 batches reproduced
+# only about 4.8 local epochs over 40 rounds and left every context arm below
+# a credible learning floor.
+LOCAL_BATCH_CAP = {"pairing": 2, "benchmark": None, "formal": None}
 MAP_SEED = 2
+
+
+def strict_fit_full_epoch_budget(package_root: Path, batch_size: int = 64) -> dict:
+    split_path = package_root / "splits/strict_cle_v2_factorial_seed0_split0.npz"
+    if not split_path.is_file():
+        raise FileNotFoundError(split_path)
+    with np.load(split_path, allow_pickle=False) as payload:
+        fit_samples = {
+            str(client_id): int(len(payload[f"client_{client_id}_fit"]))
+            for client_id in range(4)
+        }
+    batches = {
+        client_id: int(math.ceil(count / int(batch_size)))
+        for client_id, count in fit_samples.items()
+    }
+    return {
+        "split": str(split_path.resolve()),
+        "batch_size": int(batch_size),
+        "fit_samples_per_client": fit_samples,
+        "expected_batches_per_client_round": batches,
+        "fit_samples_all_clients_per_round": int(sum(fit_samples.values())),
+        "expected_optimizer_steps_all_clients_per_round": int(sum(batches.values())),
+    }
 
 
 def selected_arms(shard: str, mode: str) -> tuple[str, ...]:
@@ -83,14 +113,24 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
     config["experiment_name"] = f"cle_hfl_context_{arm}_trainseed0"
     config["data"]["scenario"] = "cle_hfl_v2"
     config["data"]["scenario_id"] = "cle_hfl_v2_cross_map2_seed0_split0"
-    config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
+    config["train"].update(
+        {
+            "pretrain_epochs": 0,
+            "local_epochs": 1,
+            "batch_size": 64,
+            "public_batch_size": 128,
+            "public_batches_per_round": 4,
+            "max_local_batches": LOCAL_BATCH_CAP[mode],
+        }
+    )
     # Context-table evidence must never silently skip non-finite updates.  A
     # numerical failure invalidates the arm and must stop the task.
     config["train"]["skip_nonfinite"] = False
-    config["train"]["max_test_batches"] = 1 if mode != "formal" else None
-    config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode != "formal" else None
+    config["train"]["max_test_batches"] = 1 if mode == "pairing" else None
+    config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if mode == "pairing" else None
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
+    config["method"]["record_local_batch_trace"] = True
     if arm == "local_erm":
         config["method"].update({"communication": "none", "cl_module": "none", "lambda_jsd": 0.0})
     elif arm == "fedmd_adapter":
@@ -197,15 +237,21 @@ def main() -> None:
         json.dumps(fidelity_manifest(), indent=2), encoding="utf-8"
     )
     contract = {
-        "protocol": "cle_hfl_context_table_map2_v3",
+        "protocol": "cle_hfl_context_table_map2_full_epoch_v4",
         "mode": args.mode,
         "scenario_id": manifest["scenario_id"],
         "partition_seed": 0,
         "binding_map_seed": MAP_SEED,
         "evaluation_seed": 20260909,
         "rounds": ROUND_BUDGET[args.mode],
-        "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
+        "local_training": "2_batch_pairing" if args.mode == "pairing" else "one_full_strict_fit_epoch_per_round",
+        "max_local_batches": LOCAL_BATCH_CAP[args.mode],
         "batch_size": 64,
+        "public_batch_size": 128,
+        "public_batches_per_round": 4,
+        "pretrain_epochs": 0,
+        "expected_local_epoch_equivalents": None if args.mode == "pairing" else ROUND_BUDGET[args.mode],
+        "full_epoch_budget_audit": strict_fit_full_epoch_budget(package_root),
         "public_batch_size": 128,
         "train_seed": 0,
         "execution_shard": args.shard,

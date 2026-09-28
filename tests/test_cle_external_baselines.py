@@ -209,6 +209,7 @@ def test_hfl_pairing_mode_is_two_rounds_and_cheap(tmp_path) -> None:
     assert configs["rhfl_adapter"]["method"]["baseline"]["max_quality_batches"] == 1
     assert configs["fedproto_adapter"]["method"]["baseline"]["prototype_source"] == "local_batches"
     assert all(config["train"]["skip_nonfinite"] is False for config in configs.values())
+    assert all(config["train"]["public_batches_per_round"] == 4 for config in configs.values())
     assert all(
         config["data"]["scenario_id"] == "cle_hfl_v2_cross_map2_seed0_split0"
         for config in configs.values()
@@ -249,7 +250,15 @@ def test_fedmd_four_objective_replication_changes_only_local_objective(tmp_path)
     }
     assert all(config["method"]["communication"] == "fedmd" for config in configs.values())
     assert all(config["train"]["rounds"] == 40 for config in configs.values())
-    assert all(config["train"]["max_local_batches"] == 16 for config in configs.values())
+    assert all(config["train"]["max_local_batches"] is None for config in configs.values())
+    assert all(config["train"]["local_epochs"] == 1 for config in configs.values())
+    assert all(config["train"]["public_batches_per_round"] == 4 for config in configs.values())
+    assert all(config["train"]["skip_nonfinite"] is False for config in configs.values())
+    assert all(config["train"]["max_test_batches"] is None for config in configs.values())
+    assert all(
+        config["method"]["strict_fit_audit"]["max_audit_batches"] is None
+        for config in configs.values()
+    )
     assert configs["erm"]["method"]["cl_module"] == "none"
     assert configs["cvar_dro"]["method"]["cl_module"] == "cvar_dro"
     assert configs["pew_groupdro"]["method"]["fedease"]["objective"] == "pew_groupdro"
@@ -332,16 +341,19 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
             arm_root.mkdir(parents=True)
             (arm_root / "local_batch_trace.jsonl").write_text(trace_line, encoding="utf-8")
         contract = {
-            "protocol": "cle_hfl_context_table_map2_v3",
+            "protocol": "cle_hfl_context_table_map2_full_epoch_v4",
             "mode": "formal",
             "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
             "partition_seed": 0,
             "binding_map_seed": 2,
             "evaluation_seed": 20260909,
             "rounds": 40,
-            "local_batches_per_client_round": 16,
+            "local_training": "one_full_strict_fit_epoch_per_round",
+            "max_local_batches": None,
             "batch_size": 64,
             "public_batch_size": 128,
+            "public_batches_per_round": 4,
+            "pretrain_epochs": 0,
             "train_seed": 0,
             "execution_shard": shard,
             "selected_arms": list(SHARDS[shard]),

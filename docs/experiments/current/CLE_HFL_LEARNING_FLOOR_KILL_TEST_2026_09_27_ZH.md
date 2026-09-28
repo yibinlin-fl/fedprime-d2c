@@ -2,6 +2,10 @@
 
 Updated: 2026-09-27
 
+> 2026-09-28：本方案被历史配置复核取代。七月`gamma=0.9`结果使用40轮、每轮完整本地epoch，
+> 已直接说明16-batch预算不足。不要再启动b32/b64任务；当前目标改为full strict-fit epoch，见
+> `CLE_HFL_MAP2_FINAL_EXPERIMENT_PROTOCOL_2026_09_25_ZH.md`。本文件只保留为决策过程记录。
+
 ## 1. 目的
 
 当前held-out map2领域表固定`40 rounds x 16 local batches/client/round`，每客户端约

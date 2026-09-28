@@ -1,6 +1,6 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-27
+Updated: 2026-09-28
 
 ## HFL领域表学习水平与数值/成本修复
 
@@ -9,12 +9,11 @@ docs/experiments/current/CLE_HFL_LEARNING_FLOOR_KILL_TEST_2026_09_27_ZH.md
 scripts/openi_cle_hfl_learning_floor_entry.py
 ```
 
-现有16-batch协议每客户端仅约4.8个epoch-equivalent；Local/FedMD/RAHFL-style共同处于约20--23%
-last-10 Avg。旧AugHFL Formal因486次非有限梯度跳过而无效；旧FedProto中止且无科学结果。新增
-Local b32/b64学习水平Kill Test；真实map2下Local b32 smoke与修复后FedProto两轮pairing已通过，
-修复后AugHFL/RAHFL两轮pairing也通过且没有非有限跳batch；这些均不是科学证据。当前只允许先跑
-b32/b64 benchmark，Formal未授权。
-Local b32/b64 Kill Test尚未运行benchmark或Formal；领域表其他新Formal暂停。
+旧16-batch协议每客户端仅约4.8个epoch-equivalent；Local/FedMD/RAHFL-style共同处于约20--23%
+last-10 Avg，现已降级为low-budget pilot。七月配置复核证明`gamma=0.9`在40个完整本地epoch下
+Avg约46.72%，因此最终Axis I/II统一恢复为`0 pretrain + 40 rounds x one full strict-fit epoch`、
+`batch=64`、`public batches=4`和非有限值立即失败。b32/b64方案被full-epoch目标取代，不再启动。
+下一步仅允许Local/FedMD/RAHFL的2-round full-epoch benchmark；Formal仍未授权。
 
 ## S2-v2 HFL机制覆盖与FedTGP审计
 

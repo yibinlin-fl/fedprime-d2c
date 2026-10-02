@@ -1,6 +1,26 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-09-28
+Updated: 2026-10-02
+
+## 2026-10-02 CLE三点剂量响应零训练审计完成
+
+历史`gamma=0.6`四客户端checkpoint已从`outputs/cle_rahfl_diagnostic_outputs.tar.gz`恢复，并
+在Phase-A0完全相同的1000-source x 16-operator、severity 3网格上完成零训练审计。端点
+`gamma=0/0.9`复用封存softmax cache，只新增`gamma=0.6`的64,000次前向。
+
+```text
+gamma       0.0          0.6          0.9
+pooled DSA -0.000302     0.077541     0.201321
+
+delta 0->0.6  +0.077843, CI95 [0.075040, 0.080635]
+delta 0.6->0.9 +0.123780, CI95 [0.120450, 0.127230]
+gamma0.6 shuffled null p95 0.022842, p=0.000999
+```
+
+预先冻结的D1--D4全部通过，verdict=`MONOTONE_DOSE_RESPONSE_SUPPORTED`。这加强了受控CLE问题
+存在性与DSA特异性，但仍是历史seed0、post-hoc CLE-v1证据，不证明现实发生率、训练随机性或
+PEW+BER效果。没有启动付费任务或新训练。报告：
+`deliverables/cle_shortcut_dose_response_gamma06_20261002/RESULT_SUMMARY_ZH.md`。
 
 ## 2026-09-28 最终训练协议恢复为full epoch；旧16-batch结果降级
 

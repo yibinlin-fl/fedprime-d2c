@@ -10,6 +10,7 @@ from fedprime.engine.cle_shortcut_alignment import (
     shuffled_binding_test,
     validate_probability_tensor,
 )
+from scripts.audit_cle_shortcut_dose_response_gamma06 import dose_response_decision
 
 
 def _synthetic_probabilities(strength: float, sources_per_class: int = 20):
@@ -73,3 +74,37 @@ def test_identical_conditions_fail_minimum_delta_gate():
     decision = decide_phase_a0(result, result, bootstrap, shuffled)
     assert decision["verdict"] == "NO_GO_DIRECTIONAL_SHORTCUT"
     assert not decision["gates"]["G1_minimum_delta"]["pass"]
+
+
+def test_monotone_dose_response_decision_requires_both_positive_steps_and_binding_specificity():
+    pooled = {"gamma00": 0.0, "gamma06": 0.08, "gamma09": 0.20}
+    shuffled = {
+        "observed_pooled": 0.08,
+        "null_pooled": np.linspace(-0.02, 0.03, 100),
+        "pooled_p": 0.01,
+    }
+    decision = dose_response_decision(
+        pooled,
+        np.linspace(0.04, 0.12, 100),
+        np.linspace(0.07, 0.17, 100),
+        shuffled,
+    )
+    assert decision["verdict"] == "MONOTONE_DOSE_RESPONSE_SUPPORTED"
+    assert all(gate["pass"] for gate in decision["gates"].values())
+
+
+def test_nonmonotone_dose_response_is_not_supported():
+    pooled = {"gamma00": 0.0, "gamma06": 0.22, "gamma09": 0.20}
+    shuffled = {
+        "observed_pooled": 0.22,
+        "null_pooled": np.linspace(-0.02, 0.03, 100),
+        "pooled_p": 0.01,
+    }
+    decision = dose_response_decision(
+        pooled,
+        np.linspace(0.04, 0.12, 100),
+        np.linspace(-0.04, 0.01, 100),
+        shuffled,
+    )
+    assert decision["verdict"] == "DOSE_RESPONSE_NOT_FULLY_SUPPORTED"
+    assert not decision["gates"]["D1_strict_monotone_pooled"]["pass"]

@@ -1,6 +1,21 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-09-28
+Updated: 2026-10-02
+
+## CLE Directional Shortcut Dose Response - 2026-10-02
+
+从原始历史归档恢复`gamma=0.6`四客户端最终checkpoint，并复用Phase-A0封存的`gamma=0/0.9`
+概率缓存，在相同1000 clean sources、16 operators、severity 3和历史binding上完成零训练审计。
+pooled DSA严格单调：`-0.000301889 -> 0.077541000 -> 0.201321066`。两段增量分别为
+`+0.077842890`（CI95 `[0.075039905,0.080635367]`）与`+0.123780066`（CI95
+`[0.120450262,0.127229973]`）；中等强度4/4客户端为正，并超过shuffled null p95
+`0.022842209`，`p=0.000999001`。冻结D1--D4全过，verdict为
+`MONOTONE_DOSE_RESPONSE_SUPPORTED`。
+
+这项post-hoc单seed CLE-v1结果只加强问题刻画：普通独立corruption的DSA近零，中等与strong
+CLE依次提高真实binding方向的概率移动。它不证明现实发生率、training-seed稳定性、PEW+BER
+效果或官方RAHFL 40+40。没有训练或付费平台任务。报告：
+`deliverables/cle_shortcut_dose_response_gamma06_20261002/RESULT_SUMMARY_ZH.md`。
 
 ## Final Full-Epoch Protocol Repair - 2026-09-28
 

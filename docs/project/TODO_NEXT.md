@@ -1,5 +1,13 @@
 # TODO Next
 
+## Completed - gamma=0.6 zero-training DSA dose response - 2026-10-02
+
+- 历史gamma0.6四客户端checkpoint已恢复并完成1000-source paired审计；无需重训。
+- DSA为`gamma0 -0.000302 -> gamma0.6 0.077541 -> gamma0.9 0.201321`，D1--D4全过。
+- V0.7保持不可变；V0.8应在问题刻画/诊断实验中加入三点dose-response图或表，并明确post-hoc、
+  single-seed、controlled CLE-v1边界。
+- 当前仍不启动GPU训练；用户继续阅读V0.7并积累平台积分。
+
 ## Current - Full-epoch Axis I/II protocol repair - 2026-09-28
 
 - 旧16-batch Formal每客户端40轮仅约4.8个epoch，所有accuracy-bearing结果降级为pilot。

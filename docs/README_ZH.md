@@ -1,6 +1,21 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-09-28
+Updated: 2026-10-02
+
+## CLE中等强度剂量响应零训练审计
+
+历史`gamma=0.6`四客户端checkpoint已在原诊断归档中确认存在。当前只新增中间强度推理，并
+复用Phase-A0封存的`gamma=0/0.9`概率缓存；不重训、不修改原Phase-A0结论：
+
+```text
+docs/experiments/current/CLE_SHORTCUT_DOSE_RESPONSE_GAMMA06_AUDIT_2026_10_02_ZH.md
+scripts/audit_cle_shortcut_dose_response_gamma06.py
+deliverables/cle_shortcut_dose_response_gamma06_20261002/RESULT_SUMMARY_ZH.md
+```
+
+最终`pooled DSA=-0.000302/0.077541/0.201321`，两段paired bootstrap CI均严格大于0，
+`gamma=0.6`超过shuffled-binding null；冻结D1--D4全过。该结果是controlled CLE-v1、历史
+seed0的post-hoc问题刻画，不是现实发生率或PEW+BER效果证据。
 
 ## HFL领域表学习水平与数值/成本修复
 

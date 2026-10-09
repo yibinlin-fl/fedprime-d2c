@@ -1,6 +1,20 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-02
+Updated: 2026-10-09
+
+## 2026-10-09 full-epoch Local成本benchmark完成：130积分不足单臂Formal
+
+OpenI `1 x V100 32GB` 上，held-out map2、training seed 0的`Local/ERM`完成两轮完整
+strict-fit epoch benchmark。输入审计、配置、输出、batch trace和分析完整；每客户端每轮133个
+batches，四客户端合计532次optimizer updates。训练耗时`5032.9761s`，两轮分别为
+`2492.0652s/2530.1851s`，平均每轮`41.852min`。线性估算40轮仅训练约`27.90h`，按V100
+`6积分/h`约`167.4`积分；加上安装、解压、Formal分析和波动，单臂应至少预留`180`积分。
+
+因此当前每账号约130积分时，禁止直接启动one-shot 40轮Formal；三个账号总积分不能解决单任务
+中途耗尽问题。下一步只能继续累计到单号至少180积分，或先实现并验证保存完整训练/通信/RNG
+状态的可审计分段续跑。若评估A100，必须先跑同一两轮成本benchmark，不得按理论峰值猜测。
+本次benchmark不是科学证据，任何准确率或DSA数值不得填入论文表。报告：
+`deliverables/cle_hfl_full_epoch_cost_benchmark_20261009/RESULT_SUMMARY_ZH.md`。
 
 ## 2026-10-02 CLE三点剂量响应零训练审计完成
 

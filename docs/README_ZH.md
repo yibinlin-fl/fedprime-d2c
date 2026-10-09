@@ -735,6 +735,12 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 
 ## 最新正式实验
 
+当前full-epoch成本benchmark（仅估时，不是科学证据）：
+
+```text
+deliverables/cle_hfl_full_epoch_cost_benchmark_20261009/RESULT_SUMMARY_ZH.md
+```
+
 当前最新论文内部稿与独立审查：
 
 ```text

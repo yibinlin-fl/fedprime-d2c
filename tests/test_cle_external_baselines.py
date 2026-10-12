@@ -18,6 +18,7 @@ from fedprime.communication.baselines import (
 from fedprime.communication.public_logits import CommunicationContext
 from fedprime.data.loaders import DatasetStats
 from scripts.openi_cle_external_baselines_entry import ARM_ORDER, build_arm_configs
+from scripts.analyze_cle_hfl_context import audit_local_batch_pairing
 from scripts.merge_cle_hfl_context_shards import merge_shards, parse_shard_roots, trace_digest
 from scripts.merge_cle_hfl_domain_table import FINAL_ROWS, merge_domain_table
 from scripts.run_cle_hfl_context import ARMS, PRACTICAL_ARMS, SHARDS, context_arm_config, selected_arms
@@ -26,6 +27,7 @@ from scripts.run_cle_v2_fedmd_objectives import ARMS as FEDMD_OBJECTIVE_ARMS, fe
 from fedprime.methods.rahfl_asymhfl import AsymHFLExperiment
 from fedprime.methods.fedease import FedEASEExperiment
 from fedprime.methods.local_prime import jsd_loss_from_logits
+from fedprime.methods.local_rahfl import train_local_augmix_dcl_epoch
 
 
 def test_baseline_registry_uses_distinct_official_core_mechanisms() -> None:
@@ -42,6 +44,39 @@ def test_symmetric_cross_entropy_matches_ce_plus_reverse_ce_definition() -> None
     value = symmetric_cross_entropy(logits, labels, num_classes=2, alpha=0.1, beta=1.0)
     assert torch.isfinite(value)
     assert value > 0
+
+
+def test_standard_single_view_loader_still_applies_communication_loss() -> None:
+    images = torch.randn(4, 2, 1, 1)
+    labels = torch.tensor([0, 1, 0, 1])
+    loader = DataLoader(TensorDataset(images, labels), batch_size=2, shuffle=False)
+    model = _FeatureModel()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    observed: list[tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]] = []
+
+    def communication_loss_fn(*, receiver_logits, clean_images, labels):
+        observed.append(
+            (
+                tuple(receiver_logits.shape),
+                tuple(clean_images.shape),
+                tuple(labels.shape),
+            )
+        )
+        return receiver_logits.sum() * 0.0
+
+    train_local_augmix_dcl_epoch(
+        model=model,
+        loader=loader,
+        optimizer=optimizer,
+        device=torch.device("cpu"),
+        lambda_jsd=0.0,
+        cl_module="none",
+        num_classes=2,
+        max_batches=1,
+        communication_loss_fn=communication_loss_fn,
+    )
+
+    assert observed == [((2, 2), (2, 2, 1, 1), (2,))]
 
 
 def test_external_baseline_matrix_is_protocol_matched() -> None:
@@ -282,6 +317,31 @@ def test_hfl_context_shards_are_disjoint_and_cover_all_arms() -> None:
     assert selected_arms("feddf", "formal") == ("feddf_fidelity",)
 
 
+def test_hfl_pairing_allows_method_native_views_but_requires_matched_labels(tmp_path) -> None:
+    arms = ("local_erm", "aughfl_fidelity")
+    for arm, full_digest in (("local_erm", "standard-view"), ("aughfl_fidelity", "augmix-views")):
+        root = tmp_path / f"cle_hfl_context_{arm}_trainseed0"
+        root.mkdir(parents=True)
+        row = {
+            "round": 1,
+            "client": 0,
+            "batch": 0,
+            "sha256": full_digest,
+            "label_sha256": "same-label-order",
+        }
+        (root / "local_batch_trace.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    audit = audit_local_batch_pairing(tmp_path, arms)
+    assert audit["all_arms_match"] is True
+    assert audit["loader_modes"] == {
+        "local_erm": "standard",
+        "aughfl_fidelity": "augmix",
+    }
+    assert audit["label_trace_matches"] == {
+        "local_erm": True,
+        "aughfl_fidelity": True,
+    }
+
+
 def test_fedmd_four_objective_erm_is_not_silently_reused_as_context_fedmd(tmp_path) -> None:
     common = {
         "package_root": tmp_path / "package",
@@ -292,7 +352,7 @@ def test_fedmd_four_objective_erm_is_not_silently_reused_as_context_fedmd(tmp_pa
     objective = fedmd_arm_config("erm", train_seed=0, **common)
     context = context_arm_config("fedmd_adapter", **common)
     assert objective["method"]["local_loader_mode"] == "standard"
-    assert context["method"].get("local_loader_mode", "augmix") == "augmix"
+    assert context["method"]["local_loader_mode"] == "standard"
     assert objective != context
 
 
@@ -321,7 +381,13 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
     tmp_path, profile, shard_names, expected_arms
 ) -> None:
     roots = {}
-    trace_line = json.dumps({"round": 0, "client": 0, "batch": 0, "sha256": "matched"}) + "\n"
+    trace_line = json.dumps({
+        "round": 0,
+        "client": 0,
+        "batch": 0,
+        "sha256": "matched",
+        "label_sha256": "matched-labels",
+    }) + "\n"
     for shard in shard_names:
         root = tmp_path / profile / shard
         roots[shard] = root
@@ -341,7 +407,7 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
             arm_root.mkdir(parents=True)
             (arm_root / "local_batch_trace.jsonl").write_text(trace_line, encoding="utf-8")
         contract = {
-            "protocol": "cle_hfl_context_table_map2_budget64_v5",
+            "protocol": "cle_hfl_context_table_map2_budget64_v6",
             "mode": "formal",
             "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
             "partition_seed": 0,
@@ -357,6 +423,14 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
             "train_seed": 0,
             "execution_shard": shard,
             "selected_arms": list(SHARDS[shard]),
+            "local_loader_policy": {
+                arm: (
+                    "augmix"
+                    if arm in {"aughfl_fidelity", "rahfl_fidelity"}
+                    else "standard"
+                )
+                for arm in SHARDS[shard]
+            },
             "arms": records,
         }
         completion = {

@@ -93,6 +93,15 @@ def test_hfl_context_is_standalone_not_plugin_comparison(tmp_path: Path) -> None
     assert configs["rahfl_fidelity"]["method"]["communication"] == "asymhfl_val"
     assert all("fedease" not in config["method"] for config in configs.values())
     assert all(
+        configs[arm]["method"]["local_loader_mode"] == "standard"
+        for arm in CONTEXT_ARMS
+        if arm not in {"aughfl_fidelity", "rahfl_fidelity"}
+    )
+    assert all(
+        configs[arm]["method"]["local_loader_mode"] == "augmix"
+        for arm in ("aughfl_fidelity", "rahfl_fidelity")
+    )
+    assert all(
         config["data"]["scenario_id"] == "cle_hfl_v2_cross_map2_seed0_split0"
         for config in configs.values()
     )

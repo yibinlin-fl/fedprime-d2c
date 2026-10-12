@@ -54,7 +54,9 @@ def train_local_augmix_dcl_epoch(
         labels = labels.to(device, non_blocking=True).long()
         if not isinstance(images, (tuple, list)):
             images = images.to(device, non_blocking=True)
+            clean_images = images
             logits = forward_logits(model, images)
+            clean_logits = logits
             loss = (
                 symmetric_cross_entropy(logits, labels, num_classes=num_classes)
                 if cl_module == "rhfl_sce"
@@ -62,9 +64,11 @@ def train_local_augmix_dcl_epoch(
             )
         else:
             images = [img.to(device, non_blocking=True) for img in images]
+            clean_images = images[0]
             images_all = torch.cat([images[0], images[1], images[2]], dim=0)
             logits_all = forward_logits(model, images_all)
             logits_clean, logits_aug1, logits_aug2 = torch.split(logits_all, images[0].size(0))
+            clean_logits = logits_clean
 
             loss = (
                 symmetric_cross_entropy(logits_clean, labels, num_classes=num_classes)
@@ -155,12 +159,12 @@ def train_local_augmix_dcl_epoch(
                 if cl_module not in (None, "none", "rhfl_sce"):
                     raise ValueError(f"Unknown contrastive module: {cl_module}")
 
-            if communication_loss_fn is not None:
-                loss = loss + communication_loss_fn(
-                    receiver_logits=logits_clean,
-                    clean_images=images[0],
-                    labels=labels,
-                )
+        if communication_loss_fn is not None:
+            loss = loss + communication_loss_fn(
+                receiver_logits=clean_logits,
+                clean_images=clean_images,
+                labels=labels,
+            )
 
         if not torch.isfinite(loss):
             message = f"{context}: non-finite loss at batch {batch_idx}: {float(loss.detach().cpu())}"

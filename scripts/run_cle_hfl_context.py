@@ -41,6 +41,20 @@ PRACTICAL_ARMS = (
     "aughfl_fidelity",
     "rahfl_fidelity",
 )
+STANDARD_LOCAL_ARMS = (
+    "local_erm",
+    "fedmd_adapter",
+    "fedproto_adapter",
+    "fedtgp_adapter",
+    "feddf_fidelity",
+    "kt_pfl_fidelity",
+    "fccl_adapter",
+    "rhfl_adapter",
+)
+AUGMIX_LOCAL_ARMS = (
+    "aughfl_fidelity",
+    "rahfl_fidelity",
+)
 SHARDS = {
     "all": ARMS,
     "cheap_a": ("local_erm", "fedmd_adapter", "fedproto_adapter", "aughfl_fidelity"),
@@ -127,6 +141,14 @@ def selected_arms(shard: str, mode: str) -> tuple[str, ...]:
     return tuple(arms)
 
 
+def local_loader_mode_for_arm(arm: str) -> str:
+    if arm in STANDARD_LOCAL_ARMS:
+        return "standard"
+    if arm in AUGMIX_LOCAL_ARMS:
+        return "augmix"
+    raise ValueError(f"Unknown HFL context arm: {arm}")
+
+
 def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: Path, device: str) -> dict:
     if arm not in ARMS:
         raise ValueError(f"Unknown HFL context arm: {arm}")
@@ -161,6 +183,11 @@ def context_arm_config(arm: str, *, package_root: Path, mode: str, output_root: 
     config["checkpoints"]["save_rounds"] = []
     config["checkpoints"]["save_final"] = True
     config["method"]["record_local_batch_trace"] = True
+    # Only corruption-robust AugHFL/RAHFL use their native multi-view AugMix
+    # pipeline.  Plain HFL baselines must use a true single-view CE loader;
+    # setting lambda_jsd=0 on an AugMix loader still incurs three-view forward
+    # compute and changes BatchNorm statistics.
+    config["method"]["local_loader_mode"] = local_loader_mode_for_arm(arm)
     if arm == "local_erm":
         config["method"].update({"communication": "none", "cl_module": "none", "lambda_jsd": 0.0})
     elif arm == "fedmd_adapter":
@@ -218,14 +245,14 @@ def fidelity_manifest() -> dict:
     return {
         "scope": "Protocol-matched CLE context table; not untouched official full-recipe runs.",
         "arms": {
-            "local_erm": "No communication; ERM local objective.",
-            "fedmd_adapter": "Protocol-matched FedMD symmetric public-logit exchange.",
-            "fedproto_adapter": "Protocol-matched FedProto class-prototype aggregation.",
-            "fedtgp_adapter": "Protocol-matched FedTGP trainable global-prototype core; not an untouched official recipe.",
-            "feddf_fidelity": "Post-local frozen-teacher FedDF fidelity adapter.",
-            "kt_pfl_fidelity": "Post-local alternating KT-pFL fidelity adapter.",
-            "fccl_adapter": "Protocol-matched FCCL cross-correlation adapter; not claimed official fidelity.",
-            "rhfl_adapter": "Protocol-matched RHFL SCE and client-confidence reweighting core.",
+            "local_erm": "No communication; single-view standard-loader ERM local objective.",
+            "fedmd_adapter": "Single-view CE plus protocol-matched FedMD symmetric public-logit exchange.",
+            "fedproto_adapter": "Single-view CE plus protocol-matched FedProto class-prototype aggregation.",
+            "fedtgp_adapter": "Single-view CE plus protocol-matched FedTGP trainable global-prototype core; not an untouched official recipe.",
+            "feddf_fidelity": "Single-view CE plus post-local frozen-teacher FedDF fidelity adapter.",
+            "kt_pfl_fidelity": "Single-view CE plus post-local alternating KT-pFL fidelity adapter.",
+            "fccl_adapter": "Single-view CE plus protocol-matched FCCL cross-correlation adapter; not claimed official fidelity.",
+            "rhfl_adapter": "Single-view RHFL SCE and client-confidence reweighting core.",
             "aughfl_fidelity": "Participant-specific public AugMix views and released-style collaboration.",
             "rahfl_fidelity": "Repository RAHFL/AugHFL-JSD/DCL plus strict AsymHFL-val anchor.",
         },
@@ -267,7 +294,7 @@ def main() -> None:
         json.dumps(fidelity_manifest(), indent=2), encoding="utf-8"
     )
     contract = {
-        "protocol": "cle_hfl_context_table_map2_budget64_v5",
+        "protocol": "cle_hfl_context_table_map2_budget64_v6",
         "mode": args.mode,
         "scenario_id": manifest["scenario_id"],
         "partition_seed": 0,
@@ -290,6 +317,10 @@ def main() -> None:
         "train_seed": 0,
         "execution_shard": args.shard,
         "selected_arms": list(arms),
+        "local_loader_policy": {
+            arm: local_loader_mode_for_arm(arm)
+            for arm in arms
+        },
         "arms": records,
         "not_a_plugin_attribution_experiment": True,
         "map2_was_not_used_for_five_arm_selection": True,

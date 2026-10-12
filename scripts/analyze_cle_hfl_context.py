@@ -15,26 +15,49 @@ if str(ROOT) not in sys.path:
 from fedprime.engine.cle_v2_factorial import compute_operator_dsa, shuffled_binding_null  # noqa: E402
 from scripts.analyze_cle_v2_factorial import infer_arm, load_grid, resolve_device, trailing_metrics  # noqa: E402
 from scripts.analyze_cle_v2_mechanism_stage1 import grid_accuracy  # noqa: E402
-from scripts.run_cle_hfl_context import SHARDS, fidelity_manifest, selected_arms  # noqa: E402
+from scripts.run_cle_hfl_context import (  # noqa: E402
+    SHARDS,
+    fidelity_manifest,
+    local_loader_mode_for_arm,
+    selected_arms,
+)
 
 
 def audit_local_batch_pairing(outputs_root: Path, arms: tuple[str, ...]) -> dict:
-    traces = {}
+    full_traces = {}
+    label_traces = {}
     for arm in arms:
         path = outputs_root / f"cle_hfl_context_{arm}_trainseed0" / "local_batch_trace.jsonl"
         rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        traces[arm] = {
+        full_traces[arm] = {
             (int(row["round"]), int(row["client"]), int(row["batch"])): str(row["sha256"])
             for row in rows
         }
-    reference_arm = "local_erm" if "local_erm" in traces else arms[0]
-    reference = traces[reference_arm]
-    arm_matches = {arm: trace == reference for arm, trace in traces.items()}
+        label_traces[arm] = {
+            (int(row["round"]), int(row["client"]), int(row["batch"])): str(row["label_sha256"])
+            for row in rows
+        }
+    reference_arm = "local_erm" if "local_erm" in full_traces else arms[0]
+    label_reference = label_traces[reference_arm]
+    label_matches = {arm: trace == label_reference for arm, trace in label_traces.items()}
+    loader_modes = {arm: local_loader_mode_for_arm(arm) for arm in arms}
+    exact_matches = {}
+    for mode in sorted(set(loader_modes.values())):
+        mode_arms = [arm for arm in arms if loader_modes[arm] == mode]
+        mode_reference = mode_arms[0]
+        exact_matches[mode] = {
+            arm: full_traces[arm] == full_traces[mode_reference]
+            for arm in mode_arms
+        }
+    exact_all = all(all(matches.values()) for matches in exact_matches.values())
+    all_match = all(label_matches.values()) and exact_all
     return {
         "reference_arm": reference_arm,
-        "trace_rows": {arm: len(trace) for arm, trace in traces.items()},
-        "arm_matches": arm_matches,
-        "all_arms_match": all(arm_matches.values()),
+        "trace_rows": {arm: len(trace) for arm, trace in full_traces.items()},
+        "loader_modes": loader_modes,
+        "label_trace_matches": label_matches,
+        "exact_trace_matches_within_loader": exact_matches,
+        "all_arms_match": all_match,
     }
 
 
@@ -81,7 +104,7 @@ def main() -> None:
         "p_value": float(reference_null["p_value"]),
     }
     summary = {
-        "protocol": "cle_hfl_context_table_budget64_analysis_v4",
+        "protocol": "cle_hfl_context_table_budget64_analysis_v5",
         "mode": args.mode,
         "execution_shard": args.shard,
         "selected_arms": list(arms),

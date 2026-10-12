@@ -1607,6 +1607,9 @@ class AsymHFLExperiment:
             label_value = labels.detach().cpu().contiguous()
             digest.update(str(label_value.dtype).encode("ascii"))
             digest.update(label_value.numpy().tobytes())
+            label_digest = hashlib.sha256()
+            label_digest.update(str(label_value.dtype).encode("ascii"))
+            label_digest.update(label_value.numpy().tobytes())
             row = {
                 "round": int(round_idx) + 1,
                 "client": int(client_id),
@@ -1614,6 +1617,7 @@ class AsymHFLExperiment:
                 "image_shapes": shapes,
                 "label_shape": list(label_value.shape),
                 "sha256": digest.hexdigest().upper(),
+                "label_sha256": label_digest.hexdigest().upper(),
             }
             with trace_path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(row, sort_keys=True) + "\n")

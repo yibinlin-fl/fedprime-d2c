@@ -28,7 +28,7 @@ held-out map2每客户端完整strict-fit loader为133 batches，因此该预算
 ```text
 旧16 batches/round：40轮约4.81 local epochs，学习不足，只保留为pilot。
 旧133 batches/round：40轮约40 local epochs，Local单臂实测推算约27.9 V100小时/167.4积分。
-新64 batches/round：40轮约19.25 local epochs，Local单臂预计约13.45 V100小时/80.7积分。
+新64 batches/round：40轮约19.25 local epochs；实际成本必须按各方法合法loader分别benchmark。
 ```
 
 所有新主表比较必须使用相同64-batch预算。旧16-batch与133-batch结果均不得混入新表。
@@ -93,6 +93,25 @@ skip_install = false
 ```
 
 八臂practical合并能力仍保留，但当前优先六臂；KT-pFL/FCCL/FedTGP/RHFL是条件性扩展。
+
+### Axis II本地训练链路（v6修复）
+
+2026-10-12的首个`local` budget64 benchmark暴露出旧v5协议仍让`Local/ERM`使用默认AugMix
+loader。即使`lambda_jsd=0`，代码仍生成多视图、执行三倍前向并计算零权重JSD，而且增强视图会
+更新BatchNorm统计；因此该实现既浪费算力，也不能严格称为纯单视图ERM。该benchmark只作工程
+诊断，其耗时与数值不得用于最终协议或论文。
+
+v6在任何Axis II Formal之前冻结方法原生loader边界：
+
+```text
+standard单视图：Local / FedMD / FedProto / FedTGP / FedDF / KT-pFL / FCCL / RHFL
+AugMix多视图： AugHFL / RAHFL
+```
+
+配对审计相应改为：同一loader家族要求完整图像batch哈希一致；跨loader家族要求标签batch轨迹
+一致，并继续由合同锁定相同split、loader seed、初始化、训练seed和预算。禁止为了全表tensor
+哈希一致而让普通HFL基线生成无效AugMix视图。修复后的standard与AugMix代表臂都必须重新完成
+smoke/benchmark；旧v5 Axis II包禁止进入最终合并。
 
 ## 证据边界
 

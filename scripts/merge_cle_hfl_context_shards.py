@@ -14,7 +14,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.prepare_cle_v2_factorial_data import sha256_file  # noqa: E402
-from scripts.run_cle_hfl_context import ARMS, PRACTICAL_ARMS, SHARDS  # noqa: E402
+from scripts.run_cle_hfl_context import (  # noqa: E402
+    ARMS,
+    PRACTICAL_ARMS,
+    SHARDS,
+    local_loader_mode_for_arm,
+)
 
 
 FULL_REQUIRED_SHARDS = ("cheap_a", "cheap_b", "fedtgp", "rhfl")
@@ -70,12 +75,12 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def trace_map(path: Path) -> dict[tuple[int, int, int], str]:
+def trace_map(path: Path, field: str = "sha256") -> dict[tuple[int, int, int], str]:
     if not path.is_file():
         raise FileNotFoundError(path)
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     return {
-        (int(row["round"]), int(row["client"]), int(row["batch"])): str(row["sha256"])
+        (int(row["round"]), int(row["client"]), int(row["batch"])): str(row[field])
         for row in rows
     }
 
@@ -111,6 +116,7 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
     input_audits: dict[str, dict] = {}
     rows: dict[str, dict] = {}
     traces: dict[str, dict] = {}
+    label_traces: dict[str, dict] = {}
     prediction_by_arm: dict[str, np.ndarray] = {}
     common_arrays: dict[str, np.ndarray] | None = None
 
@@ -142,6 +148,10 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
             rows[arm] = summary["rows"][arm]
             traces[arm] = trace_map(
                 root / "outputs" / f"cle_hfl_context_{arm}_trainseed0" / "local_batch_trace.jsonl"
+            )
+            label_traces[arm] = trace_map(
+                root / "outputs" / f"cle_hfl_context_{arm}_trainseed0" / "local_batch_trace.jsonl",
+                "label_sha256",
             )
 
         prediction_path = root / "analysis" / "HFL_CONTEXT_PREDICTIONS.npz"
@@ -206,6 +216,12 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
     for shard, contract in contracts.items():
         if any(contract.get(key) != reference_contract.get(key) for key in protocol_keys):
             raise ValueError(f"Protocol mismatch for {shard}")
+        expected_loader_policy = {
+            arm: local_loader_mode_for_arm(arm)
+            for arm in SHARDS[shard]
+        }
+        if contract.get("local_loader_policy") != expected_loader_policy:
+            raise ValueError(f"Local-loader policy mismatch for {shard}")
     reference_audit = input_audit_fingerprint(input_audits[required_shards[0]])
     if reference_audit.get("status") != "PASS":
         raise ValueError("Reference input audit did not pass")
@@ -215,9 +231,21 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         raise ValueError(f"Merged arm coverage mismatch: {sorted(rows)}")
 
     reference_trace = traces["local_erm"]
-    pairing_matches = {arm: trace == reference_trace for arm, trace in traces.items()}
-    if not all(pairing_matches.values()):
-        raise ValueError(f"Cross-shard local-batch pairing failed: {pairing_matches}")
+    reference_labels = label_traces["local_erm"]
+    label_matches = {arm: trace == reference_labels for arm, trace in label_traces.items()}
+    if not all(label_matches.values()):
+        raise ValueError(f"Cross-shard label-batch pairing failed: {label_matches}")
+    loader_modes = {arm: local_loader_mode_for_arm(arm) for arm in merged_arms}
+    exact_matches = {}
+    for mode in sorted(set(loader_modes.values())):
+        mode_arms = [arm for arm in merged_arms if loader_modes[arm] == mode]
+        mode_reference = mode_arms[0]
+        exact_matches[mode] = {
+            arm: traces[arm] == traces[mode_reference]
+            for arm in mode_arms
+        }
+    if not all(all(matches.values()) for matches in exact_matches.values()):
+        raise ValueError(f"Within-loader local-batch pairing failed: {exact_matches}")
     assert common_arrays is not None
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -228,7 +256,7 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         **common_arrays,
     )
     merged = {
-        "protocol": "cle_hfl_context_table_budget64_merged_v5",
+        "protocol": "cle_hfl_context_table_budget64_merged_v6",
         "merge_profile": selected_profile,
         "source_protocol": reference_contract["protocol"],
         "mode": "formal",
@@ -242,7 +270,9 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         "source_shards": {shard: str(roots[shard]) for shard in required_shards},
         "cross_shard_local_batch_pairing": {
             "reference_arm": "local_erm",
-            "arm_matches": pairing_matches,
+            "loader_modes": loader_modes,
+            "label_trace_matches": label_matches,
+            "exact_trace_matches_within_loader": exact_matches,
             "all_arms_match": True,
             "reference_trace_sha256": trace_digest(reference_trace),
             "reference_trace_rows": len(reference_trace),

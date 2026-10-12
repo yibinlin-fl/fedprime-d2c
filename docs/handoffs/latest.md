@@ -2,6 +2,24 @@
 
 Updated: 2026-10-12
 
+## 2026-10-12 Axis II默认AugMix泄漏已修复；旧local benchmark仅作工程诊断
+
+Axis I `pew_ber` budget64两轮V100 benchmark完成：训练`412.342s`、分析`6.750s`，输入、合同、
+完成标记、预测缓存与8条batch trace完整；它只授权Axis I 40轮四臂seed-0 Formal，不是科学
+证据。用户随后启动Axis I四臂Formal，当前等待结果。
+
+Axis II首个`local` benchmark日志揭示旧v5配置虽设`cl_module=none, lambda_jsd=0`，却因默认
+`local_loader_mode=augmix`仍生成多视图、执行三倍前向和零权重JSD，并让增强视图更新BatchNorm。
+该任务不是Formal，允许完成用于诊断，但其成本和数值不得进入论文或推算修复后协议。
+
+代码已升级为v6：Local/FedMD/FedProto/FedTGP/FedDF/KT-pFL/FCCL/RHFL强制使用standard
+单视图loader；只有AugHFL/RAHFL保留原生AugMix。trace新增独立label哈希；同loader家族要求
+完整batch哈希一致，跨loader家族要求标签轨迹一致，并继续锁定相同split、sampler seed、初始化
+与训练预算。FedProto/FedTGP切换到单视图时还暴露并修复了共享训练函数的分支问题：它们的
+通信损失现在会在standard与AugMix两条路径中执行。本地静态编译、配置断言和28项聚焦测试
+均已通过。Axis II所有Formal重新冻结为未授权；还必须先完成修复后standard与AugMix代表臂的
+OpenI benchmark。
+
 ## 2026-10-12最终训练预算冻结为40轮×64 batches；Axis I可独立拆臂
 
 在任何新Formal运行前，依据2026-10-09的V100成本benchmark，将Axis I、FedMD四目标扩展与

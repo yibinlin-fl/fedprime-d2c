@@ -119,6 +119,12 @@ smoke/benchmark；旧v5 Axis II包禁止进入最终合并。
 旧实现浪费程度，绝不能作为v6预算。作为参考，同日Axis I standard-loader PEW+BER两轮训练仅
 `412.342s`，旧Local链路慢约`9.29x`。v6仍需重新benchmark获取合法成本。
 
+v6修复后`local`两轮benchmark已PASS：训练`819.799s`，分析`45.094s`，两轮分别为
+`332.911s`与`476.385s`，显存峰值约`1.29GB`；trace确认每批只有一个标准视图。相对旧v5
+训练耗时下降约`78.6%`（`4.67x`加速）。机械外推40轮训练约`4.55h/27.3`个V100积分；该数值
+仅用于预算，benchmark的accuracy/DSA不得作为科学证据。standard-loader门槛已通过，仍需
+`aughfl`多视图代表臂benchmark后才可冻结Axis II Formal分配。
+
 ## 证据边界
 
 - benchmark只验证执行与成本，不是论文证据；

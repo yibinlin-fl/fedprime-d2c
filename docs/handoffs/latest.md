@@ -23,6 +23,12 @@ Axis II首个`local` benchmark日志揭示旧v5配置虽设`cl_module=none, lamb
 均已通过。Axis II所有Formal重新冻结为未授权；还必须先完成修复后standard与AugMix代表臂的
 OpenI benchmark。
 
+修复后v6 `local` benchmark已完成并PASS：合同为v6，`local_erm=standard`，trace每批仅一个
+`[64,3,32,32]`视图，输入/完成/预测/配对审计完整。两轮训练`819.799s`、分析`45.094s`，
+相对旧v5错误链路的`3831.226s`加速`4.67x`、训练耗时下降约`78.6%`；显存峰值由约`2.89GB`
+降至约`1.29GB`。按训练时间机械外推40轮约`4.55h/27.3`个V100积分，但正式成本仍以实际
+Formal为准。该benchmark不是科学证据；下一工程门槛是v6 `aughfl`代表性多视图benchmark。
+
 ## 2026-10-12最终训练预算冻结为40轮×64 batches；Axis I可独立拆臂
 
 在任何新Formal运行前，依据2026-10-09的V100成本benchmark，将Axis I、FedMD四目标扩展与

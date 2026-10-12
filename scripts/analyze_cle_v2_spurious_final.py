@@ -20,7 +20,7 @@ from fedprime.engine.cle_v2_factorial import (  # noqa: E402
 from scripts.analyze_cle_v2_factorial import infer_arm, load_grid, resolve_device, trailing_metrics  # noqa: E402
 from scripts.analyze_cle_v2_mechanism_stage1 import balanced_source_indices, grid_accuracy  # noqa: E402
 from scripts.analyze_cle_v2_plugin_stage2 import load_trace  # noqa: E402
-from scripts.run_cle_v2_spurious_final import ARMS  # noqa: E402
+from scripts.run_cle_v2_spurious_final import ARM_CHOICES, ARMS, selected_arms  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--protocol-label", default="cle_v2_spurious_final_map2_analysis_v1")
     parser.add_argument("--communication-label", default="strict AsymHFL-val")
     parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
+    parser.add_argument("--arm", choices=ARM_CHOICES, default="all")
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--bootstrap-samples", type=int, default=5000)
@@ -79,8 +80,9 @@ def main() -> None:
         selected = balanced_source_indices(labels, int(args.max_sources))
         grid, labels = grid[selected], labels[selected]
     device = resolve_device(args.device)
+    arms = selected_arms(args.arm)
     predictions, results, accuracy, metrics, traces = {}, {}, {}, {}, {}
-    for arm in ARMS:
+    for arm in arms:
         root = experiment_root(
             outputs_root, arm, int(args.train_seed), str(args.experiment_prefix)
         )
@@ -93,8 +95,46 @@ def main() -> None:
         }
         traces[arm] = load_trace(root / "local_batch_trace.jsonl")
 
-    dsa = {arm: float(results[arm].pooled) for arm in ARMS}
-    client_dsa = {arm: list(results[arm].client) for arm in ARMS}
+    dsa = {arm: float(results[arm].pooled) for arm in arms}
+    client_dsa = {arm: list(results[arm].client) for arm in arms}
+    if args.arm != "all":
+        arm = arms[0]
+        summary = {
+            "protocol": str(args.protocol_label) + "_single_arm_v2",
+            "mode": args.mode,
+            "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
+            "train_seed": int(args.train_seed),
+            "rounds": 40 if args.mode == "formal" else (2 if args.mode == "benchmark" else 1),
+            "common_communication": str(args.communication_label),
+            "execution_arm": arm,
+            "arms": [arm],
+            "pooled_dsa": dsa,
+            "client_dsa": client_dsa,
+            "operator_grid_accuracy": accuracy,
+            "reporting_metrics": metrics,
+            "paired_local_traces": {"matched": True, "rows": len(traces[arm])},
+            "frozen_gates": {},
+            "scientific_verdict": (
+                "FORMAL_SINGLE_ARM_COMPLETE_PENDING_MERGE"
+                if args.mode == "formal"
+                else "BENCHMARK_SINGLE_ARM_NO_SCIENTIFIC_DECISION"
+            ),
+            "scientific_evidence": args.mode == "formal",
+            "cdep_used": False,
+        }
+        np.savez_compressed(
+            output_dir / f"SPURIOUS_FINAL_MAP2_PREDICTIONS_{arm}.npz",
+            probabilities=predictions[arm][None, ...],
+            arms=np.asarray([arm]),
+            labels=labels,
+            binding=binding,
+            operator_names=np.asarray(operator_names),
+        )
+        (output_dir / "RESULT_SUMMARY.json").write_text(
+            json.dumps(summary, indent=2), encoding="utf-8"
+        )
+        print(json.dumps(summary, indent=2), flush=True)
+        return
     samples = int(args.bootstrap_samples)
     contrasts = {
         "erm_minus_pew_ber": bootstrap_contrast(results, "erm", "pew_ber", samples),
@@ -181,7 +221,7 @@ def main() -> None:
     }
     np.savez_compressed(
         output_dir / "SPURIOUS_FINAL_MAP2_PREDICTIONS.npz",
-        probabilities=np.stack([predictions[arm] for arm in ARMS]),
+        probabilities=np.stack([predictions[arm] for arm in arms]),
         arms=np.asarray(ARMS),
         labels=labels,
         binding=binding,

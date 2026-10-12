@@ -1,5 +1,12 @@
 # CLE-HFL held-out map2 最终实验协议（2026-09-25）
 
+> 2026-10-12更新：本协议的最终训练预算已在任何新Formal运行前冻结为`40轮 x 64 local
+> batches/client/round`，约19.25个本地epoch等价。2026-09-28的full-epoch恢复解决了旧16-batch
+> 欠训练诊断，但2026-10-09成本benchmark证明单臂约需167.4 V100积分，无法形成可执行的完整
+> 实验矩阵。最新执行细节见
+> `docs/experiments/current/CLE_HFL_BUDGET64_EXECUTION_2026_10_12_ZH.md`；下文出现的
+> `full-epoch`表述均由本更新取代。
+
 > 2026-09-28状态：七月配置复核已经定位共同低准确率的主因。旧领域表每轮16 batches、40轮仅
 > 约4.8个本地epoch；七月`gamma=0.9`诊断是40轮、每轮完整10,000张私有数据，约40个epoch，
 > Avg为46.72%。因此b32/b64试探被最终full-epoch目标取代，旧16-batch数据全部降级为pilot。
@@ -14,7 +21,7 @@ partition_seed: 0
 evaluation_seed: 20260909
 formal rounds: 40
 local training per client-round: one complete strict-fit epoch
-formal max_local_batches: null
+formal max_local_batches: 64
 batch size: 64
 public batches per round: 4
 pretrain epochs: 0
@@ -24,7 +31,7 @@ main field-table training seed: 0
 所有比较必须复用相同初始状态、私有 batch 轨迹、公共数据、评价 grid 和 DSA 实现。Smoke 与
 benchmark 只验证执行和成本，不能作为论文证据。
 
-## A. Axis I：主方法比较（旧结果降级，full-epoch待重跑）
+## A. Axis I：主方法比较（旧结果降级，budget64待重跑）
 
 固定 strict AsymHFL-val 通信，比较：
 
@@ -33,10 +40,10 @@ ERM / CVaR-DRO / PEW+GroupDRO / PEW+BER
 ```
 
 旧40轮、training seeds 0/1/2使用每轮16 batches，仅作为low-budget机制筛选。最终表必须按
-full-epoch协议重跑。该实验回答BER是否优于普通ERM、generic tail-risk和共享同一PEW分组的
+budget64协议重跑。该实验回答BER是否优于普通ERM、generic tail-risk和共享同一PEW分组的
 GroupDRO；它不是任意通信算法上的万能插件实验。
 
-## B. Axis I扩展：FedMD跨通信四目标复现（保留，full-epoch待重跑）
+## B. Axis I扩展：FedMD跨通信四目标复现（保留，budget64待重跑）
 
 固定 FedMD symmetric public-logit exchange，重复同一四目标：
 
@@ -53,11 +60,11 @@ FedMD+PEW+BER
 scripts/openi_cle_v2_fedmd_objectives_entry.py
 ```
 
-旧入口及结果使用16-batch预算，不再进入最终表。候选实验永久保留，后续按full-epoch协议先跑
+旧入口及结果使用16-batch预算，不再进入最终表。候选实验永久保留，后续按budget64协议先跑
 seed 0；它回答主方法排序是否依赖strict AsymHFL-val通信，不声称覆盖所有HFL通信机制。seed 1/2
 不自动启动，只有正文要提出FedMD训练稳定性主张时才追加。
 
-## C. Axis II：待运行的full-epoch practical HFL领域比较
+## C. Axis II：待运行的budget64 practical HFL领域比较
 
 正文优先的六个原生/协议匹配HFL行：
 

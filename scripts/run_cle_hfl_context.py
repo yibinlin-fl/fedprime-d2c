@@ -57,11 +57,16 @@ SHARDS = {
     "rhfl": ("rhfl_adapter",),
 }
 ROUND_BUDGET = {"pairing": 2, "benchmark": 2, "formal": 40}
-# Pairing is deliberately tiny.  Benchmark and Formal must traverse the full
-# strict-fit loader once per round; capping them at 8/16 batches reproduced
-# only about 4.8 local epochs over 40 rounds and left every context arm below
-# a credible learning floor.
-LOCAL_BATCH_CAP = {"pairing": 2, "benchmark": None, "formal": None}
+# Pairing is deliberately tiny.  The former 16-batch budget yielded only
+# about 4.8 local epochs over 40 rounds, while a full 133-batch epoch made a
+# single arm cost about 28 V100 hours.  The pre-registered middle budget keeps
+# all 40 communication rounds and yields about 19.25 local epoch equivalents.
+FORMAL_LOCAL_BATCHES = 64
+LOCAL_BATCH_CAP = {
+    "pairing": 2,
+    "benchmark": FORMAL_LOCAL_BATCHES,
+    "formal": FORMAL_LOCAL_BATCHES,
+}
 MAP_SEED = 2
 
 
@@ -88,6 +93,31 @@ def strict_fit_full_epoch_budget(package_root: Path, batch_size: int = 64) -> di
     }
 
 
+def fixed_local_budget_audit(
+    package_root: Path,
+    *,
+    rounds: int,
+    max_local_batches: int,
+    batch_size: int = 64,
+) -> dict:
+    full = strict_fit_full_epoch_budget(package_root, batch_size=batch_size)
+    full_batches = full["expected_batches_per_client_round"]
+    effective_batches = {
+        client_id: min(int(count), int(max_local_batches))
+        for client_id, count in full_batches.items()
+    }
+    epoch_equivalents = {
+        client_id: float(rounds) * effective_batches[client_id] / int(full_batches[client_id])
+        for client_id in full_batches
+    }
+    return {
+        "rounds": int(rounds),
+        "max_local_batches": int(max_local_batches),
+        "effective_batches_per_client_round": effective_batches,
+        "optimizer_steps_all_clients_per_round": int(sum(effective_batches.values())),
+        "local_epoch_equivalents_per_client": epoch_equivalents,
+        "mean_local_epoch_equivalents": float(np.mean(list(epoch_equivalents.values()))),
+    }
 def selected_arms(shard: str, mode: str) -> tuple[str, ...]:
     if shard not in SHARDS:
         raise ValueError(f"Unknown HFL context shard: {shard}")
@@ -237,21 +267,25 @@ def main() -> None:
         json.dumps(fidelity_manifest(), indent=2), encoding="utf-8"
     )
     contract = {
-        "protocol": "cle_hfl_context_table_map2_full_epoch_v4",
+        "protocol": "cle_hfl_context_table_map2_budget64_v5",
         "mode": args.mode,
         "scenario_id": manifest["scenario_id"],
         "partition_seed": 0,
         "binding_map_seed": MAP_SEED,
         "evaluation_seed": 20260909,
         "rounds": ROUND_BUDGET[args.mode],
-        "local_training": "2_batch_pairing" if args.mode == "pairing" else "one_full_strict_fit_epoch_per_round",
+        "local_training": "2_batch_pairing" if args.mode == "pairing" else "64_batches_per_client_round",
         "max_local_batches": LOCAL_BATCH_CAP[args.mode],
         "batch_size": 64,
         "public_batch_size": 128,
         "public_batches_per_round": 4,
         "pretrain_epochs": 0,
-        "expected_local_epoch_equivalents": None if args.mode == "pairing" else ROUND_BUDGET[args.mode],
         "full_epoch_budget_audit": strict_fit_full_epoch_budget(package_root),
+        "effective_budget_audit": fixed_local_budget_audit(
+            package_root,
+            rounds=ROUND_BUDGET[args.mode],
+            max_local_batches=LOCAL_BATCH_CAP[args.mode],
+        ),
         "public_batch_size": 128,
         "train_seed": 0,
         "execution_shard": args.shard,

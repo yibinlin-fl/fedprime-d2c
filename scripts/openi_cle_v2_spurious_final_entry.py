@@ -23,6 +23,7 @@ from scripts.openi_cle_v2_cross_scenario_entry import (  # noqa: E402
     upload,
 )
 from scripts.openi_cle_v2_plugin_stage2_entry import package_light_outputs  # noqa: E402
+from scripts.run_cle_v2_spurious_final import ARM_CHOICES  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,6 +35,7 @@ def parse_args() -> argparse.Namespace:
         default="1",
         help="Training seed. 'all' runs the pending seeds 1 then 2; map2/partition stay fixed.",
     )
+    parser.add_argument("--arm", choices=ARM_CHOICES, default="all")
     parser.add_argument("--confirm_formal", choices=("false", "true"), default="false")
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", choices=("false", "true"), default="false")
@@ -61,7 +63,7 @@ def main() -> None:
         raise FileNotFoundError(package_root)
 
     for train_seed in selected_train_seeds(args.train_seed):
-        label = f"trainseed{train_seed}_{args.mode}"
+        label = f"trainseed{train_seed}_{args.arm}_{args.mode}"
         outputs_root = ROOT / f"outputs/cle_v2_spurious_final_map2_{label}"
         configs_root = ROOT / f"local_runs/cle_v2_spurious_final_map2_{label}_configs"
         analysis_root = ROOT / f"outputs/cle_v2_spurious_final_map2_{label}_analysis"
@@ -90,6 +92,8 @@ def main() -> None:
             args.mode,
             "--train-seed",
             str(train_seed),
+            "--arm",
+            args.arm,
             "--device",
             "cuda",
             "--output-root",
@@ -116,6 +120,8 @@ def main() -> None:
             args.mode,
             "--train-seed",
             str(train_seed),
+            "--arm",
+            args.arm,
             "--device",
             "cuda",
         ]
@@ -134,6 +140,7 @@ def main() -> None:
                 {
                     "mode": args.mode,
                     "train_seed": train_seed,
+                    "execution_arm": args.arm,
                     "training_seconds": training_seconds,
                     "analysis_seconds": analysis_seconds,
                     "total_measured_seconds": training_seconds + analysis_seconds,
@@ -149,7 +156,7 @@ def main() -> None:
             outputs_root,
             configs_root,
             analysis_root,
-            ROOT / f"cle_v2_spurious_final_map2_trainseed{train_seed}_{args.mode}_outputs.tar.gz",
+            ROOT / f"cle_v2_spurious_final_map2_trainseed{train_seed}_{args.arm}_{args.mode}_outputs.tar.gz",
         )
         upload(context, [archive, timing])
         log(f"Complete seed {train_seed}: {archive}")

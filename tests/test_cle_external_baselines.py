@@ -250,7 +250,7 @@ def test_fedmd_four_objective_replication_changes_only_local_objective(tmp_path)
     }
     assert all(config["method"]["communication"] == "fedmd" for config in configs.values())
     assert all(config["train"]["rounds"] == 40 for config in configs.values())
-    assert all(config["train"]["max_local_batches"] is None for config in configs.values())
+    assert all(config["train"]["max_local_batches"] == 64 for config in configs.values())
     assert all(config["train"]["local_epochs"] == 1 for config in configs.values())
     assert all(config["train"]["public_batches_per_round"] == 4 for config in configs.values())
     assert all(config["train"]["skip_nonfinite"] is False for config in configs.values())
@@ -341,15 +341,15 @@ def test_hfl_shard_merger_requires_and_combines_matched_formal_outputs(
             arm_root.mkdir(parents=True)
             (arm_root / "local_batch_trace.jsonl").write_text(trace_line, encoding="utf-8")
         contract = {
-            "protocol": "cle_hfl_context_table_map2_full_epoch_v4",
+            "protocol": "cle_hfl_context_table_map2_budget64_v5",
             "mode": "formal",
             "scenario_id": "cle_hfl_v2_cross_map2_seed0_split0",
             "partition_seed": 0,
             "binding_map_seed": 2,
             "evaluation_seed": 20260909,
             "rounds": 40,
-            "local_training": "one_full_strict_fit_epoch_per_round",
-            "max_local_batches": None,
+            "local_training": "64_batches_per_client_round",
+            "max_local_batches": 64,
             "batch_size": 64,
             "public_batch_size": 128,
             "public_batches_per_round": 4,

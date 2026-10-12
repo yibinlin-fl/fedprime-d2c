@@ -1,6 +1,22 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-09
+Updated: 2026-10-12
+
+## 2026-10-12最终训练预算冻结为40轮×64 batches；Axis I可独立拆臂
+
+在任何新Formal运行前，依据2026-10-09的V100成本benchmark，将Axis I、FedMD四目标扩展与
+Axis II统一冻结为`40 rounds x 64 local batches/client/round`，batch size 64、public batches 4、
+pretrain 0。map2完整loader为133 batches，因此新预算约等于19.25个本地epoch：是旧16-batch
+pilot的4倍更新量，同时约为full-epoch成本的一半。旧16-batch和133-batch结果均不得混入新表。
+
+Axis I入口新增`arm=erm/cvar_dro/pew_groupdro/pew_ber`，允许四条Formal跨账号独立运行；每包
+独立分析，最终由`scripts/merge_cle_v2_spurious_final_shards.py`核验输入、协议、配置哈希、评价
+grid与batch trace后才计算四臂冻结门槛。Axis II原有单臂`shard`保持。预算说明：
+`docs/experiments/current/CLE_HFL_BUDGET64_EXECUTION_2026_10_12_ZH.md`。真实map2上的Axis I
+`pew_ber`单臂CUDA smoke已完成训练、4-client checkpoint、单臂预测缓存和分析；Axis I、Axis II、
+FedMD三类Formal合同均确认`max_local_batches=64`、每轮256次总客户端更新、约19.248本地epoch。
+22项聚焦测试与静态编译通过。Smoke数值无科学意义。尚未启动付费实验；下一步只运行Axis I
+`pew_ber`两轮budget64 benchmark，核定最昂贵核心臂成本后再授权单臂Formal。
 
 ## 2026-10-09 full-epoch Local成本benchmark完成：130积分不足单臂Formal
 

@@ -81,7 +81,7 @@ def main() -> None:
         "p_value": float(reference_null["p_value"]),
     }
     summary = {
-        "protocol": "cle_hfl_context_table_full_epoch_analysis_v3",
+        "protocol": "cle_hfl_context_table_budget64_analysis_v4",
         "mode": args.mode,
         "execution_shard": args.shard,
         "selected_arms": list(arms),

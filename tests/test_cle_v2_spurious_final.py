@@ -7,7 +7,9 @@ from scripts.run_cle_v2_spurious_final import (
     LOCAL_BATCH_CAP,
     ROUND_BUDGET,
     final_arm_config,
+    selected_arms,
 )
+from scripts.merge_cle_v2_spurious_final_shards import parse_arm_roots
 
 
 def _fake_package(tmp_path: Path) -> Path:
@@ -58,10 +60,17 @@ def test_final_configs_are_four_matched_objectives(tmp_path: Path, mode: str) ->
 
 def test_formal_budget_is_frozen() -> None:
     assert ROUND_BUDGET["formal"] == 40
-    assert LOCAL_BATCH_CAP["formal"] is None
+    assert LOCAL_BATCH_CAP["formal"] == 64
 
 
-def test_full_epoch_modes_restore_july_training_intensity(tmp_path: Path) -> None:
+def test_axis1_can_run_and_merge_independent_arms(tmp_path: Path) -> None:
+    assert selected_arms("all") == ARMS
+    assert selected_arms("pew_ber") == ("pew_ber",)
+    roots = parse_arm_roots([f"{arm}={tmp_path / arm}" for arm in ARMS])
+    assert tuple(roots) == ARMS
+
+
+def test_budget64_modes_keep_40_rounds_without_undertraining(tmp_path: Path) -> None:
     package = _fake_package(tmp_path)
     for mode in ("benchmark", "formal"):
         config = final_arm_config(
@@ -73,7 +82,7 @@ def test_full_epoch_modes_restore_july_training_intensity(tmp_path: Path) -> Non
         )
         assert config["train"]["pretrain_epochs"] == 0
         assert config["train"]["local_epochs"] == 1
-        assert config["train"]["max_local_batches"] is None
+        assert config["train"]["max_local_batches"] == 64
         assert config["train"]["batch_size"] == 64
         assert config["train"]["public_batches_per_round"] == 4
         assert config["train"]["skip_nonfinite"] is False

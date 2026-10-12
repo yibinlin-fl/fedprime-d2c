@@ -192,8 +192,8 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         "binding_map_seed": 2,
         "evaluation_seed": 20260909,
         "rounds": 40,
-        "local_training": "one_full_strict_fit_epoch_per_round",
-        "max_local_batches": None,
+        "local_training": "64_batches_per_client_round",
+        "max_local_batches": 64,
         "batch_size": 64,
         "public_batch_size": 128,
         "public_batches_per_round": 4,
@@ -228,7 +228,7 @@ def merge_shards(roots: dict[str, Path], output_dir: Path, profile: str | None =
         **common_arrays,
     )
     merged = {
-        "protocol": "cle_hfl_context_table_full_epoch_merged_v4",
+        "protocol": "cle_hfl_context_table_budget64_merged_v5",
         "merge_profile": selected_profile,
         "source_protocol": reference_contract["protocol"],
         "mode": "formal",

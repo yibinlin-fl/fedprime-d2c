@@ -741,6 +741,12 @@ docs/README_ZH.md          按任务定位其余文档（本文件）
 deliverables/cle_hfl_full_epoch_cost_benchmark_20261009/RESULT_SUMMARY_ZH.md
 ```
 
+当前最终40轮×64 batches执行协议：
+
+```text
+docs/experiments/current/CLE_HFL_BUDGET64_EXECUTION_2026_10_12_ZH.md
+```
+
 当前最新论文内部稿与独立审查：
 
 ```text

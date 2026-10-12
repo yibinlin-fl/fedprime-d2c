@@ -12,13 +12,21 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.run_cle_v2_cross_scenario import sha256_file, verify_cross_scenario  # noqa: E402
-from scripts.run_cle_hfl_context import strict_fit_full_epoch_budget  # noqa: E402
+from scripts.run_cle_hfl_context import (  # noqa: E402
+    FORMAL_LOCAL_BATCHES,
+    fixed_local_budget_audit,
+    strict_fit_full_epoch_budget,
+)
 from scripts.run_cle_v2_spurious_baselines import spurious_arm_config  # noqa: E402
 
 
 ARMS = ("erm", "cvar_dro", "pew_groupdro", "pew_ber")
 ROUND_BUDGET = {"smoke": 1, "benchmark": 2, "formal": 40}
-LOCAL_BATCH_CAP = {"smoke": 1, "benchmark": None, "formal": None}
+LOCAL_BATCH_CAP = {
+    "smoke": 1,
+    "benchmark": FORMAL_LOCAL_BATCHES,
+    "formal": FORMAL_LOCAL_BATCHES,
+}
 MAP_SEED = 2
 EXPERIMENT_PREFIX = "cle_v2_fedmd_objectives_map2"
 
@@ -102,7 +110,7 @@ def main() -> None:
         path.write_text(json.dumps(config, indent=2), encoding="utf-8")
         records[arm] = {"config": str(path), "sha256": sha256_file(path)}
     contract = {
-        "protocol": "cle_v2_fedmd_four_objective_map2_full_epoch_v2",
+        "protocol": "cle_v2_fedmd_four_objective_map2_budget64_v3",
         "mode": args.mode,
         "scenario_id": manifest["scenario_id"],
         "partition_seed": 0,
@@ -110,14 +118,18 @@ def main() -> None:
         "evaluation_seed": 20260909,
         "train_seed": int(args.train_seed),
         "rounds": ROUND_BUDGET[args.mode],
-        "local_training": "1_batch_smoke" if args.mode == "smoke" else "one_full_strict_fit_epoch_per_round",
+        "local_training": "1_batch_smoke" if args.mode == "smoke" else "64_batches_per_client_round",
         "max_local_batches": LOCAL_BATCH_CAP[args.mode],
         "batch_size": 64,
         "public_batch_size": 128,
         "public_batches_per_round": 4,
         "pretrain_epochs": 0,
-        "expected_local_epoch_equivalents": None if args.mode == "smoke" else ROUND_BUDGET[args.mode],
         "full_epoch_budget_audit": strict_fit_full_epoch_budget(package_root),
+        "effective_budget_audit": fixed_local_budget_audit(
+            package_root,
+            rounds=ROUND_BUDGET[args.mode],
+            max_local_batches=LOCAL_BATCH_CAP[args.mode],
+        ),
         "arms": records,
         "common_communication": "FedMD symmetric public-logit exchange",
         "common_augmentation": "none",

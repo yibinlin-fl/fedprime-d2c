@@ -35,6 +35,7 @@ from scripts.prepare_corruption_skew_data import load_cifar10_arrays  # noqa: E4
 
 
 PROTOCOL = "cle_hfl_v2_paired_factorial_seed0_split0_v1"
+MODERATE_PROTOCOL = "cle_hfl_v2_moderate_alpha10_rho05_gamma_grid_seed0_split0_v1"
 PACKAGE_NAME = "cle_hfl_v2_paired_factorial_seed0_split0"
 MODEL_NAMES = ["ResNet10", "ResNet12", "ShuffleNet", "Mobilenetv2"]
 GAMMAS = {"gamma00": 0.0, "gamma09": 0.9}
@@ -62,6 +63,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--samples-per-client", type=int, default=10000)
     parser.add_argument("--test-samples-per-class", type=int, default=100)
     parser.add_argument("--audit-ratio", type=float, default=0.15)
+    parser.add_argument("--dirichlet-alpha", type=float, default=0.5)
+    parser.add_argument("--corruption-rate", type=float, default=1.0)
+    parser.add_argument(
+        "--gammas",
+        default="0.0,0.9",
+        help="Comma-separated CLE strengths; condition names are derived as gamma00/gamma05/gamma09.",
+    )
+    parser.add_argument(
+        "--protocol",
+        choices=(PROTOCOL, MODERATE_PROTOCOL),
+        default=PROTOCOL,
+    )
     parser.add_argument(
         "--binding-map-seed",
         type=int,
@@ -117,13 +130,28 @@ def generate_client_condition(
     binding: dict[int, dict[int, str]],
     seen: list[str],
     operator_to_id: dict[str, int],
+    corruption_rate: float = 1.0,
+    clean_operator_id: int = 255,
 ) -> dict[str, np.ndarray]:
     count = int(source_indices.size)
     output_images = np.empty((count, 32, 32, 3), dtype=np.uint8)
     output_labels = labels[source_indices].astype(np.uint8, copy=False)
     operator_ids = np.empty(count, dtype=np.uint8)
     severities = np.empty(count, dtype=np.uint8)
+    is_corrupted = np.empty(count, dtype=np.bool_)
     for local_id, source_id in enumerate(source_indices.tolist()):
+        corrupted = bool(
+            np.random.default_rng(
+                np.random.SeedSequence([SEED, client_id, local_id, 10])
+            ).random()
+            < corruption_rate
+        )
+        is_corrupted[local_id] = corrupted
+        if not corrupted:
+            output_images[local_id] = images[source_id]
+            operator_ids[local_id] = clean_operator_id
+            severities[local_id] = 0
+            continue
         label = int(labels[source_id])
         probabilities = np.full(len(seen), (1.0 - gamma) / len(seen), dtype=np.float64)
         probabilities[seen.index(binding[client_id][label])] += gamma
@@ -150,6 +178,7 @@ def generate_client_condition(
         "train_corruption_ids": operator_ids,
         "train_corruption_method_ids": operator_ids.copy(),
         "train_severity_ids": severities,
+        "train_is_corrupted": is_corrupted,
         "train_source_indices": source_indices.astype(np.int64, copy=False),
     }
 
@@ -250,15 +279,20 @@ def condition_metadata(
     *,
     binding_map_seed: int = SEED,
     scenario_id: str = PACKAGE_NAME,
+    protocol: str = PROTOCOL,
+    dirichlet_alpha: float = 0.5,
+    corruption_rate: float = 1.0,
 ) -> dict[str, object]:
     return {
         "dataset": "cifar10_cle_hfl_v2_factorial",
         "protocol_version": 2,
-        "factorial_protocol": PROTOCOL,
+        "factorial_protocol": protocol,
         "condition": condition,
         "private_dataset": "cifar10",
         "public_dataset": "cifar100",
-        "alpha": 0.5,
+        "alpha": float(dirichlet_alpha),
+        "corruption_rate": float(corruption_rate),
+        "clean_operator_id": 255,
         "gamma": gamma,
         "seed": SEED,
         "partition_seed": SEED,
@@ -294,6 +328,18 @@ def main() -> None:
         raise FileExistsError(f"Refusing to overwrite existing factorial artifact: {package_root}")
     if not args.cifar100_tar.resolve().is_file():
         raise FileNotFoundError(args.cifar100_tar)
+    if args.dirichlet_alpha <= 0.0:
+        raise ValueError("--dirichlet-alpha must be positive")
+    if not 0.0 <= args.corruption_rate <= 1.0:
+        raise ValueError("--corruption-rate must be in [0, 1]")
+    gamma_values = [float(value.strip()) for value in str(args.gammas).split(",")]
+    if not gamma_values or any(not 0.0 <= value <= 1.0 for value in gamma_values):
+        raise ValueError("--gammas must contain values in [0, 1]")
+    if len(set(gamma_values)) != len(gamma_values):
+        raise ValueError("--gammas contains duplicate values")
+    gammas = {
+        f"gamma{int(round(value * 10)):02d}": value for value in gamma_values
+    }
     train_images, train_labels, test_images, test_labels = load_cifar10_arrays(
         args.cifar10_root.resolve(), False
     )
@@ -306,7 +352,7 @@ def main() -> None:
         num_clients=4,
         num_classes=10,
         partition="dirichlet",
-        dirichlet_alpha=0.5,
+        dirichlet_alpha=float(args.dirichlet_alpha),
         max_samples_per_client=int(args.samples_per_client),
         partition_seed=SEED,
     )
@@ -336,13 +382,15 @@ def main() -> None:
 
     package_root.mkdir(parents=True)
     manifest: dict[str, object] = {
-        "protocol": PROTOCOL,
+        "protocol": str(args.protocol),
         "package": package_name,
         "scenario_id": package_name,
         "partition_seed": SEED,
         "binding_map_seed": int(args.binding_map_seed),
         "evaluation_seed": EVAL_SEED,
-        "gammas": GAMMAS,
+        "gammas": gammas,
+        "dirichlet_alpha": float(args.dirichlet_alpha),
+        "corruption_rate": float(args.corruption_rate),
         "model_names": MODEL_NAMES,
         "operators": operators,
         "seen_operators": seen,
@@ -357,14 +405,18 @@ def main() -> None:
             binding,
             binding_map_seed=int(args.binding_map_seed),
             scenario_id=package_name,
+            protocol=str(args.protocol),
+            dirichlet_alpha=float(args.dirichlet_alpha),
+            corruption_rate=float(args.corruption_rate),
         )["class_operator_map"],
         "conditions": {},
     }
     labels_by_client: dict[int, np.ndarray] = {}
     pairing: dict[int, dict[str, np.ndarray]] = {}
-    for condition, gamma in GAMMAS.items():
+    reference_condition = next(iter(gammas))
+    for condition, gamma in gammas.items():
         condition_root = package_root / "data" / condition
-        condition_record: dict[str, object] = {"clients": {}}
+        condition_record: dict[str, object] = {"clients": {}, "statistics": {}}
         for client_id in range(4):
             sources = np.asarray(partition[client_id], dtype=np.int64)
             arrays = generate_client_condition(
@@ -376,17 +428,38 @@ def main() -> None:
                 binding=binding,
                 seen=seen,
                 operator_to_id=operator_to_id,
+                corruption_rate=float(args.corruption_rate),
             )
-            if condition == "gamma00":
+            if condition == reference_condition:
                 pairing[client_id] = {
                     key: arrays[key].copy()
-                    for key in ("train_labels", "train_source_indices", "train_severity_ids")
+                    for key in (
+                        "train_labels",
+                        "train_source_indices",
+                        "train_severity_ids",
+                        "train_is_corrupted",
+                    )
                 }
             else:
                 for key, expected in pairing[client_id].items():
                     if not np.array_equal(arrays[key], expected):
                         raise ValueError(f"gamma pairing mismatch: client={client_id} key={key}")
             labels_by_client[client_id] = arrays["train_labels"].astype(np.int64)
+            corrupted = arrays["train_is_corrupted"].astype(np.bool_)
+            bound_operator = np.asarray(
+                [operator_to_id[binding[client_id][int(label)]] for label in arrays["train_labels"]],
+                dtype=np.uint8,
+            )
+            condition_record["statistics"][str(client_id)] = {
+                "samples": int(corrupted.size),
+                "corrupted_samples": int(corrupted.sum()),
+                "empirical_corruption_rate": float(corrupted.mean()),
+                "bound_operator_rate_among_corrupted": float(
+                    (arrays["train_corruption_ids"][corrupted] == bound_operator[corrupted]).mean()
+                )
+                if corrupted.any()
+                else None,
+            }
             condition_record["clients"][str(client_id)] = write_arrays(
                 condition_root / f"client_{client_id}", arrays
             )
@@ -407,6 +480,9 @@ def main() -> None:
             binding,
             binding_map_seed=int(args.binding_map_seed),
             scenario_id=package_name,
+            protocol=str(args.protocol),
+            dirichlet_alpha=float(args.dirichlet_alpha),
+            corruption_rate=float(args.corruption_rate),
         )
         metadata_path = condition_root / "metadata.json"
         metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
@@ -442,6 +518,7 @@ def main() -> None:
         "shared_fit_audit_split": True,
         "shared_initial_states": True,
         "operator_draw_changes_only_with_gamma": True,
+        "corruption_mask_identical": True,
     }
     manifest_path = package_root / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -454,7 +531,7 @@ def main() -> None:
             "bytes": archive_path.stat().st_size,
             "sha256": sha256_file(archive_path),
         }
-        (output_root / f"{PACKAGE_NAME}_archive_audit.json").write_text(
+        (output_root / f"{package_name}_archive_audit.json").write_text(
             json.dumps(audit, indent=2), encoding="utf-8"
         )
         print(json.dumps(audit, indent=2), flush=True)

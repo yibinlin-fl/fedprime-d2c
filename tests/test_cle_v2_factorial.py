@@ -6,7 +6,7 @@ from fedprime.engine.cle_v2_factorial import (
     paired_bootstrap_estimand,
     shuffled_binding_null,
 )
-from scripts.prepare_cle_v2_factorial_data import make_test_arrays
+from scripts.prepare_cle_v2_factorial_data import generate_client_condition, make_test_arrays
 from scripts.run_cle_v2_factorial import ARMS, arm_config
 
 
@@ -79,6 +79,44 @@ def test_fixed_test_grid_is_operator_complete_and_severity_matched():
     assert arrays["test_images"].shape == (8, 32, 32, 3)
     assert np.all(arrays["test_severity_ids"] == 3)
     assert np.array_equal(np.bincount(arrays["test_source_ids"]), np.full(4, 2))
+
+
+def test_mixed_corruption_mask_is_paired_across_gamma():
+    images = np.full((40, 32, 32, 3), 127, dtype=np.uint8)
+    labels = np.arange(40, dtype=np.int64) % 10
+    sources = np.arange(40, dtype=np.int64)
+    seen = ["gaussian_noise", "shot_noise"]
+    binding = {0: {label: seen[label % 2] for label in range(10)}}
+    operator_to_id = {name: index for index, name in enumerate(seen)}
+    null = generate_client_condition(
+        images,
+        labels,
+        sources,
+        client_id=0,
+        gamma=0.0,
+        binding=binding,
+        seen=seen,
+        operator_to_id=operator_to_id,
+        corruption_rate=0.5,
+    )
+    strong = generate_client_condition(
+        images,
+        labels,
+        sources,
+        client_id=0,
+        gamma=0.9,
+        binding=binding,
+        seen=seen,
+        operator_to_id=operator_to_id,
+        corruption_rate=0.5,
+    )
+    assert np.array_equal(null["train_is_corrupted"], strong["train_is_corrupted"])
+    assert np.array_equal(null["train_severity_ids"], strong["train_severity_ids"])
+    assert np.array_equal(null["train_source_indices"], strong["train_source_indices"])
+    clean = ~null["train_is_corrupted"]
+    assert np.all(null["train_corruption_ids"][clean] == 255)
+    assert np.all(null["train_severity_ids"][clean] == 0)
+    assert np.array_equal(null["train_images"][clean], images[sources][clean])
 
 
 def test_arm_configs_share_data_and_only_plugin_uses_annotations(tmp_path):

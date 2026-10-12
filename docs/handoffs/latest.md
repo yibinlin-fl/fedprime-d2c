@@ -1,6 +1,18 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-12
+Updated: 2026-10-13
+
+## 2026-10-13 中等难度CLE补充数据集已生成
+
+新增补充场景固定为held-out map2、Dirichlet `alpha=1.0`、private corruption rate `0.5`与
+`gamma={0,0.5,0.9}`；它不替换现有`alpha=0.5/rho=1.0/gamma=0.9` strong stress主场景。
+三种gamma严格共享source、label、severity、corruption mask、fit/audit split和初始化。完整包包含
+4x10000私有样本、1000-source x15-operator DSA网格、公共CIFAR-100和复用冻结checkpoint得到的
+三组PEW annotations。实际rho=`0.499325`，被损坏样本中的binding占比依次为
+`0.092275/0.543701/0.907401`；完整性审计PASS。压缩包大小`893421220` bytes，SHA256为
+`DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588`。当前只完成数据制品，
+尚未冻结或实现其OpenI训练协议，不得启动Formal。说明：
+`docs/experiments/current/CLE_V2_MODERATE_ALPHA10_RHO05_DATASET_2026_10_13_ZH.md`。
 
 ## 2026-10-12 Axis II默认AugMix泄漏已修复；旧local benchmark仅作工程诊断
 

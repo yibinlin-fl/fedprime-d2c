@@ -32,8 +32,10 @@ from fedprime.utils.env import seed_everything  # noqa: E402
 
 
 DATA_PROTOCOL = "cle_hfl_v2_paired_factorial_seed0_split0_v1"
+MODERATE_DATA_PROTOCOL = "cle_hfl_v2_moderate_alpha10_rho05_gamma_grid_seed0_split0_v1"
 SUPPORTED_DATA_PROTOCOLS = {
     DATA_PROTOCOL,
+    MODERATE_DATA_PROTOCOL,
     "cle_hfl_v2_cifar100_factorial_seed0_split0_v1",
     "cle_hfl_v2_taxonomy_stress_heldout_operator_v1",
 }
@@ -84,13 +86,23 @@ def resolve_device(raw: str) -> torch.device:
     return device
 
 
-def oracle_family_ids(operator_ids: np.ndarray, metadata: dict) -> np.ndarray:
+def oracle_family_ids(
+    operator_ids: np.ndarray,
+    metadata: dict,
+    is_corrupted: np.ndarray | None = None,
+) -> np.ndarray:
     family_to_pew = {"noise": 1, "blur": 2, "weather": 3, "digital": 4}
     id_to_family = {
         int(operator_id): family_to_pew[metadata["operator_families"][operator]]
         for operator, operator_id in metadata["operator_to_id"].items()
     }
-    return np.asarray([id_to_family[int(value)] for value in operator_ids], dtype=np.int64)
+    if is_corrupted is None:
+        return np.asarray([id_to_family[int(value)] for value in operator_ids], dtype=np.int64)
+    flags = np.asarray(is_corrupted, dtype=np.bool_)
+    result = np.zeros(operator_ids.shape, dtype=np.int64)
+    for index in np.flatnonzero(flags):
+        result[index] = id_to_family[int(operator_ids[index])]
+    return result
 
 
 def main() -> None:
@@ -191,7 +203,7 @@ def main() -> None:
         max_batches = args.max_batches
 
     condition_reports = {}
-    for condition in ("gamma00", "gamma09"):
+    for condition in manifest["gammas"]:
         data_root = package_root / "data" / condition
         metadata = json.loads((data_root / "metadata.json").read_text(encoding="utf-8"))
         annotation_root = asset_root / "annotations" / condition
@@ -212,8 +224,13 @@ def main() -> None:
             )
             path = annotation_root / f"client_{client_id}.npz"
             np.savez_compressed(path, **annotation)
+            corruption_mask_path = client_root / "train_is_corrupted.npy"
             oracle = oracle_family_ids(
-                np.load(client_root / "train_corruption_ids.npy", allow_pickle=False), metadata
+                np.load(client_root / "train_corruption_ids.npy", allow_pickle=False),
+                metadata,
+                np.load(corruption_mask_path, allow_pickle=False)
+                if corruption_mask_path.is_file()
+                else None,
             )
             client_correct = int((annotation["environment_ids"] == oracle).sum())
             correct += client_correct

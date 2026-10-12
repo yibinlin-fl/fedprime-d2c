@@ -15,6 +15,8 @@ if str(ROOT) not in sys.path:
 
 
 DATA_PROTOCOL = "cle_hfl_v2_paired_factorial_seed0_split0_v1"
+MODERATE_DATA_PROTOCOL = "cle_hfl_v2_moderate_alpha10_rho05_gamma_grid_seed0_split0_v1"
+SUPPORTED_DATA_PROTOCOLS = {DATA_PROTOCOL, MODERATE_DATA_PROTOCOL}
 PEW_PROTOCOL = "cle_v2_factorial_standard_pew_v1"
 ANNOTATION_PROTOCOL = "cle_v2_factorial_frozen_pew_annotations_v1"
 ARMS = ("h0_b", "h9_b", "l0_b", "l9_b", "h0_p", "h9_p", "l0_p", "l9_p")
@@ -76,15 +78,17 @@ def main() -> None:
     manifest_path = package_root / "manifest.json"
     require_file(manifest_path)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("protocol") != DATA_PROTOCOL:
+    if manifest.get("protocol") not in SUPPORTED_DATA_PROTOCOLS:
         raise ValueError("Unexpected paired factorial data protocol")
 
     operators = list(manifest["operators"])
     unseen_ids = {operators.index(name) for name in manifest["unseen_operators"]}
+    conditions = tuple(manifest["gammas"])
+    reference_condition = conditions[0]
     all_source_ids: list[np.ndarray] = []
     for client_id in range(4):
         paired = {}
-        for condition in ("gamma00", "gamma09"):
+        for condition in conditions:
             client_root = package_root / "data" / condition / f"client_{client_id}"
             record = manifest["conditions"][condition]["clients"][str(client_id)]
             arrays = {}
@@ -94,26 +98,45 @@ def main() -> None:
                 "train_corruption_ids",
                 "train_corruption_method_ids",
                 "train_severity_ids",
+                "train_is_corrupted",
                 "train_source_indices",
             ):
                 path = client_root / f"{name}.npy"
+                if name == "train_is_corrupted" and not path.is_file():
+                    arrays[name] = np.ones(int(args.samples_per_client), dtype=np.bool_)
+                    continue
                 require_file(path, record[f"{name}.npy"])
                 arrays[name] = np.load(path, allow_pickle=False)
             if arrays["train_labels"].size != int(args.samples_per_client):
                 raise ValueError(f"Unexpected client sample count: {condition}/client_{client_id}")
             if len(np.unique(arrays["train_source_indices"])) != arrays["train_labels"].size:
                 raise ValueError(f"Duplicate source IDs within client {client_id}")
-            if any(int(value) in unseen_ids for value in np.unique(arrays["train_corruption_ids"])):
+            corrupted_operator_ids = arrays["train_corruption_ids"][arrays["train_is_corrupted"]]
+            if any(int(value) in unseen_ids for value in np.unique(corrupted_operator_ids)):
                 raise ValueError("Unseen operator leaked into private training")
+            clean = ~arrays["train_is_corrupted"]
+            if clean.any() and (
+                not np.all(arrays["train_corruption_ids"][clean] == 255)
+                or not np.all(arrays["train_severity_ids"][clean] == 0)
+            ):
+                raise ValueError("Clean samples do not use the frozen clean sentinel/severity")
             if not np.array_equal(
                 arrays["train_corruption_ids"], arrays["train_corruption_method_ids"]
             ):
                 raise ValueError("Reporting operator arrays disagree")
             paired[condition] = arrays
-        for name in ("train_labels", "train_source_indices", "train_severity_ids"):
-            if not np.array_equal(paired["gamma00"][name], paired["gamma09"][name]):
+        for name in (
+            "train_labels",
+            "train_source_indices",
+            "train_severity_ids",
+            "train_is_corrupted",
+        ):
+            if any(
+                not np.array_equal(paired[reference_condition][name], paired[condition][name])
+                for condition in conditions[1:]
+            ):
                 raise ValueError(f"Gamma pairing mismatch: client={client_id} array={name}")
-        all_source_ids.append(paired["gamma00"]["train_source_indices"])
+        all_source_ids.append(paired[reference_condition]["train_source_indices"])
 
     concatenated = np.concatenate(all_source_ids)
     if np.unique(concatenated).size != concatenated.size:
@@ -179,7 +202,7 @@ def main() -> None:
             checkpoint,
             {"bytes": pew["checkpoint_bytes"], "sha256": pew["checkpoint_sha256"]},
         )
-        for condition in ("gamma00", "gamma09"):
+        for condition in conditions:
             annotation_root = package_root / "pew_standard/annotations" / condition
             annotation_manifest_path = annotation_root / "manifest.json"
             require_file(annotation_manifest_path)

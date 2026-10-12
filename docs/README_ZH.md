@@ -1,6 +1,19 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-02
+Updated: 2026-10-13
+
+## CLE-v2中等难度补充数据集
+
+held-out map2、Dirichlet `alpha=1.0`、private corruption rate `0.5`、
+`gamma={0,0.5,0.9}`的配对补充场景已生成并完成PEW annotation与完整性审计。它用于后续
+dose-response/外部边界验证，不替换现有strong stress主场景；当前尚未授权训练：
+
+```text
+docs/experiments/current/CLE_V2_MODERATE_ALPHA10_RHO05_DATASET_2026_10_13_ZH.md
+scripts/prepare_cle_v2_factorial_data.py
+scripts/prepare_cle_v2_factorial_pew.py
+scripts/audit_cle_v2_factorial.py
+```
 
 ## CLE中等强度剂量响应零训练审计
 

@@ -113,6 +113,12 @@ AugMix多视图： AugHFL / RAHFL
 哈希一致而让普通HFL基线生成无效AugMix视图。修复后的standard与AugMix代表臂都必须重新完成
 smoke/benchmark；旧v5 Axis II包禁止进入最终合并。
 
+旧v5 `local`两轮产物的诊断数值为：训练`3831.226s`，round-1/2分别为`1866.961s`与
+`1953.184s`，分析`35.665s`，显存峰值约`2.89GB`。batch trace显示4个图像视图，直接证实
+默认AugMix loader泄漏。若错误地线性外推40轮约需`21.28h/127.7`个V100积分；这个估计仅说明
+旧实现浪费程度，绝不能作为v6预算。作为参考，同日Axis I standard-loader PEW+BER两轮训练仅
+`412.342s`，旧Local链路慢约`9.29x`。v6仍需重新benchmark获取合法成本。
+
 ## 证据边界
 
 - benchmark只验证执行与成本，不是论文证据；

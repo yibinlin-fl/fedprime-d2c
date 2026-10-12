@@ -10,7 +10,10 @@ Axis I `pew_ber` budget64两轮V100 benchmark完成：训练`412.342s`、分析`
 
 Axis II首个`local` benchmark日志揭示旧v5配置虽设`cl_module=none, lambda_jsd=0`，却因默认
 `local_loader_mode=augmix`仍生成多视图、执行三倍前向和零权重JSD，并让增强视图更新BatchNorm。
-该任务不是Formal，允许完成用于诊断，但其成本和数值不得进入论文或推算修复后协议。
+下载产物已隔离审计：两轮训练共`3831.226s`，两轮分别为`1866.961s`和`1953.184s`，分析
+`35.665s`；显存峰值仅约`2.89GB`，而trace明确记录每个batch含4个`64x3x32x32`视图。这确认
+主要瓶颈是`num_workers=0`下的CPU在线AugMix与无效多视图计算，而不是Local/ERM或V100本身。
+该任务不是Formal，其DSA/accuracy与耗时不得进入论文或推算修复后协议。
 
 代码已升级为v6：Local/FedMD/FedProto/FedTGP/FedDF/KT-pFL/FCCL/RHFL强制使用standard
 单视图loader；只有AugHFL/RAHFL保留原生AugMix。trace新增独立label哈希；同loader家族要求

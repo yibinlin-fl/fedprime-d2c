@@ -1,4 +1,7 @@
-# CLE-HFL 网页端论文讨论交接（2026-09-25）
+# CLE-HFL 网页端论文讨论交接（2026-10-13协议同步版）
+
+> V0.6是不可变的网页端多Skill润色快照。当前事实与实验槽位在V0.7内部骨架中维护；
+> 新结果完成并审计后才生成V0.8。不得直接覆写V0.6。
 
 ## 当前论文身份
 
@@ -21,12 +24,22 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 6. External boundary: second controlled dataset, bounded taxonomy stress, Oracle granularity, limitations
 ```
 
+这六段链条现在使用“双难度、同一研究对象”的协议：
+
+- strong stress：`alpha=0.5/rho=1.0/gamma=0.9`，继续承担existence、DSA、local-first和
+  Axis I shortcut-objective attribution；
+- moderate utility：`alpha=1.0/rho=0.5/gamma={0,0.5,0.9}`，承担待补dose response和
+  Axis II HFL领域比较；
+- 两者都基于CIFAR-10与受控synthetic corruptions，因此moderate协议不是第二private dataset，
+  也不关闭现实外部有效性缺口。
+
 ## map1 与 map2 的职责
 
 - map1 已完成，用于证明改变 client-specific binding map 后，PEW+BER 的 DSA suppression 仍复现。
 - map2 未参与早期五臂筛选，并已有 40 轮三 training-seed 主方法结果，因此用于最终 matched
-  objective comparison、FedMD 跨通信复现和十行 practical HFL 领域表；FedTGP/RHFL因40轮各约31小时
-  暂列为长算力条件性扩展，full十二行能力保留。
+  strong-objective comparison。新moderate协议也固定同一map2，使binding身份不变，只改变
+  label-skew、corruption exposure与CLE强度；它用于dose response和HFL领域表。两个协议的结果
+  必须分表报告。
 - map1 不是不能用于领域表；若使用它，必须重跑主方法锚点，增加成本而不增加新科学问题。
 
 ## 已完成、可写入正文的核心事实
@@ -43,11 +56,12 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 ## 待补实验，禁止写成已完成
 
 1. FedMD 固定通信的四目标复现；
-2. held-out map2 十行 practical HFL 领域表 Formal（八个HFL context臂加两条AsymHFL锚点）；
-3. local-first training seeds 1/2 的成本重构后复验；
-4. 第二受控私有数据集；
-5. bounded taxonomy stress；
-6. JTT Formal 仅在正文要直接声称胜过 JTT 时需要。
+2. moderate held-out-map2剂量响应：ERM的`gamma=0/0.5/0.9`及`gamma=0.9` PEW+BER；
+3. moderate held-out-map2 HFL领域表（十个机制家族臂加两条AsymHFL锚点）；
+4. local-first training seeds 1/2 的成本重构后复验；
+5. 真正第二受控私有数据集；
+6. bounded taxonomy stress；
+7. JTT Formal 仅在正文要直接声称胜过 JTT 时需要。
 
 ## 当前 LaTeX
 
@@ -58,7 +72,8 @@ deliverables/cle_hfl_latex_v0_7_20260925/source/main.tex
 ```
 
 V0.7 已同步最终定位与实验槽位，但不是 submission-ready，不得把 `\evidenceneeded{}` 占位符
-删除或伪造数字。V0.6 保留为不可变历史版本。
+删除或伪造数字。2026-10-13已加入strong/moderate双难度职责、moderate剂量响应表和moderate
+Axis II表头。V0.6保留为不可变历史版本；待新Formal回填后再生成V0.8。
 
 ## 给网页端模型的约束
 

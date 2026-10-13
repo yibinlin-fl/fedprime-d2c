@@ -5,7 +5,12 @@
 > 落盘位置见`CLE_HFL_SUBMISSION_EXECUTION_READY_2026_09_17_ZH.md`。这不代表任何新
 > benchmark或Formal已获授权或已经运行。
 
-Updated: 2026-09-15
+> 2026-10-13 protocol update：原`alpha=0.5/rho=1.0/gamma=0.9`继续作为strong-stress
+> 机制协议，承担问题存在、DSA、local-first与Axis I目标归因；新增held-out map2、
+> `alpha=1.0/rho=0.5/gamma={0,0.5,0.9}`作为moderate协议，承担剂量响应、正常效用与
+> Axis II领域比较。两者不能混表，新协议仍是CIFAR-10，不能冒充M3第二private dataset。
+
+Updated: 2026-10-13
 
 ## 0. 用途与纪律
 
@@ -34,6 +39,7 @@ Updated: 2026-09-15
 | RQ6 | coarse family 分组是否足够？ | Oracle family/operator/random 已完成 | 粒度边界消融 |
 | RQ7 | 结论是否跨 private dataset？ | 未完成 | 外部有效性表 |
 | RQ8 | taxonomy 覆盖不完整时如何退化？ | PEW operator-LOO 审计已有；端到端 stress 待补 | stress/limitation |
+| RQ9 | 在语义更可学的条件下，CLE是否呈剂量响应、HFL方法处于什么位置？ | moderate数据已审计；训练待补 | dose-response表、Axis II领域表 |
 
 ## 2. 已完成、可直接进入论文的实验
 
@@ -180,6 +186,28 @@ delta_Comm  = delta_HFL - delta_Local
 
 ## 4. 强烈建议补的实验
 
+### S0. moderate CLE剂量响应与学习水平门槛
+
+目的：把“强压力协议下的低准确率”与“binding-directed shortcut”拆开，并在仍保留一半clean
+私有样本的条件下检验CLE强度变化。该实验是第二个受控难度协议，不是第二private dataset。
+
+冻结数据因素：
+
+- private task：CIFAR-10；held-out binding map2；partition seed 0；
+- Dirichlet `alpha=1.0`；private corruption rate `rho=0.5`；
+- `gamma in {0,0.5,0.9}`严格共享source、label、corruption mask、severity、fit/audit split与初始化；
+- PEW checkpoint保持冻结，不因新协议重新训练或调参；
+- train-time方法不得读取真实operator/binding；真实信息只用于受控生成和DSA评价。
+
+最小科学矩阵：
+
+1. `ERM, gamma=0/0.5/0.9`：检验DSA剂量响应及clean/corrupted utility；
+2. `PEW+BER, gamma=0.9`：与同条件ERM形成方法锚点；
+3. 上述`gamma=0.9`两行可直接作为Axis II的AsymHFL锚点，不重复训练。
+
+先做短预算学习水平门槛；只有clean与整体utility显示可学习、DSA管线无缺失，才晋级40轮Formal。
+短预算结果只用于是否晋级，不能进入论文主表。
+
 ### S1. bounded taxonomy stress
 
 目的不是证明开放世界鲁棒，而是量化 PEW taxonomy 覆盖不完整时方法如何退化。
@@ -194,7 +222,7 @@ delta_Comm  = delta_HFL - delta_Local
 
 无论结果好坏都可进入论文：成功说明有限覆盖鲁棒性，失败则定量确定 applicability boundary。
 
-### S2. 十臂protocol-matched HFL context table
+### S2. moderate协议的HFL mechanism-family context table
 
 目的：说明 CLE 不是只在一个自定义通信实现上出现，并把工作放回 HFL 文献坐标。
 
@@ -211,9 +239,15 @@ delta_Comm  = delta_HFL - delta_Local
 - AugHFL-fidelity；
 - RAHFL anchor。
 
-先审计算法忠实度，再在相同 CLE scenario 下报告 standalone baseline 的 DSA 与 utility。早期 12-round
+最终主表统一使用moderate held-out-map2：`alpha=1.0/rho=0.5/gamma=0.9`、training seed 0、
+同一初始化、训练预算与paired operator grid。再在相同scenario下报告standalone baseline的DSA与
+clean/corrupted/overall utility。早期12-round
 适配器结果只作筛选，不能进入最终胜负表。该表用于“背景比较”，不承担 BER 因果归因；BER 的
 归因仍由 matched ERM/CVaR/PEW+GroupDRO 四臂提供。
+
+旧strong协议下已启动或完成的Local/FedMD结果只保留为补充压力证据，不得与moderate主表混合。
+正文领域表另加两条matched AsymHFL锚点：ERM与PEW+BER，因此完整可呈现十二行；长时方法可依
+算力与忠实度审计放入附录，但不得事后按结果好坏筛选。
 
 ## 5. 条件性可选实验
 
@@ -251,20 +285,25 @@ KT-pFL/FCCL 的独立 Base-vs-PEW+BER runner 已 smoke，但只有论文仍要�
 ## 7. 推荐执行顺序与停止点
 
 ```text
-P0  冻结 M1 协议、门槛和成本
- -> M1 map2 40-round seeds 1/2
- -> 若主要 DSA 方向不稳定，先重新评估论文主张，不补更多实验掩盖
+P0  保留已完成strong-stress证据；审计当前仍在运行/返回的strong任务
+ -> 不把其低准确率与moderate主表混填
 
-P1  M2 local-first seeds 1/2
- -> 若 local-first 不稳定，把结论降级为 seed-0 controlled finding
+P1  适配moderate输入、clean-mask评价和gamma=0.5；本地smoke
+ -> 运行短预算学习水平/成本门槛，不作为科学证据
 
-P2  设计、审计并 smoke M3 第二 private dataset
- -> benchmark 后由用户决定是否启动多 seed Formal
+P2  moderate dose-response Formal
+ -> ERM gamma 0/0.5/0.9 + PEW+BER gamma 0.9
 
-P3  S1 bounded taxonomy stress
- -> 成功或失败都报告边界，不据此开发 PEW-v2
+P3  moderate Axis II HFL领域表
+ -> 复用P2两条AsymHFL锚点；其余机制家族使用同一协议
 
-P4  根据目标会议页数和审稿意见决定 S2/O1/O2/O3/O4
+P4  M2 local-first seeds 1/2（成本可承受时恢复）
+ -> 若不稳定，把结论降级为seed-0 controlled finding
+
+P5  M3真正第二private dataset；随后S1 bounded taxonomy stress
+ -> 成功或失败都报告边界，不据此开发PEW-v2
+
+P6  根据目标会议页数和审稿意见决定O1/O2/O3/O4
 ```
 
 每一步完成后立即更新主表、limitations、source-of-uncertainty 描述和当前 handoff；不要等全部跑完
@@ -276,6 +315,8 @@ P4  根据目标会议页数和审稿意见决定 S2/O1/O2/O3/O4
 
 - 当前全部已完成证据；
 - M1 map2 方法多训练种子；
+- moderate剂量响应与学习水平表；
+- moderate Axis II HFL机制家族表；
 - M2 local-first 多训练种子；
 - M3 第二 private dataset；
 - 诚实保留 taxonomy-assisted 与 mixed utility 限制。

@@ -63,6 +63,20 @@ gamma09 diagnostic coarse-group accuracy = 61.4025%
 
 这些 PEW 数字只描述 proxy quality，不证明 PEW+BER 有效。
 
+## 在论文中的身份
+
+该制品可以作为论文“受控CLE benchmark protocol / evaluation testbed”的一部分，具体包括：
+
+- 将客户端标签偏斜`alpha`、损坏暴露率`rho`和class--operator binding强度`gamma`显式分开；
+- 在gamma条件间冻结source、label、mask、severity、split与初始化，支持配对剂量响应；
+- 同时提供训练数据、sealed operator metadata、paired DSA grid、PEW proxy与完整manifest；
+- 允许把普通corruption difficulty、label skew和directional shortcut分开报告。
+
+它不应单独宣称为“新真实数据集”：private task仍是CIFAR-10，corruption与binding均为受控合成。
+论文贡献措辞应是“a controlled CLE-HFL construction and evaluation protocol”，并与paired DSA、
+local-first归因和PEW+BER共同构成闭环。若公开发布，应同时提供生成器、固定seeds/maps、manifest、
+hash、信息边界和许可证说明，而不是只发布一个tar包。
+
 ## 本地制品
 
 ```text
@@ -75,6 +89,9 @@ C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\cle_v2_moderate_alpha10_rho05\cle_
 archive bytes = 893421220
 archive SHA256 = DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588
 ```
+
+2026-10-13二次包审计：压缩包178个成员均可流式读取，解压总字节`986797088`；三组PEW
+annotation均为每客户端10000项、取值在`0..5`，压缩包大小与SHA256保持一致。
 
 当前只完成数据生成、PEW annotation 和完整性审计。尚未冻结训练矩阵、实现对应 OpenI runner，
 也未授权 benchmark/Formal；不得把数据统计或 smoke 当作论文方法证据。

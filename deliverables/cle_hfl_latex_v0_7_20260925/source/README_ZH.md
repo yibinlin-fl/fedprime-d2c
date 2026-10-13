@@ -27,4 +27,13 @@
 - FedMD four-objective cross-communication replication；
 - held-out-map2 HFL mechanism-family Formal table。
 
+## 2026-10-13 双难度协议
+
+- strong stress：CIFAR-10、`alpha=0.5`、`rho=1.0`、`gamma=0.9`，用于问题存在、DSA、
+  local-first和Axis I shortcut-objective attribution；绝对准确率不得冒充普通CIFAR-10性能。
+- moderate utility：CIFAR-10、`alpha=1.0`、`rho=0.5`、`gamma={0,0.5,0.9}`，用于待补
+  dose-response与Axis II完整HFL机制家族表。
+- moderate协议不是第二private dataset，不能关闭外部有效性缺口。
+- V0.6不可变；本骨架只同步实验职责，未回填任何不存在的结果。
+
 benchmark/smoke 结果不得填写为 Formal 科学证据。

@@ -1,6 +1,6 @@
 # CLE-HFL V0.7实验表矩阵
 
-Updated: 2026-09-25
+Updated: 2026-10-13
 
 | 论文位置 | 表格文件 | 当前证据 | 待补实验 | 允许支持的结论 |
 |---|---|---|---|---|
@@ -8,7 +8,8 @@ Updated: 2026-09-25
 | Main Table 2 | `local_first_multiseed.tex` | seed 0 | training seeds 1/2 | local-first在训练随机性下是否复现 |
 | Main Table 3 | `map2_method_comparison.tex` | 四臂seeds 0/1/2 Formal完成 | O1可选 | BER与ERM/CVaR/共享PEW-GroupDRO的matched比较及训练随机性稳定性 |
 | Main Table 4 | `cross_setting_dataset.tex` | original/map1/FedDF seed 0；map2三seed | second private dataset + FedMD four-objective replication | 跨binding、通信底座和第二private task边界 |
-| Main Table 5 | `hfl_context_baselines.tex` | AsymHFL两行已有；十个HFL行待跑 | held-out-map2 Formal | CLE在代表性HFL协议与机制家族中的文献坐标；FedTGP为protocol-matched core adapter |
+| New Main/Appendix | `moderate_dose_response.tex` | 新数据生成与审计完成；训练结果待跑 | gamma 0/0.5/0.9 ERM + gamma0.9 PEW+BER | 在固定partition/mask下区分label skew与CLE强度，并报告正常效用 |
+| Main Table 5 | `hfl_context_baselines.tex` | 新moderate协议待跑；旧strong Local/FedMD只作补充压力证据 | moderate map2 gamma0.9 Formal | CLE在代表性HFL与corruption-robust机制家族中的位置 |
 | Appendix | `oracle_granularity.tex` | 已完成 | 无 | correspondence重要、operator粒度增益有限 |
 | Appendix | `appendix/taxonomy_stress.tex` | 无 | bounded taxonomy stress | 一个预注册未见operator下的退化边界 |
 | Appendix | `appendix/pew_audit.tex` | 已完成distribution audit | 可补PEW confusion | BER改变有效支持结构，不保证模型性能 |
@@ -19,10 +20,12 @@ Updated: 2026-09-25
 ## 填表顺序
 
 ```text
-held-out map2三seed -> 已完成：Main Table 3/4 + per-client + seed table
+strong-stress held-out map2三seed -> 已完成：Main Table 3/4 + per-client + seed table
+moderate dose response -> 新表；先完成学习水平门槛
+moderate HFL context -> Main Table 5
 local-first seeds 1/2 -> Main Table 2 + seed table
 second private dataset -> Main Table 4 + seed table
-HFL context Formal -> Main Table 5
+旧strong HFL context -> 只作补充压力证据，不与moderate主表混填
 optional JTT Formal -> Main Table 3 JTT row（仅在需要正式JTT主张时）
 bounded taxonomy stress -> taxonomy stress appendix
 benchmarks -> computation cost appendix

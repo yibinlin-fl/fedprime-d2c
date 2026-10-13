@@ -3,6 +3,12 @@
 本目录从 V0.6 不可变快照派生。V0.7 完成的是论文定位与实验骨架同步，不是最终投稿稿，也没有
 把待运行实验写成已完成结果。
 
+2026-10-13补充：V0.6继续保持不可变；V0.7工作骨架已加入双难度协议。原
+`alpha=0.5/rho=1.0/gamma=0.9`只承担strong-stress诊断与方法归因；新
+`alpha=1.0/rho=0.5/gamma={0,0.5,0.9}`承担待验证的剂量响应、正常效用和Axis II领域表。
+新协议仍是CIFAR-10，不得误写为第二private dataset。所有新表项均保持pending，待Formal回填后
+再生成V0.8。
+
 主要变化：
 
 1. 统一定位为 CLE-HFL 的 diagnosis--attribution--mitigation study；

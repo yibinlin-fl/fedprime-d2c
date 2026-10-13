@@ -17,7 +17,7 @@ The experiments use matched contrasts rather than a single cross-protocol leader
 
 \subsection{Axis I: Matched Shortcut-Objective Attribution}
 
-A five-arm 12-round screen was used for method selection only. JTT therefore remains screening-only and is not part of the Formal comparison. The held-out map2 Formal uses 40 rounds and four matched arms: ERM, protocol-matched CVaR-DRO, PEW+GroupDRO, and PEW+BER. They share the same partition, training/evaluation seed, initial states, private batch trajectory, and strict HFL communication protocol. PEW+GroupDRO and PEW+BER receive the same PEW group assignments.
+A five-arm 12-round screen was used for method selection only. JTT therefore remains screening-only and is not part of the Formal comparison. Axis I deliberately retains the strong-stress held-out-map2 setting ($\alpha=0.5$, private corruption rate $1.0$, and $\gamma=0.9$) and compares four matched arms: ERM, protocol-matched CVaR-DRO, PEW+GroupDRO, and PEW+BER. They share the same partition, training/evaluation seed, initial states, private batch trajectory, and strict HFL communication protocol. PEW+GroupDRO and PEW+BER receive the same PEW group assignments. Its primary outcome is binding-directed shortcut use measured by DSA; task utility remains reported as a separate outcome rather than hidden or interpreted as ordinary clean-CIFAR performance.
 
 \input{tables/map2_method_comparison}
 
@@ -59,13 +59,25 @@ To test the stronger mechanism-level question under a classic and computationall
 
 \evidenceneeded{second private dataset; dataset and protocol pending.}
 
+\subsection{Moderate CLE Dose Response and Utility}
+
+The strong-stress protocol intentionally combines severe label skew, corruption of every private image, and strong class--operator binding. It is suitable for mechanism stress testing but can confound low semantic utility with shortcut dependence. A separate, pre-specified moderate protocol keeps the private task and held-out binding map fixed while using Dirichlet $\alpha=1.0$, private corruption rate $\rho=0.5$, and $\gamma\in\{0,0.5,0.9\}$. For sample $i$ at client $k$, a fixed corruption indicator $C_{ki}\sim\mathrm{Bernoulli}(\rho)$ is shared across all three $\gamma$ conditions. Conditional on $C_{ki}=1$,
+\[
+P(E=e\mid Y=c,k,C=1)=\frac{1-\gamma}{11}+\gamma\mathbf{1}[e=b_k(c)].
+\]
+Sources, labels, corruption masks, severities, fit/audit splits, model initialization, public data, and the paired operator grid are held fixed. Thus $\alpha$ controls client label support, $\rho$ controls exposure to corruption, and $\gamma$ controls class-conditional operator concentration. This protocol is a second controlled difficulty regime on CIFAR--10, not a second private dataset.
+
+\input{tables/moderate_dose_response}
+
+\evidenceneeded{Formal moderate-protocol ERM dose response at gamma 0/0.5/0.9 and matched PEW+BER at gamma 0.9.}
+
 \subsection{Axis II: HFL Mechanism-Family Context}
 
-Axis II asks a different question from the matched objective study: whether representative heterogeneous-FL communication and robustness mechanisms naturally remove CLE. The planned context includes Local/ERM, FedMD, FedProto, FedTGP, FedDF, KT-pFL, FCCL, RHFL, AugHFL, and RAHFL, plus matched AsymHFL--ERM and AsymHFL+PEW+BER rows. All rows use held-out map2, training seed 0, 40 rounds, 16 local batches per client-round, the same initial states, and the same paired operator evaluation grid. Map2 is used because it was not used for five-arm method screening and already supplies the completed matched AsymHFL rows; using map1 would require rerunning those anchors under a new final-table protocol. The implementations provide mechanism-family context rather than untouched official-recipe leaderboards; FedTGP, for example, is a protocol-matched core adapter. Existing benchmark and smoke outputs are engineering checks and are not used as scientific results.
+Axis II asks a different question from the matched objective study: whether representative heterogeneous-FL communication and robustness mechanisms naturally remove CLE while retaining usable task semantics. The planned context includes Local/ERM, FedMD, FedProto, FedTGP, FedDF, KT-pFL, FCCL, RHFL, AugHFL, and RAHFL, plus matched AsymHFL--ERM and AsymHFL+PEW+BER rows. All final rows use the moderate held-out-map2 condition ($\alpha=1.0$, $\rho=0.5$, $\gamma=0.9$), training seed 0, the same 40-round budget, initial states, and paired operator evaluation grid. Ordinary HFL mechanisms and corruption-robust AugHFL/RAHFL are retained because communication robustness, corruption robustness, and directional-shortcut suppression are distinct capabilities. The implementations provide mechanism-family context rather than untouched official-recipe leaderboards; FedTGP, for example, is a protocol-matched core adapter. Existing strong-stress Local/FedMD runs are retained as supplementary stress evidence and are not silently mixed into this moderate-protocol table.
 
 \input{tables/hfl_context_baselines}
 
-\evidenceneeded{Formal scientific metrics for the held-out-map2 HFL mechanism-family context table.}
+\evidenceneeded{Formal scientific metrics for the moderate held-out-map2 HFL mechanism-family context table.}
 
 \begin{figure*}[t]
 \centering
@@ -80,7 +92,7 @@ A non-deployable Oracle audit compares true family grouping, true operator group
 
 \subsection{Remaining Evidence Placeholders}
 
-The internal manuscript keeps unresolved evidence visible. The three-seed held-out-map objective comparison is complete. Remaining experiments are the multi-seed local-first extension, a second controlled private dataset, a bounded taxonomy stress test, the Formal held-out-map HFL context table, and the FedMD four-objective replication. A JTT Formal is optional and is needed only if the final paper makes a direct empirical superiority claim over JTT.
+The internal manuscript keeps unresolved evidence visible. The existing three-seed strong-stress held-out-map objective comparison is complete under its frozen protocol; a higher-budget seed-0 repeat is being audited separately and must not be mixed before completion. Remaining experiments are the moderate dose response, the moderate-protocol HFL context table, the multi-seed local-first extension, a genuinely second private dataset, a bounded taxonomy stress test, and the FedMD four-objective replication. A JTT Formal is optional and is needed only if the final paper makes a direct empirical superiority claim over JTT.
 
 \evidenceneeded{local-first training seeds 1/2.}
 

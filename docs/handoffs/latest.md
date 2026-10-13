@@ -14,6 +14,14 @@ Updated: 2026-10-13
 尚未冻结或实现其OpenI训练协议，不得启动Formal。说明：
 `docs/experiments/current/CLE_V2_MODERATE_ALPHA10_RHO05_DATASET_2026_10_13_ZH.md`。
 
+2026-10-13论文协议职责已同步：V0.6保持不可变，V0.7内部骨架、投稿实验矩阵与网页端交接均
+采用“双难度、不混表”的结构。strong协议继续支撑问题存在、DSA、local-first和Axis I；moderate
+协议待实现后支撑`gamma=0/0.5/0.9`剂量响应、clean/corrupted utility与Axis II HFL领域表。
+moderate仍是CIFAR-10，不能替代M3第二private dataset。新数据压缩包已二次流式审计：178个成员
+全部可读，解压总字节`986797088`，PEW annotation形状与取值合法，压缩包bytes/SHA256与上文
+完全一致。因包大于512MB，未来需命令行/API上传；但OpenI runner尚未适配gamma05、clean mask与
+分层utility评价，当前不得上传后直接启动Formal。
+
 ## 2026-10-12 Axis II默认AugMix泄漏已修复；旧local benchmark仅作工程诊断
 
 Axis I `pew_ber` budget64两轮V100 benchmark完成：训练`412.342s`、分析`6.750s`，输入、合同、

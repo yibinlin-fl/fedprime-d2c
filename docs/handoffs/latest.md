@@ -1,13 +1,21 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-13
+Updated: 2026-10-14
 
-## 2026-10-13 Moderate Axis II三项plain Formal运行中
+## 2026-10-14 Moderate Axis II前三项plain Formal完成
 
-用户已在三个OpenI账号分别启动moderate map2、training seed0、40轮x64 batches的单臂Formal：
-`local_erm`、`fedproto_adapter`、`fedmd_adapter`。三项必须各自在单个任务中完整结束，不跨账号
-拼接轮次；结果到齐前不比较中间accuracy。`axis2_asym` benchmark尚未启动，用户外出返回后再跑。
-AugHFL/RAHFL Formal因每臂机械估算约17小时/102积分，当前仍禁止启动。
+moderate map2、training seed0、40轮x64 batches的`local_erm`、`fedmd_adapter`和
+`fedproto_adapter`三个单臂Formal均完成并通过审计。三臂合同一致且160条local-batch trace的
+SHA256完全相同。正式结果为：Local DSA/Grid/Mixed=`0.168374/39.830/45.467`，FedMD=
+`0.167835/38.732/44.389`，FedProto=`0.160788/39.250/44.868`。三臂DSA均显著超过约0.027的
+shuffled-binding p95。FedMD相对Local的配对DSA差异`-0.000539`且95% CI跨零；FedProto相对
+Local降低`0.007587`（约4.51%，CI`[-0.009359,-0.005880]`），但统一utility略低。结论是普通
+HFL通信没有自动消除CLE，FedProto只有小幅shortcut缓解，不能替代针对性方法。
+
+运行时间分别为Local `3.345h`、FedMD `3.364h`、FedProto `2.901h`。报告：
+`deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md`。
+八行表当前完成第1--3行；FedDF及两条AsymHFL Formal未跑。`axis2_asym` benchmark仍是下一核心
+工程门槛。AugHFL/RAHFL benchmark已通过，但Formal因每臂机械估算约17小时/102积分暂缓。
 
 ## 2026-10-13 Moderate Axis II robust benchmark通过但Formal成本高
 

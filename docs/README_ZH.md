@@ -1,6 +1,6 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-13
+Updated: 2026-10-14
 
 ## CLE-v2中等难度补充数据集
 
@@ -20,7 +20,11 @@ scripts/analyze_cle_v2_moderate.py
 scripts/openi_cle_v2_moderate_entry.py
 deliverables/cle_v2_moderate_axis2_plain_benchmark_20261013/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_axis2_robust_benchmark_20261013/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md
 ```
+
+Axis II八行表的前三项seed-0 Formal（Local、FedMD、FedProto）已经完成并通过跨账号batch配对
+审计；其余行仍待补，不能将前三行单独写成完整领域排名。
 
 论文协议职责已同步到以下三个source of truth：V0.6保持不可变，V0.7只更新实验骨架，待结果后
 才生成V0.8；moderate协议仍是CIFAR-10，不能写成第二private dataset。

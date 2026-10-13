@@ -95,7 +95,11 @@ Smoke和benchmark的数值都不能进入论文。
 - `local_erm`真实CPU smoke完成一轮一batch、四模型checkpoint和全指标分析。
 - 3项聚焦测试通过。
 
-目前只完成工程验证，尚未授权或启动新的付费Formal。
+2026-10-14状态：`local_erm`、`fedmd_adapter`和`fedproto_adapter`三个seed-0、40轮x64 batches
+Formal已经完成并通过合同、完成标记、统一指标及跨账号batch轨迹审计；结果见
+`deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md`。
+`feddf_fidelity`及两条AsymHFL Formal尚未运行。AugHFL/RAHFL仅完成benchmark，因每臂Formal
+机械估算约17小时/102积分而暂缓。`dose_all`尚未运行。
 
 ## 7. OpenI上传状态
 

@@ -5144,3 +5144,18 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - Moderate `axis2_robust` benchmark完成AugHFL/RAHFL两臂：2/2完成、正确AugMix/JSD路径、
   finite loss、trace完全匹配。训练`765.594s`、分析`122.334s`。机械外推每个Formal约
   `17.01h/102积分`，因此先完成核心AsymHFL对照，再视积分运行两个robust单臂Formal。
+
+## 2026-10-14：Moderate Axis II前三项plain Formal完成
+
+- `Local/ERM`、`FedMD`和`FedProto`在同一moderate map2、alpha=1.0、rho=.5、gamma=.9、seed0、
+  40轮x64 batches合同下完成；三臂160行local-batch trace SHA256均为
+  `5AEB50E9D1BBFC3F7F6C3081218F16AA10140148579EF4D0FC420CAE19A53DB7`。
+- Local的DSA/Grid/Clean/Corr/Mixed为`0.168374/39.830/51.425/39.508/45.467`；FedMD为
+  `0.167835/38.732/50.400/38.378/44.389`；FedProto为
+  `0.160788/39.250/50.800/38.937/44.868`。
+- 三臂DSA均显著高于约0.027的shuffled-binding p95。FedMD-Local DSA差异`-0.000539`，
+  source-bootstrap 95% CI `[-0.002522,0.001420]`；FedProto-Local为`-0.007587`，CI
+  `[-0.009359,-0.005880]`。FedProto仅小幅降低shortcut且统一utility略低，不能称解决CLE。
+- 训练时间为Local `12043.509s`、FedMD `12111.212s`、FedProto `10442.972s`。这些是seed0
+  单场景结果，不覆盖training randomness或外部数据。完整报告：
+  `deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md`。

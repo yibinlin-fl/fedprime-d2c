@@ -5141,3 +5141,6 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - Moderate `axis2_plain` benchmark完成Local/FedMD/FedProto/FedDF四臂：4/4完成、finite loss、
   四臂local-batch trace哈希完全一致，全套统一指标生成。训练`298.182s`、分析`221.839s`，总计
   `8.667min`。所有两轮数值均非科学证据；结果只授权plain四臂进入独立40轮Formal。
+- Moderate `axis2_robust` benchmark完成AugHFL/RAHFL两臂：2/2完成、正确AugMix/JSD路径、
+  finite loss、trace完全匹配。训练`765.594s`、分析`122.334s`。机械外推每个Formal约
+  `17.01h/102积分`，因此先完成核心AsymHFL对照，再视积分运行两个robust单臂Formal。

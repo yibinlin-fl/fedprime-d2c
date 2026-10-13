@@ -2,6 +2,18 @@
 
 Updated: 2026-10-13
 
+## 2026-10-13 Moderate Axis II robust benchmark通过但Formal成本高
+
+OpenI `axis2_robust` benchmark完成AugHFL与RAHFL两臂：2/2完成，均使用正确AugMix多视图与
+`lambda_jsd=12`；RAHFL额外使用DCL和AsymHFL-val。`skip_nonfinite=false`下local/communication
+loss全部有限，两臂8行trace SHA256完全一致，全套统一指标生成。训练`765.594s`、分析
+`122.334s`，总计`14.799min`。Benchmark数值不是科学证据。
+
+按更新量机械外推，两臂40轮x64 batches Formal合计约34.03 V100小时，平均每臂约17.01小时/
+102积分；单臂应预留110--120积分。因只剩两个有积分账号，下一步优先运行较便宜且对论文核心
+更关键的`axis2_asym` benchmark；若Local Formal正在运行则继续，不中断。报告：
+`deliverables/cle_v2_moderate_axis2_robust_benchmark_20261013/RESULT_SUMMARY_ZH.md`。
+
 ## 2026-10-13 Moderate Axis II plain benchmark通过
 
 OpenI `axis2_plain` benchmark完成Local/ERM、FedMD、FedProto和FedDF四臂，合同为moderate

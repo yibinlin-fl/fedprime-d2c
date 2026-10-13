@@ -2,6 +2,25 @@
 
 Updated: 2026-10-13
 
+## 2026-10-13 Moderate剂量响应/Axis II runner已实现并完成本地smoke
+
+冻结输入`alpha=1.0, rho=0.5, map2, seed0/split0, gamma={0,0.5,0.9}`现已有独立runner、
+分析器与OpenI入口：`scripts/run_cle_v2_moderate.py`、`scripts/analyze_cle_v2_moderate.py`和
+`scripts/openi_cle_v2_moderate_entry.py`。剂量响应为AsymHFL-ERM的gamma三点加gamma09
+PEW+BER；Axis II为Local/FedMD/FedProto/FedDF/AugHFL/RAHFL/AsymHFL-ERM/
+AsymHFL+PEW+BER八行。分析器统一输出DSA、client DSA、operator-grid、clean、balanced
+corrupted及rho05 mixed accuracy和shuffled-binding null。
+
+完整输入结构fail-closed审计、dose prepare-only、真实moderate Local CPU smoke（1轮x1 batch、
+4 checkpoints）及完整指标推理已通过；3项聚焦测试通过。Smoke数值不是科学证据。当前未启动
+任何新的付费Formal；下一步先提交/push后由用户决定是否上传大于512MB的输入并启动OpenI
+benchmark。指南：`docs/experiments/current/CLE_V2_MODERATE_AXIS2_OPENI_2026_10_13_ZH.md`。
+
+旧strong Local/FedMD 40轮包已审计为完整有效，但只归档、不进moderate Axis II主表。Local：
+DSA=`0.303081`、grid acc=`27.2100`、训练`11.14h`；FedMD：DSA=`0.276923`、grid acc=
+`26.7683`、训练`11.21h`。两者shuffled null均显著，确认strong协议shortcut存在；FedMD仅使
+DSA下降`0.026159`且效用未改善，不能替代新的moderate领域比较。
+
 ## 2026-10-13 Axis I strong budget64 Formal运行状态
 
 用户提供的OpenI日志`zhou1_allt492732840-log (2).txt`显示任务未卡死：ERM、CVaR-DRO与

@@ -5120,3 +5120,18 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - FedMD四目标ERM与领域表FedMD的loader协议不同，resolved config不等价，禁止复用同一结果行。
 - 用户已启动FedMD四目标map2、seed-0、40轮Formal；是否补seed 1/2由seed-0冻结门槛与论文主张
   决定，不自动扩展。
+
+## 2026-10-13：旧strong Local/FedMD归档与moderate Axis II工程就绪
+
+- 旧strong `alpha=.5/rho=1/gamma=.9/map2/seed0` Local与FedMD均完整跑满40轮x64 batches。
+  Local训练`40107.02s`，DSA `0.303081`，operator-grid accuracy `27.2100`；FedMD训练
+  `40364.88s`，DSA `0.276923`，grid accuracy `26.7683`。两者shuffled-binding null均显著；
+  FedMD相对Local只降低DSA `0.026159`且效用未改善。它们只作为strong内部机制归档，不进入
+  moderate效用/领域主表。
+- 新moderate输入固定`alpha=1.0/rho=.5/gamma={0,.5,.9}/map2/seed0/split0`。数据包
+  `893421220` bytes，SHA256
+  `DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588`，完整性审计PASS。
+- 已实现剂量响应四臂和Axis II八行的独立runner/OpenI入口/统一分析器。分析同时报告DSA、
+  四client DSA、operator-grid、clean、balanced-corrupted、rho05 mixed utility及shuffled null。
+- 输入fail-closed审计、dose prepare-only、Local真实CPU一轮一batch smoke与完整分析通过；3项聚焦
+  测试通过。所有smoke数值无科学意义，付费Formal尚未启动。

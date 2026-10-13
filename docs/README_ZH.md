@@ -6,13 +6,18 @@ Updated: 2026-10-13
 
 held-out map2、Dirichlet `alpha=1.0`、private corruption rate `0.5`、
 `gamma={0,0.5,0.9}`的配对补充场景已生成并完成PEW annotation与完整性审计。它用于后续
-dose-response/外部边界验证，不替换现有strong stress主场景；当前尚未授权训练：
+dose-response、效用评价与Axis II领域比较，不替换现有strong stress主场景；当前已完成独立
+runner、OpenI入口及本地真实smoke，但尚未授权付费Formal：
 
 ```text
 docs/experiments/current/CLE_V2_MODERATE_ALPHA10_RHO05_DATASET_2026_10_13_ZH.md
 scripts/prepare_cle_v2_factorial_data.py
 scripts/prepare_cle_v2_factorial_pew.py
 scripts/audit_cle_v2_factorial.py
+docs/experiments/current/CLE_V2_MODERATE_AXIS2_OPENI_2026_10_13_ZH.md
+scripts/run_cle_v2_moderate.py
+scripts/analyze_cle_v2_moderate.py
+scripts/openi_cle_v2_moderate_entry.py
 ```
 
 论文协议职责已同步到以下三个source of truth：V0.6保持不可变，V0.7只更新实验骨架，待结果后

@@ -23,8 +23,8 @@ DSA下降`0.026159`且效用未改善，不能替代新的moderate领域比较�
 
 新moderate输入已于2026-10-13上传至公开OpenI数据集
 `chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`。远端文件名与本地文件名一致，
-CLI显示`100% / 852.0MiB`并以exit code 0结束。当前代码提交为`49b7bd5`，尚未push，因此数据虽
-可挂载，但在push完成前不得创建使用新入口的OpenI任务。
+CLI显示`100% / 852.0MiB`并以exit code 0结束。runner提交`49b7bd5`与上传记录提交`eab7323`
+已推送到`origin/main`；现在允许按指南创建moderate benchmark，但Formal仍未授权。
 
 ## 2026-10-13 Axis I strong budget64 Formal运行状态
 

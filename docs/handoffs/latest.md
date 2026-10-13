@@ -2,6 +2,13 @@
 
 Updated: 2026-10-13
 
+## 2026-10-13 Moderate Axis II三项plain Formal运行中
+
+用户已在三个OpenI账号分别启动moderate map2、training seed0、40轮x64 batches的单臂Formal：
+`local_erm`、`fedproto_adapter`、`fedmd_adapter`。三项必须各自在单个任务中完整结束，不跨账号
+拼接轮次；结果到齐前不比较中间accuracy。`axis2_asym` benchmark尚未启动，用户外出返回后再跑。
+AugHFL/RAHFL Formal因每臂机械估算约17小时/102积分，当前仍禁止启动。
+
 ## 2026-10-13 Moderate Axis II robust benchmark通过但Formal成本高
 
 OpenI `axis2_robust` benchmark完成AugHFL与RAHFL两臂：2/2完成，均使用正确AugMix多视图与

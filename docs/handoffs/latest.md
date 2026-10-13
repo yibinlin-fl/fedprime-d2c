@@ -17,8 +17,8 @@ Updated: 2026-10-13
 2026-10-13论文协议职责已同步：V0.6保持不可变，V0.7内部骨架、投稿实验矩阵与网页端交接均
 采用“双难度、不混表”的结构。strong协议继续支撑问题存在、DSA、local-first和Axis I；moderate
 协议待实现后支撑`gamma=0/0.5/0.9`剂量响应、clean/corrupted utility与Axis II HFL领域表。
-moderate仍是CIFAR-10，不能替代M3第二private dataset。新数据压缩包已二次流式审计：178个成员
-全部可读，解压总字节`986797088`，PEW annotation形状与取值合法，压缩包bytes/SHA256与上文
+moderate仍是CIFAR-10，不能替代M3第二private dataset。新数据压缩包已二次流式审计：217个
+archive entries（其中178个文件）全部可读，解压总字节`986797088`，PEW annotation形状与取值合法，压缩包bytes/SHA256与上文
 完全一致。因包大于512MB，未来需命令行/API上传；但OpenI runner尚未适配gamma05、clean mask与
 分层utility评价，当前不得上传后直接启动Formal。
 
@@ -26,6 +26,12 @@ moderate仍是CIFAR-10，不能替代M3第二private dataset。新数据压缩�
 记录；Axis II只用moderate协议运行八行主表：Local、FedMD、FedProto、FedDF、AugHFL、RAHFL、
 AsymHFL--ERM、AsymHFL+PEW+BER。主表必须同时报告DSA与grid/clean/corrupted/overall utility，
 不能因strong协议准确率低而隐藏utility，也不能把不同协议结果混在同一排行表。
+
+完整网页端论文交接（1290+行）已同步到2026-10-13，路径为
+`deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md`；它现在
+包含V0.6/V0.7/V0.8职责、strong/moderate双协议、M1三seed完成状态、moderate剂量响应、八行
+Axis II、待补顺序与网页端上传边界。`20260925`短文件已明确降级为历史增量摘要，禁止单独用于
+生成或重写论文。
 
 ## 2026-10-12 Axis II默认AugMix泄漏已修复；旧local benchmark仅作工程诊断
 

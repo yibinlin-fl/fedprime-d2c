@@ -24,6 +24,12 @@ deliverables/cle_hfl_full_paper_web_handoff_20260925/CLE_HFL_FULL_PAPER_WEB_HAND
 deliverables/cle_hfl_latex_v0_7_20260925/source/
 ```
 
+完整网页端事实交接已更新到2026-10-13；`20260925`短交接现仅作历史增量摘要，不能单独上传：
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20260911/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
 ## CLE中等强度剂量响应零训练审计
 
 历史`gamma=0.6`四客户端checkpoint已在原诊断归档中确认存在。当前只新增中间强度推理，并

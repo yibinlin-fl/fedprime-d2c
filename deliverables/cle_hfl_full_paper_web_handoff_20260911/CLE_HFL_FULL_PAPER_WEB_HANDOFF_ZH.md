@@ -1,12 +1,49 @@
 # CLE-HFL 完整论文证据与网页端 GPT 初稿交接文档
 
-创建：2026-09-11；最新更新：2026-09-12
+创建：2026-09-11；最新更新：2026-10-13
 用途：交给网页端 GPT 进行论文结构审查、创新性讨论和初稿生成
-当前阶段：DSA与BER机制理论均已升级；cross-binding-map map1 Formal已四门全过
+当前阶段：DSA/BER理论与proxy不可识别闭环完成；strong协议三seed机制结果完成；
+moderate协议数据已审计，训练runner与Formal尚未完成
 
 ---
 
 ## 0. 给网页端 GPT 的重要说明
+
+### 0.0 2026-10-13唯一有效状态摘要
+
+本文件是当前交给网页端GPT的**完整事实交接**。若本文件中较早日期段落与本节冲突，以本节、
+第14--16节、第20节和第22节的2026-10-13更新为准。`20260925`目录下的短交接只是历史增量
+说明，不能脱离本文件单独用于重写论文。
+
+论文当前采用“双协议、不同职责、禁止混表”的实验结构：
+
+```text
+strong mechanism protocol:
+  CIFAR-10, held-out map2, alpha=0.5, rho=1.0, gamma=0.9
+  -> existence / paired DSA / local-first / Axis I objective attribution
+
+moderate utility protocol:
+  CIFAR-10, held-out map2, alpha=1.0, rho=0.5, gamma={0,0.5,0.9}
+  -> dose response / clean-corrupted utility / Axis II HFL context
+```
+
+moderate协议不是第二private dataset，也不是对strong协议的替换。strong协议的主要科学终点是
+binding-directed DSA；其准确率必须诚实报告，但不能冒充普通CIFAR-10性能或HFL领域排行榜。
+旧strong Local/FedMD结果仅保留为内部工程记录，不进入正文或附录科学表。
+
+当前论文版本关系：
+
+```text
+V0.6 = 网页端多Skill润色后的不可变polished snapshot
+V0.7 = 当前仓库内部事实与实验骨架source of truth
+V0.8 = moderate Formal完成并审计后才生成
+```
+
+V0.7源码：
+
+```text
+deliverables/cle_hfl_latex_v0_7_20260925/source/main.tex
+```
 
 请把这项工作理解为一篇以**问题、诊断、机制归因和实证缓解**为主的 CLE-HFL 论文，而不是
 一篇以全新网络结构为中心的算法论文。
@@ -32,7 +69,9 @@ Oracle family/operator/random消融界定环境对应与粒度边界
   ↓
 准确率收益并非跨底座一致：shortcut suppression与utility必须分开报告
   ↓
-固定其余因素、只更换binding map的cross-scenario复现（S2完成，尚无科学结果）
+固定其余因素、只更换binding map的map1/map2复现与三training-seed验证
+  ↓
+待补moderate剂量响应、八行HFL领域表、第二private dataset与taxonomy stress
 ```
 
 必须保留以下区分：
@@ -43,7 +82,8 @@ cross-base DSA suppression:         GO on fixed CLE-v2 seed0 scenario
 architecture-uniform utility:       NOT ESTABLISHED
 universal lossless plugin claim:    NOT ESTABLISHED / frozen overall NO-GO
 taxonomy-free claim:                FALSE
-cross-scenario generalization:      NOT ESTABLISHED
+cross-binding-map replication:      ESTABLISHED on controlled CIFAR-10
+cross-private-dataset generalization: NOT ESTABLISHED
 ```
 
 不要把 Formal 的联合 `NO-GO` 误写成“PEW+BER 没有效果”；也不要因为 DSA 很强就把它改写成
@@ -154,9 +194,9 @@ P(E=g\mid k,c)
 Phase-A0 的 paired counterfactual 与 DSA 首先证明 strong directional shortcut 存在。该先导
 发现不能因为后续某个训练方法失败而被否定。
 
-### 2.2 CLE-HFL v2：当前正式闭环场景
+### 2.2 CLE-HFL v2：strong机制协议与moderate效用协议
 
-当前正式机制与插件实验使用固定：
+已完成的正式机制与Axis I实验使用strong协议：
 
 ```text
 scenario: cle_hfl_v2_paired_factorial_seed0_split0_v1
@@ -166,6 +206,7 @@ private samples available: 40,000
 Dirichlet alpha: 0.5
 strong CLE: gamma=0.9
 control: gamma=0
+private corruption rate rho: 1.0
 paired evaluation: 1,000 source × 15 operator × 4 client
 evaluation severity: 3
 ```
@@ -173,6 +214,24 @@ evaluation severity: 3
 CLE-v2 将绑定细化为 client-specific、class-specific concrete operator map，并区分seen/unseen
 operator，支持operator-cell、WCCA、CFG、LOO及operator-level DSA。40,000是可用私有数据规模，
 不代表每个模型在有限训练轮次中完整遍历40,000个不同样本。
+
+2026-10-13新增moderate配对协议，专门用于正常效用、剂量响应与HFL领域比较：
+
+```text
+private task: CIFAR-10
+held-out binding map: map2
+Dirichlet alpha: 1.0
+private corruption rate rho: 0.5
+gamma: 0.0 / 0.5 / 0.9
+partition seed: 0
+binding-map seed: 2
+```
+
+三个gamma条件共享source、label、clean/corrupted mask、severity、fit/audit split、初始化和paired
+operator grid。`alpha`描述客户端标签支持，`rho`描述损坏暴露比例，`gamma`描述被损坏样本中
+class--operator绑定浓度。由于strong到moderate同时改变alpha和rho，两协议之间不是单因素因果
+消融；真正的gamma剂量响应只在moderate内部做配对比较。moderate仍然是CIFAR-10受控合成场景，
+不能代替第二private dataset。
 
 训练方法看不到private operator ID、真实family、severity、seen/unseen标记或最终测试标签。
 这些字段只用于数据生成、完整性审计、paired DSA和事后报告。
@@ -897,25 +956,28 @@ deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEO
 
 核心链完成不等于论文实验已经完整。网页端GPT应重点审查：
 
-1. 纯PEW+BER正式证据目前主要是固定CLE-v2 scenario、training seed 0；历史三seed正结果包含
-   CDep，不能冒充纯PEW+BER-only多seed。
+1. held-out map2的ERM/CVaR-DRO/PEW+GroupDRO/PEW+BER已经完成training seeds 0/1/2并通过
+   冻结稳定性门槛；但它仍是固定CIFAR-10、partition seed0和strong协议，不能冒充dataset或
+   partition层面的稳定性。
 2. 新class-operator binding map的map1 Formal已经完成：Base DSA `0.113761`，PEW+BER DSA
    `0.049531`，下降`0.064230`（56.46%），CI95 `[0.063105,0.065328]`，4/4客户端同向，
    I0/L0/C1/C2全部通过。可宣称跨binding-map复现，但不能扩写成跨partition、训练seed、
    corruption库、数据集或真实场景泛化。用于四臂最终比较的map2在五臂筛选时保持未见；其40轮
-   Formal已完成并全部门槛通过，但仍只有training seed0和固定partition。
+   Formal已完成并通过门槛，随后又完成training seeds 1/2；仍固定partition与private dataset。
 3. 架构与客户端数据划分绑定，不能把client2现象单独归因于ShuffleNet容量。
 4. FedDF两臂低于预注册20%学习下限；可作为支持性跨底座机制证据，但主表定位需谨慎。
-5. 应审计主表是否还缺标准ERM/Local/RAHFL/FedDF等必要对照；不要为了“工作量”添加不能回答
-   审稿问题的实验。
+5. Axis II已冻结为moderate协议八行：Local、FedMD、FedProto、FedDF、AugHFL、RAHFL、
+   AsymHFL--ERM、AsymHFL+PEW+BER。旧strong Local/FedMD不进入论文。FedTGP、KT-pFL、FCCL、
+   RHFL是已实现但非必跑扩展，禁止看结果后选择性加入。
 6. 合成CLE的现实性需要在limitations中承认，并讨论现实传感器、地域、设备或采集管线形成
    class-corruption correlation的可能对应。
 7. novelty仍需要最新文献检索，尤其是federated spurious correlation、group reweighting、
    pseudo-group discovery、corruption robustness与model-heterogeneous FL。
 
-下一步先完成FedPIN、FedCD、EIIL、GroupDRO、JTT/CVaR等最近邻文献精读，再冻结投稿前最小实验
-缺口：纯BER training-seed稳定性与第二private数据集/更现实CLE。不得根据本结果调参，也不得用
-追加实验事后翻转已经冻结的旧NO-GO门槛。
+当前执行顺序是：先适配moderate runner与clean-mask分层评价，再做短预算学习水平/成本门槛；
+通过后运行moderate ERM的gamma0/0.5/0.9和gamma0.9 PEW+BER，最后运行八行Axis II。之后才是
+真正第二private dataset与bounded taxonomy stress。不得根据新结果调参，也不得用追加实验事后
+翻转已经冻结的旧NO-GO门槛。短预算、smoke与benchmark均不是论文证据。
 
 ---
 
@@ -931,7 +993,8 @@ deliverables/cle_proxy_nonidentifiability_20260913/PROXY_NONIDENTIFIABILITY_THEO
 -> DSA量化与不可识别性边界
 -> HFL-vs-Local local-first归因
 -> PEW+BER本地干预
--> 跨binding map / 训练随机性 / 通信底座验证
+-> strong协议跨binding map / 训练随机性 / 通信底座验证
+-> moderate协议剂量响应与HFL机制家族定位
 -> taxonomy-assisted与外部有效性边界
 ```
 
@@ -1005,10 +1068,13 @@ Class-Corruption Shortcuts in Model-Heterogeneous Federated Learning
 - RQ4：收益是否只是困难样本重加权或标准group robustness？
 - RQ5：结论能否跨binding map、training seed和HFL底座复现？
 - RQ6：PEW taxonomy粒度、误差和未知/复合corruption带来什么边界？
+- RQ7：在语义更可学的moderate协议下，DSA是否呈gamma剂量响应，普通与corruption-robust
+  HFL方法处于什么位置？
 
-正文依次放strong CLE/local-first机制表、AsymHFL主结果、held-out map2四臂Formal、FedDF支持性
-跨底座结果和Oracle粒度消融。12轮screen只解释方法选择，不得作为最终主表证据。所有冻结gate
-和负结果必须保持原判定。
+正文依次放strong CLE/local-first机制表、strong held-out-map2四臂机制表、moderate剂量响应、
+moderate八行HFL领域表、FedDF支持性跨底座结果和Oracle粒度消融。12轮screen只解释方法选择，
+不得作为最终主表证据。strong与moderate结果禁止混成同一无条件排行榜；所有冻结gate和负结果
+必须保持原判定。
 
 ### 7. Discussion and Limitations
 
@@ -1085,6 +1151,39 @@ deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
 deliverables/cle_hfl_paper_core_artifacts_20260912/PAPER_FOUR_ARM_FINAL_TABLE.csv
 ```
 
+### 表5：moderate CLE剂量响应（待Formal）
+
+固定map2、partition、mask、severity和初始化，报告：
+
+```text
+ERM gamma=0.0
+ERM gamma=0.5
+ERM gamma=0.9
+PEW+BER gamma=0.9
+```
+
+主列为pooled DSA、paired-grid accuracy、clean-subset accuracy、corrupted-subset accuracy和overall
+Avg；逐客户端DSA及Worst/WCCA/CFG放详细结果或附录。目标是证明DSA随gamma变化且PEW+BER在
+可学习语义条件下仍能缓解shortcut，不是追求普通CIFAR-10 SOTA。
+
+### 表6：moderate Axis II八行HFL领域表（待Formal）
+
+正文预先冻结八行：
+
+```text
+Local/ERM
+FedMD
+FedProto
+FedDF
+AugHFL
+RAHFL
+AsymHFL--ERM
+AsymHFL+PEW+BER
+```
+
+所有行使用`alpha=1.0/rho=0.5/gamma=0.9`、training seed0、相同初始化、训练预算和paired grid。
+该表同时报告DSA与clean/corrupted/overall utility。旧strong Local/FedMD完全不进入论文表。
+
 ### 图1：场景与完整证据链
 
 ```text
@@ -1148,7 +1247,7 @@ hierarchical/operator PEW（Oracle粒度门已失败）
 | shortcut主要local-first，那为什么还要研究联邦学习 | local-first确定了干预位置；HFL系统仍决定异构客户端、共享知识、公共通信和最终模型行为，通信有较小附加效应但不是主因 | 保留HFL-vs-Local factorial，不宣称通信是主要放大器 |
 | PEW误差高，BER理论上界为1，理论没有作用 | 这恰好说明proxy-only传递原则在无附加假设时不可识别；BER理论解释伪环境有效分布上的支持压缩，真实CLE改善必须由paired DSA验证 | 不伪造PEW必准假设；明确“机制解释+target-aligned验证”而非无条件性能定理 |
 | 为什么不用GroupDRO、CVaR、JTT或EIIL | 已有matched四臂/五臂比较；held-out map2中BER同时优于ERM、matched PEW+GroupDRO和pooled CVaR，说明不是单纯困难样本或worst-group追逐 | EIIL若未实现只能列相关工作，不能声称实证击败；保留公平协议说明 |
-| 结果只有一个数据集、固定partition或少量seed | 当前有跨binding map、历史固定场景多训练seed、两种通信底座，但最强map2四臂仍是seed0且单数据集 | 纯BER matched training-seed稳定性与第二private数据集是最重要实验缺口 |
+| 结果只有一个数据集、固定partition或少量seed | 当前有跨binding map、map2四臂三training-seed和两种通信底座，但仍是固定partition与单private dataset | 真正第二private dataset与必要的partition边界仍是重要缺口；source-bootstrap不能替代它们 |
 | FedDF上效用下降，不能叫通用无损插件 | 同意；FedDF只支持shortcut抑制机制迁移，不支持architecture-uniform utility或无损插件 | 主表显式保留FedDF NO-GO边界；方法定位改为local intervention而非universal no-harm plug-in |
 | CVaR在部分客户端DSA更低，BER并非全面最好 | held-out map2 pooled BER DSA更低且4/4客户端grid accuracy最高，但c0/c1 DSA由CVaR更低；结论是整体shortcut-utility优势而非逐客户端支配 | 报告逐客户端结果和Pareto图，禁止只报pooled赢家 |
 | source-bootstrap区间很窄，是否夸大稳定性 | 区间只覆盖固定checkpoint下evaluation-source抽样，不覆盖训练随机性、partition、场景与数据集不确定性 | 多训练seed必须单独报告；不能把source CI叫作全流程置信区间 |
@@ -1184,15 +1283,18 @@ ECML-PKDD 2027（CCF-B）、ICDM 2027（CCF-B）、ICME 2027（CCF-B）和PAKDD 
 
 ## 20. 请网页端 GPT 完成的任务
 
-最新英文长初稿已经完成仓库事实审计。后续网页端修改必须以V0.2为稿件底本，不再从V0.1重新生成：
+当前网页端不得再以V0.2或V0.5作为稿件底本。polished历史快照是V0.6；当前事实与实验槽位
+source of truth是V0.7：
 
 ```text
-deliverables/cle_hfl_paper_draft_v0_2_20260914/CLE_HFL_PAPER_DRAFT_V0_2.md
-deliverables/cle_hfl_paper_draft_v0_2_20260914/REVISION_NOTES_ZH.md
+deliverables/cle_hfl_latex_v0_6_20260923/source/main.tex
+deliverables/cle_hfl_latex_v0_7_20260925/source/main.tex
 ```
 
-其中已经冻结：CLE-v2和DSA为operator-level，PEW+BER为coarse family-level；Oracle operator
-只是不进入训练的边界消融，不是operator-level PEW候选。
+V0.6不可变；网页端下一轮只基于V0.7与本完整交接做审稿/修改建议。moderate Formal完成前不得
+生成声称结果完整的V0.8，不得删除`\evidenceneeded{}`。其中继续冻结：CLE-v2和DSA为
+operator-level，PEW+BER为coarse family-level；Oracle operator只是不进入训练的边界消融，
+不是operator-level PEW候选。
 
 在开始英文初稿前，必须先读取并使用最新的相关工作发表格局：
 
@@ -1208,16 +1310,17 @@ spurious features、FedCD、EIIL、GroupDRO、JTT和counterfactual shortcut诊�
 
 1. 判断上述四项贡献是否足以形成一篇CCF-B会议论文，并指出最可能的三条拒稿理由。
 2. 在不夸大PEW结构创新、不隐瞒FedDF效用边界和当前单partition/单训练seed限制的前提下，给出最强且诚实的论文定位。
-3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；尤其判断是否必须补
-   新CLE mapping、纯PEW+BER多seed或更标准的基线。
+3. 审查当前证据矩阵，区分投稿前“必补实验、最好补实验、无需补实验”；不得重新要求已完成的
+   map2三training-seed，也不得把moderate协议误写成第二private dataset。
 4. 设计一套不把FedDF写成失败、也不把它写成无损成功的结果叙事。
 5. 检查DSA识别定理、五个性质、BER有效分布/失衡压缩定理、proxy不可识别定理、PEW误差
    条件边界和JSD/CVRS反例是否还存在逻辑缺口；不得把当前平凡PEW误差界写成强保证。
 6. 进行最新相关工作检索，核查CLE-HFL、federated spurious correlation、group reweighting、
    pseudo-group discovery与paired counterfactual diagnostics的创新性边界。
 7. 给出论文标题、摘要、Introduction、Method、Experiments、Limitations的详细提纲。
-8. map2结果已经回填；在完成上述审查后生成一份英文论文初稿。所有无法由本文件支持的句子标注`[待证据]`，
-   所有需引用的事实标注`[待引用]`，不得自行编造实验数字或SOTA结论。
+8. 对V0.7只做结构与语言审查；moderate剂量响应、八行Axis II、第二private dataset和taxonomy
+   stress必须继续标注`[待证据]`。不得自行编造实验数字或SOTA结论。待这些结果回填并由仓库
+   完成fact audit后，才生成V0.8。
 
 建议网页端GPT首先回答“还缺哪些必做实验”，确认后再写全文，以免初稿建立在过度主张上。
 
@@ -1240,6 +1343,9 @@ deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_oracle_granularity_formal_20260911/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_feddf_plugin_formal_20260911/RESULT_SUMMARY_ZH.md
 docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
+docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
+docs/experiments/current/CLE_V2_MODERATE_ALPHA10_RHO05_DATASET_2026_10_13_ZH.md
+deliverables/cle_hfl_latex_v0_7_20260925/source/main.tex
 ```
 
 原始输出位于`outputs/`，解析报告位于`deliverables/`。Smoke与benchmark只验证执行或成本，不是
@@ -1248,6 +1354,9 @@ docs/research/status/CLE_HFL_PAPER_CLOSURE_2026_09_11_ZH.md
 ---
 
 ## 22. 2026-09-22双轴实验结构更新
+
+> 2026-10-13覆盖说明：Axis I继续使用strong协议并以DSA为主要科学终点；Axis II不再使用旧
+> strong Local/FedMD结果，也不再要求十臂全部进入正文。下面Axis II列表以本节新版本为准。
 
 论文的基线比较必须分成两条轴，二者回答不同问题，禁止混成一张无条件排行榜。
 
@@ -1261,25 +1370,25 @@ PEW+BER在这四个正式方法中取得最佳pooled shortcut--utility trade-off
 
 ### Axis II：HFL机制家族背景比较
 
-S2-v2统一40轮、相同初始化和local batch预算，比较：
+最终正文统一在moderate held-out-map2、`alpha=1.0/rho=0.5/gamma=0.9`下比较八行：
 
 ```text
-Local/ERM / FedMD / FedProto / FedTGP / FedDF
-KT-pFL / FCCL / RHFL / AugHFL / RAHFL
+Local/ERM / FedMD / FedProto / FedDF
+AugHFL / RAHFL / AsymHFL--ERM / AsymHFL+PEW+BER
 ```
 
-它回答普通模型异构通信、标签噪声鲁棒和corruption鲁棒HFL是否会自然消除CLE。FedMD、
-FedProto和RHFL为已有核心实现回接；FedTGP依据AAAI 2024官方核心完成最小实现Kill Test和一轮
-真实CLE smoke，当前只能称`protocol-matched core adapter`。S2-v2尚无benchmark或Formal数字，
-所有结果必须保持`[待证据]`。当前不做单独AugHFL/RAHFL官方40+40表；S2不能声称逐行复现各
-论文完整recipe，也不承担BER因果归因。
+它回答普通模型异构通信和corruption-robust HFL是否会自然消除CLE，并把DSA与可用任务效用放在
+同一协议下。所有结果仍是`[待证据]`。当前不做单独AugHFL/RAHFL官方40+40表；Axis II不能
+声称逐行复现各论文完整recipe，也不承担BER因果归因。FedTGP、KT-pFL、FCCL、RHFL保留为
+已实现的条件性扩展，不进入预冻结正文八行。
 
-V0.5已经包含Axis I正式表和Axis II待填表。网页端后续改稿应把Experiments明确组织为：
+V0.7已经包含Axis I表、moderate剂量响应槽位和Axis II八行待填表。网页端后续改稿应把
+Experiments明确组织为：
 
 ```text
 Axis I: matched shortcut-objective attribution
 Axis II: protocol-matched HFL mechanism context
-Shared validation: local-first / cross-map / M3 second dataset / S1 taxonomy stress
+Shared validation: local-first / cross-map / M3 genuine second dataset / S1 taxonomy stress
 ```
 
 最新S2-v2工程与忠实度边界：
@@ -1288,3 +1397,22 @@ Shared validation: local-first / cross-map / M3 second dataset / S1 taxonomy str
 docs/research/baselines/CLE_HFL_S2_V2_AND_FEDTGP_KILL_TEST_2026_09_22_ZH.md
 deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
 ```
+
+---
+
+## 23. 2026-10-13网页端实际使用方式
+
+下一次交给网页端GPT时，最小上传集合应为：
+
+```text
+1. 本完整交接文档
+2. V0.7 LaTeX源码包或完整source目录
+3. 当前编译PDF（若仍是V0.6，必须说明实验槽位以V0.7为准）
+4. references.bib与citation audit
+5. 投稿实验矩阵（用于核对pending/complete边界）
+```
+
+不要上传`docs/handoffs/latest.md`让网页端自行理解论文；该文件是Codex工程接力日志，包含大量
+历史协议和失败路线。不要再单独使用`20260925`短交接，也不要让网页端根据旧V0.2/V0.5重新生成
+全文。当前只能继续审查V0.7结构和语言；moderate结果回来并由仓库完成数字/引用/fact audit后，
+才允许生成V0.8。

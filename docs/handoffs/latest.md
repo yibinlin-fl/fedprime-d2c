@@ -21,6 +21,11 @@ DSA=`0.303081`、grid acc=`27.2100`、训练`11.14h`；FedMD：DSA=`0.276923`、
 `26.7683`、训练`11.21h`。两者shuffled null均显著，确认strong协议shortcut存在；FedMD仅使
 DSA下降`0.026159`且效用未改善，不能替代新的moderate领域比较。
 
+新moderate输入已于2026-10-13上传至公开OpenI数据集
+`chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`。远端文件名与本地文件名一致，
+CLI显示`100% / 852.0MiB`并以exit code 0结束。当前代码提交为`49b7bd5`，尚未push，因此数据虽
+可挂载，但在push完成前不得创建使用新入口的OpenI任务。
+
 ## 2026-10-13 Axis I strong budget64 Formal运行状态
 
 用户提供的OpenI日志`zhou1_allt492732840-log (2).txt`显示任务未卡死：ERM、CVaR-DRO与

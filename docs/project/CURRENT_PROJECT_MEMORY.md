@@ -5135,3 +5135,6 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
   四client DSA、operator-grid、clean、balanced-corrupted、rho05 mixed utility及shuffled null。
 - 输入fail-closed审计、dose prepare-only、Local真实CPU一轮一batch smoke与完整分析通过；3项聚焦
   测试通过。所有smoke数值无科学意义，付费Formal尚未启动。
+- 2026-10-13已将同一冻结包上传到公开OpenI数据集
+  `chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`；CLI结果为100%、852.0MiB、
+  约13分04秒、exit code 0。Token只保存在本机OpenI配置中，未写入仓库。

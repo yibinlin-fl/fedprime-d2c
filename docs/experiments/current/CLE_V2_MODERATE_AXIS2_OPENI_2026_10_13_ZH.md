@@ -96,3 +96,16 @@ Smoke和benchmark的数值都不能进入论文。
 - 3项聚焦测试通过。
 
 目前只完成工程验证，尚未授权或启动新的付费Formal。
+
+## 7. OpenI上传状态
+
+2026-10-13已使用本机OpenI CLI上传完成：
+
+```text
+repo_id：chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013
+remote file：cle_hfl_v2_moderate_alpha10_rho05_map2_seed0_split0_with_pew.tar.gz
+CLI result：100%，852.0 MiB，约1.0 MiB/s，00:13:04，exit code 0
+```
+
+凭据仍只保存在`C:\Users\asus\.openi\token.json`，仓库不记录Token值。训练任务可直接搜索并
+挂载该公开数据集；禁止误选旧1.3GB cross-maps包或旧strong输入包。

@@ -18,6 +18,7 @@ docs/experiments/current/CLE_V2_MODERATE_AXIS2_OPENI_2026_10_13_ZH.md
 scripts/run_cle_v2_moderate.py
 scripts/analyze_cle_v2_moderate.py
 scripts/openi_cle_v2_moderate_entry.py
+deliverables/cle_v2_moderate_axis2_plain_benchmark_20261013/RESULT_SUMMARY_ZH.md
 ```
 
 论文协议职责已同步到以下三个source of truth：V0.6保持不可变，V0.7只更新实验骨架，待结果后

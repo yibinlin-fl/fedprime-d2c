@@ -2,6 +2,18 @@
 
 Updated: 2026-10-13
 
+## 2026-10-13 Moderate Axis II plain benchmark通过
+
+OpenI `axis2_plain` benchmark完成Local/ERM、FedMD、FedProto和FedDF四臂，合同为moderate
+`alpha=1.0/rho=.5/gamma=.9/map2/seed0`、2轮x8 batches、standard单视图loader。4/4完成，
+loss有限；四臂8行local-batch trace文件SHA256完全相同，统一DSA/clean/corrupted/seen/unseen/
+mixed分析全部生成。训练`298.182s`、分析`221.839s`，总计`8.667min`。Benchmark数值不是
+科学证据；它只授权四个plain方法进入单臂Formal。按更新量机械外推四臂合计约13.25 V100小时/
+79.5积分，建议两个有积分账号每次各跑一个完整单臂，禁止跨账号拼接轮次。
+
+AugHFL/RAHFL为多视图路径，仍须先跑`axis2_robust` benchmark。报告：
+`deliverables/cle_v2_moderate_axis2_plain_benchmark_20261013/RESULT_SUMMARY_ZH.md`。
+
 ## 2026-10-13 Moderate剂量响应/Axis II runner已实现并完成本地smoke
 
 冻结输入`alpha=1.0, rho=0.5, map2, seed0/split0, gamma={0,0.5,0.9}`现已有独立runner、

@@ -5138,3 +5138,6 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - 2026-10-13已将同一冻结包上传到公开OpenI数据集
   `chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`；CLI结果为100%、852.0MiB、
   约13分04秒、exit code 0。Token只保存在本机OpenI配置中，未写入仓库。
+- Moderate `axis2_plain` benchmark完成Local/FedMD/FedProto/FedDF四臂：4/4完成、finite loss、
+  四臂local-batch trace哈希完全一致，全套统一指标生成。训练`298.182s`、分析`221.839s`，总计
+  `8.667min`。所有两轮数值均非科学证据；结果只授权plain四臂进入独立40轮Formal。

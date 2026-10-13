@@ -5159,3 +5159,13 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - 训练时间为Local `12043.509s`、FedMD `12111.212s`、FedProto `10442.972s`。这些是seed0
   单场景结果，不覆盖training randomness或外部数据。完整报告：
   `deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md`。
+
+## 2026-10-14：Moderate Axis II AsymHFL benchmark通过
+
+- `asymhfl_erm`与`asymhfl_pew_ber`两臂均完成2轮x8 batches benchmark；两臂8行batch trace
+  SHA256同为`726C3E7D1BCE4965F4345B676B5FDCE556D971F34DED0A888822F71DC238B749`。
+- 训练`227.981s`、分析`156.547s`；按更新量外推两个单臂Formal分别约`4.05h/24.3积分`与
+  `3.95h/23.7积分`，每臂建议预留30--35积分。benchmark数值不构成科学证据。
+- 下一批三个账号优先补Axis II第4行FedDF、第7行AsymHFL--ERM和第8行AsymHFL+PEW+BER；
+  AugHFL/RAHFL每臂约102积分，继续暂缓。报告：
+  `deliverables/cle_v2_moderate_axis2_asym_benchmark_20261014/RESULT_SUMMARY_ZH.md`。

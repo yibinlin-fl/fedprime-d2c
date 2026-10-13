@@ -101,6 +101,10 @@ Formal已经完成并通过合同、完成标记、统一指标及跨账号batch
 `feddf_fidelity`及两条AsymHFL Formal尚未运行。AugHFL/RAHFL仅完成benchmark，因每臂Formal
 机械估算约17小时/102积分而暂缓。`dose_all`尚未运行。
 
+`axis2_asym` benchmark也已于2026-10-14通过：两臂2/2完成且batch trace完全匹配。按实际
+round耗时外推，`asymhfl_erm`与`asymhfl_pew_ber` Formal各约4小时/24积分，建议拆成两个
+账号单臂并行并各预留30--35积分。benchmark结果只授权Formal，不进入论文。
+
 ## 7. OpenI上传状态
 
 2026-10-13已使用本机OpenI CLI上传完成：

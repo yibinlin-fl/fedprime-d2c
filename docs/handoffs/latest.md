@@ -2,6 +2,18 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 Moderate Axis II AsymHFL benchmark通过
+
+`axis2_asym` benchmark完成`asymhfl_erm`与`asymhfl_pew_ber`两臂：2/2完成，合同为moderate
+map2/seed0、2轮x8 batches，8条local-batch trace SHA256完全一致，统一分析完整。训练
+`227.981s`、分析`156.547s`；benchmark数字不是科学证据。按每臂round耗时机械外推，两个单臂
+40轮x64 batches Formal各约`4.05h/24.3积分`与`3.95h/23.7积分`，建议各预留30--35积分。
+报告：`deliverables/cle_v2_moderate_axis2_asym_benchmark_20261014/RESULT_SUMMARY_ZH.md`。
+
+若有三个账号，下一批最优分配为：账号A运行`feddf_fidelity`补第4行，账号B运行
+`asymhfl_erm`补第7行，账号C运行`asymhfl_pew_ber`补第8行。AugHFL/RAHFL Formal继续因
+约102积分/臂暂缓；`dose_all`不在本批运行。
+
 ## 2026-10-14 Moderate Axis II前三项plain Formal完成
 
 moderate map2、training seed0、40轮x64 batches的`local_erm`、`fedmd_adapter`和

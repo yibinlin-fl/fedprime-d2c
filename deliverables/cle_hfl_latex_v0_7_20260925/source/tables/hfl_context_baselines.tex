@@ -5,26 +5,22 @@
 \caption{Protocol-matched HFL mechanism-family context on the moderate held-out-map2 protocol ($\alpha=1.0$, private corruption rate $0.5$, and $\gamma=0.9$; Axis II). Scientific metric cells remain pending until the Formal runs are completed and audited.}
 \label{tab:hfl-context}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llllrrr}
+\begin{tabular}{llllrrrrr}
 \toprule
-Method & Model heterogeneity & Local robustness & Communication & DSA $\downarrow$ & Operator Acc. $\uparrow$ & Avg $\uparrow$ \\
+Method & Model heterogeneity & Local robustness & Communication & DSA $\downarrow$ & Grid Acc. $\uparrow$ & Clean Acc. $\uparrow$ & Corrupt Acc. $\uparrow$ & Avg $\uparrow$ \\
 \midrule
-Local/ERM & yes & none & none & \pendingcell & \pendingcell & \pendingcell \\
-FedMD adapter & yes & none & public-logit exchange & \pendingcell & \pendingcell & \pendingcell \\
-FedProto adapter & yes & none & class prototypes & \pendingcell & \pendingcell & \pendingcell \\
-FedTGP core adapter & yes & none & trainable global prototypes & \pendingcell & \pendingcell & \pendingcell \\
-FedDF-fidelity & yes & none & public distillation & \pendingcell & \pendingcell & \pendingcell \\
-KT-pFL-fidelity & yes & none & knowledge transfer & \pendingcell & \pendingcell & \pendingcell \\
-FCCL protocol adapter & yes & none & cross-correlation collaboration & \pendingcell & \pendingcell & \pendingcell \\
-RHFL adapter & yes & SCE / label-noise robustness & confidence-weighted collaboration & \pendingcell & \pendingcell & \pendingcell \\
-AugHFL-fidelity & yes & AugMix/JSD & heterogeneous collaboration & \pendingcell & \pendingcell & \pendingcell \\
-RAHFL anchor & yes & AugMix/JSD/DCL & asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell \\
-AsymHFL--ERM & yes & none & strict asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell \\
-AsymHFL+PEW+BER & yes & class-conditional environment balancing & strict asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell \\
+Local/ERM & yes & none & none & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+FedMD adapter & yes & none & public-logit exchange & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+FedProto adapter & yes & none & class prototypes & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+FedDF-fidelity & yes & none & public distillation & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+AugHFL-fidelity & yes & AugMix/JSD & heterogeneous collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+RAHFL anchor & yes & AugMix/JSD/DCL & asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+AsymHFL--ERM & yes & none & strict asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+AsymHFL+PEW+BER & yes & class-conditional environment balancing & strict asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
 \bottomrule
 \end{tabular}%
 }
 \par\smallskip
-Existing smoke/benchmark outputs are engineering checks only; this table requires Formal scientific metrics.
+The eight-row main table is fixed before results are observed. Existing strong-stress Local/FedMD and all smoke/benchmark outputs are engineering records only and are excluded from the paper table.
 \end{table*}
 \fi

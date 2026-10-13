@@ -20,7 +20,7 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 2. Attribution: matched HFL-vs-Local, predominantly local-first
 3. Mitigation: ERM/CVaR/PEW+GroupDRO/PEW+BER, held-out map2, 40 rounds, 3 seeds
 4. Cross-communication: completed FedDF boundary evidence + pending FedMD four-objective replication
-5. Field position: ten representative HFL mechanisms + two matched AsymHFL rows
+5. Field position: six representative HFL rows + two matched AsymHFL rows on the moderate protocol
 6. External boundary: second controlled dataset, bounded taxonomy stress, Oracle granularity, limitations
 ```
 
@@ -57,7 +57,7 @@ mitigation module。它无需重设计服务器通信，但当前证据不支持
 
 1. FedMD 固定通信的四目标复现；
 2. moderate held-out-map2剂量响应：ERM的`gamma=0/0.5/0.9`及`gamma=0.9` PEW+BER；
-3. moderate held-out-map2 HFL领域表（十个机制家族臂加两条AsymHFL锚点）；
+3. moderate held-out-map2八行HFL领域表（六个context方法加两条AsymHFL锚点）；
 4. local-first training seeds 1/2 的成本重构后复验；
 5. 真正第二受控私有数据集；
 6. bounded taxonomy stress；

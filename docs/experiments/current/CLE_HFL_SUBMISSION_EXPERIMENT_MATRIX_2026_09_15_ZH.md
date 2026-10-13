@@ -226,18 +226,16 @@ delta_Comm  = delta_HFL - delta_Local
 
 目的：说明 CLE 不是只在一个自定义通信实现上出现，并把工作放回 HFL 文献坐标。
 
-当前冻结的机制家族代表为：
+正文冻结为八行，而不是把所有已实现适配器都堆入主表：
 
 - Local/ERM；
 - FedMD protocol-matched adapter；
 - FedProto protocol-matched adapter；
-- FedTGP protocol-matched core adapter；
 - FedDF-fidelity；
-- KT-pFL-fidelity；
-- FCCL protocol-matched adapter；
-- RHFL protocol-matched adapter；
 - AugHFL-fidelity；
-- RAHFL anchor。
+- RAHFL anchor；
+- AsymHFL--ERM；
+- AsymHFL+PEW+BER。
 
 最终主表统一使用moderate held-out-map2：`alpha=1.0/rho=0.5/gamma=0.9`、training seed 0、
 同一初始化、训练预算与paired operator grid。再在相同scenario下报告standalone baseline的DSA与
@@ -245,9 +243,10 @@ clean/corrupted/overall utility。早期12-round
 适配器结果只作筛选，不能进入最终胜负表。该表用于“背景比较”，不承担 BER 因果归因；BER 的
 归因仍由 matched ERM/CVaR/PEW+GroupDRO 四臂提供。
 
-旧strong协议下已启动或完成的Local/FedMD结果只保留为补充压力证据，不得与moderate主表混合。
-正文领域表另加两条matched AsymHFL锚点：ERM与PEW+BER，因此完整可呈现十二行；长时方法可依
-算力与忠实度审计放入附录，但不得事后按结果好坏筛选。
+主表同时报告pooled DSA、paired-grid accuracy、clean-subset accuracy、corrupted-subset accuracy与
+overall Avg；逐客户端DSA、Worst/WCCA/CFG进入详细结果或附录。旧strong协议下已启动或完成的
+Local/FedMD结果只作内部工程记录，不进入正文或附录科学表。FedTGP、KT-pFL、FCCL、RHFL保留为
+已实现但非必跑扩展；除非在看结果前因明确审稿问题统一加入，否则不事后选择性补表。
 
 ## 5. 条件性可选实验
 

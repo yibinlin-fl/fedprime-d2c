@@ -22,6 +22,11 @@ moderate仍是CIFAR-10，不能替代M3第二private dataset。新数据压缩�
 完全一致。因包大于512MB，未来需命令行/API上传；但OpenI runner尚未适配gamma05、clean mask与
 分层utility评价，当前不得上传后直接启动Formal。
 
+用户随后冻结论文呈现边界：旧strong Local/FedMD不进入论文正文或附录表，仅保留为内部工程
+记录；Axis II只用moderate协议运行八行主表：Local、FedMD、FedProto、FedDF、AugHFL、RAHFL、
+AsymHFL--ERM、AsymHFL+PEW+BER。主表必须同时报告DSA与grid/clean/corrupted/overall utility，
+不能因strong协议准确率低而隐藏utility，也不能把不同协议结果混在同一排行表。
+
 ## 2026-10-12 Axis II默认AugMix泄漏已修复；旧local benchmark仅作工程诊断
 
 Axis I `pew_ber` budget64两轮V100 benchmark完成：训练`412.342s`、分析`6.750s`，输入、合同、

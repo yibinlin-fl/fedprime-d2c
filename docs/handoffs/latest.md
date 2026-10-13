@@ -2,6 +2,18 @@
 
 Updated: 2026-10-13
 
+## 2026-10-13 Axis I strong budget64 Formal运行状态
+
+用户提供的OpenI日志`zhou1_allt492732840-log (2).txt`显示任务未卡死：ERM、CVaR-DRO与
+PEW+GroupDRO均已完成40轮，最后一个PEW+BER正在运行且日志持续更新；检查时到round 2/40。
+日志无Traceback、SIG或训练NaN。`clean CFG=nan`及缺少`same/swapped`是旧strong输入没有对应
+扩展split的报告警告，不是训练失败。该任务是strong map2、training seed0、budget64的四臂
+full-budget复验，以DSA为主要终点；完成前不得用逐轮accuracy作结论。下载目录已预建为
+`outputs/openi_downloads/axis1_strong_budget64_seed0_20261013/`。
+
+旧strong Local/FedMD Formal即使完整也不进入论文表；仅做一次工程归档审计。接收目录已预建为
+`outputs/openi_downloads/strong_context_archived_20261013/local/`与`fedmd/`。
+
 ## 2026-10-13 中等难度CLE补充数据集已生成
 
 新增补充场景固定为held-out map2、Dirichlet `alpha=1.0`、private corruption rate `0.5`与

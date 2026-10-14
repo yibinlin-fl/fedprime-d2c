@@ -13,9 +13,14 @@ round 0--18，随后任务被平台写入`stopped`。日志没有Python tracebac
 根因包含平台停止，但旧入口`scripts/openi_cle_v2_spurious_final_entry.py --arm=all`也存在明确的
 失败安全设计缺陷：四臂训练与分析全部成功后才统一打包/upload，中途停止会令此前已完成臂一起
 丢失；分析还硬编码`device=cuda`。Moderate入口的2026-10-14恢复包修复不会自动覆盖这个独立的
-Axis I入口。当前禁止再次运行Axis I `arm=all`。任何重跑前必须先将Axis I改为单臂任务或逐臂
-立即上传checkpoint-bearing recovery archive，并加入`device=auto`/CPU分析回退；在该修复及聚焦
-测试完成前，不得声称Axis I可安全启动。
+Axis I入口。
+
+Axis I入口现已完成失败安全修复：非Formal选择`arm=all`时会逐臂独立训练；每一臂训练完成后先
+打包并上传含checkpoint的recovery archive，再以`device=auto`执行分析并上传不含checkpoint的
+正式轻量包。后一臂失败不再丢失此前已完成臂；失败或分析未完成的timing一律
+`scientific_evidence=false`。Formal现在fail-closed拒绝`arm=all`或`train_seed=all`，强制每个
+OpenI任务恰好一个arm和一个training seed。10项Axis I/Moderate恢复包聚焦测试通过。平台硬停止
+仍可能丢失正在训练的当前臂，因此尚未启动任何重跑。
 
 ## 2026-10-14 Moderate三项Formal平台中断与入口修复
 

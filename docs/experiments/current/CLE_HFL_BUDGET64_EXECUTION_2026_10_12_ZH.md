@@ -68,6 +68,11 @@ scripts/merge_cle_v2_spurious_final_shards.py
 合并器强制检查场景、partition、binding map、evaluation/training seed、40轮、64-batch预算、配置
 哈希、输入指纹、评价grid和跨账号batch trace；只有四臂全部Formal且轨迹一致才计算冻结对比门槛。
 
+2026-10-14失败安全约束：OpenI Formal必须按单臂、单seed、单任务启动。入口fail-closed拒绝
+Formal的`arm=all`或`train_seed=all`；非Formal的`all`才会逐臂执行。每一臂训练完成后立即上传
+含checkpoint的recovery archive，随后分析使用`device=auto`，GPU租约结束时可回退CPU；分析
+完成后再上传正式轻量包。平台硬停止仍可能丢失正在训练的当前臂，但不会再连带丢失其他任务。
+
 ## Axis II：HFL领域表
 
 入口继续支持单臂分片：

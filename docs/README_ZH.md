@@ -35,7 +35,11 @@ Axis II八行表的前三项seed-0 Formal（Local、FedMD、FedProto）已经完
 docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md
 deliverables/cle_hfl_full_paper_web_handoff_20260925/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 deliverables/cle_hfl_latex_v0_7_20260925/source/
+deliverables/cle_hfl_latex_v0_7_20260925/CLE_HFL_LATEX_V0_7_UPDATED_OVERLEAF_20261014.zip
 ```
+
+上述`UPDATED_OVERLEAF_20261014.zip`是与10月13日V0.7源码同步的当前上传包；同目录9月25日
+`CLEAN_OVERLEAF`包仅为历史快照。
 
 完整网页端事实交接已更新到2026-10-13；`20260925`短交接现仅作历史增量摘要，不能单独上传：
 

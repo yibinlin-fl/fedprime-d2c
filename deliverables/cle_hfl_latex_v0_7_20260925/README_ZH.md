@@ -20,6 +20,7 @@
 
 主源码：`source/main.tex`。
 
-Overleaf上传包：`CLE_HFL_LATEX_V0_7_CLEAN_OVERLEAF_20260925.zip`。该包排除了V0.6的旧审计快照，
-只保留编译与当前讨论所需文件。本机没有安装LaTeX编译器，
-因此本轮只完成源码结构、引用路径和回归检查，尚未生成V0.7 PDF；请在Overleaf编译后回传PDF。
+当前Overleaf上传包：`CLE_HFL_LATEX_V0_7_UPDATED_OVERLEAF_20261014.zip`。它由2026-10-13更新后的
+V0.7源码重新生成，包含双难度协议和moderate八行Axis II骨架。旧包
+`CLE_HFL_LATEX_V0_7_CLEAN_OVERLEAF_20260925.zip`仅保留为9月25日历史快照，禁止再作为当前稿
+上传或交给网页端续写。两个包都排除了V0.6旧审计快照，只保留编译与当前讨论所需文件。

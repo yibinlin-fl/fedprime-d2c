@@ -2,6 +2,14 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 V0.7 Overleaf包与最新源码重新同步
+
+V0.7源码已在2026-10-13更新双难度协议和moderate Axis II八行骨架，但原9月25日ZIP未同步。
+当前有效上传包已重新生成并逐项核验关键文件内容：
+`deliverables/cle_hfl_latex_v0_7_20260925/CLE_HFL_LATEX_V0_7_UPDATED_OVERLEAF_20261014.zip`，
+大小`46501` bytes，SHA256=`CA7CF600A6984E9D228AFF31BC58093AC822588237612F9F82F94B4349170093`。
+旧`CLE_HFL_LATEX_V0_7_CLEAN_OVERLEAF_20260925.zip`只保留为历史快照，禁止继续上传或续写。
+
 ## 2026-10-14 Axis I strong四臂Formal中断且旧入口零回传
 
 用户提供的完整OpenI日志`zhou1_allt492732840-log (3).txt`确认：ERM、CVaR-DRO和

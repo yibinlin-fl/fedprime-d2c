@@ -2,6 +2,21 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 Axis I strong四臂Formal中断且旧入口零回传
+
+用户提供的完整OpenI日志`zhou1_allt492732840-log (3).txt`确认：ERM、CVaR-DRO和
+PEW+GroupDRO均完成40轮并各自保存4个client checkpoint；最后一臂PEW+BER仅完成
+round 0--18，随后任务被平台写入`stopped`。日志没有Python traceback、NaN或OOM，但OpenI
+失败任务没有任何可下载文件。前三臂虽完成训练，因checkpoint留在已销毁的临时容器且没有完成
+统一DSA分析，不能恢复为正式论文证据。
+
+根因包含平台停止，但旧入口`scripts/openi_cle_v2_spurious_final_entry.py --arm=all`也存在明确的
+失败安全设计缺陷：四臂训练与分析全部成功后才统一打包/upload，中途停止会令此前已完成臂一起
+丢失；分析还硬编码`device=cuda`。Moderate入口的2026-10-14恢复包修复不会自动覆盖这个独立的
+Axis I入口。当前禁止再次运行Axis I `arm=all`。任何重跑前必须先将Axis I改为单臂任务或逐臂
+立即上传checkpoint-bearing recovery archive，并加入`device=auto`/CPU分析回退；在该修复及聚焦
+测试完成前，不得声称Axis I可安全启动。
+
 ## 2026-10-14 Moderate三项Formal平台中断与入口修复
 
 FedDF与AsymHFL+PEW+BER均完整训练40轮并在临时容器保存4个checkpoint，但旧入口随后以硬编码

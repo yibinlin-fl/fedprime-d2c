@@ -41,17 +41,17 @@ source/SOURCE_AUDIT_ZH.md
 ## Overleaf上传包
 
 ```text
-CLE_HFL_LATEX_V0_7_WRITING_V3_OVERLEAF_20261014.zip
-size: 902524 bytes
-SHA256: 4E96FFA45CB5150FDCFFE4B376628C079C3D09353F725C46CB07D2D82F78E14C
+CLE_HFL_LATEX_V0_7_WRITING_V4_OVERLEAF_COMPAT_20261014.zip
+size: 306306 bytes
+SHA256: 160C2162645E20A5C73FDB489936B350535433611A9AC23E15396D304501FA4B
 ```
 
-ZIP内含53个条目，`main.tex`、`references.bib`、正文分节、表格、五张图的三种格式、生成脚本和六份审计/清单文档均已检查存在；无`__pycache__`。
+ZIP内含28个编译必需条目，`main.tex`直接位于根目录；包含`references.bib`、正文分节、全部表格和五张PDF图。归档无`./`前缀、无反斜杠路径、无损坏条目。
 
-旧`CLE_HFL_LATEX_V0_7_WRITING_OVERLEAF_20261014.zip`和`..._V2_...zip`只保留为历史快照，不再用于Overleaf续写。
+V3使用`tar -a`生成，内部条目带`./`前缀并已被Overleaf拒绝上传。第一版、V2和V3均只作历史快照；只上传V4兼容包。
 
 Overleaf编译后的PDF请放入已经创建好的目录：
 
 ```text
-C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\paper_compiled_returns\v0_7_writing_v3
+C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\paper_compiled_returns\v0_7_writing_v4
 ```

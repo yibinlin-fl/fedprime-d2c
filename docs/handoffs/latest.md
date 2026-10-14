@@ -2,6 +2,17 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 V3上传失败已定位并生成V4兼容包
+
+Overleaf截图确认V3上传失败。本地检查发现V3虽然通过ZIP完整性测试，但`tar -a`把所有条目写成
+`./main.tex`等带前缀路径，根目录不存在严格的`main.tex`。现已使用标准`.NET ZipArchive`
+重新生成只含编译必需文件的V4包：28个条目，`main.tex`在根目录，路径统一使用`/`，无`./`
+前缀、无反斜杠、`testzip=None`。V4路径为
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V4_OVERLEAF_COMPAT_20261014.zip`，
+大小`306306` bytes，SHA256=`160C2162645E20A5C73FDB489936B350535433611A9AC23E15396D304501FA4B`。
+V3及更早writing包禁止继续上传。Overleaf编译PDF回传目录已预建为
+`local_runs/paper_compiled_returns/v0_7_writing_v4/`。
+
 ## 2026-10-14 V0.7-writing第二轮图表、实验骨架与源码审计完成
 
 冻结V0.7仍保持不变；所有本轮修改只发生在
@@ -15,11 +26,7 @@ moderate Axis II仍只有3/8行完成，所有缺口继续显式标红。
 均完整，环境配对无异常；五张PDF均为单页并完成目视检查。由于本机没有LaTeX编译器，尚需
 Overleaf真实编译和逐页版面终检，不能把静态检查写成“已成功编译”。
 
-当前唯一writing上传包为
-`deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V3_OVERLEAF_20261014.zip`，
-大小`902524` bytes，SHA256=`4E96FFA45CB5150FDCFFE4B376628C079C3D09353F725C46CB07D2D82F78E14C`。
-旧writing包仅作历史快照。Overleaf返回PDF目录已预建为
-`local_runs/paper_compiled_returns/v0_7_writing_v3/`。
+当前唯一writing上传包以本文件顶部V4兼容包记录为准。旧writing包仅作历史快照。
 
 ## 2026-10-14 V0.7-writing第一轮论证与证据审计完成
 

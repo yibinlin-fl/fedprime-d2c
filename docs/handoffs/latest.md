@@ -19,8 +19,11 @@ Axis I入口现已完成失败安全修复：非Formal选择`arm=all`时会逐�
 打包并上传含checkpoint的recovery archive，再以`device=auto`执行分析并上传不含checkpoint的
 正式轻量包。后一臂失败不再丢失此前已完成臂；失败或分析未完成的timing一律
 `scientific_evidence=false`。Formal现在fail-closed拒绝`arm=all`或`train_seed=all`，强制每个
-OpenI任务恰好一个arm和一个training seed。10项Axis I/Moderate恢复包聚焦测试通过。平台硬停止
-仍可能丢失正在训练的当前臂，因此尚未启动任何重跑。
+OpenI任务恰好一个arm和一个training seed。2026-10-14再次复核时补上上传上下文检查：缺少
+c2net或output_path时在安装/训练前拒绝启动，避免将未执行的上传当作成功。Axis I/Moderate
+恢复包及Axis I runner共22项聚焦测试通过，覆盖上传失败禁止分析、分析失败保留恢复包、后一臂
+失败保留前一臂结果。CPU回退发生在分析启动时CUDA不可用的情况下；不承诺分析中途CUDA故障
+自动重试。平台硬停止仍可能丢失正在训练的当前臂；此次仅本地验证与提交，未推送或启动重跑。
 
 ## 2026-10-14 Moderate三项Formal平台中断与入口修复
 

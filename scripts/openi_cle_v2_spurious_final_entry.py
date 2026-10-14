@@ -151,6 +151,8 @@ def main() -> None:
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
     context = prepare_c2net()
+    if context is None or not getattr(context, "output_path", None):
+        raise RuntimeError("OpenI output context is required before training; recovery upload unavailable")
     if args.skip_install != "true":
         run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], environment)
     source = find_input_archive(candidate_roots(args, context))

@@ -70,8 +70,11 @@ scripts/merge_cle_v2_spurious_final_shards.py
 
 2026-10-14失败安全约束：OpenI Formal必须按单臂、单seed、单任务启动。入口fail-closed拒绝
 Formal的`arm=all`或`train_seed=all`；非Formal的`all`才会逐臂执行。每一臂训练完成后立即上传
-含checkpoint的recovery archive，随后分析使用`device=auto`，GPU租约结束时可回退CPU；分析
-完成后再上传正式轻量包。平台硬停止仍可能丢失正在训练的当前臂，但不会再连带丢失其他任务。
+含checkpoint的recovery archive，随后分析使用`device=auto`，分析启动时CUDA不可用则选择CPU；
+不承诺分析过程中CUDA故障自动重试。分析完成后再上传正式轻量包。入口缺少c2net或output_path
+时在安装/训练前拒绝启动，不能将跳过上传当作成功。22项聚焦测试通过，包含上传失败禁止分析、
+分析失败保留恢复包、后一臂失败保留前一臂结果。平台硬停止仍可能丢失正在训练的当前臂，
+但不会再连带丢失其他任务。
 
 ## Axis II：HFL领域表
 

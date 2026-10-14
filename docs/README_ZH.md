@@ -18,12 +18,15 @@ deliverables/cle_hfl_latex_v0_7_writing_20261014/source/CITATION_AUDIT_ZH.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/FIGURE_MANIFEST.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/WRITING_STYLE_AUDIT_ZH.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/SOURCE_AUDIT_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/PDF_QA_V4_ZH.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V4_OVERLEAF_COMPAT_20261014.zip
 ```
 
 该版本是继续写作和Overleaf审阅的工作入口，不替代原始实验报告。未完成实验保留红色
 `[EVIDENCE NEEDED]`，不能在投稿前隐藏后仍保留相应强结论。V4兼容上传包大小为`306306` bytes，
 SHA256=`160C2162645E20A5C73FDB489936B350535433611A9AC23E15396D304501FA4B`；V3因ZIP条目带`./`前缀被Overleaf拒绝，此前writing包均已降级为历史快照。
+V4已由Overleaf成功编译为15页PDF；逐页视觉、页面边界和引用/交叉引用审计通过。该结论只针对
+内部写作稿的可编译性，不能替代pending Formal证据或目标会议模板检查。
 
 ## CLE-v2中等难度补充数据集
 

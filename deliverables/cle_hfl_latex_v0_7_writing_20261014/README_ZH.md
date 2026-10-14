@@ -33,10 +33,12 @@ source/CITATION_AUDIT_ZH.md
 source/FIGURE_MANIFEST.md
 source/WRITING_STYLE_AUDIT_ZH.md
 source/SOURCE_AUDIT_ZH.md
+PDF_QA_V4_ZH.md
 ```
 
-本机没有LaTeX编译器，因此本轮完成的是源码静态检查；仍需在Overleaf编译并检查版面、浮动体、
-断行、引用和页数。
+V4已在Overleaf成功编译并回传15页PDF。逐页视觉审计、页面边界、引用/交叉引用和文本完整性
+检查全部通过；详细记录见`PDF_QA_V4_ZH.md`。这只确认内部写作稿可编译、可审阅，不代表待补
+Formal证据或目标会议模板已经完成。
 
 ## Overleaf上传包
 
@@ -54,4 +56,12 @@ Overleaf编译后的PDF请放入已经创建好的目录：
 
 ```text
 C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\paper_compiled_returns\v0_7_writing_v4
+```
+
+当前已回传并审计的PDF为：
+
+```text
+CLE_HFL_LATEX_V0_7_WRITING_V4_OVERLEAF_COMPAT_20261014.pdf
+size: 779291 bytes
+SHA256: 9C5FD8F3FBADC500D901FEFC9102758CEB57B14CEDCB38A6504C4E94D631FDFE
 ```

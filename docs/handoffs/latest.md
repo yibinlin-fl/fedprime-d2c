@@ -2,6 +2,19 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 V0.7-writing V4真实编译与逐页审计通过
+
+用户已在Overleaf成功上传V4兼容包并回传15页PDF：
+`local_runs/paper_compiled_returns/v0_7_writing_v4/CLE_HFL_LATEX_V0_7_WRITING_V4_OVERLEAF_COMPAT_20261014.pdf`，
+大小`779291` bytes，SHA256=`9C5FD8F3FBADC500D901FEFC9102758CEB57B14CEDCB38A6504C4E94D631FDFE`。
+15/15页逐页视觉检查通过；无空白页、无文本越界、无表图裁切，`??`、`[?]`、未解析引用和交叉
+引用均为0。五张科研图均在最终PDF中清晰可读。详细审计：
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/PDF_QA_V4_ZH.md`。
+
+当前稿仍使用通用双栏模板并保留13处红色`[EVIDENCE NEEDED]`，因此状态是“内部写作稿编译与
+版面通过”，不是“投稿净稿完成”。原始冻结V0.7未被修改；唯一继续写作入口仍是
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/source/`。
+
 ## 2026-10-14 V3上传失败已定位并生成V4兼容包
 
 Overleaf截图确认V3上传失败。本地检查发现V3虽然通过ZIP完整性测试，但`tar -a`把所有条目写成

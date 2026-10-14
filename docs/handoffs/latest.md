@@ -19,7 +19,7 @@ Overleaf真实编译和逐页版面终检，不能把静态检查写成“已成
 `deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V3_OVERLEAF_20261014.zip`，
 大小`902524` bytes，SHA256=`4E96FFA45CB5150FDCFFE4B376628C079C3D09353F725C46CB07D2D82F78E14C`。
 旧writing包仅作历史快照。Overleaf返回PDF目录已预建为
-`local_runs/paper_compiled_returns/v0_7_writing_v2/`。
+`local_runs/paper_compiled_returns/v0_7_writing_v3/`。
 
 ## 2026-10-14 V0.7-writing第一轮论证与证据审计完成
 

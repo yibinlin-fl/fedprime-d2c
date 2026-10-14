@@ -7,11 +7,21 @@ The experiments follow a six-link evidence chain: existence, formation attributi
 The experiments use matched contrasts rather than a single cross-protocol leaderboard. The held-out map2 study is the main comparison of local risk objectives; map1 changes the class--operator binding while keeping the remaining controlled factors fixed; FedDF-fidelity changes the HFL communication base. Table~\ref{tab:protocol-boundary} summarizes the information available during training and evaluation.
 
 \input{tables/protocol_information_boundary}
+\input{tables/research_questions}
+
+Figure~\ref{fig:protocol-map} records the distinct responsibilities of the two controlled regimes. Strong stress isolates mechanism-level differences under severe CLE; the moderate protocol evaluates dose response and usable semantics. Results from the two regimes are not pooled into one leaderboard.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.98\textwidth]{figures/fig1_cle_hfl_evidence_chain.pdf}
-\caption{CLE-HFL evidence chain and information boundary. Training-time PEW+BER uses a coarse family proxy. Operator identities and the binding map are sealed from training and used only for controlled construction or post-training DSA evaluation.}
+\includegraphics[width=0.94\textwidth,keepaspectratio]{figures/fig5_protocol_map.pdf}
+\caption{Strong-stress and moderate-utility protocol roles.}
+\label{fig:protocol-map}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth,keepaspectratio]{figures/fig1_cle_hfl_evidence_chain.pdf}
+\caption{CLE-HFL evidence chain and information boundary.}
 \label{fig:evidence-chain}
 \end{figure*}
 
@@ -20,6 +30,15 @@ The experiments use matched contrasts rather than a single cross-protocol leader
 A five-arm 12-round screen was used for method selection only. JTT therefore remains screening-only and is not part of the Formal comparison. Axis I retains the strong-stress held-out-map2 setting ($\alpha=0.5$, private corruption rate $1.0$, and $\gamma=0.9$) and compares four matched arms: ERM, protocol-matched CVaR-DRO, PEW+GroupDRO, and PEW+BER. The arms share the partition, training and evaluation seeds, initial states, private batch trajectory, and strict HFL communication protocol. PEW+GroupDRO and PEW+BER also receive identical PEW group assignments. This design asks whether BER's class-conditional support balancing matters beyond generic tail emphasis or worst-group optimization. DSA is the primary endpoint; utility is reported separately and is not interpreted as ordinary clean-CIFAR performance under this deliberately severe protocol.
 
 \input{tables/map2_method_comparison}
+
+Figure~\ref{fig:axis1-objectives} displays the primary shortcut endpoint beside operator-grid accuracy. It makes the central distinction explicit: a method can reduce DSA without occupying the same position on the utility axis.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig4_axis1_objective_comparison.pdf}
+\caption{Fixed-budget matched objective comparison.}
+\label{fig:axis1-objectives}
+\end{figure*}
 
 The completed fixed-budget study gives the following source-paired differences for training seed 0:
 
@@ -81,16 +100,9 @@ Axis II asks a different question from the matched objective study: whether repr
 
 \input{tables/hfl_context_baselines}
 
-The first three Formal rows are complete. Local/ERM, FedMD, and FedProto have pooled DSA values of (0.168374), (0.167835), and (0.160788), respectively; all exceed the shuffled-binding null. FedMD is statistically indistinguishable from Local in the paired DSA contrast, while FedProto produces a small DSA reduction of (0.007587) (4.51\%) with slightly lower utility. These rows indicate that standard communication does not automatically remove CLE, but they are not a complete ranking of the eight methods.
+The first three Formal rows are complete. Local/ERM, FedMD, and FedProto have pooled DSA values of \(0.168374\), \(0.167835\), and \(0.160788\), respectively; all exceed the shuffled-binding null. FedMD is statistically indistinguishable from Local in the paired DSA contrast, while FedProto produces a small DSA reduction of \(0.007587\) (4.51\%) with slightly lower utility. These rows indicate that standard communication does not automatically remove CLE, but they are not a complete ranking of the eight methods.
 
 \evidenceneeded{remaining moderate held-out-map2 Formal rows: FedDF-fidelity, AugHFL, RAHFL, AsymHFL--ERM, and AsymHFL+PEW+BER.}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.98\textwidth]{figures/fig2_dsa_proxy_boundary.pdf}
-\caption{Paired directional diagnosis and proxy-identifiability boundary. DSA compares bound-class probability mass across operators for the same source. Identical observable label--proxy evidence can correspond to latent worlds with different true dependence.}
-\label{fig:dsa-proxy}
-\end{figure*}
 
 \subsection{Environment Correspondence and Granularity}
 

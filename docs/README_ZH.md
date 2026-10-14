@@ -5,7 +5,8 @@ Updated: 2026-10-14
 ## CLE-HFL V0.7-writing独立写作版
 
 冻结V0.7保持不变。2026-10-14建立独立写作版，用于论证压缩、减少模板化措辞、锁定论断—证据
-边界，并回填moderate Axis II前三行Formal：
+边界，并回填moderate Axis II前三行Formal。第二轮已完成五张可复现科研图、RQ1--RQ7实验骨架、
+官方来源引用审计和源码静态完整性审计：
 
 ```text
 deliverables/cle_hfl_latex_v0_7_writing_20261014/README_ZH.md
@@ -14,10 +15,15 @@ deliverables/cle_hfl_latex_v0_7_writing_20261014/source/CLAIM_EVIDENCE_AUDIT_ZH.
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/REVISION_LOG_ZH.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/EXPERIMENT_TABLE_MATRIX_ZH.md
 deliverables/cle_hfl_latex_v0_7_writing_20261014/source/CITATION_AUDIT_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/FIGURE_MANIFEST.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/WRITING_STYLE_AUDIT_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/SOURCE_AUDIT_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V3_OVERLEAF_20261014.zip
 ```
 
 该版本是继续写作和Overleaf审阅的工作入口，不替代原始实验报告。未完成实验保留红色
-`[EVIDENCE NEEDED]`，不能在投稿前隐藏后仍保留相应强结论。
+`[EVIDENCE NEEDED]`，不能在投稿前隐藏后仍保留相应强结论。V3上传包大小为`902524` bytes，
+SHA256=`4E96FFA45CB5150FDCFFE4B376628C079C3D09353F725C46CB07D2D82F78E14C`；此前writing包均已降级为历史快照。
 
 ## CLE-v2中等难度补充数据集
 

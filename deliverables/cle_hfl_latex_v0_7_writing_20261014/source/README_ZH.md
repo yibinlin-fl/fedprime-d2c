@@ -14,11 +14,14 @@
 
 - `sections/`：正文与附录；
 - `tables/`：主表与附录表；
-- `figures/`：两张论文图；
+- `figures/`：五张论文图、PDF/SVG/PNG导出及可复现生成脚本；
 - `references.bib`：参考文献；
 - `EXPERIMENT_TABLE_MATRIX_ZH.md`：最新实验表矩阵；
 - `CITATION_AUDIT_ZH.md`：引用边界；
 - `CLAIM_EVIDENCE_AUDIT_ZH.md`：逐项论断—证据—禁用表述；
+- `FIGURE_MANIFEST.md`：五张图的论断、证据来源和正文位置；
+- `WRITING_STYLE_AUDIT_ZH.md`：去模板化、去重复和科学边界保护记录；
+- `SOURCE_AUDIT_ZH.md`：源码静态完整性检查结果；
 - `REVISION_LOG_ZH.md`：本轮修改范围与后续工作。
 
 ## 当前最重要 pending
@@ -40,3 +43,9 @@
 - V0.6不可变；本骨架只同步实验职责，未回填任何不存在的结果。
 
 benchmark/smoke 结果不得填写为 Formal 科学证据。
+
+## 图表与实验骨架
+
+- 正文已加入 RQ1--RQ7 表，分别对应存在性、local-first归因、匹配目标比较、跨通信、剂量响应、HFL机制家族和外部边界。
+- 五张图均由 `figures/generate_paper_figures.py` 生成；没有使用生成式插画，也没有把pending结果画成完成证据。
+- `figures/latex_includes.tex` 仅是图块参考片段，未被 `main.tex` 引用；正文中的五个图块已经分别放入相应章节。

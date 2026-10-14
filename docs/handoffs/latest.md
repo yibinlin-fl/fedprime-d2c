@@ -2,6 +2,25 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 V0.7-writing第二轮图表、实验骨架与源码审计完成
+
+冻结V0.7仍保持不变；所有本轮修改只发生在
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/source/`。五张旧式/占位视觉已统一为可复现的
+学术图（证据链、DSA与proxy边界、local-first归因、Axis-I双端点和双协议职责），并提供
+PDF/SVG/PNG与生成脚本。实验章节新增RQ1--RQ7表，明确每个研究问题的主要端点和完成状态；
+moderate Axis II仍只有3/8行完成，所有缺口继续显式标红。
+
+第二轮语言审计已去除模板化转折和重复总结；20个引用键已按一手来源核对，反事实医学论文届次
+已修正。源码静态审计结果：20/20引用键、21/21 input、5/5正文图、18个唯一标签和6个交叉引用
+均完整，环境配对无异常；五张PDF均为单页并完成目视检查。由于本机没有LaTeX编译器，尚需
+Overleaf真实编译和逐页版面终检，不能把静态检查写成“已成功编译”。
+
+当前唯一writing上传包为
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_V3_OVERLEAF_20261014.zip`，
+大小`902524` bytes，SHA256=`4E96FFA45CB5150FDCFFE4B376628C079C3D09353F725C46CB07D2D82F78E14C`。
+旧writing包仅作历史快照。Overleaf返回PDF目录已预建为
+`local_runs/paper_compiled_returns/v0_7_writing_v2/`。
+
 ## 2026-10-14 V0.7-writing第一轮论证与证据审计完成
 
 冻结V0.7源码与`UPDATED_OVERLEAF_20261014.zip`保持不变。独立写作版位于

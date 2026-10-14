@@ -105,6 +105,12 @@ Formal已经完成并通过合同、完成标记、统一指标及跨账号batch
 round耗时外推，`asymhfl_erm`与`asymhfl_pew_ber` Formal各约4小时/24积分，建议拆成两个
 账号单臂并行并各预留30--35积分。benchmark结果只授权Formal，不进入论文。
 
+随后三项Formal暴露平台尾部失效：FedDF与PEW+BER训练40轮完成后，旧入口的CUDA-only分析因
+GPU不可用而失败且未回传；AsymHFL--ERM在第32轮由平台停止。第4/7/8行均未形成可用正式结果。
+入口现已改为训练后立即上传checkpoint恢复包、分析`auto`回退CPU、失败状态不标科学证据。
+修复推送前禁止重跑；完整事故边界见
+`deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md`。
+
 ## 7. OpenI上传状态
 
 2026-10-13已使用本机OpenI CLI上传完成：

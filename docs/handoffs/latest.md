@@ -2,6 +2,20 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 Moderate三项Formal平台中断与入口修复
+
+FedDF与AsymHFL+PEW+BER均完整训练40轮并在临时容器保存4个checkpoint，但旧入口随后以硬编码
+`--device cuda`启动统一分析；此时平台GPU已不可用，两项均报`CUDA requested but unavailable`，
+并因打包/upload位于分析之后而没有回传结果包。AsymHFL--ERM仅完成0--31轮后被平台写入
+`stopped`，无Python traceback、NaN或OOM；它不是完整Formal。日志不能重建权重或DSA，因此
+第4、7、8行仍未完成；仅Local/FedMD/FedProto第1--3行可正式填表。事故报告：
+`deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md`。
+
+入口已修复：训练结束后立即打包并上传含checkpoint的`*_recovery_outputs.tar.gz`，分析改用
+`device=auto`，并在分析失败时保留恢复包且将`scientific_evidence=false`。静态编译及6项聚焦
+测试通过。修复尚未推送；推送前禁止重跑。首先检查OpenI失败任务页面能否直接下载临时容器中的
+checkpoint；若不能，FedDF/PEW+BER需重训，AsymHFL--ERM无论如何需从头重跑。
+
 ## 2026-10-14 Moderate Axis II AsymHFL benchmark通过
 
 `axis2_asym` benchmark完成`asymhfl_erm`与`asymhfl_pew_ber`两臂：2/2完成，合同为moderate

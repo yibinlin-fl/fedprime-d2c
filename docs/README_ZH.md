@@ -22,6 +22,7 @@ deliverables/cle_v2_moderate_axis2_plain_benchmark_20261013/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_axis2_robust_benchmark_20261013/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_axis2_asym_benchmark_20261014/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md
 ```
 
 Axis II八行表的前三项seed-0 Formal（Local、FedMD、FedProto）已经完成并通过跨账号batch配对

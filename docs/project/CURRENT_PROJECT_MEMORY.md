@@ -5169,3 +5169,14 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - 下一批三个账号优先补Axis II第4行FedDF、第7行AsymHFL--ERM和第8行AsymHFL+PEW+BER；
   AugHFL/RAHFL每臂约102积分，继续暂缓。报告：
   `deliverables/cle_v2_moderate_axis2_asym_benchmark_20261014/RESULT_SUMMARY_ZH.md`。
+
+## 2026-10-14：三项Formal平台中断及checkpoint-first恢复修复
+
+- FedDF与AsymHFL+PEW+BER均完成40轮、写入4个checkpoint，随后统一分析以硬编码CUDA启动时
+  报`CUDA requested but unavailable`；旧入口尚未执行打包/upload，日志无法恢复模型权重与DSA。
+- AsymHFL--ERM只完成0--31轮，日志以平台`stopped`结束，无训练异常；禁止作为Formal。
+- 日志可恢复的last-10 Avg/Worst/WCCA/CFG：FedDF=`38.013/34.746/2.175/36.185`，PEW+BER=
+  `36.858/32.316/4.825/27.933`；它们只用于事故审计，不得填入统一Axis II主表。
+- moderate OpenI入口现先上传含checkpoint的恢复包，再以`device=auto`分析；分析失败也保留恢复包
+  且不标科学证据。静态编译与6项聚焦测试通过。报告：
+  `deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md`。

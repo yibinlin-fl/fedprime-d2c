@@ -2,6 +2,23 @@
 
 Updated: 2026-10-14
 
+## CLE-HFL V0.7-writing独立写作版
+
+冻结V0.7保持不变。2026-10-14建立独立写作版，用于论证压缩、减少模板化措辞、锁定论断—证据
+边界，并回填moderate Axis II前三行Formal：
+
+```text
+deliverables/cle_hfl_latex_v0_7_writing_20261014/README_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/main.tex
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/CLAIM_EVIDENCE_AUDIT_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/REVISION_LOG_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/EXPERIMENT_TABLE_MATRIX_ZH.md
+deliverables/cle_hfl_latex_v0_7_writing_20261014/source/CITATION_AUDIT_ZH.md
+```
+
+该版本是继续写作和Overleaf审阅的工作入口，不替代原始实验报告。未完成实验保留红色
+`[EVIDENCE NEEDED]`，不能在投稿前隐藏后仍保留相应强结论。
+
 ## CLE-v2中等难度补充数据集
 
 held-out map2、Dirichlet `alpha=1.0`、private corruption rate `0.5`、

@@ -2,6 +2,22 @@
 
 Updated: 2026-10-14
 
+## 2026-10-14 V0.7-writing第一轮论证与证据审计完成
+
+冻结V0.7源码与`UPDATED_OVERLEAF_20261014.zip`保持不变。独立写作版位于
+`deliverables/cle_hfl_latex_v0_7_writing_20261014/source/`，已完成Abstract、Introduction、
+Related Work、Method关键边界、Experiments、Discussion和Conclusion的第一轮改写，并新增
+`CLAIM_EVIDENCE_AUDIT_ZH.md`与`REVISION_LOG_ZH.md`。改写统一采用“CLE-HFL问题—paired DSA
+诊断—local-first归因—taxonomy-assisted PEW+BER缓解—边界验证”的四贡献结构，不再把PEW
+单独包装为taxonomy-free创新或把PEW+BER写成通用无损插件。
+
+moderate Axis II已将Local/FedMD/FedProto三行Formal写入工作稿；其余五行、submission-budget
+Axis I、local-first seeds 1/2、第二private dataset和bounded taxonomy stress继续明确标为pending。
+静态审计确认20个引用键均存在、8个主文件input均存在、2张图片均存在；本机无`pdflatex`，仍需
+Overleaf编译与PDF视觉终检。新结果到达前不得直接改Abstract结论或把pending表当成Formal证据。
+Overleaf工作包为`deliverables/cle_hfl_latex_v0_7_writing_20261014/CLE_HFL_LATEX_V0_7_WRITING_OVERLEAF_20261014.zip`，
+大小`52779` bytes，SHA256=`A4CCF6554ABD80DE0DAF47ACA91D3F548AEBCC3F149BB6394DDC4E497F41964C`。
+
 ## 2026-10-14 V0.7 Overleaf包与最新源码重新同步
 
 V0.7源码已在2026-10-13更新双难度协议和moderate Axis II八行骨架，但原9月25日ZIP未同步。

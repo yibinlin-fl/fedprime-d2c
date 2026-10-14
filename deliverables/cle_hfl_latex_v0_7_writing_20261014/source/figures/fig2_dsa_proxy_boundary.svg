@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="950" height="330" preserveAspectRatio="xMinYMin meet" viewBox="0 0 950 330" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="950" height="330"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-330)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="291.154" y="313" style="font-family: Helvetica-Bold; font-size: 13px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,626) scale(1,-1)">Directional diagnosis and the proxy-identifiability boundary</text>
+			<path d="M 475,22 L 475,292 Z" style="stroke: rgb(54%,59%,65%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<text x="24" y="282" style="font-family: Helvetica-Bold; font-size: 10.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,564) scale(1,-1)">(a) Source-paired Directional Shortcut Alignment</text>
+			<rect x="35" y="120" width="135" height="70" rx="9" ry="9" style="stroke: rgb(12%,22%,37%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(12%,22%,37%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="74.8908" y="162.0" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,324) scale(1,-1)">Source (x, y)</text>
+			<text x="64.69380000000001" y="143.8" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,287) scale(1,-1)">semantic content fixed</text>
+			<rect x="220" y="220" width="145" height="62" rx="9" ry="9" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(90%,49%,13%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="268.9848" y="257.2" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,514) scale(1,-1)">Operator o</text>
+			<text x="257.0194" y="241.08" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,482) scale(1,-1)">bound classes B(k,o)</text>
+			<path d="M 170,155 L 220,251 Z" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="220 251, 213.3518 246.57, 220.1811 243.0132" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1; fill: rgb(90%,49%,13%); fill-rule: evenodd;"/>
+			<path d="M 365,251 L 395,155 Z" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="395 155, 396.5868 162.8297, 389.2373 160.533" style="stroke: rgb(90%,49%,13%); stroke-linecap: butt; stroke-width: 1; fill: rgb(90%,49%,13%); fill-rule: evenodd;"/>
+			<rect x="220" y="125" width="145" height="62" rx="9" ry="9" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(29%,47%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="267.89" y="162.2" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,324) scale(1,-1)">Operator o'</text>
+			<text x="257.0194" y="146.08" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,292) scale(1,-1)">alternative corruption</text>
+			<path d="M 170,155 L 220,156 Z" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="220 156, 212.9244 159.7093, 213.0784 152.0108" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(29%,47%,65%); fill-rule: evenodd;"/>
+			<path d="M 365,156 L 395,155 Z" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="395 155, 388.1321 159.0811, 387.8756 151.3853" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(29%,47%,65%); fill-rule: evenodd;"/>
+			<rect x="220" y="30" width="145" height="62" rx="9" ry="9" style="stroke: rgb(23%,61%,60%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(23%,61%,60%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="266.7952" y="67.19999999999999" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,134) scale(1,-1)">Operator o''</text>
+			<text x="257.0194" y="51.08" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,102) scale(1,-1)">alternative corruption</text>
+			<path d="M 170,155 L 220,61 Z" style="stroke: rgb(23%,61%,60%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="220 61, 220.1118 68.98812, 213.3137 65.3721" style="stroke: rgb(23%,61%,60%); stroke-linecap: butt; stroke-width: 1; fill: rgb(23%,61%,60%); fill-rule: evenodd;"/>
+			<path d="M 365,61 L 395,155 Z" style="stroke: rgb(23%,61%,60%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="395 155, 389.204 149.5019, 396.5395 147.1608" style="stroke: rgb(23%,61%,60%); stroke-linecap: butt; stroke-width: 1; fill: rgb(23%,61%,60%); fill-rule: evenodd;"/>
+			<rect x="395" y="111" width="70" height="88" rx="9" ry="9" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(56%,38%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="420.2894" y="163.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,327) scale(1,-1)">DSA</text>
+			<text x="405.5052" y="140.92000000000002" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,281) scale(1,-1)">mass to B(k,o)</text>
+			<text x="404.8668" y="128.92000000000002" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,257) scale(1,-1)">under o versus</text>
+			<text x="404.2322" y="116.92000000000002" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,233) scale(1,-1)">other operators</text>
+			<text x="130.99375" y="12" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,24) scale(1,-1)">Operator-invariant source terms cancel; shuffled binding supplies a null.</text>
+			<text x="494" y="282" style="font-family: Helvetica-Bold; font-size: 10.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,564) scale(1,-1)">(b) Same proxy evidence, different latent CLE</text>
+			<rect x="645" y="222" width="180" height="58" rx="9" ry="9" style="stroke: rgb(29%,47%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(29%,47%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="682.5922" y="256.8" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,513) scale(1,-1)">Same observable P(Y,Z)</text>
+			<text x="688.6438" y="241.72" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,483) scale(1,-1)">task label Y + PEW proxy Z</text>
+			<rect x="515" y="105" width="170" height="72" rx="9" ry="9" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(23%,56%,33%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="568.053" y="148.2" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,296) scale(1,-1)">Latent world A</text>
+			<text x="567.6772" y="129.48" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,258) scale(1,-1)">E independent of Y</text>
+			<text x="582.1552" y="117.47999999999999" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,234) scale(1,-1)">D(Y,E) = 0</text>
+			<rect x="785" y="105" width="150" height="72" rx="9" ry="9" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(78%,29%,29%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="828.053" y="148.2" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,296) scale(1,-1)">Latent world B</text>
+			<text x="845.9552" y="129.48" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,258) scale(1,-1)">E = g(Y)</text>
+			<text x="842.1552" y="117.47999999999999" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,234) scale(1,-1)">D(Y,E) &gt; 0</text>
+			<path d="M 700,222 L 600,177 Z" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="600 177, 607.9634 176.3617, 604.8035 183.3835" style="stroke: rgb(23%,56%,33%); stroke-linecap: butt; stroke-width: 1; fill: rgb(23%,56%,33%); fill-rule: evenodd;"/>
+			<path d="M 770,222 L 860,177 Z" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="860 177, 855.4608 183.574, 852.0172 176.687" style="stroke: rgb(78%,29%,29%); stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,29%,29%); fill-rule: evenodd;"/>
+			<text x="627.192" y="84" style="font-family: Helvetica-Bold; font-size: 8.0px;fill: rgb(56%,38%,65%); stroke:none;" transform="translate(0,168) scale(1,-1)">identical proxy evidence, different true dependence</text>
+			<path d="M 725,75 L 725,58 Z" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="725 58, 728.85 65, 721.15 65" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1; fill: rgb(56%,38%,65%); fill-rule: evenodd;"/>
+			<rect x="590" y="8" width="270" height="50" rx="9" ry="9" style="stroke: rgb(56%,38%,65%); stroke-linecap: butt; stroke-width: 1.3; fill: rgb(56%,38%,65%); fill-rule: evenodd; fill-opacity: 0.09;"/>
+			<text x="626.5738" y="38.0" style="font-family: Helvetica-Bold; font-size: 9.2px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,76) scale(1,-1)">Target-aligned evaluation remains necessary</text>
+			<text x="647.708" y="25.0" style="font-family: Helvetica; font-size: 7.6px;fill: rgb(32%,37%,42%); stroke:none;" transform="translate(0,50) scale(1,-1)">Use paired DSA; report proxy error separately</text>
+		</g>
+	</g>
+</svg>

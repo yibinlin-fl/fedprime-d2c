@@ -1,0 +1,20 @@
+\section{Discussion and Limitations}
+
+\textbf{Why a local-first finding still belongs in HFL.}
+CLE is induced by client-specific data distributions and learned by heterogeneous client models before their knowledge is exchanged. The factorial indicates that communication is not the dominant source of the measured shortcut in the evaluated setting; it does not show that communication is irrelevant. A shortcut formed locally can still shape public logits, prototypes, routing decisions, or teacher signals. The finding changes the intervention point---the client objective---while the failure mode, downstream interaction, and evaluation remain federated.
+
+\textbf{Shortcut suppression and task utility are separate outcomes.}
+PEW+BER reduces pooled DSA in the completed controlled comparisons, but utility gains are not uniform. In the FedDF-fidelity experiment, DSA falls from (0.136989) to (0.029012) while the frozen utility gate fails. In the fixed-budget held-out-map2 study, BER gives the best pooled shortcut--utility trade-off among the four matched objectives, yet CVaR-DRO has lower DSA on two clients. Reporting only accuracy would miss binding-directed behavior; reporting only DSA would hide whether useful semantics were retained. Both are needed.
+
+\textbf{PEW is taxonomy-assisted, not latent-environment discovery.}
+PEW learns a fixed coarse corruption-family taxonomy from public synthetic supervision. This is a deployment assumption and a source of interpretability, but also a restriction relative to taxonomy-free environment inference such as EIIL \citep{creager2021eiil}. BER has an exact effective-distribution interpretation over the resulting proxy groups. The current PEW error nevertheless makes the conditional bridge to the true environment numerically trivial. We therefore use proxy groups to define the intervention but paired DSA to evaluate its behavioral effect. True operator information remains confined to controlled construction, sealed evaluation, and Oracle audits.
+
+\textbf{The present evidence is controlled rather than externally representative.}
+The completed fixed-budget objective comparison spans training seeds 0/1/2; the local-first factorial, map1 replication, and FedDF-fidelity study use seed 0. The moderate Axis-II table is only partially complete. Core experiments use one CIFAR-10 private task and a fixed non-IID partition. Source-clustered bootstrap measures evaluation-source variation conditional on a trained checkpoint, not training, partition, binding-map, or dataset uncertainty. Client identity also couples an architecture with one non-IID data slice, so per-client differences cannot be interpreted as isolated architecture effects.
+
+\textbf{Two difficulty regimes do not constitute dataset replication.}
+The strong-stress protocol ($\alpha=.5,\rho=1$) is designed to expose directional shortcut behavior under severe corruption and label skew. The moderate protocol ($\alpha=1,\rho=.5$) retains usable clean support and varies CLE strength for utility and mechanism-family comparisons. Both are synthetic CIFAR-10 constructions. Agreement between them would strengthen internal validity, not establish performance under natural, compound, continuous, or previously unseen environments.
+
+\ifdraftskeleton
+\evidenceneeded{local-first seeds 1/2, complete moderate Axis-II table, second private dataset, and bounded taxonomy stress.}
+\fi

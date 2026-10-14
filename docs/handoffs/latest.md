@@ -13,8 +13,10 @@ FedDF与AsymHFL+PEW+BER均完整训练40轮并在临时容器保存4个checkpoin
 
 入口已修复：训练结束后立即打包并上传含checkpoint的`*_recovery_outputs.tar.gz`，分析改用
 `device=auto`，并在分析失败时保留恢复包且将`scientific_evidence=false`。静态编译及6项聚焦
-测试通过。修复尚未推送；推送前禁止重跑。首先检查OpenI失败任务页面能否直接下载临时容器中的
-checkpoint；若不能，FedDF/PEW+BER需重训，AsymHFL--ERM无论如何需从头重跑。
+测试通过，并已随提交`0ab080c`推送到`origin/main`。用户确认OpenI失败任务已无法下载临时
+checkpoint，因此FedDF/PEW+BER需重训，AsymHFL--ERM也需从头重跑。每账号下一周期若只有
+48积分/约8个V100小时，仍不足以安全完成实测超过8小时的AsymHFL--ERM；再次启动前必须先冻结
+更保守的资源门槛，或实现并验证保存完整模型、优化器、通信与RNG状态的可审计分段续跑。
 
 ## 2026-10-14 Moderate Axis II AsymHFL benchmark通过
 

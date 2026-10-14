@@ -5180,3 +5180,6 @@ V0.5论文的method table、cross-setting table、per-client appendix、seed unc
 - moderate OpenI入口现先上传含checkpoint的恢复包，再以`device=auto`分析；分析失败也保留恢复包
   且不标科学证据。静态编译与6项聚焦测试通过。报告：
   `deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md`。
+- 修复提交`0ab080c`已推送到`origin/main`。用户确认旧失败任务无法下载临时checkpoint；第4/8行
+  必须重训。第7行实测8小时仅完成32/40轮，下一周期若单账号仍只有48积分，不允许按旧one-shot
+  方案再次冒险；需先完成可审计resume设计或积累更大连续预算。

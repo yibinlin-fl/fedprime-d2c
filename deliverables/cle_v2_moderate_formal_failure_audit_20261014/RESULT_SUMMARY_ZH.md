@@ -59,7 +59,9 @@ deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH
 
 ## 6. 下一步约束
 
-- 修复提交推送前禁止重跑三个Formal。
-- 先在失败任务页面检查是否能直接下载临时checkpoint；如果不能，FedDF与PEW+BER才需要重训。
+- 修复已由提交`0ab080c`推送到`origin/main`；用户确认失败任务页面无法下载临时checkpoint，
+  FedDF与PEW+BER需要重训。
 - 重训时账号必须预留训练、恢复包上传和CPU/GPU分析余量，不能再按纯训练机械估计卡余额。
 - 后续任何Formal即使分析失败，也应至少返回可离线分析的checkpoint恢复包。
+- AsymHFL--ERM实测约8小时只到第32轮；若单账号下一周期仍只有48积分/约8小时，再次one-shot
+  启动仍不安全。应先验证可审计分段续跑，或等待单账号有更大的连续预算。

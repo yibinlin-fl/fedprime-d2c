@@ -1,6 +1,17 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-14
+Updated: 2026-10-15
+
+## CLE-HFL待补实验优先级
+
+V0.7-writing中的13处红色证据标记已归并为8类独立缺口，并冻结零GPU收缩项、最小诚实成稿包
+与冲CCF-B增强包。现有M1已经是40轮三training-seed正式证据；昂贵full-local-budget复验不再
+默认列为投稿前必须。下一核心顺序为moderate AsymHFL成对锚点、剂量响应、local-first多seed、
+第二private dataset和一个bounded taxonomy stress：
+
+```text
+docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md
+```
 
 ## CLE-HFL V0.7-writing独立写作版
 

@@ -10,7 +10,12 @@
 > `alpha=1.0/rho=0.5/gamma={0,0.5,0.9}`作为moderate协议，承担剂量响应、正常效用与
 > Axis II领域比较。两者不能混表，新协议仍是CIFAR-10，不能冒充M3第二private dataset。
 
-Updated: 2026-10-13
+> 2026-10-15 priority update：本文件继续保存完整候选矩阵和协议定义，但第7--8节的旧执行
+> 顺序已被`CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md`替代。现有M1已是40轮
+> 三training-seed Formal；额外full-local-budget Axis I不再默认列为投稿前必须。Axis II允许按
+> 科学问题缩减，而不是为填满八行继续消耗算力。
+
+Updated: 2026-10-15
 
 ## 0. 用途与纪律
 

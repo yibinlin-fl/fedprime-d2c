@@ -1,6 +1,20 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-14
+Updated: 2026-10-15
+
+## 2026-10-15 待补实验优先级已收敛
+
+V0.7-writing中的13处`[EVIDENCE NEEDED]`已归并为8类独立缺口。现有Axis I M1已经是40轮、
+四臂、training seeds 0/1/2的matched Formal，因此后来中断的昂贵full-local-budget复验降为可选
+耐久性检查，不再默认作为投稿前必须项。JTT Formal与完整八行Axis II也不再作为强制前置条件；
+可通过删除未主张的pending行和缩减领域表保持诚实。
+
+当前付费优先顺序：先补moderate `AsymHFL--ERM`与`AsymHFL+PEW+BER`成对锚点；复用两条
+`gamma=.9`结果，只新增ERM `gamma=0/.5`完成剂量响应；若认真冲CCF-B，再补local-first三seed、
+第二private dataset三seed、一个bounded taxonomy stress，以及按预算选择FedDF或RAHFL领域锚点。
+完整决策见`docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md`。
+
+本轮只整理优先级，没有授权或启动任何付费、Formal或多种子实验，也尚未删除论文红色标记。
 
 ## 2026-10-14 V0.7-writing V4真实编译与逐页审计通过
 

@@ -242,6 +242,9 @@ directory manually.
 
 ## OpenI User Handoff
 
+For the consolidated upload, launch, recovery, and cross-chat operating guide,
+read `docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md`.
+
 After an OpenI-capable implementation is complete and locally verified, always
 give the user one self-contained launch card before asking them to create a
 task. It must state:

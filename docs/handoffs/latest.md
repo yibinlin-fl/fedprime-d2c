@@ -1,6 +1,14 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-15
+Updated: 2026-10-17
+
+## 2026-10-17 OpenI跨窗口完整操作交接已集中
+
+新入口：`docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md`，集中本机CLI、
+凭据位置（无Token）、输入包/哈希、容器c2net、单臂参数、恢复包与下载、资源边界和完整启动卡。
+两种输入包本地bytes/SHA256再次匹配；未重传或启动实验。指南明确Axis I已有上传上下文启动前
+保护，moderate仍需Formal前失败安全复核，不能把整个shard恢复包误当逐臂上传。当前科学优先级
+保持下节10月15日决策，Axis I高预算复验不恢复为默认必做项。
 
 ## 2026-10-15 待补实验优先级已收敛
 

@@ -1,6 +1,16 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-15
+Updated: 2026-10-17
+
+## OpenI实验操作完整交接
+
+跨窗口恢复OpenI时读取下列集中指南，包含本机CLI与凭据位置、输入包/哈希、c2net结果回传、
+单臂参数、恢复包与下载、成本边界、完整启动卡及可复制的接手指令。已同步10月15日优先级调整，
+并区分Axis I与moderate尚未完全一致的失败保护；不构成实验授权：
+
+```text
+docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md
+```
 
 ## CLE-HFL待补实验优先级
 

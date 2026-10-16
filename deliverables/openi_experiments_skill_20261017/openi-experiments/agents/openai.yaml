@@ -1,0 +1,6 @@
+interface:
+  display_name: "OpenI 实验助手"
+  short_description: "为新课题准备OpenI数据上传、完整启动卡、失败恢复与结果回传"
+  default_prompt: "使用 $openi-experiments 为当前项目准备 OpenI 实验入口、完整启动卡和结果回传流程。"
+policy:
+  allow_implicit_invocation: true

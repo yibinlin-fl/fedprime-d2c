@@ -6,6 +6,10 @@
 接手窗口先读根目录`AGENTS.md`、`docs/handoffs/latest.md`和`docs/README_ZH.md`，再读本文。
 不需要为了恢复OpenI操作而通读大型历史日志。本文不是新实验授权，也不是可以直接执行的Formal启动卡。
 
+跨项目通用Skill已安装为`C:\Users\asus\.codex\skills\openi-experiments`，可说“我要在OpenI跑实验”
+或显式调用`$openi-experiments`。可维护源码：`deliverables/openi_experiments_skill_20261017/openi-experiments/`。
+新课题使用其通用规范，不复制本文的FedPRIME数据包、预算与科学结论。
+
 ## 1. 接手时先恢复的最新决策
 
 1. 论文主线是CLE-HFL的问题发现、paired DSA、local-first归因、taxonomy-assisted PEW+BER缓解、

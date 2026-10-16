@@ -4,6 +4,11 @@ Updated: 2026-10-17
 
 ## OpenI实验操作完整交接
 
+跨项目Skill已于2026-10-17安装到`C:\Users\asus\.codex\skills\openi-experiments`，支持自然语言
+“我要在OpenI跑实验”或显式`$openi-experiments`。可维护源码位于
+`deliverables/openi_experiments_skill_20261017/openi-experiments/`；通用操作与原项目示例分离，
+不将FedPRIME数据、训练预算或科学门槛套给新课题。Skill不代表付费或上传授权。
+
 跨窗口恢复OpenI时读取下列集中指南，包含本机CLI与凭据位置、输入包/哈希、c2net结果回传、
 单臂参数、恢复包与下载、成本边界、完整启动卡及可复制的接手指令。已同步10月15日优先级调整，
 并区分Axis I与moderate尚未完全一致的失败保护；不构成实验授权：

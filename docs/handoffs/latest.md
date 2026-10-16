@@ -2,6 +2,15 @@
 
 Updated: 2026-10-17
 
+## 2026-10-17 通用OpenI实验Skill已创建并安装
+
+`openi-experiments`已安装到`C:\Users\asus\.codex\skills\openi-experiments`，可通过自然语言
+“我要在OpenI跑实验”或`$openi-experiments`调用。源码位于
+`deliverables/openi_experiments_skill_20261017/openi-experiments/`，含通用启动卡、c2net回传合同、
+Windows上传背景、原项目隔离示例和显式文件hash清单工具。Skill格式、引用与自动发现元数据校验
+通过；清单工具8项场景验证通过，安装7文件SHA256与源码一致。仅创建/安装Skill，没有推送、
+上传数据或启动实验；本项目科学优先级与moderate入口待复核状态不变。
+
 ## 2026-10-17 OpenI跨窗口完整操作交接已集中
 
 新入口：`docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md`，集中本机CLI、

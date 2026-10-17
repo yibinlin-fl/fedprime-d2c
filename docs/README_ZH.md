@@ -2,6 +2,16 @@
 
 Updated: 2026-10-17
 
+## Kaggle免费T4实验Skill设计（待确认、未安装）
+
+已形成跨项目Kaggle Skill草稿：七份平台/Notebook/代码数据/输出续跑/启动卡/CLI/官方来源文档，
+附默认不执行训练的.ipynb骨架与本地生成器。按用户要求先设计，等待确认后才安装：
+
+```text
+docs/experiments/guides/KAGGLE_EXPERIMENT_SKILL_DESIGN_ZH.md
+deliverables/kaggle_experiments_skill_design_20261017/kaggle-experiments/
+```
+
 ## OpenI实验操作完整交接
 
 跨项目Skill已于2026-10-17安装到`C:\Users\asus\.codex\skills\openi-experiments`，支持自然语言

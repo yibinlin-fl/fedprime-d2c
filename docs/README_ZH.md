@@ -2,11 +2,12 @@
 
 Updated: 2026-10-17
 
-## Kaggle免费T4实验Skill设计（待确认、未安装）
+## Kaggle免费T4实验Skill（已安装）
 
-已形成跨项目Kaggle Skill草稿：七份平台/Notebook/代码数据/输出续跑/启动卡/CLI/官方来源文档，
+用户已于2026-10-17确认安装，位置为`C:\Users\asus\.codex\skills\kaggle-experiments`。
+跨项目Skill包含七份平台/Notebook/代码数据/输出续跑/启动卡/CLI/官方来源文档，
 默认网页新建Notebook并粘贴代码，由Notebook按仓库地址拉项目；附可复制单元及本地生成器，
-.ipynb仅为可选导入格式。按用户要求先设计，等待确认后才安装：
+.ipynb仅为可选导入格式。可用`$kaggle-experiments`或自然语言调用，设计与安装记录：
 
 ```text
 docs/experiments/guides/KAGGLE_EXPERIMENT_SKILL_DESIGN_ZH.md

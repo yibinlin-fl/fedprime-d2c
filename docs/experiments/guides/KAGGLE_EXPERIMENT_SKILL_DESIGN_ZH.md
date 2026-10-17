@@ -1,14 +1,15 @@
-# Kaggle免费T4实验Skill：待确认设计稿
+# Kaggle免费T4实验Skill：设计与安装记录
 
-日期：2026-10-17。状态：**已形成可审阅草稿，尚未安装**。
-用户本轮只要求设计，确认后才安装。未登录Kaggle、未上传、未创建Notebook远端版本、未消耗GPU。
+日期：2026-10-17。状态：**用户已确认，已完成本机全局安装**。
+此前先设计并修正为默认网页Notebook拉仓库；本轮获得安装确认后完成安装。未登录Kaggle、
+未上传、未创建Notebook远端版本、未消耗GPU。
 
 ## 1. 名称、目的与适用范围
 
-候选名称：`kaggle-experiments`。
+名称：`kaggle-experiments`。
 源码：`deliverables/kaggle_experiments_skill_design_20261017/kaggle-experiments/`。
-确认后拟安装到`C:\Users\asus\.codex\skills\kaggle-experiments`，届时支持自然语言和
-`$kaggle-experiments`。当前这个全局安装操作尚未执行。
+已安装到`C:\Users\asus\.codex\skills\kaggle-experiments`，下一轮起可通过自然语言或
+`$kaggle-experiments`调用。源码目录保留原名，供后续维护。
 
 用户确认的默认方式：Kaggle网页新建Notebook，填仓库地址，由Notebook自己拉取代码。
 它为任意新课题交付：可直接复制的Notebook代码单元、完整中文启动卡、代码与数据来源合同、预算和
@@ -29,7 +30,7 @@ checkpoint/结果保存方式、每任务本机下载目录，以及结果交回
 | [官方来源核验表](../../../deliverables/kaggle_experiments_skill_design_20261017/kaggle-experiments/references/official-sources.md) | 哪些是官方事实、哪些是工程建议、何时要重新核验 |
 
 此外有SKILL.md路由入口、UI元数据、可复制代码单元文档与本地生成器；.ipynb/metadata保留为可选格式。
-这些文件都在仓库交付目录，可在安装前完整审阅。
+这些文件同时保留在仓库交付目录；安装副本的13个文件SHA256与源码逐项一致。
 
 ## 3. 已核验的关键平台事实
 
@@ -116,10 +117,11 @@ Kaggle结果不调用OpenI的c2net。不能只把文件保存在clone仓库、/t
 若资源不够，提出事前冻结的分段续跑方案或缩小已授权执行范围，不擅自改科学预算；多个账号
 也不能被当成绕过平台配额的办法。新项目的结果不会下载回FedPRIME目录。
 
-## 7. 本轮验证及待确认事项
+## 7. 验证及安装状态
 
 本轮验证范围为Skill结构、引用/模板结构、代码单元可编译、默认关闭时无外部副作用、生成器
 默认不产生.ipynb、显式导出才产生.ipynb以及拒绝覆盖已有目录。没有启动真实Kaggle会话、测试T4速度或验证云端保存成功。
 
-请确认是否采用上述七文档加可复制代码单元的范围。确认后才将草稿复制到本机全局Skill目录，
-重新校验并报告安装位置；本轮不安装，也不创建远端Notebook或登录账号。
+用户确认后已安装13文件，安装副本通过Skill格式校验、引用与隐式调用元数据检查；安装后的
+生成器实际验证默认只输出notebook-cells.md，不产生.ipynb。安装未改全局配置或其他Skill。
+本轮没有创建远端Notebook、登录账号、上传或启动GPU任务。使用时仍需按当前项目适配和授权。

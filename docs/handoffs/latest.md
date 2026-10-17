@@ -2,16 +2,18 @@
 
 Updated: 2026-10-17
 
-## 2026-10-17 Kaggle跨项目Skill设计稿完成，等待安装确认
+## 2026-10-17 Kaggle跨项目Skill已获确认并安装
 
-用户要求先设计Kaggle每周约30小时免费T4实验Skill，确认后才安装。设计说明为
-`docs/experiments/guides/KAGGLE_EXPERIMENT_SKILL_DESIGN_ZH.md`；草稿位于
+用户已在审阅默认网页Notebook拉仓库的设计后明确确认安装，现已安装到
+`C:\Users\asus\.codex\skills\kaggle-experiments`。设计与安装记录为
+`docs/experiments/guides/KAGGLE_EXPERIMENT_SKILL_DESIGN_ZH.md`；可维护源码位于
 `deliverables/kaggle_experiments_skill_design_20261017/kaggle-experiments/`，包含七份操作/官方
 来源文档、Notebook骨架与本地生成器。
 用户补充默认网页新建Notebook，粘贴代码后按仓库地址自行拉项目，不要求生成/上传.ipynb；
 交付已改为可复制代码单元，.ipynb和CLI仅为可选路线。区分30小时预算与账号实际quota、
-T4×2与单卡使用、working写盘与已保存版本Output，明确Save & Run All会新会话重跑。尚未安装、登录Kaggle、
-上传Notebook或启动GPU；FedPRIME科学优先级和OpenI入口状态不变。
+T4×2与单卡使用、working写盘与已保存版本Output，明确Save & Run All会新会话重跑。
+安装13文件SHA256与源码一致，Skill校验通过，安装后生成器验证默认只生成可复制代码单元。
+未登录Kaggle、上传Notebook或启动GPU；FedPRIME科学优先级和OpenI入口状态不变。
 
 ## 2026-10-17 通用OpenI实验Skill已创建并安装
 

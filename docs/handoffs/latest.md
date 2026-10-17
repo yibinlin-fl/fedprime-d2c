@@ -2,6 +2,15 @@
 
 Updated: 2026-10-17
 
+## 2026-10-17 独立OpenI数据集上传Skill已安装
+
+`openi-dataset-upload`已安装到`C:\Users\asus\.codex\skills\openi-dataset-upload`；完整指南为
+`docs/experiments/guides/OPENI_DATASET_UPLOAD_GUIDE_ZH.md`，源码位于
+`deliverables/openi_dataset_upload_skill_20261017/openi-dataset-upload/`。覆盖网页先建集、名称与
+repo_id、手动/CLI、Token复用、上传卡和分级验收；记录3.0.1失败登录可能回显Token的实际边界。
+14项生成器检查及PowerShell语法/字面路径核验通过，Skill校验通过，安装8文件hash与源码一致。
+未创建远端数据集、读取Token明文、登录或上传，也未启动实验；科学优先级保持不变。
+
 ## 2026-10-17 Kaggle跨项目Skill已获确认并安装
 
 用户已在审阅默认网页Notebook拉仓库的设计后明确确认安装，现已安装到

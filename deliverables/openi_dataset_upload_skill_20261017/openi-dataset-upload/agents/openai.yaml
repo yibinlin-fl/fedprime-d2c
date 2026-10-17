@@ -1,0 +1,6 @@
+interface:
+  display_name: "OpenI 数据集上传助手"
+  short_description: "先建OpenI数据集，按网页或CLI上传，复用本机Token并核验文件"
+  default_prompt: "使用 $openi-dataset-upload 帮我创建数据集上传方案，说明网页填写、Token登录、CLI命令和上传验收。"
+policy:
+  allow_implicit_invocation: true

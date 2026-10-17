@@ -6,6 +6,7 @@ Updated: 2026-10-17
 
 独立跨项目`openi-dataset-upload`已安装到`C:\Users\asus\.codex\skills\openi-dataset-upload`。
 覆盖先网页创建/确认数据集名称与准确repo_id、手动或CLI上传、已有Token复用、上传卡及远端验收。
+用户确认默认按单文件500MB分流：不超过500MB网页手动，超过500MB用CLI。
 含五份操作/来源文档和仅生成本地计划及命令的工具；不读取Token明文、不自动建集或上传。
 本机3.0.1的参数已核验，当前网页布局/大小限制仍以实际平台为准。完整指南与维护源码：
 

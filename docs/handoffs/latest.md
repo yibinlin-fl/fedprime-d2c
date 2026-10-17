@@ -8,6 +8,7 @@ Updated: 2026-10-17
 `docs/experiments/guides/OPENI_DATASET_UPLOAD_GUIDE_ZH.md`，源码位于
 `deliverables/openi_dataset_upload_skill_20261017/openi-dataset-upload/`。覆盖网页先建集、名称与
 repo_id、手动/CLI、Token复用、上传卡和分级验收；记录3.0.1失败登录可能回显Token的实际边界。
+用户补充默认按单文件500MB分流：不超过500MB（含）网页手动，超过500MB用CLI，已同步安装版。
 14项生成器检查及PowerShell语法/字面路径核验通过，Skill校验通过，安装8文件hash与源码一致。
 未创建远端数据集、读取Token明文、登录或上传，也未启动实验；科学优先级保持不变。
 

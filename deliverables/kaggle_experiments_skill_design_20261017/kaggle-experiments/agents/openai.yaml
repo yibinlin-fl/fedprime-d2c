@@ -1,6 +1,6 @@
 interface:
   display_name: "Kaggle 免费 GPU 实验助手"
   short_description: "为新课题准备Kaggle Notebook、免费GPU预算、代码拉取和结果回传"
-  default_prompt: "使用 $kaggle-experiments 为当前项目设计 Kaggle Notebook、T4实验启动卡和结果下载流程。"
+  default_prompt: "使用 $kaggle-experiments 为当前项目准备网页Notebook可复制代码单元、仓库拉取、T4启动卡和结果下载流程。"
 policy:
   allow_implicit_invocation: true

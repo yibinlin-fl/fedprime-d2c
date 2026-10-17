@@ -1,6 +1,7 @@
 # 可选CLI与认证（不要求用户先交API密钥）
 
-网页Notebook流程可以独立使用。只有用户要本地上传/管理/下载时才检查CLI版本与凭据存在性。
+默认网页新建Notebook并复制拉仓库等代码单元，不要求本地.ipynb或API凭据。
+只有用户要本地上传/管理/下载时才检查CLI版本与凭据存在性。
 不读取或打印密钥值，不要求把kaggle.json上传进数据集或Notebook。
 
 官方当前CLI支持OAuth、API token及旧式kaggle.json；已有正确配置不主动轮换。新CLI例子：
@@ -18,7 +19,7 @@ kaggle quota
 认证依据：[官方Authentication](https://github.com/Kaggle/kaggle-cli/blob/main/skills/references/auth.md)。
 quota报告used/remaining/total和可用refresh时间：[官方Quota](https://github.com/Kaggle/kaggle-cli/blob/main/skills/references/quota.md)。
 
-## Notebook本地文件
+## 可选Notebook本地文件（不作为默认步骤）
 
 同目录放.ipynb和kernel-metadata.json。应核对id、code_file、language、kernel_type、私有性、
 GPU/Internet开关及dataset_sources/kernel_sources。默认生成私有CPU、Internet关闭的设计稿，

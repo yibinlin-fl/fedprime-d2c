@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate an inert Kaggle notebook draft in a NEW directory; no cloud calls."""
+"""Generate copyable Kaggle cells; optional ipynb export. No cloud calls."""
 from __future__ import annotations
 
 import argparse
@@ -191,13 +191,29 @@ def notebook() -> dict:
     }, "nbformat": 4, "nbformat_minor": 4}
 
 
+def cell_document(payload: dict) -> str:
+    parts = ["# Kaggle网页Notebook：可复制代码单元\n\n在网页Create → New Notebook后依次粘贴。先适配配置；默认不联网/训练。\n"]
+    number = 0
+    for item in payload["cells"]:
+        content = "".join(item["source"])
+        if item["cell_type"] == "markdown":
+            parts.append(content)
+        else:
+            number += 1
+            parts.append(f"### 代码单元 {number}\n\n```python\n{content}\n```")
+    return "\n\n".join(parts) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=Path, required=True)
+    parser.add_argument("--with-ipynb", action="store_true", help="Also export notebook and Kaggle metadata")
     args = parser.parse_args()
     args.directory.mkdir(parents=True, exist_ok=False)
-    payloads = {
-        "experiment.ipynb": notebook(),
+    draft = notebook()
+    (args.directory / "notebook-cells.md").write_text(cell_document(draft), encoding="utf-8")
+    payloads = {} if not args.with_ipynb else {
+        "experiment.ipynb": draft,
         "kernel-metadata.json": {
             "id": "your-kaggle-name/experiment-smoke-draft", "title": "Experiment Smoke Draft",
             "code_file": "experiment.ipynb", "language": "python", "kernel_type": "notebook",
@@ -207,7 +223,7 @@ def main() -> None:
     }
     for name, payload in payloads.items():
         (args.directory / name).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Created inert notebook draft: {args.directory.resolve()}")
+    print(f"Created copyable cells (ipynb={args.with_ipynb}): {args.directory.resolve()}")
 
 
 if __name__ == "__main__":

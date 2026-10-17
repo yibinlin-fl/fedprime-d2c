@@ -6,7 +6,9 @@
 
 ```text
 实验目的、run_id、允许证明什么、mode及授权范围：
-Notebook本地.ipynb绝对路径：
+网页新建Notebook、按顺序复制的代码单元文档/回复位置：
+GitHub地址与拉取代码cell、固定commit：
+可选.ipynb绝对路径（仅用户要求导入时）：
 Notebook owner/slug、Private/Public、目标版本：
 代码仓库、分支、完整commit、是否push；或私有源码包版本/hash：
 数据集owner/slug/版本、输入包绝对本地路径/bytes/SHA256：
@@ -21,7 +23,7 @@ GPU本周total/remaining/reset、当前session上限：
 
 Notebook配置表逐项列出真实入口需要的字段：mode、seed、预算、数据/输出路径、run_id、
 准确runner命令与分析命令；无该字段则不虚构。与OpenI不同，这些通常填写在Notebook配置cell，
-不是网页启动参数栏。必须同时交付对应.ipynb，不只给一条Linux命令。
+不是网页启动参数栏。默认交付完整的可复制代码单元，不只给一条Linux命令；不要求上传.ipynb。
 
 ## 时长、保存与交回
 

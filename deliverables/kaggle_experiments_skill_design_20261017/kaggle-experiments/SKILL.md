@@ -1,13 +1,16 @@
 ---
 name: kaggle-experiments
-description: "为跨项目科研任务准备Kaggle免费GPU实验：Jupyter Notebook、固定版本拉取代码、数据集挂载、T4和周配额预算、启动卡、保存版本、checkpoint和结果下载审计。用户说“我要在Kaggle跑实验”“用每周30小时T4”“生成Kaggle notebook”“Kaggle输出放哪里/怎么回传”时使用。"
+description: "为跨项目科研任务准备Kaggle免费GPU实验：网页Notebook可复制代码单元、根据仓库地址固定版本拉取项目、数据挂载、T4和周配额预算、启动卡、checkpoint与结果下载审计。用户说“我要在Kaggle跑实验”“给仓库让Notebook拉取”“用每周30小时T4”“Kaggle输出放哪里/怎么回传”时使用。"
 ---
 
 # Kaggle 免费 GPU 实验助手
 
 平台资料核验日期：2026-10-17。配额和UI可能变化，按当前账号核验。
 
-为当前项目交付可复现的`.ipynb`、完整中文启动卡和可核验的结果交回流程。默认用用户的免费
+默认用户在Kaggle网页新建Notebook，提供GitHub地址，由Notebook自行拉取项目。
+交付可直接复制的代码单元、完整中文启动卡和可核验的结果交回流程；不要求用户在本机生成或
+上传`.ipynb`，也不要求先配置Kaggle CLI。仅在用户明确需要文件导入/CLI工作流时提供.ipynb。
+默认用用户的免费
 GPU资源，按每周30小时保守规划，但实际配额、剩余时长、硬件及单会话时限以账号当前显示为准。
 不继承FedPRIME或其他课题的数据、轮数、模型、seed与科学门槛。
 
@@ -32,8 +35,9 @@ GPU资源，按每周30小时保守规划，但实际配额、剩余时长、硬
 
 1. 确定一个明确实验单元、准确代码commit/源码hash、数据版本与输入hash、预算和评价合同。
    云端不能拉到本机未推送代码；不自动push。私有代码优先私有Dataset源码包或安全凭据方案。
-2. 为该项目生成/适配`.ipynb`；Notebook负责环境/代码/数据/调用与产物整理，训练逻辑复用项目
-   runner，避免把算法重写进Notebook。Notebook是本Skill约定，Kaggle官方也支持Script。
+2. 为该项目提供按顺序复制到网页Notebook的代码单元：配置、固定commit拉代码、环境/数据检查、
+   项目命令、产物整理及保存下载。训练逻辑复用项目runner，不重写算法；若用户只给仓库地址，
+   从当前项目或可读仓库识别入口与版本，必要时补最少问题，不强制先上传.ipynb。
 3. 默认先CPU准备/小smoke，再在授权后跑代表性T4 benchmark；按实际剩余额度与单会话上限
    给训练、分析、打包留余量。免费也不能无授权反复长跑；不把T4×2当自动两倍速度或合并显存。
 4. 所有需交回产物明确写到`/kaggle/working/<run_id>/`；输入从挂载路径读，源码/大缓存放
@@ -55,8 +59,9 @@ GPU资源，按每周30小时保守规划，但实际配额、剩余时长、硬
 
 ## 资源与模板
 
-- `scripts/create_notebook.py`只在本地新目录生成Notebook和metadata，不联网、不登录、不训练。
-- `assets/notebook-template/experiment.ipynb`是可审阅骨架；所有昂贵/联网操作默认关闭，配置和项目命令需适配。
-- `assets/notebook-template/kernel-metadata.json`默认私有、CPU、关闭Internet，避免设计稿意外消耗GPU。
+- `assets/notebook-template/notebook-cells.md`是默认交付参考：逐单元代码，可复制到网页Notebook。
+- `scripts/create_notebook.py --directory <新目录>`默认只生成代码单元文档，不联网、不登录、不训练。
+- 仅加`--with-ipynb`时才额外生成.ipynb和metadata。保留的`assets/notebook-template/experiment.ipynb`
+  与kernel-metadata.json只供可选导入，默认私有、CPU、关闭Internet；所有训练/联网操作默认关闭。
 
-用生成器向新目录输出骨架，再按当前项目适配；不覆盖已有Notebook。
+可直接在回复中给代码单元，不必先运行生成器。需要文件交付时输出到新目录，不覆盖已有内容。

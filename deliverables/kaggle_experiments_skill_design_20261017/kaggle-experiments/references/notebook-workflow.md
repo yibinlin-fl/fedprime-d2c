@@ -1,18 +1,23 @@
 # Notebook从创建到保存的完整操作
 
-## 1. 先准备本地交付物
+## 1. 默认准备可复制代码单元
 
 读取当前项目约束与入口，固定commit、数据版本/hash、mode、实验单元、预算和指标。
-生成experiment.ipynb与kernel-metadata.json。Notebook从头运行应能重建必要环境，不依赖
-上一次编辑会话。用户要求使用Notebook；官方也支持Script，不能把.ipynb说成平台唯一允许格式。
+按顺序给用户代码单元，让用户在Kaggle网页新建Notebook并粘贴；Notebook自己根据仓库地址
+拉项目。不要求本机生成/上传.ipynb或配置CLI。仅用户明确需要导入或API管理时，才额外交
+experiment.ipynb与kernel-metadata.json。Notebook从头运行应能重建必要环境，不依赖先前
+编辑会话。官方也支持Script，不能把.ipynb上传说成平台要求。
 
 ## 2. 在网页建立Notebook
 
-1. 登录Kaggle，Create → New Notebook，或上传本地.ipynb；先保持Private。
+1. 登录Kaggle，Create → New Notebook，先保持Private；把交付代码单元按顺序粘贴进去。
 2. 在Input/Add Input添加数据集/模型/已保存Notebook输出，记录资源版本及实际挂载路径。
 3. 找到Settings/Session options中的Language、Accelerator、Internet、环境选项；菜单可能移动。
 4. 准备代码/数据时先CPU。正式GPU benchmark前按实际可用选GPU T4×2；检查账号配额及会话时限。
 5. GitHub/pip在线方案打开Internet；离线方案关闭，确认所有依赖已挂载。Secrets只按所需标签授权。
+
+配置cell填写repo_url和固定commit；拉取cell执行clone/checkout，之后调用仓库中的实际入口。
+不需要用户先将整个项目上传到Notebook。只有私有/离线源码方案才另外准备所需挂载材料。
 
 Notebook创建、保存与环境行为依据：[官方Notebook文档](https://www.kaggle.com/docs/notebooks)。
 

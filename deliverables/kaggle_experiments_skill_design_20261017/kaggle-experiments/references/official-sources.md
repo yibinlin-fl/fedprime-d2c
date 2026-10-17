@@ -28,5 +28,6 @@ Notebook文档含较早P100段落，使用更具体的当前T4技术表/CLI信�
 
 完整中文启动卡、每任务独立run_id、固定Git commit/hash、恢复包先于分析、分段续跑审计、
 失败科学标记和本机下载目录是本Skill的科研工程约定。
-用户要求交付.ipynb，所以此Skill以Notebook为默认；Kaggle官方同时允许Script。
+用户默认网页新建Notebook，按仓库地址自行拉取代码；本Skill交可复制单元，不强制上传.ipynb。
+Kaggle官方同时允许Script；.ipynb导入只是可选交付方式。
 T4双卡显存不合并、多卡需代码支持是GPU编程事实，不是“每周额外60小时”的配额承诺。

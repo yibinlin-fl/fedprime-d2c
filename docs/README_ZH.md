@@ -1,6 +1,18 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-17
+Updated: 2026-10-25
+
+## 当前运行中的moderate Formal
+
+2026-10-25用户确认四个单臂Formal均已进入运行：`asymhfl_erm`、`asymhfl_pew_ber`、
+`erm_g00`和`erm_g05`。它们分别补齐moderate Axis II的核心方法对照及`gamma=0/0.5/0.9`
+剂量响应；尚未完成、未分析，不能写入论文表。接收目录、产物合同和明日审计顺序见：
+
+```text
+docs/handoffs/latest.md
+docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md
+docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md
+```
 
 ## OpenI数据集上传Skill（已安装）
 

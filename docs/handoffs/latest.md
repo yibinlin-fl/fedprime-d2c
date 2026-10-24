@@ -2,6 +2,39 @@
 
 Updated: 2026-10-25
 
+## 2026-10-25 四个moderate单臂Formal正在运行
+
+用户确认四个OpenI任务均已成功进入运行状态；这是用户报告的执行状态，尚不是完成状态或科学
+证据。四个任务均应使用远端`main`提交
+`125580e705e08727419151337f97f3f7b854c5ab`、公开数据集
+`chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`、1xV100 32GB，协议为moderate
+map2/partition seed0/training seed0/40轮x64 local batches：
+
+```text
+asymhfl_erm       -> Axis II方法对照、dose gamma=.9 ERM锚点
+asymhfl_pew_ber   -> Axis II候选、dose gamma=.9 PEW+BER锚点
+erm_g00           -> dose gamma=0零基准
+erm_g05           -> dose gamma=.5中间强度
+```
+
+最初dose任务曾因误选Axis I入口而在训练前立即失败，随后又遇到平台
+`handleDatasetModelStorageSchedule failed`；最终任务已由用户确认运行。上述早期失败没有科学状态，
+不得混入结果。当前不再启动Axis I高预算、FedDF、AugHFL、RAHFL或其他新Formal。
+
+明日接收每个任务时必须下载并保留`*_recovery_outputs.tar.gz`、`*_outputs.tar.gz`、
+`RUN_TIMING.json`及完整日志，分别放入已预建的四个目录：
+
+```text
+outputs/openi_downloads/moderate_asymhfl_erm_formal_s0_20261025/
+outputs/openi_downloads/moderate_asymhfl_pew_ber_formal_s0_20261025/
+outputs/openi_downloads/moderate_erm_g00_formal_s0_20261025/
+outputs/openi_downloads/moderate_erm_g05_formal_s0_20261025/
+```
+
+四包完成后先审计commit/input/config、40轮x64预算、4-client checkpoints、batch pairing、分析
+完整性与`scientific_evidence`。随后用`asymhfl_erm`对比`asymhfl_pew_ber`回填moderate Axis II，
+再用`erm_g00/erm_g05/asymhfl_erm/asymhfl_pew_ber`回填dose-response。任务显示成功本身不授权填表。
+
 ## 2026-10-25 三账号实验恢复前安全复核完成
 
 用户报告三个OpenI账号各约100积分，明确准备恢复实验。下一批仍按10月15日优先级：账号A

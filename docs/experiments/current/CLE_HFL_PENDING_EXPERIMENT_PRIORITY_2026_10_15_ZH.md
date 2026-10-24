@@ -1,5 +1,10 @@
 # CLE-HFL待补实验优先级（2026-10-15）
 
+> 2026-10-25执行更新：用户确认`asymhfl_erm`、`asymhfl_pew_ber`、`erm_g00`和`erm_g05`
+> 四个moderate map2/seed0/40轮x64单臂Formal均已进入运行。P1与P2因此并行执行；运行中不再
+> 新增实验。任务完成后先独立审计恢复包、正式包、timing、checkpoint和pairing，再决定是否
+> 回填论文。该状态不等于科学证据。
+
 ## 1. 目的
 
 本文档把V0.7-writing PDF中的13处`[EVIDENCE NEEDED]`归并为真正独立的实验缺口，并按论文

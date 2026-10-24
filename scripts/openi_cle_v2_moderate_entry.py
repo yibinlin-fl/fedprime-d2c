@@ -21,6 +21,9 @@ from scripts.run_cle_v2_moderate import PACKAGE_NAME, SHARDS  # noqa: E402
 
 
 INPUT_ARCHIVE = f"{PACKAGE_NAME}_with_pew.tar.gz"
+FORMAL_SINGLE_ARM_SHARDS = frozenset(
+    shard for shard, arms in SHARDS.items() if len(arms) == 1
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,6 +34,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", choices=("false", "true"), default="false")
     return parser.parse_args()
+
+
+def validate_request(*, mode: str, shard: str, confirm_formal: str) -> None:
+    if mode != "formal":
+        return
+    if confirm_formal != "true":
+        raise PermissionError("Formal is locked; set confirm_formal=true after explicit approval")
+    if shard not in FORMAL_SINGLE_ARM_SHARDS:
+        raise ValueError(
+            "Formal must select exactly one arm; choose one of: "
+            + ", ".join(sorted(FORMAL_SINGLE_ARM_SHARDS))
+        )
+
+
+def require_upload_context(context) -> None:
+    if context is None or not getattr(context, "output_path", None):
+        raise RuntimeError(
+            "OpenI c2net output context unavailable; refusing to start training "
+            "because recovery artifacts could not be uploaded."
+        )
 
 
 def find_archive(roots: list[Path]) -> Path:
@@ -121,12 +144,12 @@ def write_timing(
 
 def main() -> None:
     args = parse_args()
-    if args.mode == "formal" and args.confirm_formal != "true":
-        raise PermissionError("Formal is locked; set confirm_formal=true after explicit approval")
+    validate_request(mode=args.mode, shard=args.shard, confirm_formal=args.confirm_formal)
     os.chdir(ROOT)
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
     context = prepare_c2net()
+    require_upload_context(context)
     if args.skip_install != "true":
         run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], environment)
     source = find_archive(candidate_roots(args, context))
@@ -220,7 +243,9 @@ def main() -> None:
             )
         else:
             log(f"[recovery] Training failed; uploading partial state: {recovery_archive}")
-            raise
+        # Upload the status/recovery artifact in `finally`, then preserve a
+        # non-zero task exit for both training and analysis failures.
+        raise
     finally:
         if artifacts:
             upload(context, artifacts)

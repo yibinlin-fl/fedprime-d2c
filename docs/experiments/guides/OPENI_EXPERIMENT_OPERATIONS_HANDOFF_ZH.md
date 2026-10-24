@@ -1,6 +1,11 @@
 # FedPRIME-D2C：OpenI实验操作与跨窗口完整交接
 
-更新：2026-10-17（Asia/Shanghai）。仓库：`C:\Users\asus\Desktop\FedPRIME-D2C`。
+更新：2026-10-25（Asia/Shanghai）。仓库：`C:\Users\asus\Desktop\FedPRIME-D2C`。
+
+> 2026-10-25：moderate入口提交`d8974be`已补齐Formal单arm限制、c2net/output_path训练前
+> fail-closed和失败非零退出；11项入口/runner测试通过。该提交当前仅在本地，未推送，OpenI
+> 不能使用旧远端commit启动。三账号各约100积分时，计划分别运行`asymhfl_erm`、
+> `asymhfl_pew_ber`和`erm_g00`；每臂按9--13小时而非旧4小时估计预留。
 
 本文集中记录本项目已经使用的OpenI数据上传、任务配置、输入选择、恢复包、结果下载与审计流程。
 接手窗口先读根目录`AGENTS.md`、`docs/handoffs/latest.md`和`docs/README_ZH.md`，再读本文。
@@ -261,19 +266,12 @@ merge: scripts/merge_cle_v2_spurious_final_shards.py
 恢复包上传调用抛错时不会开始分析。可捕获失败的timing标为`scientific_evidence=false`。
 22项Axis I/Moderate恢复包及Axis I runner聚焦测试于2026-10-14通过；这不是云端恢复成功的证明。
 
-### Moderate：不能误认为已具备Axis I的全部保护
+### Moderate：2026-10-25已补齐关键启动与退出保护
 
-moderate入口已实现“所选shard训练返回后立即上传checkpoint恢复包，再以auto分析”，
-失败timing不标科学证据。**目前恢复包边界是整个shard，不是shard里的每个arm。** 因此当前
-Formal必须按操作规则只选具体单臂，不能因为代码仍接受`axis2_all`就启动长多臂任务。
-
-代码还有两项必须在下一次Formal前复核的差异：
-
-- moderate入口没有Axis I同样的context/output_path启动前强制检查；共享upload函数遇到
-  context=None会警告并返回，不能把这当作真正上传成功。接手窗口需先完成失败安全复核，
-  必要时按用户授权修复并验证，不能直接宣布可启动。
-- moderate分析失败可能被捕获后上传timing并正常返回；不能仅以进程exit code 0判定成功。
-  要检查timing、analysis文件、checkpoint、合同与完成状态。
+moderate入口已实现“所选shard训练返回后立即上传checkpoint恢复包，再以auto分析”，失败timing
+不标科学证据。提交`d8974be`进一步要求Formal只能选择一个具体arm，在安装依赖或训练前验证
+真实c2net/output_path，并让训练/分析异常在上传现有恢复状态后保持非零退出。**恢复包边界仍是
+整个所选shard，不是任意多臂内部逐arm；**Formal多臂shard现在会直接拒绝。
 
 两入口的`device=auto`都只在分析选择设备时检查CUDA是否可用。它不保证分析中途GPU失效自动
 重试，也不能让已经被平台杀死的CPU进程继续执行。
@@ -345,8 +343,9 @@ moderate统一报告pooled/client DSA、operator-grid、clean、balanced-corrupt
 | moderate AugHFL/RAHFL | benchmark外推约17小时/102积分每臂，曾建议110--120积分 | 只是旧成本估计，仍需明确授权与当前资源核验 |
 | 133-batch full-epoch Local | 40轮训练外推约27.9小时/167.4积分 | 属另一预算，不能替代64-batch或moderate合同 |
 
-历史V100按6积分/小时估算；当前账号余额、费率、任务时限、CPU分析是否获保留都没有在本轮
-在线核验，启动卡必须重新确认。多个账号总积分不能延长单个任务的寿命。跨账号只能分完整arm，
+历史V100按6积分/小时估算。2026-10-25用户报告三个账号各约100积分；按历史日志对下一批
+AsymHFL/dose单臂采用约9--13小时、54--78积分的保守规划，并保留22--46积分尾部余量。实际
+平台费率、任务时限和CPU分析保留仍须由创建页确认。多个账号总积分不能延长单个任务的寿命。跨账号只能分完整arm，
 不得拼接一个arm的不同轮次，也不得因余额不足临时减少轮数或batch数后混入Formal表。
 
 若资源不足，先冻结更保守的单任务资源门槛，或另行实现并验证完整状态分段续跑和外部周期

@@ -1,6 +1,23 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-17
+Updated: 2026-10-25
+
+## 2026-10-25 三账号实验恢复前安全复核完成
+
+用户报告三个OpenI账号各约100积分，明确准备恢复实验。下一批仍按10月15日优先级：账号A
+`asymhfl_erm`、账号B`asymhfl_pew_ber`、账号C`erm_g00`，均为moderate map2、seed0、40轮
+x64 batches单臂Formal；`erm_g05`等待前三项结果和余额后再启动。历史实测推翻了4小时乐观
+外推，当前按约9--13小时/54--78积分每臂规划；100积分约16.7个V100小时，仍须在创建页核对
+实际费率与任务时限。
+
+moderate入口提交`d8974be`已补齐Formal单arm限制、缺失c2net/output_path时训练前fail-closed、
+以及训练/分析失败在回传现有recovery/status后保持非零退出；入口与runner共11项聚焦测试通过。
+moderate输入本地复核仍为`893421220` bytes、SHA256
+`DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588`，复用已上传公开数据集，
+不需重新上传。三个任务下载目录已预建于`outputs/openi_downloads/`。
+
+提交`d8974be`尚未推送，因此当前**还不能创建OpenI任务**。需要用户明确要求push后，才能给出
+以远端实际commit为准的最终三张启动卡并开始任务。
 
 ## 2026-10-17 独立OpenI数据集上传Skill已安装
 

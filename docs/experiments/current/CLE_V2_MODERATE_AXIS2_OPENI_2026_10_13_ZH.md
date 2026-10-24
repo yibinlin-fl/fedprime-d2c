@@ -1,6 +1,6 @@
 # CLE-v2 Moderate 剂量响应与 Axis II OpenI 协议
 
-Updated: 2026-10-13
+Updated: 2026-10-25
 
 ## 1. 目的与论文职责
 
@@ -95,15 +95,21 @@ Smoke和benchmark的数值都不能进入论文。
 - `local_erm`真实CPU smoke完成一轮一batch、四模型checkpoint和全指标分析。
 - 3项聚焦测试通过。
 
+2026-10-25启动前复核：moderate入口已在提交`d8974be`补齐三项fail-closed保护：Formal仅允许
+一个具体arm；缺少`c2net`或`output_path`时在依赖安装和训练前停止；训练或分析异常在回传现有
+recovery/status后仍以非零退出。入口与runner共11项聚焦测试通过。该提交尚未推送；OpenI不得
+选择更早commit启动新任务。
+
 2026-10-14状态：`local_erm`、`fedmd_adapter`和`fedproto_adapter`三个seed-0、40轮x64 batches
 Formal已经完成并通过合同、完成标记、统一指标及跨账号batch轨迹审计；结果见
 `deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md`。
 `feddf_fidelity`及两条AsymHFL Formal尚未运行。AugHFL/RAHFL仅完成benchmark，因每臂Formal
 机械估算约17小时/102积分而暂缓。`dose_all`尚未运行。
 
-`axis2_asym` benchmark也已于2026-10-14通过：两臂2/2完成且batch trace完全匹配。按实际
-round耗时外推，`asymhfl_erm`与`asymhfl_pew_ber` Formal各约4小时/24积分，建议拆成两个
-账号单臂并行并各预留30--35积分。benchmark结果只授权Formal，不进入论文。
+`axis2_asym` benchmark也已于2026-10-14通过：两臂2/2完成且batch trace完全匹配。早期按round
+耗时机械外推每臂约4小时，但后续Formal实测否定了这个乐观估计：`asymhfl_erm`运行超过8小时
+仅到round 31附近。后续启动卡统一按约9--13小时、54--78积分/臂规划，并要求单账号至少100
+积分；该区间仍是历史日志的保守规划值，不是新的benchmark结论。benchmark结果不进入论文。
 
 随后三项Formal暴露平台尾部失效：FedDF与PEW+BER训练40轮完成后，旧入口的CUDA-only分析因
 GPU不可用而失败且未回传；AsymHFL--ERM在第32轮由平台停止。第4/7/8行均未形成可用正式结果。

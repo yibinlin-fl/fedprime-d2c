@@ -2,8 +2,10 @@
 
 ## Current - post-moderate submission closure - 2026-10-25
 
-1. Run the already prepared local-first seeds 1/2 only after explicit user launch approval.
-2. Keep the audited CIFAR-100 task benchmark-first; do not start its 40-round Formal directly.
+1. User has requested the launch settings for local-first seeds 1/2. Run them as two separate OpenI Formal
+   tasks from pushed commit `a3b7841`; wait for the user to confirm actual launch before marking running.
+2. The audited CIFAR-100 task remains benchmark-first. Run seed-0 benchmark only; do not start its
+   40-round Formal directly.
 3. Before any taxonomy experiment, choose one claim: cheap checkpoint-reuse compound-evaluation
    coverage stress, or the existing training-time leave-one-operator-out stress. Do not conflate them.
 4. Redesign the PEW+BER execution figure first; replace the local-first seed-0 figure only after

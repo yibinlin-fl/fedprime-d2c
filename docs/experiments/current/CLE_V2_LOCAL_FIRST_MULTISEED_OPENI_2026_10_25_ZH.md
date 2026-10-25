@@ -1,6 +1,7 @@
 # CLE-v2 Local-first Training-seed 1/2 OpenI指南
 
-状态：2026-10-25实现、聚焦测试与本地四臂真实smoke通过；尚未push，尚未启动付费Formal。
+状态：2026-10-25实现、聚焦测试与本地四臂真实smoke通过；入口已随`a3b7841`推送至
+`origin/main`，尚未确认OpenI任务已启动。
 
 ## 1. 科学问题
 
@@ -35,7 +36,7 @@ Local/HFL descriptive ratio = 90.05%
 ## 3. 输入与代码
 
 ```text
-Git：必须以最终push后的commit为准
+Git：a3b7841（已推送至origin/main）
 复用数据集：是
 OpenI显示名：CLE_v2_Factorial_Seed0_PEW_20260909
 本地输入包：C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\cle_v2_factorial\cle_hfl_v2_paired_factorial_seed0_split0_with_pew.tar.gz

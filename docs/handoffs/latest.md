@@ -2957,3 +2957,8 @@ docs/research/status/CLE_HFL_RESULT_PRESERVATION_AUDIT_2026_10_25_ZH.md
 docs/research/status/CLE_HFL_FIGURE_STYLE_AUDIT_RAHFL_2026_10_25_ZH.md
 docs/research/status/CLE_CIFAR100_SECOND_DATASET_AUDIT_2026_10_25_ZH.md
 ```
+
+实现提交`874fd80`（local-first seeds 1/2）与`a3b7841`（CIFAR-100恢复审计）已推送至
+`origin/main`。用户已索取两账号local-first Formal和CIFAR-100 seed-0 benchmark启动卡；下载目录
+已预建，但尚未确认三个OpenI任务已经启动。当前图形工作冻结为“先重构PEW+BER执行图，待
+local-first seeds 1/2返回后再重构归因图”，不草率增加第六张图。

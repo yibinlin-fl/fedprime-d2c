@@ -2,8 +2,8 @@
 
 ## 审计结论
 
-协议的科学角色成立，但旧OpenI入口的失败恢复不合格，不能直接运行。现已完成兼容修复和聚焦测试；
-在用户批准并推送对应commit之前，仍不得启动付费benchmark或Formal。
+协议的科学角色成立，但旧OpenI入口的失败恢复不合格。现已完成兼容修复和聚焦测试，并随
+`a3b7841`推送至`origin/main`；尚未确认OpenI benchmark已启动，Formal仍需benchmark成本审计。
 
 ## 冻结协议
 

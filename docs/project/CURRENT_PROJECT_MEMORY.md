@@ -2,6 +2,20 @@
 
 Updated: 2026-10-25
 
+## Local-first Multi-seed Entry Ready - 2026-10-25
+
+已确认2026-09-10的seed-0 local-first Formal本身就是`12 rounds x 16 local batches/client/round`
+四臂协议，总耗时约4小时22分、按6积分/小时约26.2积分。此前中断的昂贵M2来自通用factorial
+Formal未设置local-batch上限而落入full-fit，不能代表seed-0正式协议成本。
+
+现已新增`openi_cle_v2_local_first_multiseed_entry.py`，只运行pending seeds 1/2，专用runner与
+analyzer均显式接收training seed，同时锁定12轮、16 batches、batch 64、相同数据角色与四臂。
+入口要求有效OpenI output context；每个seed训练完成后先上传checkpoint-bearing recovery包，再
+分析和上传最终轻量包；`train_seed=all`在seed1回传后才开始seed2。10项聚焦测试和seed1四臂
+本地真实smoke通过。两seed预计53--60积分，建议安全余额65积分。尚未push或启动付费Formal。
+
+指南：`docs/experiments/current/CLE_V2_LOCAL_FIRST_MULTISEED_OPENI_2026_10_25_ZH.md`。
+
 ## Moderate Axis II and Dose-Response Formal - 2026-10-25
 
 四个OpenI seed-0、40轮x64 local-batch单臂Formal完成并通过恢复包、正式包、四客户端checkpoint、

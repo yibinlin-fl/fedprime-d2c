@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run frozen CLE-v2 mechanism Stage-1.")
     parser.add_argument("--package-root", type=Path, required=True)
     parser.add_argument("--mode", choices=ROUND_BUDGET, default="benchmark")
+    parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--config-root", type=Path, required=True)
@@ -79,6 +80,7 @@ def stage1_arm_config(
     *,
     package_root: Path,
     mode: str,
+    train_seed: int,
     device: str,
     output_root: Path,
 ) -> dict:
@@ -88,14 +90,14 @@ def stage1_arm_config(
     config = arm_config(
         arm,
         package_root=package_root,
-        train_seed=0,
+        train_seed=int(train_seed),
         rounds=ROUND_BUDGET[mode],
         device=device,
         output_root=output_root,
         smoke=smoke,
         benchmark=False,
     )
-    config["experiment_name"] = f"cle_v2_mechanism_stage1_{arm}_trainseed0"
+    config["experiment_name"] = f"cle_v2_mechanism_stage1_{arm}_trainseed{train_seed}"
     config["train"]["max_local_batches"] = LOCAL_BATCH_BUDGET[mode]
     config["train"]["max_test_batches"] = 1
     config["method"]["strict_fit_audit"]["max_audit_batches"] = 1 if smoke else None
@@ -121,10 +123,11 @@ def main() -> None:
             arm,
             package_root=package_root,
             mode=args.mode,
+            train_seed=int(args.train_seed),
             device=args.device,
             output_root=output_root,
         )
-        path = config_root / f"{arm}_trainseed0.json"
+        path = config_root / f"{arm}_trainseed{args.train_seed}.json"
         path.write_text(json.dumps(config, indent=2), encoding="utf-8")
         records[arm] = {"config": str(path), "sha256": sha256_file(path)}
         if not args.prepare_only:
@@ -137,7 +140,7 @@ def main() -> None:
         "protocol": "cle_v2_mechanism_stage1_contract_v1",
         "data_manifest_sha256": sha256_file(package_root / "manifest.json"),
         "mode": args.mode,
-        "train_seed": 0,
+        "train_seed": int(args.train_seed),
         "rounds": ROUND_BUDGET[args.mode],
         "local_batches_per_client_round": LOCAL_BATCH_BUDGET[args.mode],
         "batch_size": 16 if args.mode == "smoke" else 64,

@@ -17,6 +17,14 @@ docs/handoffs/latest.md
 docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md
 ```
 
+Local-first seeds 1/2已于2026-10-25完成专用入口改造：严格复用已完成seed-0的12轮x16-batch
+预算，避免旧通用factorial入口误入full-fit；聚焦测试和本地四臂真实smoke通过。启动与恢复指南：
+
+```text
+docs/experiments/current/CLE_V2_LOCAL_FIRST_MULTISEED_OPENI_2026_10_25_ZH.md
+scripts/openi_cle_v2_local_first_multiseed_entry.py
+```
+
 ## CLE-HFL V0.8论文快照与完整网页端交接
 
 V0.8由V0.7-writing派生，冻结保留所有旧版本，只回填已审计的moderate seed-0 Formal：

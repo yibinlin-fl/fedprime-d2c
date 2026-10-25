@@ -102,9 +102,17 @@ PEW+BER, gamma=0.9   # 复用P1的方法臂
 
 ### P3：M2 local-first多训练种子——冲CCF-B的重要项
 
-目的：把local-first从seed-0受控机制发现提升为训练随机性下可复现发现。旧full-fit协议成本
-过高且中断，不能直接恢复。再次运行前必须冻结统一显式local-batch预算，并在同一新预算下重跑
-seed 0/1/2四臂，不能把历史full-fit seed 0与新budget seeds 1/2拼表。
+目的：把local-first从seed-0受控机制发现提升为训练随机性下可复现发现。2026-10-25审计确认，
+已完成seed-0正式协议本身就是`12 rounds x 16 local batches/client/round`，可以合法复用；此前成本
+失控的是误用通用factorial入口造成的full-fit任务，不是seed-0正式证据。现已新增专用multiseed
+入口，seeds 1/2严格复用seed-0预算、数据角色与四臂定义，因此只需新增8个arms，不重跑seed 0。
+
+单seed按seed-0实测约26.2积分，建议预留35积分；两seed合计预计53--60积分，建议同账号预留
+65积分或分两个账号各运行一个seed。完整启动卡见：
+
+```text
+docs/experiments/current/CLE_V2_LOCAL_FIRST_MULTISEED_OPENI_2026_10_25_ZH.md
+```
 
 若不运行，论文仍可成立，但只能写：
 

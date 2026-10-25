@@ -90,22 +90,25 @@ upload: reuse existing dataset
 local source: C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\cle_v2_factorial\cle_hfl_v2_paired_factorial_seed0_split0_with_pew.tar.gz
 bytes: 694118746
 sha256: B6C802DA0BC2A95183DB91D2855E35D9A807B39441F2A24CF88514EB1CAD69AA
-entry: scripts/openi_cle_v2_factorial_entry.py
+entry: scripts/openi_cle_v2_local_first_multiseed_entry.py
 mode = formal
-factorial_scope = mechanism
 train_seed = all
 confirm_formal = true
 data_source = ""
 skip_install = false
 GPU: 1 x V100 32GB
 type: Formal, seeds 1/2; 12 rounds
-outputs: cle_v2_factorial_mechanism_trainseed1_formal_outputs.tar.gz
-         cle_v2_factorial_mechanism_trainseed2_formal_outputs.tar.gz
+outputs: cle_v2_local_first_trainseed1_formal_outputs.tar.gz
+         cle_v2_local_first_trainseed2_formal_outputs.tar.gz
 download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\m2_local_first_multiseed
 ```
 
 主要contrast：`delta_HFL`、`delta_Local`、`delta_Comm=delta_HFL-delta_Local`。比例只作描述，
 不解释为样本级因果中介比例。聚合器使用`--kind local-first`。
+
+2026-10-25更正：已完成seed-0就是12轮x16 batches协议，可以复用；旧通用factorial入口的Formal
+会落入full-fit，禁止再用于M2。新专用入口已通过本地四臂真实smoke，并在每个seed训练完成后先
+上传checkpoint-bearing recovery包，再进行正式分析。
 
 ## 5. M3：第二private dataset（CIFAR-100）
 

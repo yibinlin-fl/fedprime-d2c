@@ -32,6 +32,7 @@ def test_stage1_configs_are_baseline_only_and_frozen(tmp_path):
                 arm,
                 package_root=tmp_path,
                 mode=mode,
+                train_seed=0,
                 device="cpu",
                 output_root=tmp_path / "outputs",
             )
@@ -39,6 +40,7 @@ def test_stage1_configs_are_baseline_only_and_frozen(tmp_path):
             assert "fedease" not in config["method"]
             assert config["train"]["rounds"] == rounds
             assert config["train"]["max_local_batches"] == batches
+            assert config["seed"] == 0
             assert config["train"]["max_test_batches"] == 1
             assert config["num_workers"] == 0
             assert config["checkpoints"]["save_rounds"] == []
@@ -58,6 +60,31 @@ def test_mechanism_estimands_use_only_four_baseline_arms():
     assert np.isclose(summary["estimands"]["hfl_cle_effect_base"], 0.15)
     assert np.isclose(summary["estimands"]["local_cle_effect_base"], 0.08)
     assert np.isclose(summary["estimands"]["communication_amplification_base"], 0.07)
+
+
+def test_stage1_training_seed_changes_randomness_not_budget(tmp_path):
+    seed0 = stage1_arm_config(
+        "h9_b",
+        package_root=tmp_path,
+        mode="formal",
+        train_seed=0,
+        device="cpu",
+        output_root=tmp_path / "outputs",
+    )
+    seed2 = stage1_arm_config(
+        "h9_b",
+        package_root=tmp_path,
+        mode="formal",
+        train_seed=2,
+        device="cpu",
+        output_root=tmp_path / "outputs",
+    )
+    assert seed0["train"] == seed2["train"]
+    assert seed0["seed"] == 0
+    assert seed2["seed"] == 2
+    assert seed0["method"]["strict_fit_audit"]["loader_seed"] != seed2["method"]["strict_fit_audit"]["loader_seed"]
+    assert seed0["train"]["rounds"] == seed2["train"]["rounds"] == 12
+    assert seed0["train"]["max_local_batches"] == seed2["train"]["max_local_batches"] == 16
 
 
 def test_stage1_gates_include_learning_floor():

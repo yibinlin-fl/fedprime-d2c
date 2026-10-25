@@ -49,6 +49,12 @@ ZIP根目录与内置LaTeX编译均已验证。用户回传V0.8 PDF的目标目�
 下一付费优先级是P3 local-first多seed、P4第二private dataset与P5 bounded taxonomy stress；
 不得把本次source bootstrap写成training-seed稳定性。
 
+2026-10-25已完成P3工程准备：确认seed-0正式证据为12轮x16 local batches而非full-fit；新增
+`scripts/openi_cle_v2_local_first_multiseed_entry.py`，只运行pending seeds 1/2并逐seed先上传
+checkpoint-bearing recovery包。10项聚焦测试与seed1四臂本地真实smoke通过。按seed-0实测，
+新增两seed预计约53--60积分，建议安全余额65积分；尚未push或启动付费Formal。完整指南：
+`docs/experiments/current/CLE_V2_LOCAL_FIRST_MULTISEED_OPENI_2026_10_25_ZH.md`。
+
 ## 2026-10-25 三账号实验恢复前安全复核完成
 
 用户报告三个OpenI账号各约100积分，明确准备恢复实验。下一批仍按10月15日优先级：账号A

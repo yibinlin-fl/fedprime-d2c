@@ -44,6 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--outputs-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--mode", choices=["smoke", "benchmark", "formal"], required=True)
+    parser.add_argument("--train-seed", type=int, choices=(0, 1, 2), default=0)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--bootstrap-samples", type=int, default=2000)
@@ -97,11 +98,11 @@ def load_trace(path: Path) -> list[tuple[int, int, str]]:
     return rows
 
 
-def audit_traces(outputs_root: Path) -> dict[str, object]:
+def audit_traces(outputs_root: Path, train_seed: int = 0) -> dict[str, object]:
     traces = {
         arm: load_trace(
             outputs_root
-            / f"cle_v2_mechanism_stage1_{arm}_trainseed0"
+            / f"cle_v2_mechanism_stage1_{arm}_trainseed{train_seed}"
             / "local_batch_trace.jsonl"
         )
         for arm in ARMS
@@ -189,7 +190,7 @@ def main() -> None:
     results = {}
     accuracies = {}
     for arm in ARMS:
-        root = outputs_root / f"cle_v2_mechanism_stage1_{arm}_trainseed0"
+        root = outputs_root / f"cle_v2_mechanism_stage1_{arm}_trainseed{args.train_seed}"
         probabilities[arm] = infer_arm(
             root / "checkpoints", grid, device, int(args.batch_size)
         )
@@ -202,7 +203,7 @@ def main() -> None:
             {arm: results[arm] for arm in coefficients},
             coefficients,
             samples=int(args.bootstrap_samples),
-            seed=20260909,
+            seed=20260909 + int(args.train_seed),
         )
         bootstrap[name] = {
             "mean": float(values.mean()),
@@ -213,7 +214,7 @@ def main() -> None:
         labels,
         binding,
         permutations=int(args.permutations),
-        seed=20260909,
+        seed=20260909 + int(args.train_seed),
     )
     shuffled_report = {
         "observed": float(shuffled["observed"]),
@@ -227,7 +228,7 @@ def main() -> None:
         shuffled_report,
         accuracies,
     )
-    trace_audit = audit_traces(outputs_root)
+    trace_audit = audit_traces(outputs_root, int(args.train_seed))
     if args.mode != "formal":
         verdict = "BENCHMARK_ONLY_NO_SCIENTIFIC_DECISION"
     elif not gates["L0_learning_floor"]:
@@ -251,7 +252,7 @@ def main() -> None:
     summary = {
         "protocol": "cle_v2_mechanism_stage1_analysis_v1",
         "mode": args.mode,
-        "train_seed": 0,
+        "train_seed": int(args.train_seed),
         "grid": {"sources": int(grid.shape[0]), "operators": int(grid.shape[1]), "severity": 3},
         **factorial,
         "operator_grid_accuracy": accuracies,

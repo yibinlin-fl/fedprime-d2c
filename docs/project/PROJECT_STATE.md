@@ -1,6 +1,21 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-09-22
+Last updated: 2026-10-25
+
+## Current Paper/Experiment State - 2026-10-25
+
+```text
+V0.8 moderate results snapshot:       committed locally at 7a14980
+moderate dose response seed 0:        complete
+moderate Axis II:                     5/8 rows complete
+local-first seed 0:                   complete (12 rounds x 16 batches)
+local-first seeds 1/2 implementation: ready; tests/smoke pass; not pushed/run
+next paid entry:                      scripts/openi_cle_v2_local_first_multiseed_entry.py
+```
+
+The previous full-fit M2 attempt is superseded for cost planning. The valid seed-0 evidence and the new
+seed1/2 entry share the same explicit 12-round, 16-local-batch budget. Expected incremental cost is about
+53--60 OpenI points for both pending seeds, with 65 points recommended as a safety balance.
 
 ## Current Paper State: M1 Multi-Seed GO / M2 Running / S2-v2 Ready - 2026-09-22
 

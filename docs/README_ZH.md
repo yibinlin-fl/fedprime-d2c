@@ -2,16 +2,19 @@
 
 Updated: 2026-10-25
 
-## 当前运行中的moderate Formal
+## Moderate Axis II与剂量响应Formal（已完成）
 
-2026-10-25用户确认四个单臂Formal均已进入运行：`asymhfl_erm`、`asymhfl_pew_ber`、
-`erm_g00`和`erm_g05`。它们分别补齐moderate Axis II的核心方法对照及`gamma=0/0.5/0.9`
-剂量响应；尚未完成、未分析，不能写入论文表。接收目录、产物合同和明日审计顺序见：
+2026-10-25四个seed-0、40轮x64单臂Formal已通过产物、配置、checkpoint、pairing和独立复算审计。
+ERM的DSA随`gamma=0/0.5/0.9`由接近零升至`0.039679/0.184514`；完全匹配的PEW+BER把
+`gamma=.9` DSA降至`0.090024`（相对下降51.21%，4/4客户端同向），但clean/mixed utility分别
+下降4.350/1.793个百分点。完整报告、原始路径与后续优先级：
 
 ```text
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/ARTIFACT_MANIFEST.csv
 docs/handoffs/latest.md
 docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md
-docs/experiments/guides/OPENI_EXPERIMENT_OPERATIONS_HANDOFF_ZH.md
 ```
 
 ## OpenI数据集上传Skill（已安装）
@@ -112,10 +115,11 @@ deliverables/cle_v2_moderate_axis2_robust_benchmark_20261013/RESULT_SUMMARY_ZH.m
 deliverables/cle_v2_moderate_axis2_plain_formal_seed0_20261014/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_axis2_asym_benchmark_20261014/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_moderate_formal_failure_audit_20261014/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md
 ```
 
-Axis II八行表的前三项seed-0 Formal（Local、FedMD、FedProto）已经完成并通过跨账号batch配对
-审计；其余行仍待补，不能将前三行单独写成完整领域排名。
+Axis II八行表已有五项seed-0 Formal（Local、FedMD、FedProto、AsymHFL--ERM、
+AsymHFL+PEW+BER）通过审计；FedDF、AugHFL和RAHFL仍待补，不能将五行写成完整领域排名。
 
 论文协议职责已同步到以下三个source of truth：V0.6保持不可变，V0.7只更新实验骨架，待结果后
 才生成V0.8；moderate协议仍是CIFAR-10，不能写成第二private dataset。

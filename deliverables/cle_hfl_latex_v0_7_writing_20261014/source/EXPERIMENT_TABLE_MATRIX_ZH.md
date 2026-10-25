@@ -6,10 +6,10 @@ Updated: 2026-10-14
 |---|---|---|---|---|
 | Main Table 1 | `protocol_information_boundary.tex` | 协议与代码审计 | 无 | 训练/评价信息隔离与协议差异 |
 | Main Table 2 | `local_first_multiseed.tex` | seed 0 | training seeds 1/2 | local-first在训练随机性下是否复现 |
-| Main Table 3 | `map2_method_comparison.tex` | 固定预算四臂seeds 0/1/2 Formal完成 | submission-budget Axis I逐臂恢复待完成；O1可选 | 现有数字仅支持固定预算下BER与ERM/CVaR/共享PEW-GroupDRO的matched机制比较；最终排名待补 |
+| Main Table 3 | `map2_method_comparison.tex` | 固定预算四臂seeds 0/1/2 Formal完成 | O1 JTT可选 | BER与ERM/CVaR/共享PEW-GroupDRO的matched机制比较；准确披露本地batch预算 |
 | Main Table 4 | `cross_setting_dataset.tex` | original/map1/FedDF seed 0；map2三seed固定预算 | second private dataset + FedMD four-objective replication | 跨binding与通信底座的机制迁移；不能声称统一utility获益 |
-| New Main/Appendix | `moderate_dose_response.tex` | 新数据生成与审计完成；训练结果待跑 | gamma 0/0.5/0.9 ERM + gamma0.9 PEW+BER | 在固定partition/mask下区分label skew与CLE强度，并报告正常效用 |
-| Main Table 5 | `hfl_context_baselines.tex` | moderate协议Local/FedMD/FedProto seed-0 Formal完成 | FedDF/AugHFL/RAHFL/AsymHFL-ERM/AsymHFL+PEW+BER | CLE在代表性HFL与corruption-robust机制家族中的位置；八行完成前不做领域排名 |
+| New Main/Appendix | `moderate_dose_response.tex` | gamma 0/0.5/0.9 ERM与gamma0.9 PEW+BER seed-0 Formal完成 | 无；多seed属于增强项 | 在固定partition/mask下验证剂量响应，并报告shortcut--utility trade-off |
+| Main Table 5 | `hfl_context_baselines.tex` | moderate协议Local/FedMD/FedProto/AsymHFL-ERM/AsymHFL+PEW+BER seed-0 Formal完成 | FedDF/AugHFL/RAHFL | CLE在代表性HFL与corruption-robust机制家族中的位置；八行完成前不做领域排名 |
 | Appendix | `oracle_granularity.tex` | 已完成 | 无 | correspondence重要、operator粒度增益有限 |
 | Appendix | `appendix/taxonomy_stress.tex` | 无 | bounded taxonomy stress | 一个预注册未见operator下的退化边界 |
 | Appendix | `appendix/pew_audit.tex` | 已完成distribution audit | 可补PEW confusion | BER改变有效支持结构，不保证模型性能 |
@@ -20,9 +20,9 @@ Updated: 2026-10-14
 ## 填表顺序
 
 ```text
-strong-stress held-out map2固定预算三seed -> 已完成机制证据；submission-budget Axis I仍待逐臂恢复
-moderate dose response -> 新表；先完成学习水平门槛
-moderate八行HFL context -> Local/FedMD/FedProto已完成；其余五行待跑
+strong-stress held-out map2固定预算三seed -> 已完成机制证据；不再默认要求昂贵submission-budget复跑
+moderate dose response -> 已完成并回填；seed-0 DSA随gamma单调，PEW+BER显著降低gamma=.9 DSA
+moderate八行HFL context -> 五行已完成；FedDF/AugHFL/RAHFL三行待跑
 local-first seeds 1/2 -> Main Table 2 + seed table
 second private dataset -> Main Table 4 + seed table
 旧strong Local/FedMD -> 仅内部工程记录，不进入论文表

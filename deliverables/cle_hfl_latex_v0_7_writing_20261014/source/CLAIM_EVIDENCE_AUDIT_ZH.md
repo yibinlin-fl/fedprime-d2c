@@ -21,7 +21,9 @@
 | PEW是taxonomy-free环境发现 | 禁止 | PEW由公共合成corruption标签监督 | taxonomy-assisted public environment witness | taxonomy-free、自动发现任意真实环境 |
 | proxy下降可证明真实CLE下降 | 禁止 | proxy non-identifiability定理与CVRS反例 | target-aligned paired DSA remains necessary | PEW准确率/JSD/任意proxy loss足以认证真实harm |
 | FedDF上utility统一提升 | 禁止 | FedDF DSA下降但冻结utility gate未过 | cross-base shortcut suppression with a utility boundary | architecture-uniform utility improvement |
-| moderate Axis-II八行领域排名 | 待证据 | Local/FedMD/FedProto已完成，其余五行待跑 | first three completed rows are reported descriptively | 八方法排名或SOTA结论 |
+| moderate dose response | 已完成（seed 0） | gamma 0/.5/.9 matched Formal与shuffled null/source bootstrap | DSA increases monotonically with controlled binding strength in this seed | 现实发生率、跨seed线性规律 |
+| moderate AsymHFL方法对照 | 已完成（seed 0） | batch-matched ERM/PEW+BER Formal，4/4客户端DSA下降 | PEW+BER substantially suppresses CLE with a nonuniform utility trade-off | 无损、完全消除、通用插件 |
+| moderate Axis-II八行领域排名 | 部分待证据 | Local/FedMD/FedProto/AsymHFL-ERM/AsymHFL+PEW+BER已完成，其余三行待跑 | five completed rows are reported descriptively | 八方法排名或SOTA结论 |
 | 第二private dataset外部复现 | 待证据 | 尚未完成 | explicit limitation / planned evidence | 已跨数据集泛化 |
 
 ## 已锁定的关键数字
@@ -31,6 +33,8 @@
 - HFL CLE effect：`0.119889`；Local CLE effect：`0.107960`；communication add-on：`0.011929`。
 - held-out map2固定预算三seed：ERM DSA `0.2505±0.0087`，CVaR `0.0867±0.0055`，PEW+GroupDRO `0.2054±0.0080`，PEW+BER `0.0715±0.0113`。
 - moderate Axis II seed 0：Local DSA/Grid/Clean/Corr/Mixed为`0.168374/39.830/51.425/39.508/45.467`；FedMD为`0.167835/38.732/50.400/38.378/44.389`；FedProto为`0.160788/39.250/50.800/38.937/44.868`。
+- moderate dose seed 0：ERM gamma 0/.5/.9 DSA为`-0.000730/0.039679/0.184514`；相邻增量source-bootstrap CI95均严格大于零。
+- moderate AsymHFL seed 0：ERM与PEW+BER DSA为`0.184514/0.090024`，相对下降51.21%，4/4客户端同向；Grid/Corr为`+0.967/+0.765`pp，Clean/Mixed为`-4.350/-1.793`pp。
 
 ## 写作传播规则
 
@@ -43,4 +47,4 @@
 
 ## 本轮结论
 
-当前稿已经足以进入持续写作，但还不能冻结投稿版。缺口主要是证据覆盖而不是再增加一个新模块：submission-budget Axis I、moderate Axis II剩余五行、local-first多seed、第二private dataset和有界taxonomy stress。
+当前稿已经足以进入持续写作，但还不能冻结投稿版。缺口主要是证据覆盖而不是再增加一个新模块：moderate Axis II剩余三行（可按预算收缩）、local-first多seed、第二private dataset和有界taxonomy stress。现有40轮三seed Axis I继续作为正式主证据，不再默认要求昂贵复跑。

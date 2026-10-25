@@ -2,38 +2,39 @@
 
 Updated: 2026-10-25
 
-## 2026-10-25 四个moderate单臂Formal正在运行
+## 2026-10-25 Moderate Axis II与剂量响应Formal完成
 
-用户确认四个OpenI任务均已成功进入运行状态；这是用户报告的执行状态，尚不是完成状态或科学
-证据。四个任务均应使用远端`main`提交
-`125580e705e08727419151337f97f3f7b854c5ab`、公开数据集
-`chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`、1xV100 32GB，协议为moderate
-map2/partition seed0/training seed0/40轮x64 local batches：
+四个OpenI单臂Formal已完整回传并通过包、配置、40轮预算、四客户端checkpoint、batch pairing、
+prediction-cache和正式分析审计。固定协议为`alpha=1.0, rho=.5, map2, partition seed0,
+training seed0, 40轮x64 local batches`。输入仍为`893421220` bytes、SHA256
+`DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588`。
 
-```text
-asymhfl_erm       -> Axis II方法对照、dose gamma=.9 ERM锚点
-asymhfl_pew_ber   -> Axis II候选、dose gamma=.9 PEW+BER锚点
-erm_g00           -> dose gamma=0零基准
-erm_g05           -> dose gamma=.5中间强度
-```
-
-最初dose任务曾因误选Axis I入口而在训练前立即失败，随后又遇到平台
-`handleDatasetModelStorageSchedule failed`；最终任务已由用户确认运行。上述早期失败没有科学状态，
-不得混入结果。当前不再启动Axis I高预算、FedDF、AugHFL、RAHFL或其他新Formal。
-
-明日接收每个任务时必须下载并保留`*_recovery_outputs.tar.gz`、`*_outputs.tar.gz`、
-`RUN_TIMING.json`及完整日志，分别放入已预建的四个目录：
+ERM剂量响应为：
 
 ```text
-outputs/openi_downloads/moderate_asymhfl_erm_formal_s0_20261025/
-outputs/openi_downloads/moderate_asymhfl_pew_ber_formal_s0_20261025/
-outputs/openi_downloads/moderate_erm_g00_formal_s0_20261025/
-outputs/openi_downloads/moderate_erm_g05_formal_s0_20261025/
+gamma=0.0  DSA=-0.000730  shuffled-null p=.546454
+gamma=0.5  DSA= 0.039679  shuffled-null p=.000999
+gamma=0.9  DSA= 0.184514  shuffled-null p=.000999
 ```
 
-四包完成后先审计commit/input/config、40轮x64预算、4-client checkpoints、batch pairing、分析
-完整性与`scientific_evidence`。随后用`asymhfl_erm`对比`asymhfl_pew_ber`回填moderate Axis II，
-再用`erm_g00/erm_g05/asymhfl_erm/asymhfl_pew_ber`回填dose-response。任务显示成功本身不授权填表。
+相邻gamma增量的5,000次source-paired bootstrap CI均严格大于零，支持seed-0受控单调剂量响应。
+在完全匹配的gamma=.9 AsymHFL两臂中，PEW+BER把DSA从`0.184514`降至`0.090024`，绝对下降
+`0.094490`、相对下降`51.21%`，4/4客户端同向；control-minus-method的source-bootstrap CI95
+为`[0.091877,0.097081]`。Grid/Corrupt/Seen/Unseen accuracy分别变化`+0.967/+0.765/
++0.920/+0.337`个百分点，但Clean与rho=.5 Mixed下降`4.350/1.793`个百分点。因此结论是
+“显著抑制CLE、效用有非均匀代价”，不是无损或通用插件。
+
+完整报告与论文表：
+
+```text
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv
+deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/ARTIFACT_MANIFEST.csv
+```
+
+V0.7-writing已回填dose表和Axis II两条AsymHFL行；Axis II当前完成5/8行，FedDF/AugHFL/RAHFL
+仍为pending。下一付费优先级是P3 local-first多seed、P4第二private dataset与P5 bounded
+taxonomy stress；不得把本次source bootstrap写成training-seed稳定性。
 
 ## 2026-10-25 三账号实验恢复前安全复核完成
 

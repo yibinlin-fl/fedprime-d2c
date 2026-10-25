@@ -2,6 +2,14 @@
 
 日期：2026-10-14。
 
+## 2026-10-25 Moderate Formal回填
+
+- 回填gamma 0/.5/.9 ERM与gamma .9 PEW+BER的seed-0 dose-response表。
+- 回填Axis II两条AsymHFL行，完成行由3/8增至5/8。
+- 正文加入source-paired bootstrap、4/4客户端DSA下降及clean/mixed utility代价。
+- 未修改问题定义、DSA/BER公式、理论命题或引用键；FedDF/AugHFL/RAHFL继续保留pending。
+- 原始数字来源：`deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md`。
+
 ## 本轮完成
 
 1. 重写Abstract，删除把pending结果写成既成事实的句子。

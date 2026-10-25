@@ -1,9 +1,9 @@
 # CLE-HFL待补实验优先级（2026-10-15）
 
-> 2026-10-25执行更新：用户确认`asymhfl_erm`、`asymhfl_pew_ber`、`erm_g00`和`erm_g05`
-> 四个moderate map2/seed0/40轮x64单臂Formal均已进入运行。P1与P2因此并行执行；运行中不再
-> 新增实验。任务完成后先独立审计恢复包、正式包、timing、checkpoint和pairing，再决定是否
-> 回填论文。该状态不等于科学证据。
+> 2026-10-25执行更新：`asymhfl_erm`、`asymhfl_pew_ber`、`erm_g00`和`erm_g05`四个moderate
+> map2/seed0/40轮x64单臂Formal均已完成并通过恢复包、正式包、checkpoint、config、pairing与
+> prediction-cache审计。P1与P2完成，已回填V0.7-writing。完整结论见
+> `deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md`。
 
 ## 1. 目的
 
@@ -67,6 +67,9 @@ AugHFL可选。若算力不足，正文使用5--7行精简表比保留八行pend
 
 ### P1：moderate AsymHFL成对方法锚点——投稿主线必须
 
+状态：**已完成（2026-10-25）**。DSA `0.184514 -> 0.090024`，相对下降51.21%，4/4客户端
+同向；clean/mixed accuracy分别下降4.350/1.793pp，必须作为utility trade-off报告。
+
 ```text
 AsymHFL--ERM, gamma=0.9
 AsymHFL+PEW+BER, gamma=0.9
@@ -80,6 +83,9 @@ AsymHFL+PEW+BER, gamma=0.9
 该协议有效。
 
 ### P2：moderate剂量响应——投稿主线强烈建议
+
+状态：**已完成（2026-10-25）**。ERM DSA在gamma 0/.5/.9为
+`-0.000730/0.039679/0.184514`，相邻source-paired bootstrap CI均严格大于零。
 
 最终四行应为：
 
@@ -177,8 +183,8 @@ FedDF-fidelity > RAHFL anchor > AugHFL-fidelity
 
 ```text
 0. 不再重跑Axis I昂贵full-budget四臂；使用现有M1并准确披露预算
-1. 重跑moderate AsymHFL--ERM与AsymHFL+PEW+BER（P1）
-2. 复用P1的gamma=.9结果，只补ERM gamma=0/.5（P2）
+1. P1 moderate AsymHFL成对锚点：已完成并回填
+2. P2 moderate gamma 0/.5/.9剂量响应：已完成并回填
 3. 根据目标会议和积分决定P3与P4；若冲CCF-B，两者都做
 4. 做一个bounded taxonomy stress（P5）
 5. 有余力再补FedDF或RAHFL；AugHFL、JTT和更多底座停止在可选层
@@ -187,6 +193,7 @@ FedDF-fidelity > RAHFL anchor > AugHFL-fidelity
 
 ## 7. 当前最具体的下一项
 
-下一项不是一次启动多个实验，而是先对修复后的moderate入口做一次最终失败安全复核，然后分别
-启动P1的两个单臂Formal。只有这两个结果完整回传后，才启动P2的两个新增gamma点。
+P1/P2已完成。下一项不应继续重跑moderate seed 0；先冻结本轮结果，再在P3 local-first多seed、
+P4第二private dataset和P5 bounded taxonomy stress中按投稿目标与积分选择。若近期优先完成初稿，
+先把新表和trade-off边界同步到网页端写作交接，再决定下一次付费实验。
 

@@ -2,17 +2,17 @@
 \begin{table}[t]
 \centering
 \small
-\caption{Pending moderate-protocol dose response. The corruption mask, partition, sources, severities, initialization, and evaluation grid are paired across $\gamma$.}
+\caption{Moderate-protocol dose response at training seed 0. The corruption mask, partition, sources, severities, initialization, and evaluation grid are paired across $\gamma$.}
 \label{tab:moderate-dose}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{llrrrr}
 \toprule
-$\gamma$ & Objective & DSA $\downarrow$ & Operator Acc. $\uparrow$ & Clean Acc. $\uparrow$ & Avg $\uparrow$ \\
+$\gamma$ & Objective & DSA $\downarrow$ & Operator Acc. $\uparrow$ & Clean Acc. $\uparrow$ & Mixed Acc. $\uparrow$ \\
 \midrule
-0.0 & ERM & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-0.5 & ERM & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-0.9 & ERM & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
-0.9 & PEW+BER & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+0.0 & ERM & -0.0007 & 48.480 & 52.325 & 50.089 \\
+0.5 & ERM & 0.0397 & 48.395 & 54.350 & 51.140 \\
+0.9 & ERM & 0.1845 & 37.193 & 49.700 & 43.354 \\
+0.9 & PEW+BER & 0.0900 & 38.160 & 45.350 & 41.562 \\
 \bottomrule
 \end{tabular}%
 }

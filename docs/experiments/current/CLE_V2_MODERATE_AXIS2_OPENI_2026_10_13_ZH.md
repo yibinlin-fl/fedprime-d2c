@@ -88,6 +88,12 @@ Smoke和benchmark的数值都不能进入论文。
 
 ## 6. 当前验证状态
 
+2026-10-25 Formal更新：`erm_g00`、`erm_g05`、`asymhfl_erm`和`asymhfl_pew_ber`四个单臂
+Formal均完成并通过合同、checkpoint、batch trace和正式分析审计。ERM DSA随gamma 0/.5/.9为
+`-0.000730/0.039679/0.184514`；PEW+BER在gamma=.9将DSA降至`0.090024`（相对下降51.21%，
+4/4客户端同向），但clean/mixed accuracy下降4.350/1.793pp。正式报告：
+`deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md`。
+
 - 压缩包217 entries/178 files二次流式审计通过。
 - runner对协议、包名、alpha/rho/gamma、strict split、paired DSA、四类测试split及PEW文件
   执行fail-closed检查。

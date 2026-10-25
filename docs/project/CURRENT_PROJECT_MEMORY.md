@@ -1,6 +1,26 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-10-02
+Updated: 2026-10-25
+
+## Moderate Axis II and Dose-Response Formal - 2026-10-25
+
+四个OpenI seed-0、40轮x64 local-batch单臂Formal完成并通过恢复包、正式包、四客户端checkpoint、
+配置SHA、40个metrics rounds、160条本地batch轨迹和prediction-cache审计。协议固定为CIFAR-10
+private、held-out map2、`alpha=1.0`、`rho=.5`、partition/training seed 0、相同初始状态与strict
+fit/audit split。AsymHFL--ERM与AsymHFL+PEW+BER的完整本地batch trace逐字节相同；三档gamma
+的round/client/batch与label trace相同，数据manifest确认source、label、mask、severity与初始化配对。
+
+ERM pooled DSA随gamma严格单调：`-0.000730 -> 0.039679 -> 0.184514`。gamma 0未超过shuffled
+null（p=.546454），gamma .5/.9均为p=.000999；5,000次source-paired bootstrap的相邻增量CI95
+分别为`[0.038967,0.041950]`和`[0.142085,0.147653]`。这支持moderate seed-0剂量响应，不覆盖
+training-seed、partition或数据集不确定性。
+
+在完全匹配的gamma=.9 AsymHFL两臂中，PEW+BER将DSA `0.184514 -> 0.090024`，绝对下降
+`0.094490`、相对下降`51.21%`，4/4客户端下降；control-minus-method source-bootstrap CI95为
+`[0.091877,0.097081]`。Grid/Corrupt/Seen/Unseen分别变化`+0.967/+0.765/+0.920/+0.337`pp，
+Clean/Mixed变化`-4.350/-1.793`pp。正式定位是“显著shortcut抑制并伴随非均匀utility trade-off”，
+不支持无损、完全消除或任意HFL通用插件。报告：
+`deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md`。
 
 ## CLE Directional Shortcut Dose Response - 2026-10-02
 

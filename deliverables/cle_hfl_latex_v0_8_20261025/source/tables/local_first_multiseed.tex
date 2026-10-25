@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{CLE formation and local-versus-communication attribution. Numeric rows are the completed training-seed-0 factorial; M2 training seeds 1/2 remain pending.}
+\label{tab:local-first}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrl}
+\toprule
+Arm & Scope & $\gamma_{\mathrm{CLE}}$ & Operator-grid Acc. (\%) & Pooled DSA & Training-seed status \\
+\midrule
+HFL control & HFL & 0.0 & 24.9300 & -0.000245 & seed 0 complete; 1/2 pending \\
+HFL strong CLE & HFL & 0.9 & 21.4367 & 0.119644 & seed 0 complete; 1/2 pending \\
+Local control & Local & 0.0 & 25.5683 & -0.001914 & seed 0 complete; 1/2 pending \\
+Local strong CLE & Local & 0.9 & 22.4233 & 0.106046 & seed 0 complete; 1/2 pending \\
+\bottomrule
+\end{tabular}%
+}
+\ifdraftskeleton
+\par\smallskip
+\evidenceneeded{M2 Formal training seeds 1/2; report seed-level uncertainty separately from source-clustered evaluation intervals.}
+\fi
+\end{table*}

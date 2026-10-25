@@ -1,0 +1,113 @@
+\section{Experiments}
+
+\subsection{Protocol and Metrics}
+
+The experiments follow a six-link evidence chain: existence, formation attribution, matched mitigation, cross-communication replication, HFL field-position comparison, and external-validity boundaries. DSA is the primary shortcut endpoint. We report it alongside operator-grid accuracy and frozen task metrics: client-average accuracy (Avg), minimum client accuracy (Worst), worst valid class--operator-cell accuracy (WCCA), and the mean within-class accuracy range across operators (CFG; lower is better). No accuracy metric is treated as a substitute for DSA.
+
+The experiments use matched contrasts rather than a single cross-protocol leaderboard. The held-out map2 study is the main comparison of local risk objectives; map1 changes the class--operator binding while keeping the remaining controlled factors fixed; FedDF-fidelity changes the HFL communication base. Table~\ref{tab:protocol-boundary} summarizes the information available during training and evaluation.
+
+\input{tables/protocol_information_boundary}
+\input{tables/research_questions}
+
+Figure~\ref{fig:protocol-map} records the distinct responsibilities of the two controlled regimes. Strong stress isolates mechanism-level differences under severe CLE; the moderate protocol evaluates dose response and usable semantics. Results from the two regimes are not pooled into one leaderboard.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth,keepaspectratio]{figures/fig5_protocol_map.pdf}
+\caption{Strong-stress and moderate-utility protocol roles.}
+\label{fig:protocol-map}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth,keepaspectratio]{figures/fig1_cle_hfl_evidence_chain.pdf}
+\caption{CLE-HFL evidence chain and information boundary.}
+\label{fig:evidence-chain}
+\end{figure*}
+
+\subsection{Axis I: Matched Shortcut-Objective Attribution}
+
+A five-arm 12-round screen was used for method selection only. JTT therefore remains screening-only and is not part of the Formal comparison. Axis I retains the strong-stress held-out-map2 setting ($\alpha=0.5$, private corruption rate $1.0$, and $\gamma=0.9$) and compares four matched arms: ERM, protocol-matched CVaR-DRO, PEW+GroupDRO, and PEW+BER. The arms share the partition, training and evaluation seeds, initial states, private batch trajectory, and strict HFL communication protocol. PEW+GroupDRO and PEW+BER also receive identical PEW group assignments. This design asks whether BER's class-conditional support balancing matters beyond generic tail emphasis or worst-group optimization. DSA is the primary endpoint; utility is reported separately and is not interpreted as ordinary clean-CIFAR performance under this deliberately severe protocol.
+
+\input{tables/map2_method_comparison}
+
+Figure~\ref{fig:axis1-objectives} displays the primary shortcut endpoint beside operator-grid accuracy. It makes the central distinction explicit: a method can reduce DSA without occupying the same position on the utility axis.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig4_axis1_objective_comparison.pdf}
+\caption{Fixed-budget matched objective comparison.}
+\label{fig:axis1-objectives}
+\end{figure*}
+
+The completed fixed-budget study gives the following source-paired differences for training seed 0:
+
+\[
+\mathrm{DSA(ERM)}-\mathrm{DSA(BER)}=0.182567,
+\]
+
+with 95\% interval \([0.180596,0.184407]\),
+
+\[
+\mathrm{DSA(GroupDRO)}-\mathrm{DSA(BER)}=0.136834,
+\]
+
+with \([0.134952,0.138706]\), and
+
+\[
+\mathrm{DSA(BER)}-\mathrm{DSA(CVaR)}=-0.011240,
+\]
+
+with \([-0.012355,-0.010092]\). These intervals resample semantic sources conditional on the seed-0 checkpoints.
+
+Across training seeds 0/1/2 in that protocol, DSA(ERM)$-$DSA(BER) is \(0.179060\pm0.008594\), and DSA(GroupDRO)$-$DSA(BER) is \(0.133947\pm0.011518\); both contrasts favor BER in all three seeds. DSA(BER)$-$DSA(CVaR) is \(-0.015184\pm0.015411\), while BER improves operator-grid accuracy over CVaR by \(5.9567\pm2.3151\) percentage points. The pre-registered fixed-budget multi-seed gates pass. These results establish the controlled mechanism comparison under its disclosed local-batch budget; we do not mix it with the separate moderate-utility protocol.
+
+The shared-PEW comparison separates access to PEW groups from the BER objective: PEW+GroupDRO retains pooled DSA \(0.2054\pm0.0080\), whereas PEW+BER reaches \(0.0715\pm0.0113\). CVaR-DRO is closer at \(0.0867\pm0.0055\). BER has higher pooled operator-grid accuracy, Avg, Worst, and WCCA, and lower CFG in the same fixed-budget study. The per-client ordering is mixed: CVaR-DRO is lower on c0 and c1, while BER is lower on c2 and c3. The supported conclusion is therefore pooled and protocol-specific, not per-client dominance.
+
+\subsection{Cross-Binding and Cross-Communication Validation}
+
+Table~\ref{tab:cross-setting-dataset} summarizes completed PEW+BER comparisons on the original binding map, map1, and FedDF-fidelity. A second private dataset remains a separate evidence slot.
+
+\input{tables/cross_setting_dataset}
+
+On map1, only the client-specific class--operator binding changes; the partition, evaluation seed, training seed, initial weights, public data, evaluation grid, and frozen PEW remain fixed. Pooled DSA changes from \(0.113761\) to \(0.049531\), a 56.46\% reduction, and all four clients move in the same direction. Operator-grid accuracy changes from \(20.9450\%\) to \(21.4583\%\). This reproduces DSA suppression on a second controlled binding direction at seed 0.
+
+The completed second communication-base experiment uses native single-view CE with a protocol-matched \textbf{FedDF-fidelity} adapter. Base and BER arms share initialization, private batches, public distillation, and training budget. Pooled DSA changes from \(0.136989\) to \(0.029012\), while operator-grid accuracy changes by \(-0.0400\) points and last-five Avg by \(-0.6660\) points. The frozen utility gate fails, and both arms fall below the pre-registered 20\% operator-grid learning floor. We use this experiment as boundary evidence that DSA suppression can appear under another communication mechanism; it does not establish cross-base utility gain.
+
+To test the stronger mechanism-level question under a classic and computationally light communication rule, a pending FedMD replication holds communication fixed across the same four local objectives used in the main comparison. This experiment is a controlled cross-communication replication, not a claim that PEW+BER is universally compatible with every HFL algorithm.
+
+\evidenceneeded{second private dataset; dataset and protocol pending.}
+
+\subsection{Moderate CLE Dose Response and Utility}
+
+The strong-stress protocol intentionally combines severe label skew, corruption of every private image, and strong class--operator binding. It is suitable for mechanism stress testing but can confound low semantic utility with shortcut dependence. A separate, pre-specified moderate protocol keeps the private task and held-out binding map fixed while using Dirichlet $\alpha=1.0$, private corruption rate $\rho=0.5$, and $\gamma\in\{0,0.5,0.9\}$. For sample $i$ at client $k$, a fixed corruption indicator $C_{ki}\sim\mathrm{Bernoulli}(\rho)$ is shared across all three $\gamma$ conditions. Conditional on $C_{ki}=1$,
+\[
+P(E=e\mid Y=c,k,C=1)=\frac{1-\gamma}{11}+\gamma\mathbf{1}[e=b_k(c)].
+\]
+Sources, labels, corruption masks, severities, fit/audit splits, model initialization, public data, and the paired operator grid are held fixed. Thus $\alpha$ controls client label support, $\rho$ controls exposure to corruption, and $\gamma$ controls class-conditional operator concentration. This protocol is a second controlled difficulty regime on CIFAR--10, not a second private dataset.
+
+\input{tables/moderate_dose_response}
+
+Under ERM, DSA increases from \(-0.000730\) at \(\gamma=0\) to \(0.039679\) at \(\gamma=0.5\) and \(0.184514\) at \(\gamma=0.9\). Source-paired bootstrap intervals for both adjacent increments exclude zero, while the \(\gamma=0\) estimate does not exceed its shuffled-binding null. The response is therefore monotone in this controlled seed, although we do not assume linearity in \(\gamma\). At \(\gamma=0.9\), PEW+BER lowers DSA to \(0.090024\), but the residual remains above its shuffled-binding null.
+
+\subsection{Axis II: HFL Mechanism-Family Context}
+
+Axis II asks a different question from the matched objective study: whether representative heterogeneous-FL communication and robustness mechanisms naturally remove CLE while retaining usable task semantics. The pre-specified eight-row main table contains Local/ERM, FedMD, FedProto, FedDF, AugHFL, RAHFL, AsymHFL--ERM, and AsymHFL+PEW+BER. All final rows use the moderate held-out-map2 condition ($\alpha=1.0$, $\rho=0.5$, $\gamma=0.9$), training seed 0, the same 40-round budget, initial states, and paired operator evaluation grid. Ordinary HFL mechanisms and corruption-robust AugHFL/RAHFL are retained because communication robustness, corruption robustness, and directional-shortcut suppression are distinct capabilities. We report DSA together with paired-grid, clean-subset, corrupted-subset, and overall task accuracy; per-client DSA and Worst/WCCA/CFG remain in the detailed analysis. Existing strong-stress Local/FedMD runs are internal engineering records and do not enter the paper tables.
+
+\input{tables/hfl_context_baselines}
+
+Five Formal rows are complete. Local/ERM, FedMD, and FedProto have pooled DSA values of \(0.168374\), \(0.167835\), and \(0.160788\), respectively; all exceed the shuffled-binding null. FedMD is statistically indistinguishable from Local in the paired DSA contrast, while FedProto produces a small DSA reduction of \(0.007587\) (4.51\%) with slightly lower utility. In the exactly batch-matched AsymHFL pair, PEW+BER reduces DSA from \(0.184514\) to \(0.090024\) (51.21\%), with a source-paired 95\% interval of \([0.091877,0.097081]\) for the control-minus-method contrast and reductions on all four clients. Grid and corrupted accuracy improve by \(0.967\) and \(0.765\) points, respectively, whereas clean and 50/50 mixed accuracy fall by \(4.350\) and \(1.793\) points. These rows show substantial shortcut suppression with a nonuniform utility trade-off; they are not a complete ranking of the eight methods.
+
+\evidenceneeded{remaining moderate held-out-map2 Formal rows: FedDF-fidelity, AugHFL, and RAHFL.}
+
+\subsection{Environment Correspondence and Granularity}
+
+A non-deployable Oracle audit compares true family grouping, true operator grouping, and a random operator correspondence. Random operator DSA exceeds Oracle operator DSA by \(0.052112\), with source-bootstrap 95\% interval \([0.051231,0.052983]\), showing that the environment correspondence matters in this audit. The Oracle family--operator DSA gap is \(0.001449\), with \([0.001086,0.001790]\). The small granularity gap is specific to this controlled audit and provides no empirical reason to introduce an operator-level PEW in the current paper. Appendix C reports the complete Oracle table.
+
+\subsection{Remaining Evidence Placeholders}
+
+The internal manuscript keeps unresolved evidence visible. The existing three-seed strong-stress objective comparison is a completed fixed-budget mechanism study; its numbers must not be mixed with the abandoned higher-budget rerun. Five moderate HFL-context rows and the seed-0 dose response are complete, while FedDF-fidelity, AugHFL, and RAHFL remain open. Additional gaps are the multi-seed local-first extension, a genuinely second private dataset, a bounded taxonomy stress test, and the FedMD four-objective replication. A JTT Formal is optional and is required only if the final paper makes a direct empirical superiority claim over JTT.
+
+\evidenceneeded{local-first training seeds 1/2.}
+
+\evidenceneeded{bounded taxonomy stress test; protocol pending.}

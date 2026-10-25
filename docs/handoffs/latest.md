@@ -32,9 +32,22 @@ deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv
 deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/ARTIFACT_MANIFEST.csv
 ```
 
-V0.7-writing已回填dose表和Axis II两条AsymHFL行；Axis II当前完成5/8行，FedDF/AugHFL/RAHFL
-仍为pending。下一付费优先级是P3 local-first多seed、P4第二private dataset与P5 bounded
-taxonomy stress；不得把本次source bootstrap写成training-seed稳定性。
+V0.8已由V0.7-writing派生并回填dose表和Axis II两条AsymHFL行；Axis II当前完成5/8行，
+FedDF/AugHFL/RAHFL仍为pending。完整网页端交接也已同步到2026-10-25。当前写作入口与交接为：
+
+```text
+deliverables/cle_hfl_latex_v0_8_20261025/source/main.tex
+deliverables/cle_hfl_full_paper_web_handoff_20261025/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+V0.8 Overleaf包为
+`deliverables/cle_hfl_latex_v0_8_20261025/CLE_HFL_LATEX_V0_8_MODERATE_FORMAL_OVERLEAF_20261025.zip`，
+大小`917759` bytes，SHA256=`D873E08C81E7FECF7F75E0F1503BC45CF6FB4EF06153DF016D5AD0FF3879ACBF`；
+ZIP根目录与内置LaTeX编译均已验证。用户回传V0.8 PDF的目标目录已预建为
+`local_runs/paper_compiled_returns/v0_8_20261025/`。
+
+下一付费优先级是P3 local-first多seed、P4第二private dataset与P5 bounded taxonomy stress；
+不得把本次source bootstrap写成training-seed稳定性。
 
 ## 2026-10-25 三账号实验恢复前安全复核完成
 

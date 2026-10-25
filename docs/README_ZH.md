@@ -17,6 +17,23 @@ docs/handoffs/latest.md
 docs/experiments/current/CLE_HFL_PENDING_EXPERIMENT_PRIORITY_2026_10_15_ZH.md
 ```
 
+## CLE-HFL V0.8论文快照与完整网页端交接
+
+V0.8由V0.7-writing派生，冻结保留所有旧版本，只回填已审计的moderate seed-0 Formal：
+gamma剂量响应、AsymHFL匹配两臂、source-paired置信区间、四客户端一致性以及clean/mixed效用代价。
+当前Axis II完成5/8行；FedDF、AugHFL、RAHFL仍是待证据。继续写作和网页端审稿只使用：
+
+```text
+deliverables/cle_hfl_latex_v0_8_20261025/README_ZH.md
+deliverables/cle_hfl_latex_v0_8_20261025/source/main.tex
+deliverables/cle_hfl_latex_v0_8_20261025/CLE_HFL_LATEX_V0_8_MODERATE_FORMAL_OVERLEAF_20261025.zip
+deliverables/cle_hfl_full_paper_web_handoff_20261025/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+旧V0.6、V0.7及V0.7-writing均未覆盖；论文问题定义、DSA/BER理论和引用键没有因本次结果回填而改写。
+V0.8 Overleaf包为`917759` bytes，SHA256=`D873E08C81E7FECF7F75E0F1503BC45CF6FB4EF06153DF016D5AD0FF3879ACBF`；
+根目录`main.tex`与ZIP条目结构已验证，内置LaTeX编译成功。
+
 ## OpenI数据集上传Skill（已安装）
 
 独立跨项目`openi-dataset-upload`已安装到`C:\Users\asus\.codex\skills\openi-dataset-upload`。
@@ -121,8 +138,8 @@ deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.
 Axis II八行表已有五项seed-0 Formal（Local、FedMD、FedProto、AsymHFL--ERM、
 AsymHFL+PEW+BER）通过审计；FedDF、AugHFL和RAHFL仍待补，不能将五行写成完整领域排名。
 
-论文协议职责已同步到以下三个source of truth：V0.6保持不可变，V0.7只更新实验骨架，待结果后
-才生成V0.8；moderate协议仍是CIFAR-10，不能写成第二private dataset。
+论文协议职责已同步到V0.8与2026-10-25完整网页端交接；moderate协议仍是CIFAR-10，不能写成
+第二private dataset。以下V0.7和20260925交接仅是历史快照：
 
 ```text
 docs/experiments/current/CLE_HFL_SUBMISSION_EXPERIMENT_MATRIX_2026_09_15_ZH.md

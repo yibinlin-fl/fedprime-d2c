@@ -37,6 +37,11 @@ def main() -> None:
     split_path = package_root / "splits/strict_cle_cifar100_seed0_split0.npz"
     require_file(split_path, manifest["strict_split"])
     split = np.load(split_path, allow_pickle=False)
+    paired_fields = (
+        "train_labels.npy",
+        "train_source_indices.npy",
+        "train_severity_ids.npy",
+    )
     for client_id in range(4):
         fit, audit = split[f"client_{client_id}_fit"], split[f"client_{client_id}_audit"]
         if np.intersect1d(fit, audit).size:
@@ -46,6 +51,13 @@ def main() -> None:
             for name, record in manifest["conditions"][condition]["clients"][str(client_id)].items():
                 if name.endswith(".npy"):
                     require_file(root / name, record)
+        gamma00_root = package_root / "data" / "gamma00" / f"client_{client_id}"
+        gamma09_root = package_root / "data" / "gamma09" / f"client_{client_id}"
+        for name in paired_fields:
+            left = np.load(gamma00_root / name, allow_pickle=False)
+            right = np.load(gamma09_root / name, allow_pickle=False)
+            if not np.array_equal(left, right):
+                raise ValueError(f"gamma pairing mismatch for client {client_id}: {name}")
     dsa_root = package_root / "evaluation/paired_dsa"
     dsa_record = manifest["evaluation"]["paired_dsa"]
     arrays = {}
@@ -68,6 +80,10 @@ def main() -> None:
     counts = np.bincount(labels, minlength=100)
     if not np.all(counts == counts[0]):
         raise ValueError("Evaluation sources are not class-balanced")
+    public_record = manifest["public"]
+    require_file(package_root / "public" / public_record["file"], public_record)
+    for client_id, record in manifest["initialization"]["models"].items():
+        require_file(package_root / "initial_states" / f"client_{client_id}.pt", record)
     pew = None
     if not args.skip_pew:
         pew_manifest = package_root / "pew_standard/manifest.json"
@@ -75,6 +91,17 @@ def main() -> None:
         pew = json.loads(pew_manifest.read_text(encoding="utf-8"))
         checkpoint = package_root / "pew_standard/pew_standard.pt"
         require_file(checkpoint, {"bytes": pew["checkpoint_bytes"], "sha256": pew["checkpoint_sha256"]})
+        for condition in ("gamma00", "gamma09"):
+            annotation_manifest_path = package_root / "pew_standard" / "annotations" / condition / "manifest.json"
+            require_file(annotation_manifest_path)
+            annotation_manifest = json.loads(annotation_manifest_path.read_text(encoding="utf-8"))
+            if annotation_manifest.get("pew_checkpoint_sha256") != pew["checkpoint_sha256"]:
+                raise ValueError(f"PEW annotation/checkpoint mismatch for {condition}")
+            for client_id, record in annotation_manifest["clients"].items():
+                require_file(
+                    package_root / "pew_standard" / "annotations" / condition / f"client_{client_id}.npz",
+                    record,
+                )
 
     trace_report = None
     if args.outputs_root is not None:
@@ -95,6 +122,9 @@ def main() -> None:
         "public_dataset": "cifar10",
         "dsa_sources": int(sources.size),
         "dsa_operators": len(operators),
+        "gamma_conditions_semantically_paired": True,
+        "public_archive_audited": True,
+        "initial_states_audited": True,
         "pew_audited": not args.skip_pew,
         "pew_checkpoint_sha256": None if pew is None else pew["checkpoint_sha256"],
         "pew_reused_from": None if pew is None else pew.get("reused_from"),

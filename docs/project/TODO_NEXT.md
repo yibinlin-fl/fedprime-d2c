@@ -1,5 +1,23 @@
 # TODO Next
 
+## Current - post-moderate submission closure - 2026-10-25
+
+1. Run the already prepared local-first seeds 1/2 only after explicit user launch approval.
+2. Keep the audited CIFAR-100 task benchmark-first; do not start its 40-round Formal directly.
+3. Before any taxonomy experiment, choose one claim: cheap checkpoint-reuse compound-evaluation
+   coverage stress, or the existing training-time leave-one-operator-out stress. Do not conflate them.
+4. Redesign the PEW+BER execution figure first; replace the local-first seed-0 figure only after
+   seeds 1/2 return. Five main-paper figures are sufficient.
+5. Back up raw Formal/recovery archives outside the repository before any local cleanup.
+
+Implementation/status references:
+
+```text
+docs/research/status/CLE_CIFAR100_SECOND_DATASET_AUDIT_2026_10_25_ZH.md
+docs/research/status/CLE_HFL_FIGURE_STYLE_AUDIT_RAHFL_2026_10_25_ZH.md
+docs/research/status/CLE_HFL_RESULT_PRESERVATION_AUDIT_2026_10_25_ZH.md
+```
+
 ## Completed - gamma=0.6 zero-training DSA dose response - 2026-10-02
 
 - 历史gamma0.6四客户端checkpoint已恢复并完成1000-source paired审计；无需重训。

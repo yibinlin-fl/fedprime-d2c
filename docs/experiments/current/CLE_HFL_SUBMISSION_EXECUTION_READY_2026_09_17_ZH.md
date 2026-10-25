@@ -112,6 +112,17 @@ download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\m2_l
 
 ## 5. M3：第二private dataset（CIFAR-100）
 
+2026-10-25兼容/失败恢复审计已完成。旧入口存在“分析失败会丢失已训练checkpoint”的风险，现已
+改为：精确输入哈希校验 -> PEW前数据预审计 -> 四臂训练 -> 立即上传checkpoint recovery包 ->
+输出配对审计与DSA分析 -> 最终轻量包。聚焦测试`15/15`通过。详细审计：
+
+```text
+docs/research/status/CLE_CIFAR100_SECOND_DATASET_AUDIT_2026_10_25_ZH.md
+```
+
+这仍不构成运行授权。第一次只允许seed-0 benchmark；必须先看PEW、四臂训练和分析的分段耗时，
+再决定Formal及三seed安排。
+
 回答：CLE directional shortcut、paired DSA和PEW+BER缓解是否只存在于CIFAR-10 private task。
 新协议包含gamma=0 ERM零基准、gamma=.9 ERM、CVaR-DRO和PEW+BER，三组matched training seeds。
 为避免CIFAR-100公共/私有source重叠，PEW不复用主实验中由CIFAR-100训练的checkpoint；OpenI
@@ -177,6 +188,12 @@ download folder: C:\Users\asus\Desktop\FedPRIME-D2C\outputs\openi_downloads\s1_t
 
 无论成功或失败都只确定一个预注册operator的适用边界，不证明未知、复合、连续corruption的
 开放世界鲁棒性。
+
+这里的S1不是“拿标准PEW checkpoint只做一次评估”。它会重新训练一个明确没见过
+`motion_blur`的leave-one-operator-out PEW，再在private CLE仍含该operator时训练三臂，回答
+**训练阶段taxonomy漏项是否破坏BER**。若只复用现有checkpoint并在复合corruption上评估，那是
+更便宜的evaluation-only coverage stress，只能回答部署时输入偏离taxonomy后预测和DSA如何退化，
+不能证明错误PEW分组对BER训练的因果影响。两者不得混写。
 
 ## 7. S2-v2：protocol-matched HFL context table
 

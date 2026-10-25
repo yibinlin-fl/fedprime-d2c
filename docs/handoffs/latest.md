@@ -2940,3 +2940,20 @@ Review and freeze the KT-pFL/FCCL four-arm protocol and its per-base Formal gate
 authorizes the next platform step, run benchmark only to estimate runtime and cost. Do not treat
 smoke/benchmark as evidence and do not start Formal, multi-seed, map2, or 40-round work without
 separate explicit authorization.
+## 2026-10-25 CIFAR-100入口恢复审计、结果留存与五图审计
+
+已核实CLE-HFL核心正式证据的六个稳定deliverable目录均存在；解析报告/表格受Git保护，但
+`outputs/`原始OpenI包仍需独立备份。RAHFL视觉对照表明五张正文图数量足够，当前真正缺口是
+PEW+BER执行机制图；protocol map宜移附录，local-first图待seeds 1/2后改为seed-level证据图。
+
+CIFAR-100第二private task仍是strong机制复现（alpha=.5、rho=1、gamma=0/.9），不是moderate
+效用表。旧入口已补精确输入哈希、PEW前预审计、semantic pairing/public/initial-state/annotation
+审计和per-seed checkpoint recovery-before-analysis；15/15聚焦测试与脚本编译通过。尚未跑新
+benchmark/Formal。S1 training-time taxonomy stress会重训排除motion_blur的PEW；复用现有checkpoint
+只能做更弱的evaluation-only compound coverage stress。详见：
+
+```text
+docs/research/status/CLE_HFL_RESULT_PRESERVATION_AUDIT_2026_10_25_ZH.md
+docs/research/status/CLE_HFL_FIGURE_STYLE_AUDIT_RAHFL_2026_10_25_ZH.md
+docs/research/status/CLE_CIFAR100_SECOND_DATASET_AUDIT_2026_10_25_ZH.md
+```

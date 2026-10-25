@@ -2,6 +2,19 @@
 
 Updated: 2026-10-25
 
+## 结果留存、科研图与CIFAR-100审计
+
+核心正式结果目录已逐项核实存在；同时明确`outputs/`原始包不受Git保护，提交前仍需独立备份。
+RAHFL视觉对照审计确认正文五图数量足够，但当前缺少PEW+BER执行图，protocol map宜移至附录。
+CIFAR-100第二private task已完成输入、配对、信息边界和OpenI失败恢复审计，聚焦测试`15/15`
+通过；尚未运行新benchmark，也不构成付费实验授权：
+
+```text
+docs/research/status/CLE_HFL_RESULT_PRESERVATION_AUDIT_2026_10_25_ZH.md
+docs/research/status/CLE_HFL_FIGURE_STYLE_AUDIT_RAHFL_2026_10_25_ZH.md
+docs/research/status/CLE_CIFAR100_SECOND_DATASET_AUDIT_2026_10_25_ZH.md
+```
+
 ## Moderate Axis II与剂量响应Formal（已完成）
 
 2026-10-25四个seed-0、40轮x64单臂Formal已通过产物、配置、checkpoint、pairing和独立复算审计。

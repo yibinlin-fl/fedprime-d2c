@@ -11,6 +11,9 @@ moderate Axis II:                     5/8 rows complete
 local-first seed 0:                   complete (12 rounds x 16 batches)
 local-first seeds 1/2 implementation: ready; tests/smoke pass; not pushed/run
 next paid entry:                      scripts/openi_cle_v2_local_first_multiseed_entry.py
+CIFAR-100 second-task entry:          audited/repaired; 15/15 tests; benchmark not run
+paper figures:                        five is enough; PEW+BER pipeline figure still missing
+result preservation:                  core deliverables verified; raw outputs need external backup
 ```
 
 The previous full-fit M2 attempt is superseded for cost planning. The valid seed-0 evidence and the new

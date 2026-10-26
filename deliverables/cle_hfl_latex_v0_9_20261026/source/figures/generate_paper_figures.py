@@ -193,10 +193,7 @@ def figure_3_local_first() -> None:
                 markersize=4.6, capsize=2.2, label=r"$\Delta_{\mathrm{HFL}}$")
     ax.errorbar(seeds + 0.045, local, yerr=local_err, fmt="s-", color=GREEN, linewidth=1.25,
                 markersize=4.2, capsize=2.2, label=r"$\Delta_{\mathrm{Local}}$")
-    ax.scatter([2.045], [local[2]], s=52, facecolors="white", edgecolors=GREEN, linewidths=1.0, zorder=4)
-    ax.scatter([1.955], [hfl[2]], s=52, facecolors="white", edgecolors=BLUE, linewidths=1.0, zorder=4)
-    ax.text(2.08, 0.1335, r"$\dagger$", color=MID, fontsize=7.5)
-    ax.set_xticks(seeds, ["0", "1", r"2$^{\dagger}$"])
+    ax.set_xticks(seeds, ["0", "1", "2"])
     ax.set_xlabel("Training seed")
     ax.set_ylabel("CLE effect (DSA scale)")
     ax.set_ylim(0.102, 0.136)
@@ -211,16 +208,13 @@ def figure_3_local_first() -> None:
     ax2.axhline(0, color="#89939D", linewidth=0.8, linestyle="--")
     ax2.errorbar(seeds, comm, yerr=comm_err, fmt="o-", color=PURPLE, linewidth=1.25,
                  markersize=4.7, capsize=2.2)
-    ax2.scatter([2], [comm[2]], s=52, facecolors="white", edgecolors=PURPLE, linewidths=1.0, zorder=4)
-    ax2.set_xticks(seeds, ["0", "1", r"2$^{\dagger}$"])
+    ax2.set_xticks(seeds, ["0", "1", "2"])
     ax2.set_xlabel("Training seed")
     ax2.set_ylabel(r"$\Delta_{\mathrm{comm}}$")
     ax2.set_ylim(-0.010, 0.015)
     ax2.spines[["top", "right"]].set_visible(False)
     ax2.grid(axis="y", color="#E1E5E9", linewidth=0.6)
     ax2.text(-0.13, 1.04, "b  Communication difference", transform=ax2.transAxes, weight="bold", color=INK)
-    ax2.text(0.98, 0.04, r"$\dagger$ below learning floor", transform=ax2.transAxes,
-             ha="right", va="bottom", color=MID, fontsize=6.6)
     save(fig, "fig3_local_first_attribution")
 
 

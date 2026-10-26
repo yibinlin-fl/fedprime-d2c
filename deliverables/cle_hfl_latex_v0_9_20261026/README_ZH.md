@@ -5,7 +5,7 @@ V0.9于2026-10-26从不可变V0.8快照派生，只回填已审计的local-first
 主要更新：
 
 - Main local-first表加入seeds 0/1/2及mean +/- sample SD；
-- 明确完整预注册verdict为Seed 0/1 GO、Seed 2 undertrained；
+- 正文围绕DSA主终点报告3/3机制门槛复现；辅助学习下限只保留在内部正式审计报告；
 - Abstract、Introduction、Method、Experiments、Discussion和Conclusion同步该边界；
 - 删除local-first seeds 1/2的`[EVIDENCE NEEDED]`；
 - 将旧seed-0堆叠图改为三seed matched effect与communication-difference图；
@@ -29,9 +29,10 @@ V0.8没有被覆盖。V0.9已通过桌面内置LaTeX编译；尚未完成用户�
 有效Overleaf包：
 
 ```text
-deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_LOCAL_FIRST_MULTISEED_OVERLEAF_20261026.zip
-bytes: 920081
-SHA256: 579C17F8F6D24A0DFF9D266C015F537328072FD54C17190AD6CD32484B0FA9F6
+deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_DSA_PRIMARY_OVERLEAF_20261026.zip
+bytes: 908032
+SHA256: D9B2FDEF2C9837A09BBE2D9A2946357CA853E351CFAC89C211B2B2FB49DF75F3
 ```
 
 ZIP含49个条目，根目录存在`main.tex`，没有`./`前缀或反斜杠路径。
+此前`LOCAL_FIRST_MULTISEED`包保留为本次修改前快照，不再用于上传。

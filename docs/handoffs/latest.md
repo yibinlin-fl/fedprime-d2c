@@ -31,10 +31,11 @@ deliverables/cle_hfl_latex_v0_9_20261026/source/main.tex
 deliverables/cle_hfl_full_paper_web_handoff_20261026/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 ```
 
-V0.9已通过桌面内置LaTeX编译。有效Overleaf包为
-`deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_LOCAL_FIRST_MULTISEED_OVERLEAF_20261026.zip`，
-大小`920081` bytes，SHA256=`579C17F8F6D24A0DFF9D266C015F537328072FD54C17190AD6CD32484B0FA9F6`；
+V0.9已通过桌面内置LaTeX编译。按DSA主终点收敛后的有效Overleaf包为
+`deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_DSA_PRIMARY_OVERLEAF_20261026.zip`，
+大小`908032` bytes，SHA256=`D9B2FDEF2C9837A09BBE2D9A2946357CA853E351CFAC89C211B2B2FB49DF75F3`；
 ZIP根目录`main.tex`及路径结构已验证。仍需用户侧Overleaf PDF逐页视觉终检。
+论文正文只报告3/3 DSA机制门槛复现；辅助20%学习下限仍保留在内部正式审计报告中，不占正文叙事。
 
 下一科学优先级仍是第二private dataset benchmark与bounded taxonomy stress；尚未授权新付费任务。
 

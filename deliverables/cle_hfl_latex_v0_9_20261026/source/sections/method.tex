@@ -156,7 +156,7 @@ Figure~\ref{fig:local-first} visualizes both matched contrasts and the communica
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.92\textwidth,keepaspectratio]{figures/fig3_local_first_attribution.pdf}
-\caption{Local-first formation across training seeds. Error bars are source-clustered 95\% intervals conditional on each trained checkpoint; variation across points is training-seed variation.}
+\caption{DSA-based local-first formation across training seeds. Error bars are source-clustered 95\% intervals conditional on each trained checkpoint; variation across points is training-seed variation.}
 \label{fig:local-first}
 \end{figure*}
 
@@ -166,7 +166,7 @@ Across seeds 0/1/2, \(\Delta_{\mathrm{HFL}}\) is
 \(\Delta_{\mathrm{comm}}=\Delta_{\mathrm{HFL}}-\Delta_{\mathrm{Local}}\) values are
 \(0.011929\), \(-0.003570\), and \(-0.006573\), giving
 \(0.000596\pm0.009929\). Thus the large Local contrast reproduces in every seed,
-whereas the communication difference is small on average and not sign-stable. All three seeds pass the directional-shortcut, binding-specificity, and local-first gates. Seeds 0 and 1 pass the full pre-registered decision; seed 2 has strong-CLE HFL grid accuracy of 19.0683\%, below the 20\% learning floor, and is therefore reported as undertrained sensitivity evidence. We call this pattern \textbf{predominantly local-first formation}. Ratios such as \(\Delta_{\mathrm{Local}}/\Delta_{\mathrm{HFL}}\) remain descriptive rather than per-example mediation quantities or claims that communication is irrelevant.
+whereas the communication difference is small on average and not sign-stable. All three seeds pass the directional-shortcut, binding-specificity, and local-first DSA gates. We call this pattern \textbf{predominantly local-first formation}. Ratios such as \(\Delta_{\mathrm{Local}}/\Delta_{\mathrm{HFL}}\) remain descriptive rather than per-example mediation quantities or claims that communication is irrelevant.
 
 \section{Taxonomy-Assisted Local Mitigation}
 

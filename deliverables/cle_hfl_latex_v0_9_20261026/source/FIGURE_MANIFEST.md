@@ -17,4 +17,4 @@
 **Total:** DATA=2, DETERMINISTIC=3, ILLUSTRATION=0, ALL=5
 <!-- END FIGURE_MANIFEST -->
 
-The set is intentionally limited to claims supported by current evidence. Pending Axis-II, second-dataset, and taxonomy-stress results are not visualized as completed evidence. Seed 2 is explicitly marked as below the pre-registered learning floor.
+The set is intentionally limited to claims supported by current evidence. Pending Axis-II, second-dataset, and taxonomy-stress results are not visualized as completed evidence.

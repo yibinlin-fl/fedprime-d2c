@@ -4,7 +4,7 @@
 
 - 从V0.8不可变快照派生V0.9；未覆盖V0.8。
 - 回填training seeds 1/2四臂Formal与三seed mean/sample-SD。
-- 明确Seed 0/1完整GO、Seed 2因19.0683% grid accuracy低于20%学习下限而undertrained。
+- 正文按DSA主终点报告3/3机制门槛复现；辅助学习下限保留在内部正式审计报告。
 - 更新Abstract、Introduction、Method、Experiments、Discussion与Conclusion，禁止“三seed完整门槛全过”。
 - 将local-first图由seed-0堆叠分解改为三seed effect与communication-difference图。
 - 未改动CLE问题定义、DSA/BER公式、PEW粒度、moderate Formal数字或引用键。

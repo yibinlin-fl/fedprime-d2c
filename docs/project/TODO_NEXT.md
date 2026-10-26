@@ -1,6 +1,25 @@
 # TODO Next
 
-## Current - post-moderate submission closure - 2026-10-25
+## Current - post-local-first multiseed closure - 2026-10-26
+
+1. Do not rerun or tune the local-first factorial. Seeds 0/1/2 are complete; retain Seed 2 as the frozen
+   undertrained sensitivity result.
+2. Compile and visually inspect V0.9, then generate a verified Overleaf package. Do not overwrite V0.8.
+3. The audited CIFAR-100 task remains benchmark-first. Run seed-0 benchmark only after explicit user
+   authorization; do not start its 40-round Formal directly.
+4. Freeze a bounded taxonomy-stress claim before implementation. Prefer the low-cost evaluation-only
+   coverage audit unless a training-time leave-one-operator-out claim is explicitly needed.
+5. Back up raw Seed 1/2 Formal and recovery archives outside the repository.
+
+Current result/paper references:
+
+```text
+deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md
+deliverables/cle_hfl_latex_v0_9_20261026/source/main.tex
+deliverables/cle_hfl_full_paper_web_handoff_20261026/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+## Previous - post-moderate submission closure - 2026-10-25
 
 1. User has requested the launch settings for local-first seeds 1/2. Run them as two separate OpenI Formal
    tasks from pushed commit `a3b7841`; wait for the user to confirm actual launch before marking running.

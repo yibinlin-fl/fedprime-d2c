@@ -1,6 +1,23 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-25
+Updated: 2026-10-26
+
+## Local-first三训练种子Formal与V0.9
+
+固定CLE-v2四臂factorial已完成training seeds 0/1/2。方向性、binding-specificity和local-first
+机制门槛在3/3种子中复现；完整预注册verdict为2 GO、1 undertrained。V0.9从V0.8派生并如实
+回填这一边界：
+
+```text
+deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv
+deliverables/cle_v2_local_first_multiseed_20261026/ARTIFACT_MANIFEST.csv
+deliverables/cle_hfl_latex_v0_9_20261026/source/main.tex
+deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_LOCAL_FIRST_MULTISEED_OVERLEAF_20261026.zip
+deliverables/cle_hfl_full_paper_web_handoff_20261026/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+V0.8保持为moderate Formal回填前一快照，不再作为当前写作入口。
 
 ## 结果留存、科研图与CIFAR-100审计
 

@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{CLE formation and local-versus-communication attribution across training seeds. $\Delta_{\mathrm{comm}}=\Delta_{\mathrm{HFL}}-\Delta_{\mathrm{Local}}$. The ratio is descriptive rather than a causal mediation proportion.}
+\label{tab:local-first}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrl}
+\toprule
+Seed & $\Delta_{\mathrm{HFL}}$ & $\Delta_{\mathrm{Local}}$ & $\Delta_{\mathrm{comm}}$ & Local/HFL (\%) & Min. grid Acc. (\%) & Mechanism gates & Full verdict \\
+\midrule
+0 & 0.119889 & 0.107960 & 0.011929 & 90.05 & 21.4367 & 3/3 pass & GO \\
+1 & 0.123717 & 0.127287 & -0.003570 & 102.89 & 21.2683 & 3/3 pass & GO \\
+2 & 0.124638 & 0.131210 & -0.006573 & 105.27 & 19.0683 & 3/3 pass & Undertrained$^{\dagger}$ \\
+\midrule
+Mean $\pm$ SD & $0.122748\pm0.002518$ & $0.122152\pm0.012446$ & $0.000596\pm0.009929$ & $99.40\pm8.19$ & -- & 3/3 seeds & 2 GO; 1 undertrained \\
+\bottomrule
+\end{tabular}%
+}
+\par\smallskip
+\footnotesize $^{\dagger}$Seed 2 passes all directional, binding-specificity, and local-first gates, but its strong-CLE HFL grid accuracy is 19.0683\%, below the pre-registered 20\% learning floor. It is therefore retained as an undertrained sensitivity result rather than counted as a full GO.
+\end{table*}

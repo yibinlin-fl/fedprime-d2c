@@ -1,0 +1,26 @@
+\ifdraftskeleton
+\begin{table*}[t]
+\centering
+\small
+\caption{Protocol-matched HFL mechanism-family context on the moderate held-out-map2 protocol ($\alpha=1.0$, private corruption rate $0.5$, and $\gamma=0.9$; Axis II). Five rows are completed seed-0 Formal results; remaining cells are pending.}
+\label{tab:hfl-context}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllrrrrr}
+\toprule
+Method & Model heterogeneity & Local robustness & Communication & DSA $\downarrow$ & Grid Acc. $\uparrow$ & Clean Acc. $\uparrow$ & Corrupt Acc. $\uparrow$ & Mixed Acc. $\uparrow$ \\
+\midrule
+Local/ERM & yes & none & none & 0.168374 & 39.830 & 51.425 & 39.508 & 45.467 \\
+FedMD adapter & yes & none & public-logit exchange & 0.167835 & 38.732 & 50.400 & 38.378 & 44.389 \\
+FedProto adapter & yes & none & class prototypes & 0.160788 & 39.250 & 50.800 & 38.937 & 44.868 \\
+FedDF-fidelity & yes & none & public distillation & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+AugHFL-fidelity & yes & AugMix/JSD & heterogeneous collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+RAHFL anchor & yes & AugMix/JSD/DCL & asymmetric collaboration & \pendingcell & \pendingcell & \pendingcell & \pendingcell & \pendingcell \\
+AsymHFL--ERM & yes & none & strict asymmetric collaboration & 0.184514 & 37.193 & 49.700 & 37.008 & 43.354 \\
+AsymHFL+PEW+BER & yes & class-conditional environment balancing & strict asymmetric collaboration & 0.090024 & 38.160 & 45.350 & 37.773 & 41.562 \\
+\bottomrule
+\end{tabular}%
+}
+\par\smallskip
+The eight-row main table was fixed before results were observed. Existing strong-stress Local/FedMD and all smoke/benchmark outputs are engineering records only and are excluded. In the matched AsymHFL pair, PEW+BER reduces DSA but does not preserve clean or mixed utility; no complete ranking claim is made while three rows remain pending.
+\end{table*}
+\fi

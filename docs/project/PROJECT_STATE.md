@@ -1,6 +1,23 @@
 # FedPRIME-D2C Project State
 
-Last updated: 2026-10-25
+Last updated: 2026-10-26
+
+## Current Paper/Experiment State - 2026-10-26
+
+```text
+V0.9 local-first multiseed snapshot: created from immutable V0.8
+local-first seeds 0/1/2:              complete under matched 12r x 16b protocol
+mechanism gates:                      pass for 3/3 seeds
+full preregistered verdict:           seed0/1 GO; seed2 undertrained
+Delta_HFL mean +/- SD:                0.122748 +/- 0.002518
+Delta_Local mean +/- SD:              0.122152 +/- 0.012446
+Delta_comm mean +/- SD:               0.000596 +/- 0.009929
+next paid priority:                   CIFAR-100 benchmark only; no Formal authorization
+```
+
+The local-first claim is now supported across three training seeds at the mechanism-gate level. Seed 2
+must remain visible because its strong-CLE HFL grid accuracy is 19.0683%, below the frozen 20% learning
+floor. The correct statement is two full GO decisions plus one undertrained sensitivity result.
 
 ## Current Paper/Experiment State - 2026-10-25
 

@@ -1,6 +1,42 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-25
+Updated: 2026-10-26
+
+## 2026-10-26 Local-first三训练种子完成并回填V0.9
+
+CLE-v2固定`seed0_split0`、12轮x16 local batches的HFL/Local × gamma0/.9 factorial现已完成
+training seeds 0/1/2。三个seed的`Delta_HFL`为`0.119889/0.123717/0.124638`，
+`Delta_Local`为`0.107960/0.127287/0.131210`，`Delta_comm`为
+`0.011929/-0.003570/-0.006573`。均值加样本标准差分别为
+`0.122748+/-0.002518`、`0.122152+/-0.012446`、`0.000596+/-0.009929`。
+
+方向性shortcut、binding-specificity与local-first机制门槛在3/3 seed中复现；Seed 0/1通过完整
+预注册门槛，Seed 2的strong-CLE HFL grid accuracy为`19.0683%`，低于20%学习下限，因此完整
+verdict为`INCONCLUSIVE_UNDERTRAINED`。论文必须写成“2 GO、1 undertrained sensitivity”，
+不得声称三seed完整门槛全过，也不得丢弃Seed 2。
+
+Seed 1/2实测总时长分别约8.750/8.778 V100小时，合计约105.17积分，显著超过原预算。正式汇总：
+
+```text
+deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv
+deliverables/cle_v2_local_first_multiseed_20261026/ARTIFACT_MANIFEST.csv
+```
+
+已从V0.8不可变快照派生V0.9，回填三seed表、Abstract/Introduction/Method/Discussion/Conclusion，
+并将seed-0堆叠图替换为三seed effect/communication图。当前写作入口：
+
+```text
+deliverables/cle_hfl_latex_v0_9_20261026/source/main.tex
+deliverables/cle_hfl_full_paper_web_handoff_20261026/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
+
+V0.9已通过桌面内置LaTeX编译。有效Overleaf包为
+`deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_LOCAL_FIRST_MULTISEED_OVERLEAF_20261026.zip`，
+大小`920081` bytes，SHA256=`579C17F8F6D24A0DFF9D266C015F537328072FD54C17190AD6CD32484B0FA9F6`；
+ZIP根目录`main.tex`及路径结构已验证。仍需用户侧Overleaf PDF逐页视觉终检。
+
+下一科学优先级仍是第二private dataset benchmark与bounded taxonomy stress；尚未授权新付费任务。
 
 ## 2026-10-25 Moderate Axis II与剂量响应Formal完成
 

@@ -1,7 +1,25 @@
 # CLE-v2 Local-first Training-seed 1/2 OpenI指南
 
-状态：2026-10-25实现、聚焦测试与本地四臂真实smoke通过；入口已随`a3b7841`推送至
-`origin/main`，尚未确认OpenI任务已启动。
+状态：2026-10-26 training seeds 1/2 Formal均已完成、下载并审计。Seed 0/1为完整GO；Seed 2
+通过全部机制门槛，但因strong-CLE HFL grid accuracy `19.0683% < 20%`被判为undertrained。
+不得重跑或调门槛。
+
+正式汇总：
+
+```text
+deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md
+deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv
+deliverables/cle_v2_local_first_multiseed_20261026/ARTIFACT_MANIFEST.csv
+```
+
+三seed效应为：
+
+```text
+seed   Delta_HFL  Delta_Local  Delta_comm  full verdict
+0      0.119889   0.107960     0.011929    GO
+1      0.123717   0.127287    -0.003570    GO
+2      0.124638   0.131210    -0.006573    INCONCLUSIVE_UNDERTRAINED
+```
 
 ## 1. 科学问题
 

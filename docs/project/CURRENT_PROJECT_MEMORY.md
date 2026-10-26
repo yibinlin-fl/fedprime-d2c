@@ -1,6 +1,22 @@
 # FedPRIME-D2C / PRAC-HFL Current Project Memory
 
-Updated: 2026-10-25
+Updated: 2026-10-26
+
+## Local-first Multi-seed Formal Complete - 2026-10-26
+
+固定CLE-v2 `seed0_split0`、12 rounds x 16 local batches/client/round的HFL/Local × gamma0/.9
+factorial已经完成training seeds 0/1/2。三个seed的`Delta_HFL`为
+`0.119889/0.123717/0.124638`，`Delta_Local`为`0.107960/0.127287/0.131210`，
+`Delta_comm`为`0.011929/-0.003570/-0.006573`。mean +/- sample SD分别为
+`0.122748+/-0.002518`、`0.122152+/-0.012446`、`0.000596+/-0.009929`。
+
+方向性、binding-specificity和local-first机制门槛3/3复现。Seed 0/1完整GO；Seed 2的
+strong-CLE HFL grid accuracy为`19.0683%`，低于20%学习下限，因此完整verdict为
+`INCONCLUSIVE_UNDERTRAINED`。必须保留该seed并写成“2 GO、1 undertrained sensitivity”。
+
+Seed 1/2分别耗时约8.750/8.778 V100小时，合计约105.17积分，显著高于旧预算。正式报告：
+`deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md`。论文已派生V0.9并回填，
+V0.8保持不变。
 
 ## Local-first Multi-seed Entry Ready - 2026-10-25
 

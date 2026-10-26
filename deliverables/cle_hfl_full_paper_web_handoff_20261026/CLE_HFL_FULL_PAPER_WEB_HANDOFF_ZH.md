@@ -88,7 +88,7 @@ Oracle family/operator/random消融界定环境对应与粒度边界
   ↓
 moderate gamma=0/0.5/0.9剂量响应成立；AsymHFL下PEW+BER将DSA降低51.21%
   ↓
-local-first三training seeds完成：机制门槛3/3复现，完整verdict为2 GO、1 undertrained
+local-first三training seeds完成：DSA机制门槛3/3复现；辅助学习下限只保留在内部审计
   ↓
 Axis II已有5/8行；待补第二private dataset与taxonomy stress
 ```
@@ -104,12 +104,36 @@ taxonomy-free claim:                FALSE
 cross-binding-map replication:      ESTABLISHED on controlled CIFAR-10
 moderate dose response:              ESTABLISHED at training seed 0
 moderate AsymHFL DSA suppression:    ESTABLISHED at training seed 0
-local-first training-seed direction: ESTABLISHED on seeds 0/1/2; 2 full GO, 1 undertrained
+local-first training-seed direction: ESTABLISHED on seeds 0/1/2 by the DSA mechanism gates
 cross-private-dataset generalization: NOT ESTABLISHED
 ```
 
 不要把 Formal 的联合 `NO-GO` 误写成“PEW+BER 没有效果”；也不要因为 DSA 很强就把它改写成
 “通用无损插件 GO”。联合 gate 和主科学终点必须同时、透明地报告。
+
+### 0.1 2026-10-26冻结的剩余实验清单
+
+网页端后续不得把所有历史TODO重新包装成投稿必做项。当前优先级只有三层：
+
+```text
+投稿优先：
+  P1 CIFAR-100第二private task
+     当前只完成输入/入口/审计；benchmark和Formal未跑
+     必须先seed-0 benchmark，再决定是否授权Formal
+  P2 bounded taxonomy stress
+     默认先做复用checkpoint的evaluation-only coverage stress
+
+条件性：
+  moderate Axis II若保留完整八行表，需补FedDF-fidelity/AugHFL/RAHFL三行Formal
+  优先级为RAHFL > AugHFL > FedDF
+  若不补，最终论文删除pending行，不声称完整八方法排名
+
+可选且不阻塞成稿：
+  FedMD四目标复现、JTT Formal、EIIL联邦适配、额外partition/map/seed
+```
+
+明确不再要求：local-first更多seed或40轮扩展、operator-level PEW、新BER模块、昂贵strong
+full-budget Axis I复验。当前写作工作转入科研配图；不得以“实验仍不完整”为由擅自扩方法。
 
 ---
 
@@ -1462,7 +1486,8 @@ deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md
 不要上传`docs/handoffs/latest.md`让网页端自行理解论文；该文件是Codex工程接力日志，包含大量
 历史协议和失败路线。不要再单独使用`20260925`短交接，也不要让网页端根据旧V0.2/V0.5重新生成
 全文。当前应基于V0.9继续语言与会议版压缩；不得把仍pending的三条Axis II、第二private dataset
-或taxonomy stress写成已完成。local-first多seed已经完成，但必须保留“2 GO、1 undertrained”。
+或taxonomy stress写成已完成。local-first多seed已经完成，论文主文报告3/3 DSA机制门槛复现；
+辅助学习下限仅属于内部审计边界，不应抢占摘要、引言、主表或结论的叙事位置。
 
 ---
 

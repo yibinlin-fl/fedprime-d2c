@@ -11,6 +11,31 @@
    coverage audit unless a training-time leave-one-operator-out claim is explicitly needed.
 5. Back up raw Seed 1/2 Formal and recovery archives outside the repository.
 
+Frozen remaining-experiment tiers:
+
+```text
+submission priority:
+  1. CIFAR-100 second-private-task seed-0 benchmark, then decide Formal
+  2. bounded taxonomy stress, preferably evaluation-only first
+
+conditional on retaining the full eight-row Axis-II table:
+  3. RAHFL moderate Formal
+  4. AugHFL moderate Formal
+  5. FedDF-fidelity moderate Formal
+
+optional / non-blocking:
+  FedMD four-objective replication
+  JTT Formal (only for a direct empirical superiority claim)
+  EIIL federated adaptation
+  extra partitions, bindings, seeds, or datasets
+
+do not run:
+  additional local-first seeds or a 40-round local-first extension
+  operator-level PEW
+  a new BER module
+  abandoned strong full-budget Axis-I rerun
+```
+
 Current result/paper references:
 
 ```text

@@ -18,6 +18,20 @@ Seed 1/2分别耗时约8.750/8.778 V100小时，合计约105.17积分，显著�
 `deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md`。论文已派生V0.9并回填，
 V0.8保持不变。
 
+## Remaining Experiment Queue Frozen - 2026-10-26
+
+用户准备转入论文科研配图。剩余实验不再混成“全部都要跑”：
+
+1. 投稿优先：CIFAR-100第二private task，先seed-0 benchmark，再根据成本与学习水平决定Formal。
+2. 投稿优先：bounded taxonomy stress，默认先做复用checkpoint的evaluation-only coverage审计。
+3. 条件性：moderate Axis II若保留完整八行表，则补RAHFL、AugHFL、FedDF-fidelity；优先级依次
+   为RAHFL、AugHFL、FedDF。若不跑，最终正文必须删除pending行，不能保留空表宣称完整排名。
+4. 可选：FedMD四目标、JTT Formal、EIIL联邦适配、更多partition/map/seed。没有对应正文强主张
+   时不阻塞成稿。
+
+local-first更多seed或40轮扩展、operator-level PEW、新BER模块和昂贵strong full-budget Axis I
+复验均不再列为下一步。当前主线是配图，之后按上述顺序恢复实验。
+
 ## Local-first Multi-seed Entry Ready - 2026-10-25
 
 已确认2026-09-10的seed-0 local-first Formal本身就是`12 rounds x 16 local batches/client/round`

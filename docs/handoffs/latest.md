@@ -39,6 +39,29 @@ ZIP根目录`main.tex`及路径结构已验证。仍需用户侧Overleaf PDF逐�
 
 下一科学优先级仍是第二private dataset benchmark与bounded taxonomy stress；尚未授权新付费任务。
 
+### 冻结的剩余实验优先级
+
+```text
+P1 投稿优先：CIFAR-100第二private task
+   当前：输入/入口/审计完成，benchmark与Formal未跑
+   顺序：seed-0 benchmark -> 审计成本/学习水平 -> 用户授权后才可Formal
+
+P2 投稿优先：bounded taxonomy stress
+   当前：未冻结最终协议、未运行
+   默认：先做checkpoint复用的evaluation-only coverage stress，不直接重训
+
+P3 条件性：moderate Axis II剩余3行
+   FedDF-fidelity / AugHFL / RAHFL均未完成moderate Formal
+   只有最终正文保留完整8行表时才必须补；否则删除pending行
+   算力优先级：RAHFL > AugHFL > FedDF
+
+P4 可选：FedMD四目标复现、JTT Formal、EIIL联邦适配、更多partition/map/seed
+   不阻塞当前成稿；只有正文作对应直接胜负主张时才升级
+```
+
+明确不再运行：local-first更多seed/40轮扩展、operator-level PEW、新BER模块、昂贵strong
+full-budget Axis I复验。用户当前转入科研配图阶段，不应因画图而重启方法扩展。
+
 ## 2026-10-25 Moderate Axis II与剂量响应Formal完成
 
 四个OpenI单臂Formal已完整回传并通过包、配置、40轮预算、四客户端checkpoint、batch pairing、

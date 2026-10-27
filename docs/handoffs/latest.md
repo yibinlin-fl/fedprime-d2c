@@ -1,6 +1,26 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-26
+Updated: 2026-10-27
+
+## 2026-10-27 论文协议命名收敛为机制协议与主评价协议
+
+从V0.9不可变快照派生V0.10。论文可见叙事不再反复使用`moderate protocol`，统一为：
+
+```text
+mechanism protocol        alpha=.5, rho=1, gamma=.9
+                          用于问题存在、paired DSA、local-first与Axis I机制比较
+main evaluation protocol  alpha=1, rho=.5, gamma={0,.5,.9}
+                          用于剂量响应、DSA--utility权衡与Axis II领域比较
+```
+
+两者参数差异只在实验设置中集中说明；后文使用固定简称。主评价协议不是为了事后“降低难度”，
+而是通过固定clean--corrupted mixture同时测量shortcut与任务效用。历史脚本、结果目录和归档文件名
+中的`strong`/`moderate`工程标识保持不变。当前论文入口与网页端交接为：
+
+```text
+deliverables/cle_hfl_latex_v0_10_20261027/source/main.tex
+deliverables/cle_hfl_full_paper_web_handoff_20261027/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+```
 
 ## 2026-10-26 Local-first三训练种子完成并回填V0.9
 

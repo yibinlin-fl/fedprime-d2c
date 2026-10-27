@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Per-client held-out map2 DSA over training seeds 0/1/2 (mean $\pm$ sample standard deviation). Client differences cannot be causally attributed to architecture because architecture and non-IID data slice are paired.}
+\label{tab:per-client-architecture}
+\begin{tabular}{llrrrr}
+\toprule
+Client & Architecture & ERM DSA & CVaR DSA & GroupDRO DSA & PEW+BER DSA \\
+\midrule
+c0 & ResNet10 & $0.1943\pm0.0061$ & $0.0408\pm0.0066$ & $0.1309\pm0.0249$ & $0.0532\pm0.0043$ \\
+c1 & ResNet12 & $0.2447\pm0.0192$ & $0.0672\pm0.0042$ & $0.1762\pm0.0138$ & $0.0703\pm0.0084$ \\
+c2 & ShuffleNet & $0.2776\pm0.0080$ & $0.1277\pm0.0200$ & $0.2557\pm0.0085$ & $0.1130\pm0.0307$ \\
+c3 & MobileNetV2 & $0.2856\pm0.0104$ & $0.1109\pm0.0115$ & $0.2589\pm0.0065$ & $0.0494\pm0.0181$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

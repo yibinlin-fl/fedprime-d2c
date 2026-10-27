@@ -1,23 +1,22 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-26
+Updated: 2026-10-27
 
-## Local-first三训练种子Formal与V0.9
+## Local-first三训练种子Formal与V0.10
 
 固定CLE-v2四臂factorial已完成training seeds 0/1/2。方向性、binding-specificity和local-first
-机制门槛在3/3种子中复现；完整预注册verdict为2 GO、1 undertrained。V0.9从V0.8派生并如实
-回填这一边界：
+DSA机制门槛在3/3种子中复现；辅助学习下限仅保留在内部正式审计。V0.10从V0.9派生，只收敛
+“机制协议/主评价协议”的可见命名，不改变数字、公式或结论：
 
 ```text
 deliverables/cle_v2_local_first_multiseed_20261026/RESULT_SUMMARY_ZH.md
 deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv
 deliverables/cle_v2_local_first_multiseed_20261026/ARTIFACT_MANIFEST.csv
-deliverables/cle_hfl_latex_v0_9_20261026/source/main.tex
-deliverables/cle_hfl_latex_v0_9_20261026/CLE_HFL_LATEX_V0_9_DSA_PRIMARY_OVERLEAF_20261026.zip
-deliverables/cle_hfl_full_paper_web_handoff_20261026/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+deliverables/cle_hfl_latex_v0_10_20261027/source/main.tex
+deliverables/cle_hfl_full_paper_web_handoff_20261027/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
 ```
 
-V0.8保持为moderate Formal回填前一快照，不再作为当前写作入口。
+V0.9及更早版本保持为不可变历史快照，不再作为当前写作入口。
 
 ## 结果留存、科研图与CIFAR-100审计
 

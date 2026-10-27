@@ -18,9 +18,9 @@ accepted.
 - `fig_objective_tradeoff` | claim=BER separates shortcut suppression from task utility relative to ERM, CVaR-DRO, and shared-PEW GroupDRO | source=deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md | section=Axis I | language=en | format=py,pdf,svg,png | layout=double-column landscape
 - `fig_dose_response` | claim=DSA increases with controlled binding strength and PEW+BER reduces the gamma=.9 response with a nonuniform utility trade-off | source=deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv | section=Main Evaluation Protocol | language=en | format=py,pdf,svg,png | layout=double-column landscape
 
-**Pending deterministic redesign:**
+**Deterministic diagnosis diagram:**
 
-- `fig_cle_paired_dsa` | claim=client-specific class--operator bindings turn corruption into a directional class cue measurable by same-source paired DSA | source=V0.10 Problem Setup and DSA definition | section=Problem Setup and Diagnosis | language=en | format=py,pdf,svg,png | layout=double-column landscape
+- `fig_cle_paired_dsa_v3` | claim=client-specific class--operator bindings turn corruption into a directional class cue measurable by same-source paired DSA | source=V0.10 Problem Setup, frozen package metadata, and paired operator grid | section=Problem Setup and Diagnosis | language=en | format=py,pdf,svg,png | layout=double-column landscape
 
 **Total:** DATA=3, DETERMINISTIC=2, ILLUSTRATION=0, ALL=5
 <!-- END FIGURE_MANIFEST -->
@@ -33,4 +33,16 @@ accepted.
   unchanged HFL path and evaluation-only metadata.
 - Every numerical plot reads frozen CSV/JSON/report artifacts.
 - Each figure answers one research question and remains legible at two-column width.
+
+## Versioning and integration
+
+- Historical paper figures remain immutable. In particular, V0.10's
+  `fig1_cle_hfl_evidence_chain.*` and its generator are never overwritten.
+- Redesigned figures use semantic names plus revision suffixes, for example
+  `fig_cle_paired_dsa_v1.*`; a repair becomes `v2`, then `v3`.
+- Every figure keeps its Python generator beside PDF/SVG/PNG outputs. PDF is
+  used by LaTeX, SVG remains editable, and PNG is the visual-review copy.
+- The manuscript changes only after visual acceptance. The accepted PDF is
+  copied into the next paper snapshot and one LaTeX include is updated; old
+  paper snapshots and figure artifacts remain available for comparison.
 

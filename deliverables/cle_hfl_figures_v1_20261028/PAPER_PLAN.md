@@ -14,7 +14,7 @@ accepted.
 
 **Data figures:**
 
-- `fig_local_first_multiseed` | claim=the Local CLE effect tracks the HFL effect across three training seeds while the communication difference changes sign | source=deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv | section=Local-versus-Communication Formation | language=en | format=py,pdf,svg,png | layout=double-column landscape
+- `fig_local_first_multiseed_v1` | claim=the Local CLE effect tracks the HFL effect across three training seeds while the communication difference changes sign | source=deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv | recipe=advanced.dumbbell | section=Local-versus-Communication Formation | language=en | format=py,pdf,svg,png,csv,json | layout=double-column landscape
 - `fig_objective_tradeoff` | claim=BER separates shortcut suppression from task utility relative to ERM, CVaR-DRO, and shared-PEW GroupDRO | source=deliverables/cle_v2_spurious_final_map2_20260913/RESULT_SUMMARY_ZH.md | section=Axis I | language=en | format=py,pdf,svg,png | layout=double-column landscape
 - `fig_dose_response` | claim=DSA increases with controlled binding strength and PEW+BER reduces the gamma=.9 response with a nonuniform utility trade-off | source=deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv | section=Main Evaluation Protocol | language=en | format=py,pdf,svg,png | layout=double-column landscape
 
@@ -45,4 +45,14 @@ accepted.
 - The manuscript changes only after visual acceptance. The accepted PDF is
   copied into the next paper snapshot and one LaTeX include is updated; old
   paper snapshots and figure artifacts remain available for comparison.
+
+## Figure 3 candidate, 2026-10-28
+
+`fig_local_first_multiseed_v1` is generated and visually reviewed. It retains
+the paired endpoints of recipe `advanced.dumbbell`; the right panel adds the
+signed communication difference on a labelled magnified scale. The alternative
+`advanced.paired_dot` preview was also inspected. Native size is 7.15 x 3.38
+inches; expected 6.7-inch inclusion gives 0.94x scaling. Bottom statistics are
+mean and sample SD across three training seeds. Data and review details are
+in `FIGURE_3_REVIEW_ZH.md`.
 

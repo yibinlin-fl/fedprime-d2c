@@ -1,6 +1,22 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-27
+Updated: 2026-10-28
+
+## 当前科研绘图工作区（独立于V0.10）
+
+图1 CLE+paired DSA、图2 PEW+BER执行、图3 local-first三seed归因已有独立候选。
+图3已实际目视检查，读取冻结CSV并核验差分与均值/样本SD，附来源哈希与环境清单。
+旧论文图片保持原样，候选确认后再接入下一论文快照。恢复入口：
+
+```text
+deliverables/cle_hfl_figures_v1_20261028/PAPER_PLAN.md
+deliverables/cle_hfl_figures_v1_20261028/FIGURE_VERSION_LOG.md
+deliverables/cle_hfl_figures_v1_20261028/FIGURE_3_REVIEW_ZH.md
+deliverables/cle_hfl_figures_v1_20261028/figures/generate_local_first_multiseed.py
+deliverables/cle_hfl_figures_v1_20261028/figures/fig_local_first_multiseed_v1.pdf
+```
+
+后续图4为Axis-I目标/效用比较，图5为剂量响应；不因此启动新实验。
 
 ## Local-first三训练种子Formal与V0.10
 

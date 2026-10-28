@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "candidate": "figures/generate_local_first_multiseed.py",
+  "baseline": ".vivid/template-sources/c81322a77c40cac07067eb77.py",
+  "source": {
+    "id": "advanced.dumbbell",
+    "variant": "main",
+    "codeSha256": "463553cffbbe706535b7737efa8ae65654cd6c3061757b7a07e22307e68b14bc",
+    "contentSha256": "67271d7827dc9ece296a81ca165374f41a5e6723b55562298370adcbff760dd5",
+    "file": "figure_recipes_advanced.md",
+    "blocks": [
+      0
+    ],
+    "requiredInputs": []
+  }
+}

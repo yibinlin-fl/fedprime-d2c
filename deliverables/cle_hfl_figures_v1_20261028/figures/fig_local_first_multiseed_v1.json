@@ -1,0 +1,28 @@
+{
+  "figure": "fig_local_first_multiseed_v1",
+  "source": "deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv",
+  "source_sha256": "dcb5401c2d906074ce1af6f509098f183f02fd283a1f248f7f89274ae0b1efff",
+  "template": "advanced.dumbbell",
+  "training_seeds": [
+    0,
+    1,
+    2
+  ],
+  "units": "DSA probability scale",
+  "summary": "mean and sample SD across 3 training seeds",
+  "uncertainty_bars": "none; source-bootstrap CIs are not used as training-seed CIs",
+  "protocol": "12 rounds x 16 local batches; batch 64; fixed seed0_split0",
+  "seed_2_original_verdict": "INCONCLUSIVE_UNDERTRAINED",
+  "claim_boundary": "Matched factorial contrasts; not a sample-level mediation decomposition or communication equivalence test",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "outputs_sha256": {
+    "fig_local_first_multiseed_v1.pdf": "d67dce2b4f20e717a34f62b0e95192f67dcb4b91e861e2988eb4a34c397322b0",
+    "fig_local_first_multiseed_v1.svg": "c2ba833ef58ebd7c91ebf84f786f636ff8e23b5afb20e43fcd13e20b3f311a21",
+    "fig_local_first_multiseed_v1.png": "a2632209e9d0cb30c46d7f72b3871fd208055202fdd1c7a69baf1e251e523a24",
+    "fig_local_first_multiseed_v1.csv": "a2f802e9ff5a86bc7903d836675437f96a44c2df7d1c84f9d0bca41e83aafabf"
+  }
+}

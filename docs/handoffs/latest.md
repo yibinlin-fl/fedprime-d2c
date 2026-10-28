@@ -1,6 +1,19 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-27
+Updated: 2026-10-28
+
+## 2026-10-28 科研配图：图1/2/3独立候选已留存
+
+当前绘图工作区为`deliverables/cle_hfl_figures_v1_20261028/`，未接入V0.10。
+图1为`fig_cle_paired_dsa_v3`，图2为`fig_pew_ber_execution`，图3新增
+`fig_local_first_multiseed_v1`，均保留Python源码及PDF/SVG/PNG；旧图不删除。
+图3读取10月26日冻结`PAPER_TABLE.csv`，展示三个training seed的配对效应与零中心通信
+差分，均值/样本SD校验通过；来源哈希与环境写入同名JSON，第一轮目视检查通过。
+
+绘图环境：`D:\ResearchTools\envs\paper-figures\Scripts\python.exe`。
+恢复入口：工作区`PAPER_PLAN.md`、`FIGURE_VERSION_LOG.md`、`FIGURE_3_REVIEW_ZH.md`。
+下一张为图4 Axis-I目标/效用比较，再后为图5剂量响应；按冻结结果绘制，不启动新训练。
+候选仅本地留存/提交，push仍需用户明确要求。
 
 ## 2026-10-27 论文协议命名收敛为机制协议与主评价协议
 

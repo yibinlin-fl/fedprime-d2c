@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{DSA-based CLE formation and local-versus-communication attribution across training seeds. $\Delta_{\mathrm{comm}}=\Delta_{\mathrm{HFL}}-\Delta_{\mathrm{Local}}$. The ratio is descriptive rather than a causal mediation proportion.}
+\label{tab:local-first}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrl}
+\toprule
+Seed & $\Delta_{\mathrm{HFL}}$ & $\Delta_{\mathrm{Local}}$ & $\Delta_{\mathrm{comm}}$ & Local/HFL (\%) & DSA mechanism gates \\
+\midrule
+0 & 0.119889 & 0.107960 & 0.011929 & 90.05 & 3/3 pass \\
+1 & 0.123717 & 0.127287 & -0.003570 & 102.89 & 3/3 pass \\
+2 & 0.124638 & 0.131210 & -0.006573 & 105.27 & 3/3 pass \\
+\midrule
+Mean $\pm$ SD & $0.122748\pm0.002518$ & $0.122152\pm0.012446$ & $0.000596\pm0.009929$ & $99.40\pm8.19$ & 3/3 seeds \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

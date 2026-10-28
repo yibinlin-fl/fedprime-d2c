@@ -1,0 +1,65 @@
+{
+  "source_version": "V0.10",
+  "integration_version": "V0.11",
+  "unchanged_files_checked": [
+    "references.bib",
+    "main.tex",
+    "sections/abstract.tex",
+    "sections/introduction.tex",
+    "sections/related_work.tex",
+    "sections/discussion.tex",
+    "sections/conclusion.tex",
+    "sections/appendix.tex"
+  ],
+  "all_tables_content_unchanged": true,
+  "method_experiment_math_multiset_unchanged": true,
+  "citation_keys_unchanged": true,
+  "figures_equal_workbench_pdfs": {
+    "fig_cle_paired_dsa_v4.pdf": "B9EB06B567B9115F6FD3D58011F5E82363A4D57BCAF16F1246A0ACC49B74DDB1",
+    "fig_pew_ber_execution_v3.pdf": "1300A5B8894ECD739601BD9A2637C02DBD46EA428712743FC42C3F15B2289805",
+    "fig_local_first_multiseed_v1.pdf": "D67DCE2B4F20E717A34F62B0E95192F67DCB4B91E861E2988EB4A34C397322B0",
+    "fig_objective_tradeoff_v2.pdf": "25DCC3324141077229A100D9C0D1E2C9687598E5F8E16A338B47D26AB84CAC34",
+    "fig_dose_response_v3.pdf": "87D469457D60C02308A1FA530A2B1DFA4AB0BFB3848F63953AE8FDACFFDE7CC5"
+  },
+  "page_count": 16,
+  "figure_pages": {
+    "1": [],
+    "2": [],
+    "3": [],
+    "4": [
+      1
+    ],
+    "5": [],
+    "6": [
+      2
+    ],
+    "7": [],
+    "8": [
+      3
+    ],
+    "9": [
+      4
+    ],
+    "10": [
+      5
+    ],
+    "11": [],
+    "12": [],
+    "13": [],
+    "14": [],
+    "15": [],
+    "16": []
+  },
+  "overfull_or_unresolved_references": false,
+  "pdf": {
+    "name": "CLE_HFL_LATEX_V0_11_FIGURES_20261028.pdf",
+    "bytes": 708230,
+    "sha256": "186FB86150AA18DF47F0A81010F126292C0462CAB10F2B16A4ADE3E49D01D566"
+  },
+  "zip": {
+    "name": "CLE_HFL_LATEX_V0_11_FIGURES_OVERLEAF_20261028.zip",
+    "bytes": 252751,
+    "sha256": "8F4D2D10A04325BF89DF6076A56DE2A605B130303D666D9A783CB3842BBF3840",
+    "file_count": 37
+  }
+}

@@ -2,8 +2,8 @@
 
 This workbench redesigns the five manuscript figures already frozen by the
 RAHFL visual audit. It does not expand the scientific claims or invent new
-results. V0.10 remains the stable manuscript until a figure is visually
-accepted.
+results. V0.10 remains immutable; V0.11 is the separate figure-integration
+and page-layout review snapshot.
 
 <!-- BEGIN FIGURE_MANIFEST -->
 ## Figure manifest
@@ -26,6 +26,10 @@ accepted.
 <!-- END FIGURE_MANIFEST -->
 
 ## Visual contract
+
+Integration selection (2026-10-28): diagnosis v4, execution v3, local-first v1,
+objective tradeoff v2, dose response v3. The manifest stems above retain their
+initial planning history; the current selection is indexed in README_ZH.md.
 
 - White background; no gradients, shadows, glow, 3-D, cartoons, or decorative cards.
 - Real CIFAR thumbnails may illustrate data flow, but never serve as evidence.

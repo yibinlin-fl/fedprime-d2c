@@ -1,4 +1,7 @@
 # Preserve exact artifact/source bytes used by the figure 4/5 SHA256 manifests.
+figures/fig_cle_paired_dsa_v4.* -text
+figures/fig_pew_ber_execution_v2.* -text
+figures/fig_pew_ber_execution_v3.* -text
 figures/fig_objective_tradeoff_v* -text
 figures/fig_dose_response_v* -text
 figures/generate_objective_tradeoff.py -text

@@ -1,0 +1,2 @@
+# Keep the audited snapshot and release hashes stable across checkout platforms.
+* -text

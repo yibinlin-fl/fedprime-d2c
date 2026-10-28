@@ -70,5 +70,20 @@ V0.10 and its old Figure 3 remain unchanged.
 Both use `figure_common.py`; its SHA256 is recorded in every revision manifest.
 Existing revisions are protected against overwrite. Review and reproduction:
 `FIGURES_4_5_REVIEW_ZH.md`; all-five index: `README_ZH.md`.
-All five figures now have independent candidates. Manuscript integration and
-page-layout review remain pending; the manuscript is still V0.10.
+All five figures reached independent candidate status before integration.
+
+## Five-figure integration review, 2026-10-28
+
+- Figure 1 v4 explicitly conditions the training draw on corruption C=1 and
+  identifies valid DSA target pairs y not in B. PDF/SVG/PNG/Python snapshot kept.
+- Figure 2 v2 adds all six implemented pseudo-environments (clean, noise, blur,
+  weather, digital, unknown), labels support cells schematic, and matches the
+  valid-group/class BER rule. v3 routes the public-training/frozen-inference
+  arrow clear of the private-panel heading. Original/v2/v3 all retained.
+- Integration selection: Figure 1 v4; Figure 2 v3; Figure 3 v1; Figure 4 v2;
+  Figure 5 v3. V0.10 was copied to a separate V0.11 snapshot before editing.
+- Actual manuscript pages: 4, 6, 8, 9, 10. Five figures and all 16 pages were
+  rendered and visually inspected. Captions distinguish schematic content,
+  measured points, seed SD, and the two frozen experimental budgets.
+- V0.11 remains an internal review draft with pending evidence tables, rather
+  than a final page-limited conference submission. See its PDF_QA_ZH.md.

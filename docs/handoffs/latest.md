@@ -2,19 +2,23 @@
 
 Updated: 2026-10-28
 
-## 2026-10-28 五张科研配图独立候选已完成
+## 2026-10-28 五图已接入独立V0.11并完成版面检查
 
-当前绘图工作区为`deliverables/cle_hfl_figures_v1_20261028/`，未接入V0.10。
-图1为`fig_cle_paired_dsa_v3`，图2为`fig_pew_ber_execution`，图3为
+当前绘图工作区为`deliverables/cle_hfl_figures_v1_20261028/`，V0.10保持不变。
+选定图1为`fig_cle_paired_dsa_v4`，图2为`fig_pew_ber_execution_v3`，图3为
 `fig_local_first_multiseed_v1`；图4新增`fig_objective_tradeoff_v2`（四臂×三seed），
 图5新增`fig_dose_response_v3`（主评价剂量响应+六种效用差分）。均保留源码及PDF/SVG/PNG。
 图3/4/5数值与冻结汇总交叉校验通过，来源/环境写入JSON；图4/5逐版附CSV和源码快照。
-候选均已实际目视检查；旧图/中间版本保留，V0.10没有改动。
+图1明确C=1及合法DSA target，图2与实现一致展示六种粗伪环境。旧图/中间版本全部保留。
+V0.11源码：`deliverables/cle_hfl_latex_v0_11_20261028/source/main.tex`。
+该目录上一层含PDF、Overleaf ZIP、`PDF_QA_ZH.md`和`RELEASE_AUDIT.json`。
+五图在第4/6/8/9/10页；内置/本地编译成功，16页已渲染目视检查，无超宽和未定义引用。
+原结果表内容、公式集合、引用键及未参与接入的章节均核验不变；未新增实验。
 
 绘图环境：`D:\ResearchTools\envs\paper-figures\Scripts\python.exe`。
 恢复入口：工作区`README_ZH.md`、`PAPER_PLAN.md`、`FIGURE_VERSION_LOG.md`，
-图4/5数据与复现见`FIGURES_4_5_REVIEW_ZH.md`。下一步是人工确认整套图后再接入下一论文
-快照并做页内检查；当前仅完成独立图件，不启动训练。
+图4/5数据与复现见`FIGURES_4_5_REVIEW_ZH.md`。下一步由作者查看V0.11页内效果，再按目标
+会议处理页数和浮动表；当前内部稿仍有pending表，末页单独为成本表，不能称最终投稿排版。
 候选仅本地留存/提交，push仍需用户明确要求。
 
 ## 2026-10-27 论文协议命名收敛为机制协议与主评价协议

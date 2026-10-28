@@ -103,6 +103,9 @@ def image_tile(ax, image: np.ndarray, x: float, y: float, width: float, height: 
 
 
 def main() -> None:
+    output = HERE / "fig_cle_paired_dsa_v4"
+    if any(output.with_suffix(extension).exists() for extension in [".pdf", ".svg", ".png", ".py"]):
+        raise FileExistsError("Preserve existing Figure 1 revision; select a new suffix")
     style()
     bindings, families = load_protocol()
     operator_ids = [0, 3, 7, 13]
@@ -122,7 +125,7 @@ def main() -> None:
     client_binding_table(ax, 0.035, 0.735, 0.238, 0, "ResNet10", bindings, families)
     client_binding_table(ax, 0.035, 0.465, 0.238, 1, "ResNet12", bindings, families)
     ax.add_patch(Rectangle((0.032, 0.162), 0.248, 0.102, facecolor=RUST_LIGHT, edgecolor="none"))
-    ax.text(0.156, 0.226, r"$P_k(O=o\mid Y=c)$", color=INK, fontsize=7.0, ha="center", va="center")
+    ax.text(0.156, 0.226, r"$P_k(O=o\mid Y=c,C=1)$", color=INK, fontsize=6.5, ha="center", va="center")
     ax.text(0.156, 0.184, r"$=(1-\gamma)/M+\gamma\,\mathbf{1}\{o=b_k(c)\}$",
             color=RUST, fontsize=6.2, ha="center", va="center")
 
@@ -137,10 +140,9 @@ def main() -> None:
     ax.text(0.503, 0.770, "semantic source fixed; only the operator changes",
             ha="center", color=TEAL, fontsize=6.3, weight="bold")
     ax.add_patch(Rectangle((0.350, 0.230), 0.306, 0.142, facecolor=TEAL_LIGHT, edgecolor="none"))
-    ax.text(0.503, 0.330, "What ordinary accuracy cannot isolate", ha="center", color=TEAL, fontsize=6.8, weight="bold")
-    ax.text(0.503, 0.292, "image difficulty + semantic error", ha="center", color=INK, fontsize=6.1)
-    ax.text(0.503, 0.263, "+ binding-directed response", ha="center", color=INK, fontsize=6.1)
-    ax.text(0.503, 0.232, "paired views cancel source content before aggregation", ha="center", color=MUTED, fontsize=5.8)
+    ax.text(0.503, 0.330, "Same semantic source and severity", ha="center", color=TEAL, fontsize=6.8, weight="bold")
+    ax.text(0.503, 0.285, r"valid target pairs: $y\notin B_{k,o}$", ha="center", color=INK, fontsize=6.8)
+    ax.text(0.503, 0.242, "form contrasts first; then aggregate sources", ha="center", color=MUTED, fontsize=6.0)
 
     ax.add_patch(Rectangle((0.704, 0.728), 0.098, 0.072, facecolor="white", edgecolor=PURPLE, linewidth=0.9))
     ax.text(0.753, 0.764, "operator $o$", ha="center", va="center", color=PURPLE, fontsize=6.5, weight="bold")
@@ -174,10 +176,10 @@ def main() -> None:
     ax.text(0.835, 0.068, "SEALED EVALUATION", color=PURPLE, fontsize=6.1, weight="bold", va="center", ha="center")
     ax.text(0.835, 0.034, "paired grid + registered binding", color=MUTED, fontsize=5.9, va="center", ha="center")
 
-    output = HERE / "fig_cle_paired_dsa_v3"
     fig.savefig(output.with_suffix(".pdf"), bbox_inches="tight", pad_inches=0.035)
     fig.savefig(output.with_suffix(".svg"), bbox_inches="tight", pad_inches=0.035)
     fig.savefig(output.with_suffix(".png"), dpi=240, bbox_inches="tight", pad_inches=0.035)
+    output.with_suffix(".py").write_bytes(Path(__file__).read_bytes())
     plt.close(fig)
 
 

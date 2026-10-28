@@ -2,12 +2,12 @@
 
 Updated: 2026-10-28
 
-## 当前科研绘图工作区（独立于V0.10）
+## 当前科研绘图与V0.11接入稿（V0.10保留）
 
 五图独立候选已完成：图1 CLE+paired DSA、图2 PEW+BER执行、图3 local-first三seed、
 图4四目标三seed DSA–utility、图5主评价剂量响应与完整效用差分。均已实际目视检查；
 数据图读取冻结结果并核验差分/统计量，附来源哈希与环境清单，旧版全部保留。
-旧论文图片保持原样，候选确认后再接入下一论文快照。恢复入口：
+已接入独立V0.11，原V0.10与旧图保持原样。图1采用v4，图2采用v3，其余如下。恢复入口：
 
 ```text
 deliverables/cle_hfl_figures_v1_20261028/PAPER_PLAN.md
@@ -19,9 +19,15 @@ deliverables/cle_hfl_figures_v1_20261028/figures/generate_local_first_multiseed.
 deliverables/cle_hfl_figures_v1_20261028/figures/fig_local_first_multiseed_v1.pdf
 deliverables/cle_hfl_figures_v1_20261028/figures/fig_objective_tradeoff_v2.pdf
 deliverables/cle_hfl_figures_v1_20261028/figures/fig_dose_response_v3.pdf
+deliverables/cle_hfl_latex_v0_11_20261028/README_ZH.md
+deliverables/cle_hfl_latex_v0_11_20261028/source/main.tex
+deliverables/cle_hfl_latex_v0_11_20261028/PDF_QA_ZH.md
+deliverables/cle_hfl_latex_v0_11_20261028/RELEASE_AUDIT.json
 ```
 
-下一步人工确认后再接入下一论文快照并检查页内排版；论文仍是V0.10，未因绘图启动新实验。
+V0.11内置/本地编译成功，16页已目视审查，五图位于4/6/8/9/10页。数字、公式和引用核验不变。
+下一步作者确认页内效果，目标会议确定后再压缩篇幅；待补表与末页成本表仍属内部稿状态。
+未因绘图启动任何新实验。
 
 ## Local-first三训练种子Formal与V0.10
 

@@ -1,0 +1,5 @@
+setting,method,dsa,grid_accuracy,clean_accuracy,corrupted_balanced_accuracy,seen_accuracy,unseen_accuracy,mixed_accuracy
+gamma00,ERM,-0.0007302367,48.48,52.325,47.853333,48.315909,46.58125,50.089167
+gamma05,ERM,0.0396793816,48.395,54.35,47.93,48.156818,47.30625,51.14
+gamma09,AsymHFL-ERM,0.1845142617,37.193333,49.7,37.008333,36.540909,38.29375,43.354167
+gamma09,AsymHFL+PEW+BER,0.0900242753,38.16,45.35,37.773333,37.461364,38.63125,41.561667

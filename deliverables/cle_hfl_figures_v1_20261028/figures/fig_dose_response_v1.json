@@ -1,0 +1,53 @@
+{
+  "title": "Main evaluation dose response and task-utility trade-off",
+  "sources": [
+    {
+      "path": "deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv",
+      "sha256": "d689868d3dadf6f3b1570d02ac0d513810dcdedb9804d9ca14c614c3e79f1845"
+    },
+    {
+      "path": "deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md",
+      "sha256": "5c4de6c3e6bd28c8f8f340d265b4997e8d8b8b619b528b3d77aa13b9679504f4"
+    }
+  ],
+  "recipe": "basic.line",
+  "training_seed": 0,
+  "units": {
+    "left_y": "DSA probability scale",
+    "right_x": "candidate minus control accuracy, percentage points"
+  },
+  "uncertainty": "No multi-training-seed intervals. No synthetic band or per-dose source CI.",
+  "dsa_reduction": 0.09448998639999999,
+  "relative_dsa_reduction_percent": 51.210126268521385,
+  "utility_changes_pp": {
+    "clean_accuracy": -4.350000000000001,
+    "mixed_accuracy": -1.7924999999999969,
+    "grid_accuracy": 0.966666999999994,
+    "corrupted_balanced_accuracy": 0.7650000000000006,
+    "seen_accuracy": 0.920455000000004,
+    "unseen_accuracy": 0.3374999999999986
+  },
+  "protocol": "main evaluation protocol; alpha=1; rho=.5; fixed map2/partition seed0/training seed0; 40x64 local batches",
+  "scope": "Measured dose points only; BER measured only at gamma .9; no monotonicity theorem or utility-preserving claim",
+  "size_inches": [
+    7.15,
+    3.6
+  ],
+  "figure": "fig_dose_response_v1",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "shared_helper": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/figure_common.py",
+    "sha256": "c26aa03836ee19ac8b3a86bc57fe0174e18660db79e1166f5249eabecaeee597"
+  },
+  "outputs_sha256": {
+    "fig_dose_response_v1.pdf": "74f7456348f423668b653d71be81b700164b6ba303342725d3336543ba7149d4",
+    "fig_dose_response_v1.svg": "a77d274215141a2eafda18b1604924c3d21e8568be3a9f0698fa0c59b8d94265",
+    "fig_dose_response_v1.png": "436e5412c1edf9b772f9895dd9d2aa4e4f107951aba50b24bfc1b6dc97ecc845",
+    "fig_dose_response_v1.csv": "ec35fd5887624050fae4fac4ca9012d0d1b664844784d6688e5a68b46be887c5",
+    "fig_dose_response_v1.py": "30eb547f184228b7b70a6720796634819bf558498e4438b25262b7a38e33620d"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "title": "Axis-I shortcut--utility across three training seeds",
+  "sources": [
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/analysis/RESULT_SUMMARY.json",
+      "sha256": "3214f0bb6162276c0a3d5803a98d9fabd7201e5a7efb9f0ba9cfe7d23e78bb23"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/analysis/RESULT_SUMMARY.json",
+      "sha256": "54104ac255913e77a7aaa4fb6cc22f26435537b46b126518176eb78869e0153b"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/analysis/RESULT_SUMMARY.json",
+      "sha256": "c0af307ab7fe95a2fa86337961bd4c1905a992087c3285d1db0746a92264cc49"
+    },
+    {
+      "path": "deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json",
+      "sha256": "8bf2cd3c1b916a419a4fa322234cd85e7237e96f391412206cc044b87e2d0301"
+    },
+    {
+      "path": "deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md",
+      "sha256": "c6679263abe95cb12c227918d807a67ffd3f9ed3319cef0b7160d63bf82d215d"
+    }
+  ],
+  "recipe": "academic.error_analysis",
+  "n_training_seeds": 3,
+  "units": {
+    "x": "operator-grid accuracy percent",
+    "y": "DSA probability scale"
+  },
+  "uncertainty": "Axis-aligned mean +/- one sample SD (ddof=1) across training seeds, not a joint confidence region",
+  "statistics": {
+    "erm": {
+      "accuracy_mean": 20.495,
+      "accuracy_sd": 0.37184599560092674,
+      "dsa_mean": 0.25052979712756157,
+      "dsa_sd": 0.00866974789494319
+    },
+    "cvar_dro": {
+      "accuracy_mean": 19.220555555555556,
+      "accuracy_sd": 1.1054691479354075,
+      "dsa_mean": 0.0866540295571741,
+      "dsa_sd": 0.0055135100595004065
+    },
+    "pew_groupdro": {
+      "accuracy_mean": 21.451666666666668,
+      "accuracy_sd": 0.5783189239319231,
+      "dsa_mean": 0.20541682382504756,
+      "dsa_sd": 0.008045093471831133
+    },
+    "pew_ber": {
+      "accuracy_mean": 25.177222222222223,
+      "accuracy_sd": 1.2521562883164252,
+      "dsa_mean": 0.07147005604958062,
+      "dsa_sd": 0.01128833101622673
+    }
+  },
+  "protocol": "mechanism protocol; held-out map2; 40 rounds x 16 local batches; same AsymHFL; no AugMix/JSD/DCL/CDep",
+  "scope": "Pooled comparison at fixed partition and binding map; no all-client dominance or continuous frontier claim",
+  "size_inches": [
+    7.15,
+    3.75
+  ],
+  "figure": "fig_objective_tradeoff_v2",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "shared_helper": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/figure_common.py",
+    "sha256": "c26aa03836ee19ac8b3a86bc57fe0174e18660db79e1166f5249eabecaeee597"
+  },
+  "outputs_sha256": {
+    "fig_objective_tradeoff_v2.pdf": "25dcc3324141077229a100d9c0d1e2c9687598e5f8e16a338b47d26ab84cac34",
+    "fig_objective_tradeoff_v2.svg": "3b1a35790ab367efd6c1b84e2e9687a4fc6581e5649318c9a7d937cf90e3e192",
+    "fig_objective_tradeoff_v2.png": "c7888b729c749c73a9c2730bbd0caddb2d56c2b5972367bf806ab693793717a0",
+    "fig_objective_tradeoff_v2.csv": "ec2ff606c30bb23b3ffc5bce663cd3d6b0fd75cd776a3ffac24921a1f0a70cce",
+    "fig_objective_tradeoff_v2.py": "160f3aa89abaf7dc64c35059aadefd742876c5ede445f992e7abbfe78f28ddc7"
+  }
+}

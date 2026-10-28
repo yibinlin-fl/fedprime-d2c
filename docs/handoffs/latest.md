@@ -2,17 +2,19 @@
 
 Updated: 2026-10-28
 
-## 2026-10-28 科研配图：图1/2/3独立候选已留存
+## 2026-10-28 五张科研配图独立候选已完成
 
 当前绘图工作区为`deliverables/cle_hfl_figures_v1_20261028/`，未接入V0.10。
-图1为`fig_cle_paired_dsa_v3`，图2为`fig_pew_ber_execution`，图3新增
-`fig_local_first_multiseed_v1`，均保留Python源码及PDF/SVG/PNG；旧图不删除。
-图3读取10月26日冻结`PAPER_TABLE.csv`，展示三个training seed的配对效应与零中心通信
-差分，均值/样本SD校验通过；来源哈希与环境写入同名JSON，第一轮目视检查通过。
+图1为`fig_cle_paired_dsa_v3`，图2为`fig_pew_ber_execution`，图3为
+`fig_local_first_multiseed_v1`；图4新增`fig_objective_tradeoff_v2`（四臂×三seed），
+图5新增`fig_dose_response_v3`（主评价剂量响应+六种效用差分）。均保留源码及PDF/SVG/PNG。
+图3/4/5数值与冻结汇总交叉校验通过，来源/环境写入JSON；图4/5逐版附CSV和源码快照。
+候选均已实际目视检查；旧图/中间版本保留，V0.10没有改动。
 
 绘图环境：`D:\ResearchTools\envs\paper-figures\Scripts\python.exe`。
-恢复入口：工作区`PAPER_PLAN.md`、`FIGURE_VERSION_LOG.md`、`FIGURE_3_REVIEW_ZH.md`。
-下一张为图4 Axis-I目标/效用比较，再后为图5剂量响应；按冻结结果绘制，不启动新训练。
+恢复入口：工作区`README_ZH.md`、`PAPER_PLAN.md`、`FIGURE_VERSION_LOG.md`，
+图4/5数据与复现见`FIGURES_4_5_REVIEW_ZH.md`。下一步是人工确认整套图后再接入下一论文
+快照并做页内检查；当前仅完成独立图件，不启动训练。
 候选仅本地留存/提交，push仍需用户明确要求。
 
 ## 2026-10-27 论文协议命名收敛为机制协议与主评价协议

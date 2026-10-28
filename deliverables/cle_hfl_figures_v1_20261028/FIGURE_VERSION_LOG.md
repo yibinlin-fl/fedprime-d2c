@@ -42,5 +42,33 @@ the next manuscript snapshot; V0.10 and all workbench revisions remain intact.
 - `FIGURE_3_REVIEW_ZH.md`: data semantics, uncertainty scope, visual review,
   reproduction instructions, and suggested integration caption.
 
-V0.10 and its old Figure 3 remain unchanged. Next are Figure 4 objective/utility
-comparison and Figure 5 dose response.
+V0.10 and its old Figure 3 remain unchanged.
+
+## Figure 4: Axis-I objective/utility comparison
+
+- `fig_objective_tradeoff_v1.*`: first render, all four arms and three seeds.
+- `fig_objective_tradeoff_v2.*`: current candidate; moved the BER label away
+  from a nearby seed point. The data and summary statistics are unchanged.
+- `generate_objective_tradeoff.py`: maintained generator, reads three Formal
+  analysis JSON files (or its exported CSV) and cross-checks frozen aggregates.
+- Each revision includes PDF/SVG/PNG, the 12 exact seed rows in CSV, a provenance
+  JSON, and the exact generator snapshot in a same-stem `.py` file.
+- Original recipe source/record: `.vivid/template-sources/0adda4e27f37b6544095adc9.py/.json`.
+
+## Figure 5: Dose response and task-utility changes
+
+- `fig_dose_response_v1.*`: three measured ERM doses, one BER point and six
+  utility endpoints; two labels were close to the response line.
+- `fig_dose_response_v2.*`: moved those labels clear of the line.
+- `fig_dose_response_v3.*`: current candidate, brings the zero-dose label closer
+  to its point while preserving clear separation. All numbers stay unchanged.
+- `generate_dose_response.py`: maintained generator; reads the frozen main
+  evaluation CSV and computes all contrasts, including clean/mixed declines.
+- Each revision includes PDF/SVG/PNG/CSV/JSON and its generator `.py` snapshot.
+- Original recipe source/record: `.vivid/template-sources/6af7ff40fd40ae7f1f50d7af.py/.json`.
+
+Both use `figure_common.py`; its SHA256 is recorded in every revision manifest.
+Existing revisions are protected against overwrite. Review and reproduction:
+`FIGURES_4_5_REVIEW_ZH.md`; all-five index: `README_ZH.md`.
+All five figures now have independent candidates. Manuscript integration and
+page-layout review remain pending; the manuscript is still V0.10.

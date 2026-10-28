@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "candidate": "figures/generate_objective_tradeoff.py",
+  "baseline": ".vivid/template-sources/0adda4e27f37b6544095adc9.py",
+  "source": {
+    "id": "academic.error_analysis",
+    "variant": "main",
+    "codeSha256": "7e83927a8aed9fa2ba241207d61f077219f52a689545262e57e6dc6f23e000d7",
+    "contentSha256": "9da56de41f54bb43bebcafb66320d5d24f8279720152eb7a7d2659d2e29ef49a",
+    "file": "figure_recipes_academic.md",
+    "blocks": [
+      0
+    ],
+    "requiredInputs": []
+  }
+}

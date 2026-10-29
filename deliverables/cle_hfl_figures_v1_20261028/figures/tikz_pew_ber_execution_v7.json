@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-30",
+  "figure": "tikz_pew_ber_execution_v7",
+  "renderer": "TikZ/TeX Live 2026",
+  "native_pdf_size_pt": [
+    502.883,
+    235.008
+  ],
+  "images": [
+    {
+      "object": "/Im1",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im2",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im3",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im4",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im5",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im6",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 19.27584,
+      "rendered_height_pt": 19.27584,
+      "ratio": 1.0
+    }
+  ],
+  "source_pixels_identical": true,
+  "no_rotation_or_stretch": true,
+  "svg_images_embedded": true,
+  "independent_candidate_not_in_v0_11": true,
+  "sources": {
+    "tikz_pew_ber_execution_v7.tex": "B31FED2E4B376050A6EE11CE1603281653CE2E5138C395003D8B01165A9EA189",
+    "assets_20261030/ASSET_MANIFEST.json": "8BBC6074979543951E618424348DFE512036AA39A3C0BFD6AADC85A37BB23D46",
+    "assets_20261030/binding_labels_v2.tex": "C4DDFDFEAC673F35EC7DE9319A20B53590E81B1ABAAEC6033F5679B1F94337D9"
+  },
+  "outputs_sha256": {
+    "tikz_pew_ber_execution_v7.pdf": "7740CB57FD46B6BF7EBBDEE2FB8B403FDC018D8D595CBB1BFE621C3EE8AC6F29",
+    "tikz_pew_ber_execution_v7.png": "08AAB99D3EA6F9EEAA2FC2A5E9543B34EA4F20BBC3CF6A58F3D76CC7C15EEB02",
+    "tikz_pew_ber_execution_v7.svg": "A6E28F604CE689A6D74DE52BCEF04C918B7F3FD3ED887CCA1ED4964CE72B0CC6"
+  }
+}

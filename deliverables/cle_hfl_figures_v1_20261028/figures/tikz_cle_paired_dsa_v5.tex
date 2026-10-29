@@ -1,0 +1,54 @@
+\documentclass[tikz,border=2pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,graphicx}
+\usetikzlibrary{arrows.meta,calc,shapes.geometric}
+\definecolor{accent}{HTML}{2F6A7F}
+\tikzset{every node/.style={font=\fontsize{8}{9.2}\selectfont,align=center,text=black,inner sep=2pt},
+ arr/.style={-{Stealth[length=1.4mm]},line width=.6pt,draw=black!75},
+ heading/.style={anchor=west,font=\bfseries\fontsize{8.5}{10}\selectfont},
+ small/.style={font=\fontsize{7.3}{8.5}\selectfont}}
+\newcommand{\pairtile}[3]{\node[inner sep=0pt,draw=black!40,line width=.3pt] at (#2,#3) {\includegraphics[width=1.32cm,height=1.32cm,keepaspectratio]{assets_20261030/paired_#1.png}};}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\path[use as bounding box] (0,.1) rectangle (17.6,6.75);
+\node[heading] at (.1,6.48) {(a) Client-specific training binding};
+\input{assets_20261030/binding_labels.tex}
+\node[small,anchor=west] at (.15,1.65) {$b_k:\mathcal C\rightarrow\mathcal O$};
+\node[small,anchor=west,align=left] at (.15,.97)
+ {$P_k(O=o\mid Y=c,C=1)$\\[3pt]$\quad=(1-\gamma)/M+\gamma\mathbf1\{o=b_k(c)\}$};
+\draw[black!25,line width=.5pt] (4.85,.65) -- (4.85,6.10);
+
+\node[heading] at (5.15,6.48) {(b) Same source, fixed severity};
+\node[small] at (7.22,5.88) {airplane, source 3; severity 3};
+\pairtile{gaussian_noise}{6.25}{4.78}
+\pairtile{defocus_blur}{8.25}{4.78}
+\node[small] at (6.25,3.93) {Gaussian noise};
+\node[small] at (8.25,3.93) {Defocus blur};
+\pairtile{snow}{6.25}{2.70}
+\pairtile{pixelate}{8.25}{2.70}
+\node[small] at (6.25,1.84) {Snow};
+\node[small] at (8.25,1.84) {Pixelate};
+\node[small] at (7.22,.95) {Only the corruption operator changes.};
+\draw[black!25,line width=.5pt] (9.60,.65) -- (9.60,6.10);
+
+\node[heading] at (9.95,6.48) {(c) Binding-directed probability contrast};
+\node[small] at (13.55,5.88) {Bound task classes: $B_{k,o}=\{c:b_k(c)=o\}$};
+\node (target) at (10.75,5.00) {$T_o(x)$};
+\node (other) at (10.75,3.65) {$T_{o'}(x)$};
+\node[trapezium,trapezium left angle=80,trapezium right angle=100,
+ draw=black!65,fill=black!3,line width=.6pt,minimum width=1.05cm,minimum height=1.95cm]
+ (model) at (12.65,4.32) {$f_k$};
+\draw[arr] (target.east) -- (11.8,5.00) -- ($(model.west)+(0,.47)$);
+\draw[arr] (other.east) -- (11.8,3.65) -- ($(model.west)+(0,-.47)$);
+\node[small] (mass1) at (15.45,5.00) {$m_{k,o}(z,o)$};
+\node[small] (mass2) at (15.45,3.65) {$\operatorname{avg}_{o'\ne o}m_{k,o}(z,o')$};
+\draw[arr] ($(model.east)+(0,.47)$) -- (13.6,5.00) -- (mass1.west);
+\draw[arr] ($(model.east)+(0,-.47)$) -- (13.6,3.65) -- (mass2.west);
+\node[small] at (15.45,5.40) {target view};
+\node[small] at (15.45,4.06) {other operator views};
+\draw[accent,line width=.8pt] (10.18,2.65) -- (17.30,2.65);
+\node[small] at (13.75,2.20) {$d_{k,o}(z)=m_{k,o}(z,o)-\operatorname{avg}_{o'\ne o}m_{k,o}(z,o')$};
+\node[small] at (13.75,1.64) {$\mathrm{DSA}_{k,o}=\mathbb E_z[d_{k,o}(z)]$};
+\node[small] at (13.75,.95) {Valid targets: $y\notin B_{k,o}$; same $z=(x,y)$.};
+\end{tikzpicture}
+\end{document}

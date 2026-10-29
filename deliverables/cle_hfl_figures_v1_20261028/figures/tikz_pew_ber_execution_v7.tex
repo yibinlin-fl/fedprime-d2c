@@ -1,0 +1,77 @@
+\documentclass[tikz,border=2pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,graphicx}
+\usetikzlibrary{arrows.meta,calc,shapes.geometric}
+\definecolor{accent}{HTML}{2F6A7F}
+\tikzset{every node/.style={font=\fontsize{8}{9.2}\selectfont,align=center,text=black,inner sep=2pt},
+ arr/.style={-{Stealth[length=1.5mm]},line width=.65pt,draw=black!80},
+ grad/.style={-{Stealth[length=1.5mm]},line width=.7pt,draw=accent,dashed},
+ box/.style={draw=black!65,line width=.6pt,minimum height=.78cm,fill=white},
+ heading/.style={anchor=west,font=\bfseries\fontsize{8.5}{10}\selectfont},
+ small/.style={font=\fontsize{7.2}{8.3}\selectfont}}
+\newcommand{\tile}[3]{\node[inner sep=0pt,draw=black!40,line width=.3pt] at (#2,#3) {\includegraphics[width=.68cm,height=.68cm,keepaspectratio]{assets_20261030/#1.png}};}
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\path[use as bounding box] (0,-.15) rectangle (17.6,8.0);
+\node[heading] at (.12,7.75) {(a) Public witness training};
+\tile{public_clean}{.65}{6.65}
+\node[small] at (.65,6.00) {public\\carrier};
+\node[small,minimum width=1.4cm,minimum height=0.65cm] (synth) at (2.15,6.65) {synthetic\\corruption};
+\draw[arr] (1.05,6.65) -- (synth.west);
+\draw[arr] (synth.east) -- (3.05,6.65);
+\tile{public_noise}{3.5}{6.65}
+\tile{public_blur}{4.3}{6.65}
+\tile{public_digital}{5.1}{6.65}
+\node[small,minimum width=0.65cm,minimum height=0.26cm] at (3.5,6.05) {noise};
+\node[small,minimum width=0.60cm,minimum height=0.26cm] at (4.3,6.05) {blur};
+\node[small,minimum width=0.30cm,minimum height=0.26cm] at (5.1,6.05) {$\cdots$};
+\node[box,minimum width=1.65cm] (witness) at (7.0,6.65) {PEW\\$q_\phi$};
+\draw[arr] (5.53,6.65) -- (witness.west);
+\node[box,minimum width=1.1cm] (envloss) at (9.65,6.65) {$\ell_{\rm env}$};
+\draw[arr] (witness.east) -- node[small,above=3pt] {scores} (envloss.west);
+\draw[arr] (synth.south) -- (2.15,5.80) -- (9.65,5.80) -- (envloss.south);
+\node[small,minimum width=2.6cm,minimum height=0.26cm] at (6.8,5.61) {synthetic label $e^{\rm pub}$};
+\draw[grad] (envloss.north) -- (9.65,7.3) -- node[small,above=1pt] {update $\phi$} (7.0,7.3) -- (witness.north);
+\node[small,minimum width=2.6cm,minimum height=0.65cm] (frozen) at (12.3,6.65) {freeze after\\public validation};
+\draw[arr] (10.25,6.65) -- (11.2,6.65);
+\node[small,minimum width=3.4cm,minimum height=0.65cm] at (15.75,6.65) {clean / noise / blur\\weather / digital / unknown};
+\draw[black!35,line width=.5pt] (.1,5.15) -- (17.45,5.15);
+
+\node[heading] at (.12,4.85) {(b) Local risk at client $k$};
+\tile{private_0}{.5}{3.25}
+\tile{private_1}{1.3}{3.25}
+\node[small] at (.9,2.65) {private fit\\$(x_i,y_i)$};
+\coordinate (fork) at (2.10,3.25);
+\draw[arr] (1.72,3.25) -- (fork);
+\fill[black!75] (fork) circle (.035cm);
+\node[box,dashed,minimum width=1.65cm] (pew) at (4.3,4.05) {frozen PEW\\$q_\phi(x_i)$};
+\node[draw=black!65,fill=black!3,line width=.65pt,minimum width=1.65cm,minimum height=.9cm]
+ (model) at (4.3,2.6) {task model\\$f_{\theta_k}$};
+\draw[arr] (fork) |- (pew.west);
+\draw[arr] (fork) |- (model.west);
+\draw[arr] (frozen.south) -- (12.3,5.40) -- (6.0,5.40) -- (6.0,4.50) -- (4.3,4.50) -- (pew.north);
+\node[box,minimum width=2cm,minimum height=0.9cm] (groups) at (7.8,4.05) {group support\\$n_{k,c,e},\ a_{k,c,e}$};
+\draw[arr] (pew.east) -- node[small,above=2pt] {$\hat e_i$} (groups.west);
+\node[small,minimum width=1.6cm,minimum height=0.26cm] at (7.8,4.72) {task label $y_i$};
+\draw[arr] (7.8,4.57) -- (groups.north);
+\node[box,small,minimum width=1.8cm] (ce) at (7.8,2.6) {task loss $\ell_i$\\$\ell(f_{\theta_k}(x_i),y_i)$};
+\draw[arr] (model.east) -- node[small,above=3pt] {prediction} (ce.west);
+\node[draw=accent,line width=.85pt,fill=accent!4,minimum width=2.1cm,minimum height=1.22cm]
+ (risk) at (11.5,3.35) {\textbf{BER aggregation}\\[4pt]$R_{{\rm BER},k}$};
+\draw[arr] (groups.east) -- (9.45,4.05) |- ($(risk.west)+(0,.30)$);
+\node[small,minimum width=1.8cm,minimum height=0.26cm] at (9.75,4.35) {group weights};
+\draw[arr] (ce.east) -- (9.45,2.6) |- ($(risk.west)+(0,-.30)$);
+\node[small] at (9.75,2.30) {sample losses};
+\node[box,minimum width=2.1cm] (update) at (15.35,3.35) {optimizer step\\update $\theta_k$};
+\draw[arr] (risk.east) -- (update.west);
+\draw[grad] (update.south) -- (15.35,1.65) -- node[small,above=2pt] {backpropagate through the task model} (4.3,1.65) -- (model.south);
+\draw[black!35,line width=.5pt] (.1,1.15) -- (17.45,1.15);
+
+\node[heading] at (.12,.75) {(c) Existing HFL interface};
+\node[small] (public) at (6.15,.55) {public input $x^{\rm pub}$};
+\node[box,minimum width=2.1cm,minimum height=.6cm] (pubpred) at (10.0,.55) {$f_{\theta_k}(x^{\rm pub})$};
+\node[small] (hfl) at (14.8,.55) {public-prediction exchange\\existing protocol unchanged};
+\draw[arr] (public.east) -- (pubpred.west);
+\draw[arr,<->] (pubpred.east) -- (hfl.west);
+\end{tikzpicture}
+\end{document}

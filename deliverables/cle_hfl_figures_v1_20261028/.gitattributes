@@ -2,6 +2,11 @@
 figures/fig_cle_paired_dsa_v4.* -text
 figures/fig_pew_ber_execution_v2.* -text
 figures/fig_pew_ber_execution_v3.* -text
+figures/tikz_* -text
+figures/assets_20261030/* -text
+prepare_tikz_assets_20261030.py -text
+build_tikz_candidates_20261030.py -text
+verify_tikz_candidates_20261030.py -text
 figures/fig_objective_tradeoff_v* -text
 figures/fig_dose_response_v* -text
 figures/generate_objective_tradeoff.py -text

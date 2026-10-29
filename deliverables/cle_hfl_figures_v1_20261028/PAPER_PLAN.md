@@ -27,6 +27,11 @@ and page-layout review snapshot.
 
 ## Visual contract
 
+2026-10-30 bounded TikZ repair candidates are planned separately in
+FIGURE_REVISION_PLAN_20261030.md: `tikz_pew_ber_execution_v7` and
+`tikz_cle_paired_dsa_v7`. Their TEX/PDF/PNG/SVG/JSON exist and were reviewed;
+the original five-entry manifest above describes the existing V0.11 selection.
+
 Integration selection (2026-10-28): diagnosis v4, execution v3, local-first v1,
 objective tradeoff v2, dose response v3. The manifest stems above retain their
 initial planning history; the current selection is indexed in README_ZH.md.

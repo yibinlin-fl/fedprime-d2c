@@ -100,3 +100,16 @@ communication inputs. The earlier clipping check missed these issues.
 Figures 3–5 need focused typography/marker/annotation refinements rather than
 new data or elaborate chart types. See VISUAL_REAUDIT_20261030_ZH.md and the
 geometry JSON/script. All current figure and manuscript artifacts are unchanged.
+
+## TikZ diagram repair candidates, 2026-10-30
+
+Directly viewed RAHFL Fig.3, AugHFL Fig.3, and FCCL Fig.2. Redrew only Figures
+2 and 1 as precise technical diagrams. Final candidates are
+`tikz_pew_ber_execution_v7` and `tikz_cle_paired_dsa_v7` (TEX/PDF/PNG/SVG/JSON).
+Figure-2 v4/v5/v6 and Figure-1 v5/v6 are retained, including failed first renders.
+All ten embedded images match source pixels and have PDF display ratio=1.000;
+static checks have zero CRITICAL. Native and manuscript-width previews viewed.
+The execution figure now joins task-model losses with pseudo-group weights and
+shows gradients back to the task model, with public-prediction communication
+separate. V0.11 is unchanged. Assets, build/verification code and source-based
+design rationale: REFERENCE_REDRAW_REVIEW_20261030_ZH.md.

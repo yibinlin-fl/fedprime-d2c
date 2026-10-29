@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-30",
+  "figure": "tikz_cle_paired_dsa_v7",
+  "renderer": "TikZ/TeX Live 2026",
+  "native_pdf_size_pt": [
+    502.883,
+    192.489
+  ],
+  "images": [
+    {
+      "object": "/Im1",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 37.42048,
+      "rendered_height_pt": 37.42048,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im2",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 37.42048,
+      "rendered_height_pt": 37.42048,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im3",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 37.42048,
+      "rendered_height_pt": 37.42048,
+      "ratio": 1.0
+    },
+    {
+      "object": "/Im4",
+      "native_pixels": [
+        32,
+        32
+      ],
+      "rendered_width_pt": 37.42048,
+      "rendered_height_pt": 37.42048,
+      "ratio": 1.0
+    }
+  ],
+  "source_pixels_identical": true,
+  "no_rotation_or_stretch": true,
+  "svg_images_embedded": true,
+  "independent_candidate_not_in_v0_11": true,
+  "sources": {
+    "tikz_cle_paired_dsa_v7.tex": "005D9B0E2D2521B059C6BE79381ED83151D3EC5A3F11A007701AA5BA9C32849F",
+    "assets_20261030/ASSET_MANIFEST.json": "8BBC6074979543951E618424348DFE512036AA39A3C0BFD6AADC85A37BB23D46",
+    "assets_20261030/binding_labels_v2.tex": "C4DDFDFEAC673F35EC7DE9319A20B53590E81B1ABAAEC6033F5679B1F94337D9"
+  },
+  "outputs_sha256": {
+    "tikz_cle_paired_dsa_v7.pdf": "E7B4695AE4FD2DAA4E365285E8194A584A8DB2CD31A60704A0609E01CD76055A",
+    "tikz_cle_paired_dsa_v7.png": "5555B24EEF7D1072BE0C62333A9B0D4CDE60B780DFA3C38B6568AD9C74268B16",
+    "tikz_cle_paired_dsa_v7.svg": "92461362F76CE94C13290AD529A947818575ABF548FEA60E21DAA342CEF454F2"
+  }
+}

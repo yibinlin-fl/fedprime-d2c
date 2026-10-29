@@ -1,0 +1,189 @@
+{
+  "date": "2026-10-30",
+  "resize_rotate_crop": false,
+  "images": [
+    {
+      "path": "public_clean.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "public/cifar-100-python.tar.gz train index42",
+      "label": "clean",
+      "sha256": "e0710a9302067072ff84d6caa1f4f71b6468f4829ecb1d7dd70b5847c4c742c5"
+    },
+    {
+      "path": "public_noise.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "schematic synthetic view of public index42; not a measured training result",
+      "label": "noise",
+      "sha256": "60796ae0bbf4ea79a6429f4a94b44d9345217f0c1e7226446c67d3ca95504a84"
+    },
+    {
+      "path": "public_blur.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "schematic synthetic view of public index42; not a measured training result",
+      "label": "blur",
+      "sha256": "f8ce63995bc0cd2e0432b4c8ec64a4abe520b7f99c1175c345b23035ec2976ca"
+    },
+    {
+      "path": "public_weather.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "schematic synthetic view of public index42; not a measured training result",
+      "label": "weather",
+      "sha256": "c758830818b2e1a2baffa9459b32728fc46fc5fcf4caa7940137405dd9a418ef"
+    },
+    {
+      "path": "public_digital.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "schematic synthetic view of public index42; not a measured training result",
+      "label": "digital",
+      "sha256": "9dcd7fdcd35bc168a35a07d28fe2baf7bccf80c574f0e41478533bbb0b63b03f"
+    },
+    {
+      "path": "private_0.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "gamma09 client0 private fit; original frozen bytes",
+      "label": "bird",
+      "sha256": "507592f76d828de03e7161913d0a5528c0684dfea0ac08801da4603e678b96c9"
+    },
+    {
+      "path": "private_1.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "gamma09 client0 private fit; original frozen bytes",
+      "label": "cat",
+      "sha256": "fcf0e2ed568f829134459d21a3d2699f63c06b7377d1fccfa85853651f2fcd66"
+    },
+    {
+      "path": "private_2.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "gamma09 client0 private fit; original frozen bytes",
+      "label": "airplane",
+      "sha256": "64c9fc035aae00fda839573c9c783a614924e691eb24db49ee9ff76527e2761d"
+    },
+    {
+      "path": "private_3.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "gamma09 client0 private fit; original frozen bytes",
+      "label": "deer",
+      "sha256": "b1627dc258f7f69bb379d7b300b124d590fa23df797a67d27703c1cce4212457"
+    },
+    {
+      "path": "paired_gaussian_noise.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "paired_dsa source3 severity3",
+      "label": "gaussian_noise",
+      "sha256": "617592b7231b53fae50335169139243967fb623073609eaad2e76ca429d1d6fb"
+    },
+    {
+      "path": "paired_defocus_blur.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "paired_dsa source3 severity3",
+      "label": "defocus_blur",
+      "sha256": "35b1849cf96724b86ac11b0aa6942c73cad4652110b926e0a71eb552d2e6e8d1"
+    },
+    {
+      "path": "paired_snow.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "paired_dsa source3 severity3",
+      "label": "snow",
+      "sha256": "328ceb4d52ae6fe51b11b170f5a84dad7d8c1504d17364e77e318e8335baf102"
+    },
+    {
+      "path": "paired_pixelate.png",
+      "pixels": [
+        32,
+        32
+      ],
+      "source": "paired_dsa source3 severity3",
+      "label": "pixelate",
+      "sha256": "ce7c8d4f49ac55052cac32a469d1db6eeff641ffb6348c7c8587d1d5445d5e32"
+    }
+  ],
+  "source_label": "airplane",
+  "source_id": 3,
+  "client_binding_map": {
+    "0": {
+      "0": "defocus_blur",
+      "1": "gaussian_noise",
+      "2": "elastic_transform",
+      "3": "brightness",
+      "4": "jpeg_compression",
+      "5": "snow",
+      "6": "frost",
+      "7": "glass_blur",
+      "8": "motion_blur",
+      "9": "contrast"
+    },
+    "1": {
+      "0": "contrast",
+      "1": "glass_blur",
+      "2": "snow",
+      "3": "jpeg_compression",
+      "4": "motion_blur",
+      "5": "brightness",
+      "6": "frost",
+      "7": "shot_noise",
+      "8": "elastic_transform",
+      "9": "defocus_blur"
+    },
+    "2": {
+      "0": "shot_noise",
+      "1": "glass_blur",
+      "2": "brightness",
+      "3": "snow",
+      "4": "jpeg_compression",
+      "5": "motion_blur",
+      "6": "defocus_blur",
+      "7": "frost",
+      "8": "elastic_transform",
+      "9": "gaussian_noise"
+    },
+    "3": {
+      "0": "defocus_blur",
+      "1": "snow",
+      "2": "shot_noise",
+      "3": "jpeg_compression",
+      "4": "gaussian_noise",
+      "5": "frost",
+      "6": "brightness",
+      "7": "motion_blur",
+      "8": "contrast",
+      "9": "glass_blur"
+    }
+  },
+  "asset_preparer_sha256": "59ab1ed1e0240b57c41f8d65cf114f8a37718d960edd0ffc0284f6c2ae7d57c6"
+}

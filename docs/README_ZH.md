@@ -1,6 +1,17 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-28
+Updated: 2026-10-30
+
+## 2026-10-30 当前绘图修订入口
+
+五图重新审查发现图2约20%图片拉伸及BER数据流歧义，图1有轻微比例失真；当前V0.11仍保留，
+图件尚未作为最终视觉定稿。先修图2，再修图1，之后收敛图3—5的视觉强调：
+
+```text
+deliverables/cle_hfl_figures_v1_20261028/VISUAL_REAUDIT_20261030_ZH.md
+deliverables/cle_hfl_figures_v1_20261028/GEOMETRY_AUDIT_20261030.json
+deliverables/cle_hfl_figures_v1_20261028/audit_geometry_20261030.py
+```
 
 ## 当前科研绘图与V0.11接入稿（V0.10保留）
 

@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-30",
+  "mode": "audit_only_no_figure_edits",
+  "axes_x_to_y_pixel_scale": 2.4155844155844157,
+  "geometry": [
+    {
+      "element": "fig1_paired_32x32",
+      "display_width_over_height": 0.9717868338557997,
+      "relative_to_square_percent": -2.821316614420033
+    },
+    {
+      "element": "fig2_public_source_32x32",
+      "display_width_over_height": 1.1994626063591582,
+      "relative_to_square_percent": 19.946260635915824
+    },
+    {
+      "element": "fig2_public_variants_32x32",
+      "display_width_over_height": 1.2077922077922079,
+      "relative_to_square_percent": 20.779220779220786
+    },
+    {
+      "element": "fig2_private_32x32",
+      "display_width_over_height": 1.0352504638218925,
+      "relative_to_square_percent": 3.5250463821892453
+    },
+    {
+      "element": "fig2_circle_patch",
+      "display_width_over_height": 2.4155844155844157,
+      "relative_to_square_percent": 141.5584415584416
+    }
+  ],
+  "figures": [
+    {
+      "stem": "fig_cle_paired_dsa_v4",
+      "native_width_in": 7.045,
+      "manuscript_width_in": 7.06,
+      "font_scale_at_inclusion": 1.0021291696238466,
+      "sha256": {
+        ".pdf": "B9EB06B567B9115F6FD3D58011F5E82363A4D57BCAF16F1246A0ACC49B74DDB1",
+        ".svg": "482FC1F59A6684CB55E89E586635221310C7325C5627EB9A86F20AD9BE7D561F",
+        ".png": "20A3472CBAEB4DFD5D0354E4E23D8D5350501B494D6BE993F56FC6676EF343C1"
+      }
+    },
+    {
+      "stem": "fig_pew_ber_execution_v3",
+      "native_width_in": 7.0635104166666665,
+      "manuscript_width_in": 7.06,
+      "font_scale_at_inclusion": 0.9995030209542293,
+      "sha256": {
+        ".pdf": "1300A5B8894ECD739601BD9A2637C02DBD46EA428712743FC42C3F15B2289805",
+        ".svg": "EFDD0D820301D453976C5F56AD99685180BF624F2D1E26256F6B1493C684092F",
+        ".png": "611285488B3BE7A84D58A0ABC87A8A206DD3D6037FF9AEB0C4A91C0583C12B03"
+      }
+    },
+    {
+      "stem": "fig_local_first_multiseed_v1",
+      "native_width_in": 7.1499999999999995,
+      "manuscript_width_in": 6.7776,
+      "font_scale_at_inclusion": 0.947916083916084,
+      "sha256": {
+        ".pdf": "D67DCE2B4F20E717A34F62B0E95192F67DCB4B91E861E2988EB4A34C397322B0",
+        ".svg": "C2BA833EF58EBD7C91EBF84F786F636FF8E23B5AFB20E43FCD13E20B3F311A21",
+        ".png": "A2632209E9D0CB30C46D7F72B3871FD208055202FDD1C7A69BAF1E251E523A24"
+      }
+    },
+    {
+      "stem": "fig_objective_tradeoff_v2",
+      "native_width_in": 7.1499999999999995,
+      "manuscript_width_in": 6.636399999999999,
+      "font_scale_at_inclusion": 0.9281678321678322,
+      "sha256": {
+        ".pdf": "25DCC3324141077229A100D9C0D1E2C9687598E5F8E16A338B47D26AB84CAC34",
+        ".svg": "3B1A35790AB367EFD6C1B84E2E9687A4FC6581E5649318C9A7D937CF90E3E192",
+        ".png": "C7888B729C749C73A9C2730BBD0CADDB2D56C2B5972367BF806AB693793717A0"
+      }
+    },
+    {
+      "stem": "fig_dose_response_v3",
+      "native_width_in": 7.1499999999999995,
+      "manuscript_width_in": 6.7776,
+      "font_scale_at_inclusion": 0.947916083916084,
+      "sha256": {
+        ".pdf": "87D469457D60C02308A1FA530A2B1DFA4AB0BFB3848F63953AE8FDACFFDE7CC5",
+        ".svg": "38463609CB58528DBBA271A06CBAFC4A002D0BCD388B62504F0D625AC9471E9C",
+        ".png": "EC5786F6454E90063E3B14656BAF214E37248597C5D2FAD508E612E506355282"
+      }
+    }
+  ],
+  "rotation_check": "No rotate/rotation transform calls in the two diagram generators; this does not establish the pose of objects in source images",
+  "matplotlib": "3.11.2"
+}

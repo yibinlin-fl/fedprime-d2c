@@ -87,3 +87,16 @@ All five figures reached independent candidate status before integration.
   measured points, seed SD, and the two frozen experimental budgets.
 - V0.11 remains an internal review draft with pending evidence tables, rather
   than a final page-limited conference submission. See its PDF_QA_ZH.md.
+
+## Detailed re-audit, 2026-10-30 (no new figure revision yet)
+
+User requested closer inspection of apparent skew and a less templated visual style.
+All five standalone PNGs and the Figure-2 manuscript page were opened again.
+Measured aspect distortion: public Figure-2 tiles +19.95/+20.78% width, private
+tiles +3.53%, Figure-1 paired tiles -2.82%. No explicit image rotation found.
+Figure-2 arrows also imply BER as pixel preprocessing; a future revision must
+show task-model losses and the BER risk/update branch, and qualify the public
+communication inputs. The earlier clipping check missed these issues.
+Figures 3–5 need focused typography/marker/annotation refinements rather than
+new data or elaborate chart types. See VISUAL_REAUDIT_20261030_ZH.md and the
+geometry JSON/script. All current figure and manuscript artifacts are unchanged.

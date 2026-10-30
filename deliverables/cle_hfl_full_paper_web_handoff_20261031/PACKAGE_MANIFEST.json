@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-31",
+  "manuscript": "V0.11 original bytes; candidate figures not integrated",
+  "facts": "No new experiments; scientific handoff inherited with current version/task corrections",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": "CITATION_AUDIT_ZH.md",
+      "bytes": 7810,
+      "sha256": "d68d620fa1b1502d8e0ef076630c585609bfc26d3e0edbfe2b41f14eda7b8b1f",
+      "source": "deliverables/cle_hfl_latex_v0_11_20261028/source/CITATION_AUDIT_ZH.md"
+    },
+    {
+      "path": "CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md",
+      "bytes": 71426,
+      "sha256": "14738f3e86d7eb9a4e0df46a3cc3e66fa3c1f21924e52a16649b4678a36b4da4"
+    },
+    {
+      "path": "CLE_HFL_LATEX_V0_11_FIGURES_20261028.pdf",
+      "bytes": 708230,
+      "sha256": "186fb86150aa18df47f0a81010f126292c0462cab10f2b16a4ade3e49d01d566",
+      "source": "deliverables/cle_hfl_latex_v0_11_20261028/CLE_HFL_LATEX_V0_11_FIGURES_20261028.pdf"
+    },
+    {
+      "path": "CLE_HFL_LATEX_V0_11_FIGURES_OVERLEAF_20261028.zip",
+      "bytes": 252751,
+      "sha256": "8f4d2d10a04325bf89df6076a56de2a605b130303d666d9a783cb3842bbf3840",
+      "source": "deliverables/cle_hfl_latex_v0_11_20261028/CLE_HFL_LATEX_V0_11_FIGURES_OVERLEAF_20261028.zip"
+    },
+    {
+      "path": "CURRENT_EVIDENCE_AND_REVIEW_LOCKS_ZH.md",
+      "bytes": 5846,
+      "sha256": "a75931e24b55b63a0a716837482fdae137e4ff7bf3579a2e19d351f554277592"
+    },
+    {
+      "path": "README_ZH.md",
+      "bytes": 2213,
+      "sha256": "ca25b4d7b1476a4724b94ea23353f05dc02752b15eabac577d726071285a3b0d"
+    },
+    {
+      "path": "WEB_REVIEW_PROMPTS_ZH.md",
+      "bytes": 4279,
+      "sha256": "00421ed4abae4b3031af3a235cf0f69fb3caf7e7e2bd4718e36362ccf12255be"
+    },
+    {
+      "path": "build_review_package.py",
+      "bytes": 4397,
+      "sha256": "13a25c3a11b6c5a3026e8936defaee03f6c255e9ed4eebe6fddd50643757a045"
+    },
+    {
+      "path": "evidence/local_first_three_seeds.csv",
+      "bytes": 801,
+      "sha256": "dcb5401c2d906074ce1af6f509098f183f02fd283a1f248f7f89274ae0b1efff",
+      "source": "deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv"
+    },
+    {
+      "path": "evidence/main_evaluation_dose_and_method.csv",
+      "bytes": 482,
+      "sha256": "d689868d3dadf6f3b1570d02ac0d513810dcdedb9804d9ca14c614c3e79f1845",
+      "source": "deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv"
+    },
+    {
+      "path": "figure_candidates/01_cle_paired_dsa.png",
+      "bytes": 165365,
+      "sha256": "5555b24eef7d1072be0c62333a9b0d4cde60b780dfa3c38b6568ad9c74268b16",
+      "source": "deliverables/cle_hfl_figures_v1_20261028/figures/tikz_cle_paired_dsa_v7.png"
+    },
+    {
+      "path": "figure_candidates/02_pew_ber_execution.png",
+      "bytes": 141822,
+      "sha256": "08aab99d3ea6f9eeaa2fc2a5e9543b34ea4f20bbc3cf6a58f3d76cc7c15eeb02",
+      "source": "deliverables/cle_hfl_figures_v1_20261028/figures/tikz_pew_ber_execution_v7.png"
+    },
+    {
+      "path": "figure_candidates/03_local_first.png",
+      "bytes": 103113,
+      "sha256": "469a752f61153dc655c75b0bd4bf3d7afe4dc1f85c0407aeaf46bdea6fa8a8e4",
+      "source": "deliverables/cle_hfl_figures_v1_20261028/figures/fig_local_first_multiseed_v2.png"
+    },
+    {
+      "path": "figure_candidates/04_objective_tradeoff.png",
+      "bytes": 86969,
+      "sha256": "d8f93373251b674191a8ec15f7638c8113289e5337301ddbd4de3b31c0561e3e",
+      "source": "deliverables/cle_hfl_figures_v1_20261028/figures/fig_objective_tradeoff_v3.png"
+    },
+    {
+      "path": "figure_candidates/05_dose_response.png",
+      "bytes": 140335,
+      "sha256": "ab96d2e0efd642041dc3b93e030775940610cdb711978dfd53dbe6d23b759594",
+      "source": "deliverables/cle_hfl_figures_v1_20261028/figures/fig_dose_response_v4.png"
+    },
+    {
+      "path": "references.bib",
+      "bytes": 9290,
+      "sha256": "26d1233070ca71388a9f4c2bef7861edecc3c4c0798f5c94c12efc26c2172168",
+      "source": "deliverables/cle_hfl_latex_v0_11_20261028/source/references.bib"
+    }
+  ]
+}

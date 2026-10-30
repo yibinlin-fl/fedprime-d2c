@@ -1,6 +1,23 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-30
+Updated: 2026-10-31
+
+## 2026-10-31 当前网页端审稿材料
+
+V0.11完整交接已更新，纠正旧文中残留的V0.8/V0.9底本指示；本轮先做可定位的表达/论证
+审稿，不改源码。新包包含原版PDF/源码ZIP、当前事实锁、两阶段提示词、五张独立候选PNG、
+两组冻结CSV及继承的引用审计。PDF尚未接入10月30日候选；不新增实验、不推送。
+
+```text
+deliverables/cle_hfl_full_paper_web_handoff_20261031/README_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20261031/CLE_HFL_FULL_PAPER_WEB_HANDOFF_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20261031/CURRENT_EVIDENCE_AND_REVIEW_LOCKS_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20261031/WEB_REVIEW_PROMPTS_ZH.md
+deliverables/cle_hfl_full_paper_web_handoff_20261031/CLE_HFL_WEB_REVIEW_V0_11_20261031.zip
+deliverables/cle_hfl_full_paper_web_handoff_20261031/PACKAGE_AUDIT.json
+```
+
+网页完整审稿意见返回目录已创建：`local_runs/paper_web_review_returns/v0_11_20261031/`。
 
 ## 2026-10-30 当前绘图修订入口
 

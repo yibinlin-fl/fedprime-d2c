@@ -1,4 +1,8 @@
-# Bounded revision: Figures 2 and 1
+# Bounded revision: Figures 1--5
+
+The initial diagram repair covered Figures 2 and 1. The author subsequently
+requested completion of Figure 3 plus refinement of Figures 4 and 5. The five
+entries below are independent candidates; the V0.11 paper remains unchanged.
 
 Preserve V0.11 and every existing image. Use TikZ for formula-bearing technical
 diagrams, Python only for extracting unchanged real thumbnails and data labels.
@@ -15,9 +19,11 @@ No in-figure headline, decorative neural icon, gradient, or new empirical value.
 
 **Data figures:**
 
-- none
+- fig_local_first_multiseed_v2 | claim=Local CLE effects track HFL effects across matched training seeds while communication contrasts change sign | source=deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv | section=Local-versus-Communication Formation | language=en | format=py,pdf,png,svg,csv,json | layout=double-column landscape
+- fig_objective_tradeoff_v3 | claim=Four objectives show different DSA--utility trade-offs over three training seeds under the same communication | source=three frozen Formal seed summaries and MULTISEED_SUMMARY.json | section=Axis I | language=en | format=py,pdf,png,svg,csv,json | layout=double-column landscape
+- fig_dose_response_v4 | claim=DSA rises across three measured ERM doses and matched BER changes shortcut use and all six utility endpoints | source=deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv | section=Main Evaluation Protocol | language=en | format=py,pdf,png,svg,csv,json | layout=double-column landscape
 
-**Total:** TIKZ=2, DATA=0, ALL=2
+**Total:** TIKZ=2, DATA=3, ALL=5
 <!-- END FIGURE_MANIFEST -->
 
 Check native/page-scale render, square image geometry, arrow meaning, label

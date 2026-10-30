@@ -1,0 +1,519 @@
+{
+  "findings": [
+    {
+      "kind": "call_added",
+      "method": "add_axes",
+      "candidate_lines": [
+        72,
+        73
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "annotate",
+      "before": 1,
+      "after": 3,
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.color",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.lw",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "bbox.alpha",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "bbox.boxstyle",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "bbox.edgecolor",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "bbox.facecolor",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "annotate",
+      "parameter": "fontsize",
+      "before": [
+        9
+      ],
+      "after": [
+        8,
+        8,
+        8
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "fontweight",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "ha",
+      "after": [
+        "alignment",
+        "'left' if value >= 0 else 'right'"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "text",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "f'★ {y[max_idx]:.1f}'"
+      ],
+      "after": [
+        "f'${yy:.4f}$'",
+        "f\"{candidate['dsa']:.4f}\"",
+        "f'${value:+.2f}$'"
+      ],
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "textcoords",
+      "after": [
+        "offset points",
+        "offset points",
+        "offset points"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "va",
+      "after": [
+        "bottom",
+        "center"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "xy",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "xytext",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "(x[max_idx] - 1.5, y[max_idx] + 3)"
+      ],
+      "after": [
+        "offset",
+        "(-27, -17)",
+        "(5 if value >= 0 else -5, 0)"
+      ],
+      "source_lines": [
+        41
+      ],
+      "candidate_lines": [
+        81,
+        83,
+        105
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "axhline",
+      "candidate_lines": [
+        90
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "axhspan",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        18
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "axvline",
+      "candidate_lines": [
+        103
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "barh",
+      "candidate_lines": [
+        102
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "figure",
+      "candidate_lines": [
+        71
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "fill_between",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        28
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "plot",
+      "before": 1,
+      "after": 3,
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "plot",
+      "parameter": "linewidth",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "2.5 if is_ours else 1.8"
+      ],
+      "after": [
+        "1.05"
+      ],
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "plot",
+      "parameter": "lw",
+      "after": [
+        0.8
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "plot",
+      "parameter": "markeredgewidth",
+      "before": [
+        1.2
+      ],
+      "after": [
+        0.7,
+        0.7
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "plot",
+      "parameter": "markersize",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "7 if is_ours else 5"
+      ],
+      "after": [
+        "4.5",
+        "5.1"
+      ],
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "plot",
+      "parameter": "zorder",
+      "before": [
+        3
+      ],
+      "after": [
+        3,
+        4
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        32
+      ],
+      "candidate_lines": [
+        76,
+        78,
+        87
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "scatter",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        38
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "subplots",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        15
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "text",
+      "candidate_lines": [
+        88,
+        122,
+        123,
+        124
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "tight_layout",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        56
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "repetition_changed",
+      "methods": [
+        "plot"
+      ],
+      "message": "样式值及其周期内顺序相同，重复次数不同；可能来自组数或循环组织变化。若重复用于叠加透明图层，仍需核对层数。",
+      "severity": "advisory"
+    }
+  ],
+  "baseline_calls": 9,
+  "candidate_calls": 16,
+  "verdict": "仅提供源码差异线索，不判定视觉通过或失败。即使无提示，仍需按现有流程对照实图。",
+  "limits": "不执行代码、不判断分支实际运行、不跨辅助文件追踪，不验证坐标语义或最终层次是否可见。",
+  "template_id": "basic.line",
+  "baseline": ".vivid\\template-sources\\6af7ff40fd40ae7f1f50d7af.py",
+  "candidate": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\deliverables\\cle_hfl_figures_v1_20261028\\figures\\generate_dose_response_refined.py",
+  "checkpoints": [],
+  "source_diff": "--- template\n+++ adapted\n@@ -1,57 +1,151 @@\n+\"\"\"Figure 5 refined: measured dose response and observed task-utility cost.\n+\n+Adapted from Vivid basic.line: retains ordered measured points, white marker\n+edges and series emphasis. Only ERM has a measured gamma curve. BER has one\n+measured gamma=.9 point. No synthetic error band or BER interpolation is drawn.\n+Right-panel bars are exact accuracy differences, computed from the same table.\n+Adapted from the actual previous generator. Native width 7.06 in. Short panel\n+headings and serif text match Figures 1--4; exact coordinates/contrasts retained.\n+\"\"\"\n+from __future__ import annotations\n+\n+import csv\n+from pathlib import Path\n+\n+from refined_data_style import ACCENT, NEUTRAL, setup_style\n+import matplotlib.pyplot as plt\n+from matplotlib.lines import Line2D\n+from matplotlib.ticker import FuncFormatter\n import numpy as np\n-import matplotlib.pyplot as plt\n-from _utils.plot_utils import setup_style, save_fig, PALETTE, COLORS, _lighten\n-setup_style()\n \n-x = np.arange(2015, 2025)\n-series = {\n-    '本文方法': np.array([72, 75, 78, 80, 83, 85, 87, 89, 91, 92]),\n-    '方法B':    np.array([70, 73, 76, 79, 81, 82, 84, 86, 88, 89]),\n-    '方法C':    np.array([68, 70, 72, 75, 77, 79, 80, 82, 83, 84]),\n-}\n-markers = ['o', 's', '^']\n-stds = {k: np.random.uniform(1.5, 3.0, len(v)) for k, v in series.items()}\n+from figure_common import REPO, INK, MUTED, RULE, RUST, arguments, export, output_stem, source_record, style\n \n-fig, ax = plt.subplots(figsize=(8, 5))\n+SOURCE = REPO / \"deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv\"\n+REPORT = REPO / \"deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md\"\n+METRICS = [\n+    (\"clean_accuracy\", \"Clean\"), (\"mixed_accuracy\", \"Mixed\"),\n+    (\"grid_accuracy\", \"Operator grid\"), (\"corrupted_balanced_accuracy\", \"Corrupted\"),\n+    (\"seen_accuracy\", \"Seen\"), (\"unseen_accuracy\", \"Unseen\"),\n+]\n \n-# 淡色背景渐变\n-ax.axhspan(min(min(v) for v in series.values()) - 5,\n-           max(max(v) for v in series.values()) + 5,\n-           alpha=0.02, color=PALETTE[0], zorder=0)\n \n-for i, (name, y) in enumerate(series.items()):\n-    is_ours = '本文' in name\n-    noise = stds[name]\n+def read_data(path: Path) -> list[dict]:\n+    with path.open(encoding=\"utf-8-sig\", newline=\"\") as handle:\n+        raw = list(csv.DictReader(handle))\n+    rows = []\n+    for item in raw:\n+        rows.append({key: value if key in {\"setting\", \"method\"} else float(value) for key, value in item.items()})\n+    expected = {(\"gamma00\", \"ERM\"), (\"gamma05\", \"ERM\"), (\"gamma09\", \"AsymHFL-ERM\"), (\"gamma09\", \"AsymHFL+PEW+BER\")}\n+    if len(rows) != 4 or {(row[\"setting\"], row[\"method\"]) for row in rows} != expected:\n+        raise ValueError(\"Expected exactly three ERM doses and one matched BER arm\")\n+    for row in rows:\n+        values = [value for value in row.values() if isinstance(value, float)]\n+        if not np.isfinite(values).all():\n+            raise ValueError(\"Nonfinite metric\")\n+        for metric, _ in METRICS:\n+            if not 0 <= row[metric] <= 100:\n+                raise ValueError(\"Accuracy is not in percent units\")\n+    return rows\n \n-    # 渐变填充置信带\n-    for layer, alpha in enumerate([0.15, 0.08, 0.03]):\n-        ax.fill_between(x, y - noise * (1 - layer * 0.2), y + noise * (1 - layer * 0.2),\n-                        alpha=alpha, color=PALETTE[i], linewidth=0)\n \n-    # 主折线\n-    ax.plot(x, y, f'{markers[i]}-', color=PALETTE[i],\n-            linewidth=2.5 if is_ours else 1.8, markersize=7 if is_ours else 5,\n-            markeredgecolor='white', markeredgewidth=1.2, label=name, zorder=3)\n+def main() -> None:\n+    args = arguments(__doc__)\n+    stem = output_stem(\"fig_dose_response\", args.revision)\n+    input_csv = args.data_csv if args.data_csv is not None else SOURCE\n+    rows = read_data(input_csv)\n+    by_setting = {row[\"setting\"]: row for row in rows if row[\"method\"] != \"AsymHFL+PEW+BER\"}\n+    control = by_setting[\"gamma09\"]\n+    candidate = next(row for row in rows if row[\"method\"] == \"AsymHFL+PEW+BER\")\n+    x = np.array([0.0, 0.5, 0.9])\n+    y = np.array([by_setting[key][\"dsa\"] for key in [\"gamma00\", \"gamma05\", \"gamma09\"]])\n+    if not (y[0] < y[1] < y[2]):\n+        raise ValueError(\"Frozen table no longer has the reported increasing dose response\")\n+    dsa_reduction = float(control[\"dsa\"] - candidate[\"dsa\"])\n+    reduction_percent = 100 * dsa_reduction / control[\"dsa\"]\n+    np.testing.assert_allclose(dsa_reduction, 0.0944899864, atol=2e-10, rtol=0)\n+    utility_changes = np.array([candidate[key] - control[key] for key, _ in METRICS])\n+    # Cross-check the rounded published deltas, without using them for plotting.\n+    np.testing.assert_allclose(utility_changes, [-4.350, -1.793, 0.967, 0.765, 0.920, 0.337], atol=0.000501, rtol=0)\n \n-    # 极值标注（最大值）\n-    max_idx = np.argmax(y)\n-    ax.scatter(x[max_idx], y[max_idx], s=120 if is_ours else 80, color=PALETTE[i],\n-               edgecolor='white', linewidth=2, zorder=4, marker='*')\n-    if is_ours:\n-        ax.annotate(f'★ {y[max_idx]:.1f}',\n-                    xy=(x[max_idx], y[max_idx]),\n-                    xytext=(x[max_idx] - 1.5, y[max_idx] + 3),\n-                    fontsize=9, fontweight='bold', color=PALETTE[i],\n-                    arrowprops=dict(arrowstyle='->', color=PALETTE[i], lw=1.2),\n-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white',\n-                              edgecolor=PALETTE[i], alpha=0.9))\n+    setup_style()\n+    fig = plt.figure(figsize=(7.06, 2.85))\n+    ax = fig.add_axes([0.085, 0.230, 0.405, 0.575])\n+    right = fig.add_axes([0.740, 0.230, 0.230, 0.575])\n+    # The measured three-dose ERM sequence retains the source line + white-edge\n+    # markers. No layer implies a continuous empirical fit or a BER dose curve.\n+    ax.plot(x, y, \"o-\", color=NEUTRAL, linewidth=1.05, markersize=4.5,\n+            markeredgecolor=\"white\", markeredgewidth=0.7, label=\"ERM\", zorder=3)\n+    ax.plot([0.9], [candidate[\"dsa\"]], \"s\", color=ACCENT, markersize=5.1,\n+            markeredgecolor=\"white\", markeredgewidth=0.7, label=\"PEW+BER\", zorder=4)\n+    for xx, yy, offset, alignment in zip(x, y, [(1, 15), (-8, 9), (-28, 9)], [\"left\", \"right\", \"left\"]):\n+        ax.annotate(rf\"${yy:.4f}$\", (xx, yy), xytext=offset,\n+                    textcoords=\"offset points\", ha=alignment, va=\"bottom\", color=MUTED, fontsize=8)\n+    ax.annotate(f\"{candidate['dsa']:.4f}\", (0.9, candidate[\"dsa\"]), xytext=(-27, -17),\n+                textcoords=\"offset points\", color=INK, fontsize=8)\n+    # A bracket reports the actual matched intervention at gamma=.9.\n+    top, bottom = control[\"dsa\"], candidate[\"dsa\"]\n+    ax.plot([0.95, 1.01, 1.01, 0.95], [top, top, bottom, bottom], color=ACCENT, lw=0.8)\n+    ax.text(1.045, (top + bottom) / 2, rf\"$-{reduction_percent:.1f}\\%$\", color=INK,\n+            fontsize=8, ha=\"left\", va=\"center\")\n+    ax.axhline(0, color=RULE, lw=0.8, linestyle=(0, (3, 3)), zorder=0)\n+    ax.set_xlim(-0.05, 1.30)\n+    ax.set_ylim(-0.015, 0.215)\n+    ax.set_xticks([0, 0.5, 0.9], [\"0\", \"0.5\", \"0.9\"])\n+    ax.set_yticks([0, 0.05, 0.10, 0.15, 0.20])\n+    ax.set_xlabel(r\"Binding strength $\\gamma_{\\rm CLE}$\", labelpad=5)\n+    ax.set_ylabel(\"DSA\", labelpad=5)\n+    ax.grid(axis=\"y\", lw=0.45, color=\"#E8EBED\")\n+    ax.set_axisbelow(True)\n \n-ax.set_xlabel('年份', fontsize=11)\n-ax.set_ylabel('准确率 (%)', fontsize=11)\n-ax.legend(frameon=False, labelspacing=0.35, handlelength=1.6, fontsize=9, loc='best')\n-ax.set_xticks(x)\n-ax.grid(alpha=0.12, linestyle='--', color=COLORS['grid'])\n-ax.spines['top'].set_visible(False)\n-ax.spines['right'].set_visible(False)\n-fig.tight_layout()\n-save_fig(fig, 'figures/fig_line.pdf')\n+    # Show all six frozen utility endpoints, including clean/mixed degradation.\n+    ypos = np.arange(len(METRICS))[::-1]\n+    right.barh(ypos, utility_changes, height=0.36, color=ACCENT, edgecolor=\"none\", zorder=2)\n+    right.axvline(0, color=MUTED, lw=0.8, linestyle=(0, (3, 3)), zorder=1)\n+    for yy, value in zip(ypos, utility_changes):\n+        right.annotate(rf\"${value:+.2f}$\", (value, yy),\n+                       xytext=(5 if value >= 0 else -5, 0), textcoords=\"offset points\",\n+                       ha=\"left\" if value >= 0 else \"right\", va=\"center\", color=INK, fontsize=8)\n+    right.set_yticks(ypos, [label for _, label in METRICS])\n+    right.tick_params(axis=\"y\", length=0, pad=7, labelsize=8)\n+    right.set_ylim(-0.65, 5.65)\n+    right.set_xlim(-6.0, 2.3)\n+    right.set_xticks([-4, -2, 0, 2])\n+    right.xaxis.set_major_formatter(FuncFormatter(lambda value, _: \"0\" if value == 0 else f\"{value:+.0f}\".replace(\"-\", \"−\")))\n+    right.set_xlabel(\"Accuracy change (pp)\", labelpad=5)\n+    right.grid(axis=\"x\", lw=0.45, color=\"#E8EBED\")\n+    right.set_axisbelow(True)\n+    for axis in (ax, right):\n+        axis.spines[[\"top\", \"right\"]].set_visible(False)\n+        axis.tick_params(axis=\"x\", labelsize=8, length=3)\n+    right.spines[\"left\"].set_visible(False)\n+\n+    fig.text(0.085, 0.945, r\"\\textbf{(a) Binding-strength response}\", fontsize=8.5)\n+    fig.text(0.630, 0.945, r\"\\textbf{(b) Task utility at $\\gamma=0.9$}\", fontsize=8.5)\n+    fig.text(0.630, 0.865, \"PEW+BER minus matched ERM\", color=INK, fontsize=7.5)\n+    ax.legend(loc=\"upper left\", bbox_to_anchor=(-0.015, 1.09), ncol=2, frameon=False,\n+              columnspacing=0.8, handlelength=1.4, handletextpad=0.4, fontsize=7.5)\n+    # Protocol belongs in the caption, not in a repeating footer strip.\n+    export(fig, stem, rows, {\n+        \"title\": \"Main evaluation dose response and task-utility trade-off\",\n+        \"sources\": [source_record(input_csv), source_record(REPORT)],\n+        \"recipe\": \"basic.line\", \"training_seed\": 0,\n+        \"units\": {\"left_y\": \"DSA probability scale\", \"right_x\": \"candidate minus control accuracy, percentage points\"},\n+        \"uncertainty\": \"No multi-training-seed intervals. No synthetic band or per-dose source CI.\",\n+        \"dsa_reduction\": dsa_reduction, \"relative_dsa_reduction_percent\": reduction_percent,\n+        \"utility_changes_pp\": {key: float(value) for (key, _), value in zip(METRICS, utility_changes)},\n+        \"protocol\": \"main evaluation protocol; alpha=1; rho=.5; fixed map2/partition seed0/training seed0; 40x64 local batches\",\n+        \"scope\": \"Measured dose points only; BER measured only at gamma .9; no monotonicity theorem or utility-preserving claim\",\n+        \"size_inches\": [7.06, 2.85],\n+        \"plot_coordinates\": {\"erm_gamma\": x.tolist(), \"erm_dsa\": y.tolist(), \"ber_gamma\": 0.9,\n+                             \"ber_dsa\": candidate['dsa'], \"utility_bar_y\": ypos.tolist()},\n+        \"axis_ranges\": {\"left_x\": list(ax.get_xlim()), \"left_y\": list(ax.get_ylim()),\n+                        \"right_x\": list(right.get_xlim()), \"right_y\": list(right.get_ylim())},\n+        \"parent_generator\": source_record(Path(__file__).with_name('generate_dose_response.py')),\n+        \"refined_style\": source_record(Path(__file__).with_name('refined_data_style.py')),\n+        \"design_changes\": \"Latin Modern; smaller balanced panels; one accent; no bold performance badge or repeated footer\",\n+    }, Path(__file__))\n+    plt.close(fig)\n+\n+\n+if __name__ == \"__main__\":\n+    main()\n"
+}

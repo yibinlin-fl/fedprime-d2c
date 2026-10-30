@@ -1,0 +1,102 @@
+{
+  "title": "Main evaluation dose response and task-utility trade-off",
+  "sources": [
+    {
+      "path": "deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/PAPER_TABLE.csv",
+      "sha256": "d689868d3dadf6f3b1570d02ac0d513810dcdedb9804d9ca14c614c3e79f1845"
+    },
+    {
+      "path": "deliverables/cle_v2_moderate_axis2_dose_formal_seed0_20261025/RESULT_SUMMARY_ZH.md",
+      "sha256": "5c4de6c3e6bd28c8f8f340d265b4997e8d8b8b619b528b3d77aa13b9679504f4"
+    }
+  ],
+  "recipe": "basic.line",
+  "training_seed": 0,
+  "units": {
+    "left_y": "DSA probability scale",
+    "right_x": "candidate minus control accuracy, percentage points"
+  },
+  "uncertainty": "No multi-training-seed intervals. No synthetic band or per-dose source CI.",
+  "dsa_reduction": 0.09448998639999999,
+  "relative_dsa_reduction_percent": 51.210126268521385,
+  "utility_changes_pp": {
+    "clean_accuracy": -4.350000000000001,
+    "mixed_accuracy": -1.7924999999999969,
+    "grid_accuracy": 0.966666999999994,
+    "corrupted_balanced_accuracy": 0.7650000000000006,
+    "seen_accuracy": 0.920455000000004,
+    "unseen_accuracy": 0.3374999999999986
+  },
+  "protocol": "main evaluation protocol; alpha=1; rho=.5; fixed map2/partition seed0/training seed0; 40x64 local batches",
+  "scope": "Measured dose points only; BER measured only at gamma .9; no monotonicity theorem or utility-preserving claim",
+  "size_inches": [
+    7.06,
+    2.85
+  ],
+  "plot_coordinates": {
+    "erm_gamma": [
+      0.0,
+      0.5,
+      0.9
+    ],
+    "erm_dsa": [
+      -0.0007302367,
+      0.0396793816,
+      0.1845142617
+    ],
+    "ber_gamma": 0.9,
+    "ber_dsa": 0.0900242753,
+    "utility_bar_y": [
+      5,
+      4,
+      3,
+      2,
+      1,
+      0
+    ]
+  },
+  "axis_ranges": {
+    "left_x": [
+      -0.05,
+      1.3
+    ],
+    "left_y": [
+      -0.015,
+      0.215
+    ],
+    "right_x": [
+      -6.0,
+      2.3
+    ],
+    "right_y": [
+      -0.65,
+      5.65
+    ]
+  },
+  "parent_generator": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/generate_dose_response.py",
+    "sha256": "4f2e19fc89dbe5c63b5d15d886f3e2b8977b01c611ed7fd1eb38a61e1edccbaa"
+  },
+  "refined_style": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/refined_data_style.py",
+    "sha256": "62bf898076fd0b78975eca8829782d20aab05a1777965e06ed67a3d3dd9c58fd"
+  },
+  "design_changes": "Latin Modern; smaller balanced panels; one accent; no bold performance badge or repeated footer",
+  "figure": "fig_dose_response_v4",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "shared_helper": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/figure_common.py",
+    "sha256": "c26aa03836ee19ac8b3a86bc57fe0174e18660db79e1166f5249eabecaeee597"
+  },
+  "outputs_sha256": {
+    "fig_dose_response_v4.pdf": "dcd5855552ba1db6a19c043772564fb09b0fbedb0b033542bc77f6bd2a21cb0b",
+    "fig_dose_response_v4.svg": "650983feec93cc0b9f65367653d03fc49f85cea861a81ea44952b54bc89e9b6f",
+    "fig_dose_response_v4.png": "ab96d2e0efd642041dc3b93e030775940610cdb711978dfd53dbe6d23b759594",
+    "fig_dose_response_v4.csv": "ec35fd5887624050fae4fac4ca9012d0d1b664844784d6688e5a68b46be887c5",
+    "fig_dose_response_v4.py": "df60df307a07b35fad80544da5480543799c0fddca81225049d240df76fe4790"
+  }
+}

@@ -12,5 +12,11 @@ figures/fig_dose_response_v* -text
 figures/generate_objective_tradeoff.py -text
 figures/generate_dose_response.py -text
 figures/figure_common.py -text
+figures/fig_local_first_multiseed_v1.py -text
+figures/fig_local_first_multiseed_v2.* -text
+figures/generate_local_first_multiseed_refined.py -text
+figures/generate_objective_tradeoff_refined.py -text
+figures/generate_dose_response_refined.py -text
+figures/refined_data_style.py -text
 .vivid/template-sources/0adda4e27f37b6544095adc9.* -text
 .vivid/template-sources/6af7ff40fd40ae7f1f50d7af.* -text

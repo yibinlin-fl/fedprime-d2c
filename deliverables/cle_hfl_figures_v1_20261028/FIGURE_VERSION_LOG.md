@@ -113,3 +113,21 @@ The execution figure now joins task-model losses with pseudo-group weights and
 shows gradients back to the task model, with public-prediction communication
 separate. V0.11 is unchanged. Assets, build/verification code and source-based
 design rationale: REFERENCE_REDRAW_REVIEW_20261030_ZH.md.
+
+## Data-figure refinement candidates, 2026-10-30
+
+- Figure 3 `fig_local_first_multiseed_v2`: resumed the unfinished candidate;
+  nine exact x-coordinates and both x-scales verified. Plain paired connectors,
+  separated Local/HFL symbols, serif fonts, no large summary strip. Original
+  v1 artifacts remain intact, and its generator snapshot is now archived.
+- Figure 4 `fig_objective_tradeoff_v3`: all 12 seed points, four means and
+  sample-SD crosses retained. Hollow seeds/filled means, neutral baselines and
+  one BER accent; removed decorative emphasis ring and large in-figure title.
+- Figure 5 `fig_dose_response_v4`: same three measured ERM doses, one BER point
+  and all six utility contrasts. Smaller headings, consistent fonts, fine
+  bars/lines; no footer strip, invented interval or extra BER dose curve.
+- All three native renders and manuscript-width proofs were actually viewed;
+  no overlap/clipping found. Independent frozen-data/hash checks passed,
+  including all five old Figure-4/5 revisions. No manuscript source was edited.
+- Exact source snapshots, CSV/JSON/PDF/SVG/PNG and the two verifier scripts are
+  retained. Full review and reproduction: REFINED_DATA_FIGURES_REVIEW_20261030_ZH.md.

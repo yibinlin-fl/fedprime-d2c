@@ -2,6 +2,17 @@
 
 Updated: 2026-10-30
 
+## 2026-10-30 图3—5修订完成，五图候选等待作者确认
+
+续完昨日图3并完成图4/5；当前候选为工作区`figures/`中的
+`fig_local_first_multiseed_v2`、`fig_objective_tradeoff_v3`、`fig_dose_response_v4`。
+三图与TikZ图1/2 v7统一衬线字体及克制配色；保留所有种子/效用端点，移除大标题、
+强调环和重复统计条。独立复算、来源/产物hash、旧版完整性通过；三张原尺寸与通栏校样
+均已实际查看，无重叠/裁切。源码、CSV/JSON与PDF/SVG/PNG完整留存。
+恢复：`deliverables/cle_hfl_figures_v1_20261028/README_ZH.md`及
+`REFINED_DATA_FIGURES_REVIEW_20261030_ZH.md`，版本历史见`FIGURE_VERSION_LOG.md`。
+V0.11及旧图未替换。下一步作者确认五图风格，再决定接入新论文快照；不启动训练。
+
 ## 2026-10-30 图1/2已完成TikZ修订候选，等待作者看图
 
 已实际查看RAHFL Fig.3、AugHFL Fig.3与FCCL Fig.2，按计算路径重绘图2/图1。

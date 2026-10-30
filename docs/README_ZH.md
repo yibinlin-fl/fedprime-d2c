@@ -4,8 +4,9 @@ Updated: 2026-10-30
 
 ## 2026-10-30 当前绘图修订入口
 
-五图重新审查后，已直接参考RAHFL/AugHFL/FCCL原图重绘图1/2。TikZ v7候选已通过像素/
-比例/编译/目视检查，待作者确认；V0.11及旧图均保留。之后再收敛图3—5的视觉强调：
+五图重新审查后，已直接参考RAHFL/AugHFL/FCCL原图重绘图1/2，TikZ v7候选通过像素/
+比例/编译/目视检查。图3 v2、图4 v3、图5 v4也已完成字体/标记/说明精简，
+保留全部冻结坐标和旧版本，独立数值及通栏视觉检查通过。五图待作者确认，尚未替换V0.11：
 
 ```text
 deliverables/cle_hfl_figures_v1_20261028/VISUAL_REAUDIT_20261030_ZH.md
@@ -13,6 +14,12 @@ deliverables/cle_hfl_figures_v1_20261028/GEOMETRY_AUDIT_20261030.json
 deliverables/cle_hfl_figures_v1_20261028/audit_geometry_20261030.py
 deliverables/cle_hfl_figures_v1_20261028/REFERENCE_REDRAW_REVIEW_20261030_ZH.md
 deliverables/cle_hfl_figures_v1_20261028/FIGURE_REVISION_PLAN_20261030.md
+deliverables/cle_hfl_figures_v1_20261028/REFINED_DATA_FIGURES_REVIEW_20261030_ZH.md
+deliverables/cle_hfl_figures_v1_20261028/verify_refined_local_first.py
+deliverables/cle_hfl_figures_v1_20261028/verify_refined_tradeoff_dose.py
+deliverables/cle_hfl_figures_v1_20261028/figures/fig_local_first_multiseed_v2.pdf
+deliverables/cle_hfl_figures_v1_20261028/figures/fig_objective_tradeoff_v3.pdf
+deliverables/cle_hfl_figures_v1_20261028/figures/fig_dose_response_v4.pdf
 deliverables/cle_hfl_figures_v1_20261028/figures/tikz_pew_ber_execution_v7.pdf
 deliverables/cle_hfl_figures_v1_20261028/figures/tikz_cle_paired_dsa_v7.pdf
 ```

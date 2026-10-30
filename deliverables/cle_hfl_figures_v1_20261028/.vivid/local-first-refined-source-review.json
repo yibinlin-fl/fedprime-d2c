@@ -1,0 +1,636 @@
+{
+  "findings": [
+    {
+      "kind": "call_added",
+      "method": "add_axes",
+      "candidate_lines": [
+        88,
+        89
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "annotate",
+      "before": 1,
+      "after": 3,
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.color",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.lw",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "fontsize",
+      "after": [
+        7.4,
+        7.4,
+        7.8
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "ha",
+      "after": [
+        "center",
+        "center",
+        "'left' if delta >= 0 else 'right'"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "text",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "''"
+      ],
+      "after": [
+        "f'{before[i]:.4f}'",
+        "f'{after[i]:.4f}'",
+        "f'{delta:+.4f}'"
+      ],
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "textcoords",
+      "after": [
+        "offset points",
+        "offset points",
+        "offset points"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "va",
+      "after": [
+        "bottom",
+        "top",
+        "center"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "xy",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "xytext",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "(after[i] - 0.012, y[i])"
+      ],
+      "after": [
+        "(0, 5)",
+        "(0, -5)",
+        "(offset, 0)"
+      ],
+      "source_lines": [
+        27
+      ],
+      "candidate_lines": [
+        101,
+        103,
+        110
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "axvline",
+      "candidate_lines": [
+        123
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "figure",
+      "candidate_lines": [
+        87
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "plot",
+      "before": 1,
+      "after": 2,
+      "source_lines": [
+        24
+      ],
+      "candidate_lines": [
+        98,
+        107
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "plot",
+      "parameter": "linewidth",
+      "before": [
+        2.0
+      ],
+      "after": [
+        0.8
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        24
+      ],
+      "candidate_lines": [
+        98,
+        107
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "plot",
+      "parameter": "lw",
+      "after": [
+        0.8
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        24
+      ],
+      "candidate_lines": [
+        98,
+        107
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "plot",
+      "parameter": "zorder",
+      "after": [
+        2,
+        1
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        24
+      ],
+      "candidate_lines": [
+        98,
+        107
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "rcParams",
+      "candidate_lines": [
+        59
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "scatter",
+      "before": 2,
+      "after": 3,
+      "source_lines": [
+        31,
+        33
+      ],
+      "candidate_lines": [
+        99,
+        100,
+        108
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "scatter",
+      "parameter": "edgecolors",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "'white'",
+        "'white'"
+      ],
+      "after": [
+        "INK",
+        "'white'",
+        "'white'"
+      ],
+      "source_lines": [
+        31,
+        33
+      ],
+      "candidate_lines": [
+        99,
+        100,
+        108
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "scatter",
+      "parameter": "linewidths",
+      "before": [
+        1.0,
+        1.0
+      ],
+      "after": [
+        0.8,
+        0.6,
+        0.5
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        31,
+        33
+      ],
+      "candidate_lines": [
+        99,
+        100,
+        108
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "scatter",
+      "parameter": "marker",
+      "after": [
+        "s",
+        "o",
+        "D"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        31,
+        33
+      ],
+      "candidate_lines": [
+        99,
+        100,
+        108
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "scatter",
+      "parameter": "zorder",
+      "before": [
+        3,
+        3
+      ],
+      "after": [
+        4,
+        4,
+        3
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        31,
+        33
+      ],
+      "candidate_lines": [
+        99,
+        100,
+        108
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "subplots",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        12
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "text",
+      "before": 2,
+      "after": 4,
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "text",
+      "parameter": "fontsize",
+      "before": [
+        8,
+        9
+      ],
+      "after": [
+        8.5,
+        8.5,
+        7.5,
+        7.5
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "text",
+      "parameter": "fontweight",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "text",
+      "parameter": "text",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "f'+{delta:.2f} ({pct_change:+.1f}%)'",
+        "sig"
+      ],
+      "after": [
+        "'\\\\textbf{(a) CLE effects}'",
+        "'\\\\textbf{(b) Communication contrast}'",
+        "'$\\\\Delta=\\\\mathrm{DSA}_{\\\\gamma=0.9}-\\\\mathrm{DSA}_{\\\\gamma=0}$'",
+        "'Magnified x-scale'"
+      ],
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "text",
+      "parameter": "va",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "text",
+      "parameter": "x",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "after[i] + 0.015",
+        "after[i] + 0.015"
+      ],
+      "after": [
+        "0.095",
+        "0.725",
+        "0.095",
+        "0.725"
+      ],
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "text",
+      "parameter": "y",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "y[i] - 0.15",
+        "y[i] + 0.2"
+      ],
+      "after": [
+        "0.935",
+        "0.935",
+        "0.84",
+        "0.84"
+      ],
+      "source_lines": [
+        37,
+        47
+      ],
+      "candidate_lines": [
+        131,
+        132,
+        133,
+        134
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "tight_layout",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        58
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    }
+  ],
+  "baseline_calls": 8,
+  "candidate_calls": 17,
+  "verdict": "仅提供源码差异线索，不判定视觉通过或失败。即使无提示，仍需按现有流程对照实图。",
+  "limits": "不执行代码、不判断分支实际运行、不跨辅助文件追踪，不验证坐标语义或最终层次是否可见。",
+  "template_id": "advanced.dumbbell",
+  "baseline": "deliverables\\cle_hfl_figures_v1_20261028\\.vivid\\template-sources\\c81322a77c40cac07067eb77.py",
+  "candidate": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\deliverables\\cle_hfl_figures_v1_20261028\\figures\\generate_local_first_multiseed_refined.py",
+  "checkpoints": [
+    {
+      "feature": "两端点、连接与变化",
+      "preserve": "保留两端颜色区分、白边点、连接线及方向箭头；变化文字与两端同一数轴对齐。",
+      "allowed_adaptation": "对象数量、间距和标注偏移可调，正负方向和变化率按数据更新。",
+      "evidence": [
+        {
+          "line": 24,
+          "end_line": 25,
+          "code": "    ax.plot([before[i], after[i]], [y[i], y[i]],\n            color=PALETTE[2], linewidth=2.0, solid_capstyle='round')",
+          "href": "sources/advanced.dumbbell/original.html#L24"
+        },
+        {
+          "line": 27,
+          "end_line": 28,
+          "code": "    ax.annotate('', xy=(after[i], y[i]), xytext=(after[i] - 0.012, y[i]),\n                arrowprops=dict(arrowstyle='->', color=PALETTE[0], lw=2.0))",
+          "href": "sources/advanced.dumbbell/original.html#L27"
+        },
+        {
+          "line": 31,
+          "end_line": 32,
+          "code": "    ax.scatter(before[i], y[i], color=PALETTE[3], s=80, zorder=3,\n               edgecolors='white', linewidths=1.0, label='Before' if i == 0 else '')",
+          "href": "sources/advanced.dumbbell/original.html#L31"
+        },
+        {
+          "line": 33,
+          "end_line": 34,
+          "code": "    ax.scatter(after[i], y[i], color=PALETTE[0], s=80, zorder=3,\n               edgecolors='white', linewidths=1.0, label='After' if i == 0 else '')",
+          "href": "sources/advanced.dumbbell/original.html#L33"
+        }
+      ]
+    }
+  ],
+  "source_diff": "--- template\n+++ adapted\n@@ -1,59 +1,186 @@\n-from _utils.plot_utils import setup_style, save_fig, PALETTE, COLORS, _lighten\n-setup_style()\n+\"\"\"Figure 3 refined: paired Local/HFL effects and signed communication contrast.\n+\n+Adapted from Vivid Figures advanced.dumbbell (registered source in .vivid/).\n+Adapted in place from generate_local_first_multiseed.py; v1 is preserved.\n+Retains paired endpoints and a separate signed-difference panel. The arbitrary\n+seed-row coordinate separates symbols; x-values are never shifted or jittered.\n+\n+Native width 7.06 in matches the present manuscript text block. The large\n+summary strip moves to the caption/report; exact mean/sample SD stay in JSON.\n+No manuscript file is changed by this script.\n+\"\"\"\n+from __future__ import annotations\n+\n+import argparse\n+import csv\n+import hashlib\n+import json\n+import platform\n+import os\n+from pathlib import Path\n+\n+os.environ['PATH'] = 'D:/texlive/2026/bin/windows' + os.pathsep + os.environ.get('PATH', '')\n+os.environ['MPLCONFIGDIR'] = str(Path(__file__).resolve().parents[3] / 'local_runs' / 'mplconfig_figure3_refined')\n+\n+import matplotlib as mpl\n import matplotlib.pyplot as plt\n+from matplotlib.lines import Line2D\n+from matplotlib.ticker import FuncFormatter\n import numpy as np\n \n-metrics = ['Accuracy', 'Precision', 'Recall', 'F1', 'AUC']\n-before = [0.82, 0.79, 0.85, 0.81, 0.88]\n-after = [0.91, 0.88, 0.90, 0.89, 0.94]\n+HERE = Path(__file__).resolve().parent\n+REPO = HERE.parents[2]\n+SOURCE = REPO / \"deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv\"\n+INK, MUTED, RULE = \"#20252B\", \"#66727D\", \"#CBD2D8\"\n+ACCENT = \"#2F6A7F\"\n \n-# ── 自适应高度\n-_fig_h = max(3.5, len(metrics) * 0.7 + 1)\n-fig, ax = plt.subplots(figsize=(8, _fig_h))\n-y = np.arange(len(metrics))\n \n-# Subtle grid\n-ax.grid(axis='x', alpha=0.15, linestyle='-', color=COLORS['grid'])\n-ax.set_axisbelow(True)\n+def read_data() -> tuple[list[dict[str, str]], np.ndarray, np.ndarray, np.ndarray]:\n+    with SOURCE.open(encoding=\"utf-8-sig\", newline=\"\") as handle:\n+        rows = list(csv.DictReader(handle))\n+    seeds = [row for row in rows if row[\"train_seed\"] in {\"0\", \"1\", \"2\"}]\n+    seeds.sort(key=lambda row: int(row[\"train_seed\"]))\n+    if [row[\"train_seed\"] for row in seeds] != [\"0\", \"1\", \"2\"]:\n+        raise ValueError(\"Expected exactly seeds 0, 1, 2\")\n+    hfl = np.array([float(row[\"delta_hfl\"]) for row in seeds])\n+    local = np.array([float(row[\"delta_local\"]) for row in seeds])\n+    comm = np.array([float(row[\"delta_comm\"]) for row in seeds])\n+    np.testing.assert_allclose(hfl - local, comm, atol=2e-10, rtol=0)\n+    for mode, calculation in [(\"mean\", np.mean), (\"sample_sd\", lambda x: np.std(x, ddof=1))]:\n+        reference = next(row for row in rows if row[\"train_seed\"] == mode)\n+        for field, vector in [(\"delta_hfl\", hfl), (\"delta_local\", local), (\"delta_comm\", comm)]:\n+            np.testing.assert_allclose(calculation(vector), float(reference[field]), atol=2e-10, rtol=0)\n+    if not np.isfinite(np.concatenate([hfl, local, comm])).all():\n+        raise ValueError(\"Nonfinite effect\")\n+    return seeds, hfl, local, comm\n \n-# Simple connector lines + arrow heads\n-for i in range(len(metrics)):\n-    delta = after[i] - before[i]\n-    pct_change = delta / before[i] * 100\n-    # Simple connector line\n-    ax.plot([before[i], after[i]], [y[i], y[i]],\n-            color=PALETTE[2], linewidth=2.0, solid_capstyle='round')\n-    # Arrow head at the \"after\" end\n-    ax.annotate('', xy=(after[i], y[i]), xytext=(after[i] - 0.012, y[i]),\n-                arrowprops=dict(arrowstyle='->', color=PALETTE[0], lw=2.0))\n \n-    # Before / After dots\n-    ax.scatter(before[i], y[i], color=PALETTE[3], s=80, zorder=3,\n-               edgecolors='white', linewidths=1.0, label='Before' if i == 0 else '')\n-    ax.scatter(after[i], y[i], color=PALETTE[0], s=80, zorder=3,\n-               edgecolors='white', linewidths=1.0, label='After' if i == 0 else '')\n+def setup_style() -> None:\n+    mpl.rcParams.update({\n+        \"font.family\": \"serif\", \"font.serif\": [\"Computer Modern Roman\"], \"font.size\": 8,\n+        \"text.usetex\": True, \"text.latex.preamble\": r\"\\usepackage{lmodern}\",\n+        \"axes.labelsize\": 8.5, \"axes.titlesize\": 8.5,\n+        \"axes.edgecolor\": RULE, \"axes.linewidth\": 0.7,\n+        \"text.color\": INK, \"axes.labelcolor\": INK,\n+        \"xtick.color\": MUTED, \"ytick.color\": INK,\n+        \"pdf.fonttype\": 42, \"ps.fonttype\": 42, \"svg.fonttype\": \"none\",\n+        \"savefig.facecolor\": \"white\",\n+    })\n \n-    # % change label\n-    ax.text(after[i] + 0.015, y[i] - 0.15, f'+{delta:.2f} ({pct_change:+.1f}%)',\n-            va='center', fontsize=8, color=PALETTE[0], fontweight='bold')\n \n-    # Significance marker (stars)\n-    if pct_change > 8:\n-        sig = '***'\n-    elif pct_change > 5:\n-        sig = '**'\n-    else:\n-        sig = '*'\n-    ax.text(after[i] + 0.015, y[i] + 0.2, sig, va='center', fontsize=9,\n-            color=COLORS['down'], fontweight='bold')\n+def main() -> None:\n+    parser = argparse.ArgumentParser(description=__doc__)\n+    parser.add_argument(\"--revision\", default=\"v2\")\n+    args = parser.parse_args()\n+    if not args.revision.startswith(\"v\") or not args.revision[1:].isdigit():\n+        parser.error(\"revision must be v followed by a number\")\n+    stem = HERE / f\"fig_local_first_multiseed_{args.revision}\"\n+    targets = [stem.with_suffix(ext) for ext in [\".pdf\", \".svg\", \".png\", \".json\", \".csv\", \".py\"]]\n+    if any(path.exists() for path in targets):\n+        raise FileExistsError(\"Preserving existing revision; select a fresh --revision vN\")\n \n-ax.set_yticks(y)\n-ax.set_yticklabels(metrics, fontsize=10)\n-ax.set_xlabel('Score', fontsize=11)\n-ax.legend(loc='lower right', frameon=False, labelspacing=0.35, handlelength=1.6, fontsize=9,\n-          fancybox=True, shadow=False)\n-ax.invert_yaxis()\n-ax.spines['top'].set_visible(False)\n-ax.spines['right'].set_visible(False)\n-fig.tight_layout()\n-save_fig(fig, 'figures/fig_dumbbell.pdf')\n+    seeds, hfl, local, comm = read_data()\n+    setup_style()\n+    before, after = local, hfl  # Matched conditions, not a temporal transition.\n+    metrics = [f\"Seed {row['train_seed']}\" for row in seeds]\n+    y = np.arange(len(metrics))[::-1]\n+    fig = plt.figure(figsize=(7.06, 2.55))\n+    ax = fig.add_axes([0.095, 0.255, 0.475, 0.525])\n+    right = fig.add_axes([0.725, 0.255, 0.235, 0.525], sharey=ax)\n+\n+    # Plain connectors pair the conditions without implying a time evolution.\n+    # A small within-seed vertical separation prevents coincident markers.\n+    ax.grid(axis=\"x\", linestyle=\"-\", color=\"#E8EBED\", lw=0.45)\n+    ax.set_axisbelow(True)\n+    for i in range(len(metrics)):\n+        delta = after[i] - before[i]\n+        local_y, hfl_y = y[i] + 0.09, y[i] - 0.09\n+        ax.plot([before[i], after[i]], [local_y, hfl_y], color=\"#8B949C\", linewidth=0.8, zorder=2)\n+        ax.scatter(before[i], local_y, facecolors=\"white\", edgecolors=INK, marker=\"s\", s=24, zorder=4, linewidths=0.8)\n+        ax.scatter(after[i], hfl_y, color=ACCENT, marker=\"o\", s=25, zorder=4, edgecolors=\"white\", linewidths=0.6)\n+        ax.annotate(f\"{before[i]:.4f}\", (before[i], local_y), xytext=(0, 5),\n+                    textcoords=\"offset points\", color=INK, fontsize=7.4, ha=\"center\", va=\"bottom\")\n+        ax.annotate(f\"{after[i]:.4f}\", (after[i], hfl_y), xytext=(0, -5),\n+                    textcoords=\"offset points\", color=INK, fontsize=7.4, ha=\"center\", va=\"top\")\n+\n+        # Signed differences are measured in DSA probability units, not accuracy.\n+        right.plot([0, delta], [y[i], y[i]], color=\"#8B949C\", lw=0.8, zorder=1)\n+        right.scatter(delta, y[i], color=INK, s=22, marker=\"D\", edgecolors=\"white\", linewidths=0.5, zorder=3)\n+        offset = 5 if delta >= 0 else -5\n+        right.annotate(f\"{delta:+.4f}\", (delta, y[i]), xytext=(offset, 0),\n+                       textcoords=\"offset points\", ha=\"left\" if delta >= 0 else \"right\",\n+                       va=\"center\", fontsize=7.8, color=INK)\n+\n+    ax.set_yticks(y, metrics)\n+    ax.set_ylim(-0.56, 2.56)\n+    ax.set_xlim(0, 0.16)\n+    ax.set_xticks([0, 0.04, 0.08, 0.12, 0.16])\n+    ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _: \"0\" if abs(value) < 1e-9 else f\"{value:.2f}\"))\n+    ax.set_xlabel(\"CLE effect on DSA\", labelpad=5)\n+    right.set_xlim(-0.0205, 0.023)\n+    right.set_xticks([-0.015, 0, 0.015])\n+    right.xaxis.set_major_formatter(FuncFormatter(lambda value, _: \"0\" if abs(value) < 1e-9 else f\"{value:+.3f}\"))\n+    right.axvline(0, color=MUTED, lw=0.9, linestyle=(0, (3, 3)), zorder=0)\n+    right.tick_params(axis=\"y\", left=False, labelleft=False)\n+    right.set_xlabel(r\"$\\Delta_{\\rm Comm}=\\Delta_{\\rm HFL}-\\Delta_{\\rm Local}$\", labelpad=5)\n+    for axis in (ax, right):\n+        axis.spines[[\"top\", \"right\", \"left\"]].set_visible(False)\n+        axis.tick_params(axis=\"y\", length=0, pad=7)\n+        axis.tick_params(axis=\"x\", length=2.5, labelsize=7.5)\n+\n+    fig.text(0.095, 0.935, r\"\\textbf{(a) CLE effects}\", fontsize=8.5)\n+    fig.text(0.725, 0.935, r\"\\textbf{(b) Communication contrast}\", fontsize=8.5)\n+    fig.text(0.095, 0.840, r\"$\\Delta=\\mathrm{DSA}_{\\gamma=0.9}-\\mathrm{DSA}_{\\gamma=0}$\", color=INK, fontsize=7.5)\n+    fig.text(0.725, 0.840, \"Magnified x-scale\", color=INK, fontsize=7.5)\n+    legend = [\n+        Line2D([0], [0], marker=\"s\", color=\"none\", markerfacecolor=\"white\", markeredgecolor=INK, markersize=4.8, label=\"Local\"),\n+        Line2D([0], [0], marker=\"o\", color=\"none\", markerfacecolor=ACCENT, markeredgecolor=\"white\", markersize=5, label=\"HFL\"),\n+    ]\n+    fig.legend(handles=legend, loc=\"center\", bbox_to_anchor=(0.470, 0.947), frameon=False,\n+               ncol=2, fontsize=7.8, columnspacing=0.8, handletextpad=0.3, handlelength=0.9)\n+\n+    # Exact mean/sample SD are retained in provenance and the caption/report,\n+    # rather than duplicating the results table in a large in-figure strip.\n+\n+    fig.savefig(targets[0], metadata={\"Title\": \"Local-first CLE effects across matched training seeds\", \"CreationDate\": None, \"ModDate\": None})\n+    fig.savefig(targets[1], metadata={\"Date\": None})\n+    fig.savefig(targets[2], dpi=300)\n+    plotted_coordinates = {\n+        \"local_x\": before.tolist(), \"hfl_x\": after.tolist(), \"comm_x\": (after-before).tolist(),\n+        \"local_y\": (y+0.09).tolist(), \"hfl_y\": (y-0.09).tolist(), \"comm_y\": y.tolist(),\n+        \"left_xlim\": list(ax.get_xlim()), \"right_xlim\": list(right.get_xlim()),\n+    }\n+    plt.close(fig)\n+    with targets[4].open(\"w\", encoding=\"utf-8\", newline=\"\") as handle:\n+        writer = csv.DictWriter(handle, fieldnames=list(seeds[0]))\n+        writer.writeheader()\n+        writer.writerows(seeds)\n+    targets[5].write_bytes(Path(__file__).read_bytes())\n+    provenance = {\n+        \"figure\": stem.name, \"source\": SOURCE.relative_to(REPO).as_posix(),\n+        \"source_sha256\": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),\n+        \"template\": \"advanced.dumbbell\", \"training_seeds\": [0, 1, 2],\n+        \"units\": \"DSA probability scale\", \"summary\": \"mean and sample SD across 3 training seeds\",\n+        \"uncertainty_bars\": \"none; source-bootstrap CIs are not used as training-seed CIs\",\n+        \"summary_location\": \"caption/report and JSON; removed decorative in-figure summary strip\",\n+        \"summary_statistics\": {name: {\"mean\": float(values.mean()), \"sample_sd\": float(values.std(ddof=1))}\n+                               for name, values in [(\"local\", local), (\"hfl\", hfl), (\"comm\", comm)]},\n+        \"plot_coordinates\": plotted_coordinates,\n+        \"within_seed_vertical_separation\": \"categorical layout only, not an altered measurement or jittered DSA\",\n+        \"axis_ranges_unchanged_from_v1\": True,\n+        \"font\": \"TeX Latin Modern; matched to the TikZ diagram candidates\",\n+        \"parent_generator_sha256\": hashlib.sha256((HERE / \"generate_local_first_multiseed.py\").read_bytes()).hexdigest(),\n+        \"template_baseline_sha256\": hashlib.sha256((HERE.parent / \".vivid/template-sources/c81322a77c40cac07067eb77.py\").read_bytes()).hexdigest(),\n+        \"protocol\": \"12 rounds x 16 local batches; batch 64; fixed seed0_split0\",\n+        \"seed_2_original_verdict\": seeds[2][\"verdict\"],\n+        \"claim_boundary\": \"Matched factorial contrasts; not a sample-level mediation decomposition or communication equivalence test\",\n+        \"runtime\": {\"python\": platform.python_version(), \"numpy\": np.__version__, \"matplotlib\": mpl.__version__},\n+        \"outputs_sha256\": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in targets if path != targets[3]},\n+    }\n+    targets[3].write_text(json.dumps(provenance, indent=2, ensure_ascii=False) + \"\\n\", encoding=\"utf-8\")\n+    for target in targets:\n+        print(f\"{target.name}: {target.stat().st_size} bytes\")\n+\n+\n+if __name__ == \"__main__\":\n+    main()\n"
+}

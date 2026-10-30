@@ -27,6 +27,13 @@ and page-layout review snapshot.
 
 ## Visual contract
 
+2026-10-30: new independent data candidates are local-first v2, objective
+tradeoff v3, and dose response v4. They retain all frozen values and axis
+ranges. Latin Modern, compact headings and one blue accent replace oversized
+headings, the BER emphasis ring and repeated summary strips. Together with
+TikZ Figure 1/2 v7, these are the five current review candidates; none replaces
+the V0.11 selection yet. See REFINED_DATA_FIGURES_REVIEW_20261030_ZH.md.
+
 2026-10-30 bounded TikZ repair candidates are planned separately in
 FIGURE_REVISION_PLAN_20261030.md: `tikz_pew_ber_execution_v7` and
 `tikz_cle_paired_dsa_v7`. Their TEX/PDF/PNG/SVG/JSON exist and were reviewed;

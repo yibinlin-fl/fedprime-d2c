@@ -1,0 +1,485 @@
+{
+  "findings": [
+    {
+      "kind": "call_sites_changed",
+      "method": "annotate",
+      "before": 2,
+      "after": 1,
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.color",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "arrowprops.lw",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "annotate",
+      "parameter": "fontsize",
+      "before": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "after": [
+        8.5
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "annotate",
+      "parameter": "fontweight",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "ha",
+      "after": [
+        "'left' if i >= 2 else 'center'"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "text",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "model",
+        "model",
+        "model",
+        "model",
+        "model",
+        "model",
+        "model",
+        "model",
+        "''"
+      ],
+      "after": [
+        "NAMES[i]"
+      ],
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "annotate",
+      "parameter": "va",
+      "after": [
+        "center"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "xy",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(flops[i], acc[i])",
+        "(1, 94)"
+      ],
+      "after": [
+        "(mx, my)"
+      ],
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "annotate",
+      "parameter": "xytext",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "offset",
+        "offset",
+        "offset",
+        "offset",
+        "offset",
+        "offset",
+        "offset",
+        "offset",
+        "(15, 87)"
+      ],
+      "after": [
+        "offsets[i]"
+      ],
+      "source_lines": [
+        30,
+        71
+      ],
+      "candidate_lines": [
+        116
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "errorbar",
+      "candidate_lines": [
+        113
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "plot",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        19,
+        61,
+        64,
+        67
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_sites_changed",
+      "method": "scatter",
+      "before": 3,
+      "after": 2,
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "message": "独立调用位置数量变化（不是组数展开次数）；核对新增/删除图层。",
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "scatter",
+      "parameter": "alpha",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "unresolved",
+      "method": "scatter",
+      "parameter": "edgecolor",
+      "message": "表达式或组织方式改变，静态检查无法确认等价；阅读相关代码。",
+      "before": [
+        "'white'",
+        "'white'",
+        "'white'",
+        "'white'",
+        "'white'",
+        "'white'",
+        "'white'",
+        "'white'",
+        "PALETTE[0]",
+        "'white'",
+        "'white'",
+        "'white'"
+      ],
+      "after": [
+        "'white'"
+      ],
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "scatter",
+      "parameter": "edgecolors",
+      "after": [
+        "color"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_not_found",
+      "method": "scatter",
+      "parameter": "facecolor",
+      "message": "原模板显式参数未在此类调用中找到；核对默认值或等价实现。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "scatter",
+      "parameter": "linewidth",
+      "before": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2.5
+      ],
+      "after": [
+        0.75,
+        0.8
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "parameter_added",
+      "method": "scatter",
+      "parameter": "marker",
+      "after": [
+        "marker",
+        "marker"
+      ],
+      "message": "新增显式参数；核对其用途。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "style_changed",
+      "method": "scatter",
+      "parameter": "zorder",
+      "before": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4
+      ],
+      "after": [
+        3,
+        4
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        27,
+        36,
+        78
+      ],
+      "candidate_lines": [
+        111,
+        115
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "layout_changed",
+      "method": "subplots",
+      "parameter": "figsize",
+      "before": [
+        [
+          8,
+          5.5
+        ]
+      ],
+      "after": [
+        [
+          7.06,
+          3.05
+        ]
+      ],
+      "message": "按源码出现/可展开循环顺序比较；结合卡片核对用途，不自动判错。",
+      "source_lines": [
+        12
+      ],
+      "candidate_lines": [
+        98
+      ],
+      "severity": "advisory"
+    },
+    {
+      "kind": "call_added",
+      "method": "subplots_adjust",
+      "candidate_lines": [
+        99
+      ],
+      "message": "新增调用；核对数据依据及布局用途，必要适配允许保留。",
+      "source_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "text",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        20,
+        73
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "operation_not_found",
+      "method": "tight_layout",
+      "message": "当前文件未找到此调用；检查是否删除图元、改用等价实现或移入辅助文件。",
+      "source_lines": [
+        86
+      ],
+      "candidate_lines": [],
+      "severity": "advisory"
+    },
+    {
+      "kind": "repetition_changed",
+      "methods": [
+        "annotate"
+      ],
+      "message": "样式值及其周期内顺序相同，重复次数不同；可能来自组数或循环组织变化。若重复用于叠加透明图层，仍需核对层数。",
+      "severity": "advisory"
+    }
+  ],
+  "baseline_calls": 32,
+  "candidate_calls": 6,
+  "verdict": "仅提供源码差异线索，不判定视觉通过或失败。即使无提示，仍需按现有流程对照实图。",
+  "limits": "不执行代码、不判断分支实际运行、不跨辅助文件追踪，不验证坐标语义或最终层次是否可见。",
+  "template_id": "academic.error_analysis",
+  "baseline": ".vivid\\template-sources\\0adda4e27f37b6544095adc9.py",
+  "candidate": "C:\\Users\\asus\\Desktop\\FedPRIME-D2C\\deliverables\\cle_hfl_figures_v1_20261028\\figures\\generate_objective_tradeoff_refined.py",
+  "checkpoints": [],
+  "source_diff": "--- template\n+++ adapted\n@@ -1,87 +1,157 @@\n+\"\"\"Figure 4 refined: frozen Axis-I shortcut--utility over 3 training seeds.\n+\n+Adapted from Vivid academic.error_analysis: retains the scatter comparison,\n+direct labels, white-edged summary markers. No parameter-size\n+measurement, efficiency model, or continuous Pareto frontier is available;\n+those unsupported layers are omitted. Actual seed points and sample-SD\n+crosses replace the demo bubbles. Adapted from the actual previous generator;\n+only typography, spacing, marker treatment and emphasis change. Native width\n+7.06 in. All 12 seed points and sample SD are retained. No manuscript edits.\n+\"\"\"\n+from __future__ import annotations\n+\n+import csv\n+import json\n+from pathlib import Path\n+\n+from refined_data_style import ACCENT, NEUTRAL, setup_style\n+import matplotlib.pyplot as plt\n+from matplotlib.lines import Line2D\n import numpy as np\n-import matplotlib.pyplot as plt\n-from scipy.interpolate import make_interp_spline\n-from _utils.plot_utils import setup_style, save_fig, PALETTE, COLORS, _lighten\n-setup_style()\n \n-models = ['Ours', 'ViT-B', 'ViT-L', 'ResNet-50', 'ResNet-101', 'DeiT-S', 'Swin-T', 'EfficientNet']\n-flops = np.array([4.2, 17.6, 61.6, 4.1, 7.8, 4.6, 4.5, 0.4])\n-acc = np.array([92.3, 91.2, 92.0, 89.5, 90.8, 90.1, 91.5, 88.2])\n-params = np.array([25, 86, 307, 25, 44, 22, 28, 5])\n+from figure_common import REPO, INK, MUTED, RULE, RUST, BLUE, arguments, export, output_stem, source_record, style\n \n-fig, ax = plt.subplots(figsize=(8, 5.5))\n+ARMS = [\"erm\", \"cvar_dro\", \"pew_groupdro\", \"pew_ber\"]\n+NAMES = [\"ERM\", \"CVaR-DRO\", \"PEW+GroupDRO\", \"PEW+BER\"]\n+COLORS = [NEUTRAL, NEUTRAL, NEUTRAL, ACCENT]\n+MARKERS = [\"o\", \"^\", \"s\", \"D\"]\n+SOURCES = [\n+    REPO / \"outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/analysis/RESULT_SUMMARY.json\",\n+    REPO / \"outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/analysis/RESULT_SUMMARY.json\",\n+    REPO / \"outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/analysis/RESULT_SUMMARY.json\",\n+]\n+AGGREGATE = REPO / \"deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json\"\n+REPORT = REPO / \"deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md\"\n \n-# Iso-efficiency contours (acc/flops = const)\n-flops_grid = np.linspace(0.1, 70, 200)\n-for eff in [5, 10, 20, 40]:\n-    acc_iso = eff * np.sqrt(flops_grid)\n-    mask = acc_iso <= 96\n-    ax.plot(flops_grid[mask], acc_iso[mask], '-', color=COLORS['grid'], linewidth=0.6, alpha=0.5)\n-ax.text(65, 86, 'iso-efficiency\\ncurves', fontsize=6.5, color=COLORS['grid'], ha='right', style='italic')\n \n-# Scatter bubbles\n-for i, model in enumerate(models):\n-    c = PALETTE[0] if model == 'Ours' else PALETTE[2]\n-    alpha = 1.0 if model == 'Ours' else 0.55\n-    s = params[i] * 3\n-    ax.scatter(flops[i], acc[i], s=s, color=c, alpha=alpha, edgecolor='white',\n-               linewidth=1, zorder=3)\n-    offset = (8, 8) if model not in ['ViT-L', 'EfficientNet'] else (-15, -12)\n-    ax.annotate(model, xy=(flops[i], acc[i]), xytext=offset, textcoords='offset points',\n-                fontsize=8, fontweight='bold' if model == 'Ours' else 'normal',\n-                color=PALETTE[0] if model == 'Ours' else 'grey')\n+def read_data(csv_file: Path | None) -> tuple[list[dict], list[dict]]:\n+    rows = []\n+    if csv_file is not None:\n+        with csv_file.open(encoding=\"utf-8-sig\", newline=\"\") as handle:\n+            for row in csv.DictReader(handle):\n+                rows.append({\"train_seed\": int(row[\"train_seed\"]), \"arm\": row[\"arm\"],\n+                             \"dsa\": float(row[\"dsa\"]), \"grid_accuracy\": float(row[\"grid_accuracy\"])})\n+        sources = [source_record(csv_file)]\n+    else:\n+        for seed, path in enumerate(SOURCES):\n+            data = json.loads(path.read_text(encoding=\"utf-8\"))\n+            if data[\"mode\"] != \"formal\" or data[\"rounds\"] != 40 or not data[\"scientific_evidence\"]:\n+                raise ValueError(f\"Not a 40-round Formal source: {path}\")\n+            if not data[\"paired_local_traces\"][\"matched\"]:\n+                raise ValueError(f\"Unmatched source: {path}\")\n+            if \"train_seed\" in data and data[\"train_seed\"] != seed:\n+                raise ValueError(\"Source seed mismatch\")\n+            for arm in ARMS:\n+                rows.append({\"train_seed\": seed, \"arm\": arm, \"dsa\": data[\"pooled_dsa\"][arm],\n+                             \"grid_accuracy\": data[\"operator_grid_accuracy\"][arm][\"pooled\"]})\n+        sources = [source_record(path) for path in SOURCES]\n \n-# Ours highlight ring\n-ours_idx = models.index('Ours')\n-ax.scatter(flops[ours_idx], acc[ours_idx], s=params[ours_idx] * 3 + 120, facecolor='none',\n-           edgecolor=PALETTE[0], linewidth=2.5, zorder=4)\n+    if len(rows) != 12 or {(r[\"train_seed\"], r[\"arm\"]) for r in rows} != {(s, a) for s in range(3) for a in ARMS}:\n+        raise ValueError(\"Expected all 4 arms x 3 training seeds\")\n+    if not np.isfinite([[r[\"dsa\"], r[\"grid_accuracy\"]] for r in rows]).all():\n+        raise ValueError(\"Nonfinite data\")\n+    # Check exact paired differences against the frozen multi-seed aggregate.\n+    aggregate = json.loads(AGGREGATE.read_text(encoding=\"utf-8\"))\n+    for seed in range(3):\n+        values = {r[\"arm\"]: r for r in rows if r[\"train_seed\"] == seed}\n+        actual = {\n+            \"erm_minus_pew_ber_dsa\": values[\"erm\"][\"dsa\"] - values[\"pew_ber\"][\"dsa\"],\n+            \"pew_groupdro_minus_pew_ber_dsa\": values[\"pew_groupdro\"][\"dsa\"] - values[\"pew_ber\"][\"dsa\"],\n+            \"pew_ber_minus_cvar_dsa\": values[\"pew_ber\"][\"dsa\"] - values[\"cvar_dro\"][\"dsa\"],\n+            \"pew_ber_minus_cvar_operator_accuracy_pp\": values[\"pew_ber\"][\"grid_accuracy\"] - values[\"cvar_dro\"][\"grid_accuracy\"],\n+        }\n+        for key, value in actual.items():\n+            np.testing.assert_allclose(value, aggregate[\"per_seed_key_deltas\"][str(seed)][key], atol=1e-12, rtol=0)\n \n-# Pareto frontier\n-# Find Pareto-optimal points (lower flops, higher acc)\n-pareto_mask = np.ones(len(models), dtype=bool)\n-for i in range(len(models)):\n-    for j in range(len(models)):\n-        if i != j and flops[j] <= flops[i] and acc[j] >= acc[i] and (\n-                flops[j] < flops[i] or acc[j] > acc[i]):\n-            pareto_mask[i] = False\n-            break\n+    # Also check all plotted means and SDs against the rounded official table.\n+    table = {}\n+    for line in REPORT.read_text(encoding=\"utf-8\").splitlines():\n+        if line.startswith(\"|\"):\n+            cells = [cell.strip().replace(\"**\", \"\") for cell in line.split(\"|\")[1:-1]]\n+            if cells and cells[0] in NAMES and len(cells) >= 3 and \"+/-\" in cells[1]:\n+                table[cells[0]] = cells\n+    for arm, name in zip(ARMS, NAMES):\n+        subset = sorted((r for r in rows if r[\"arm\"] == arm), key=lambda row: row[\"train_seed\"])\n+        for col, field, tolerance in [(1, \"dsa\", 5.1e-7), (2, \"grid_accuracy\", 5.1e-5)]:\n+            reference = [float(x.strip()) for x in table[name][col].split(\"+/-\")]\n+            vector = np.array([r[field] for r in subset])\n+            np.testing.assert_allclose([vector.mean(), vector.std(ddof=1)], reference, atol=tolerance, rtol=0)\n+    sources += [source_record(AGGREGATE), source_record(REPORT)]\n+    return rows, sources\n \n-pareto_flops = flops[pareto_mask]\n-pareto_acc = acc[pareto_mask]\n-sort_idx = np.argsort(pareto_flops)\n-pareto_flops = pareto_flops[sort_idx]\n-pareto_acc = pareto_acc[sort_idx]\n \n-# Smooth Pareto line\n-if len(pareto_flops) >= 3:\n-    f_smooth = np.linspace(pareto_flops.min(), pareto_flops.max(), 100)\n-    try:\n-        spl = make_interp_spline(pareto_flops, pareto_acc, k=min(3, len(pareto_flops) - 1))\n-        a_smooth = spl(f_smooth)\n-        ax.plot(f_smooth, a_smooth, '-', color=PALETTE[0], linewidth=1.5, alpha=0.6,\n-                label='Pareto frontier')\n-    except Exception:\n-        ax.plot(pareto_flops, pareto_acc, '-', color=PALETTE[0], linewidth=1.5, alpha=0.6,\n-                label='Pareto frontier')\n-else:\n-    ax.plot(pareto_flops, pareto_acc, '-', color=PALETTE[0], linewidth=1.5, alpha=0.6,\n-            label='Pareto frontier')\n+def main() -> None:\n+    args = arguments(__doc__)\n+    stem = output_stem(\"fig_objective_tradeoff\", args.revision)\n+    rows, sources = read_data(args.data_csv)\n+    setup_style()\n+    fig, ax = plt.subplots(figsize=(7.06, 3.05))\n+    fig.subplots_adjust(left=0.100, right=0.970, bottom=0.250, top=0.935)\n+    offsets = [(-16, 20), (-17, -25), (25, 3), (20, 18)]\n+    statistics = {}\n+    # Scatter and direct annotations follow the registered source recipe.\n+    for i, arm in enumerate(ARMS):\n+        subset = sorted((r for r in rows if r[\"arm\"] == arm), key=lambda r: r[\"train_seed\"])\n+        acc = np.array([r[\"grid_accuracy\"] for r in subset])\n+        dsa = np.array([r[\"dsa\"] for r in subset])\n+        mx, my = acc.mean(), dsa.mean()\n+        sx, sy = acc.std(ddof=1), dsa.std(ddof=1)\n+        statistics[arm] = {\"accuracy_mean\": mx, \"accuracy_sd\": sx, \"dsa_mean\": my, \"dsa_sd\": sy}\n+        color, marker = COLORS[i], MARKERS[i]\n+        ax.scatter(acc, dsa, s=18, marker=marker, facecolors=\"white\",\n+                   edgecolors=color, linewidth=0.75, zorder=3)\n+        ax.errorbar(mx, my, xerr=sx, yerr=sy, fmt=\"none\", color=color,\n+                    elinewidth=0.8, capsize=2.0, zorder=2)\n+        ax.scatter(mx, my, s=46, marker=marker, color=color, edgecolor=\"white\", linewidth=0.8, zorder=4)\n+        ax.annotate(NAMES[i], xy=(mx, my), xytext=offsets[i], textcoords=\"offset points\",\n+                    fontsize=8.5, color=INK,\n+                    ha=\"left\" if i >= 2 else \"center\", va=\"center\")\n+    ax.set_xlabel(r\"Operator-grid accuracy (\\%)\", labelpad=5)\n+    ax.set_ylabel(\"DSA\", labelpad=6)\n+    ax.set_xlim(17.2, 29.4)\n+    ax.set_ylim(0, 0.29)\n+    ax.set_xticks([18, 20, 22, 24, 26, 28])\n+    ax.set_yticks([0, 0.05, 0.10, 0.15, 0.20, 0.25])\n+    ax.spines[[\"top\", \"right\"]].set_visible(False)\n+    ax.tick_params(length=3, labelsize=8)\n+    ax.grid(linestyle=\"-\", lw=0.45, color=\"#E8EBED\")\n+    ax.set_axisbelow(True)\n+    # Single-panel data figure: the figure caption carries protocol and title.\n+    handles = [\n+        Line2D([], [], marker=\"o\", linestyle=\"none\", markerfacecolor=\"white\", markeredgecolor=NEUTRAL,\n+               markersize=3.5, label=\"Individual training seed\"),\n+        Line2D([], [], marker=\"o\", linestyle=\"none\", color=INK, markersize=5,\n+               label=r\"Mean $\\pm$ sample SD ($n=3$)\"),\n+    ]\n+    fig.legend(handles=handles, loc=\"center\", bbox_to_anchor=(0.545, 0.045), ncol=2,\n+               frameon=False, columnspacing=1.7, handletextpad=0.5, fontsize=7.8)\n+    export(fig, stem, rows, {\n+        \"title\": \"Axis-I shortcut--utility across three training seeds\", \"sources\": sources,\n+        \"recipe\": \"academic.error_analysis\", \"n_training_seeds\": 3,\n+        \"units\": {\"x\": \"operator-grid accuracy percent\", \"y\": \"DSA probability scale\"},\n+        \"uncertainty\": \"Axis-aligned mean +/- one sample SD (ddof=1) across training seeds, not a joint confidence region\",\n+        \"statistics\": statistics,\n+        \"protocol\": \"mechanism protocol; held-out map2; 40 rounds x 16 local batches; same AsymHFL; no AugMix/JSD/DCL/CDep\",\n+        \"scope\": \"Pooled comparison at fixed partition and binding map; no all-client dominance or continuous frontier claim\",\n+        \"size_inches\": [7.06, 3.05],\n+        \"plot_coordinates\": rows,\n+        \"axis_ranges\": {\"x\": list(ax.get_xlim()), \"y\": list(ax.get_ylim())},\n+        \"parent_generator\": source_record(Path(__file__).with_name('generate_objective_tradeoff.py')),\n+        \"refined_style\": source_record(Path(__file__).with_name('refined_data_style.py')),\n+        \"design_changes\": \"Latin Modern; shorter canvas; hollow seed markers; smaller filled means; neutral baselines; no BER ring or oversized title\",\n+    }, Path(__file__))\n+    plt.close(fig)\n \n-# \"Better\" direction arrow\n-ax.annotate('', xy=(1, 94), xytext=(15, 87),\n-            arrowprops=dict(arrowstyle='->', color=COLORS['up'], lw=2, connectionstyle='arc3,rad=0.1'))\n-ax.text(5, 93.5, 'Better', fontsize=10, fontweight='bold', color=COLORS['up'],\n-        style='italic', rotation=15)\n \n-# Bubble size legend\n-for ps in [10, 50, 200]:\n-    ax.scatter([], [], s=ps * 3, color=COLORS['ref_line'], alpha=0.3, edgecolor='white', label=f'{ps}M params')\n-\n-ax.set_xlabel('GFLOPs', fontsize=11)\n-ax.set_ylabel('Top-1 Accuracy (%)', fontsize=11)\n-ax.legend(frameon=False, labelspacing=0.35, handlelength=1.6, fontsize=8, loc='lower right', title='Model Size')\n-ax.spines['top'].set_visible(False)\n-ax.spines['right'].set_visible(False)\n-ax.grid(alpha=0.15, linestyle='--')\n-fig.tight_layout()\n-save_fig(fig, 'figures/fig_efficiency.pdf')\n+if __name__ == \"__main__\":\n+    main()\n"
+}

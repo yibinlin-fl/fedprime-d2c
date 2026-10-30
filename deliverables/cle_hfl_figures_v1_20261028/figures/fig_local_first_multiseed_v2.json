@@ -1,0 +1,89 @@
+{
+  "figure": "fig_local_first_multiseed_v2",
+  "source": "deliverables/cle_v2_local_first_multiseed_20261026/PAPER_TABLE.csv",
+  "source_sha256": "dcb5401c2d906074ce1af6f509098f183f02fd283a1f248f7f89274ae0b1efff",
+  "template": "advanced.dumbbell",
+  "training_seeds": [
+    0,
+    1,
+    2
+  ],
+  "units": "DSA probability scale",
+  "summary": "mean and sample SD across 3 training seeds",
+  "uncertainty_bars": "none; source-bootstrap CIs are not used as training-seed CIs",
+  "summary_location": "caption/report and JSON; removed decorative in-figure summary strip",
+  "summary_statistics": {
+    "local": {
+      "mean": 0.1221523415,
+      "sample_sd": 0.012446497120307504
+    },
+    "hfl": {
+      "mean": 0.12274795936666666,
+      "sample_sd": 0.0025183289192828267
+    },
+    "comm": {
+      "mean": 0.0005956178666666666,
+      "sample_sd": 0.00992919314956032
+    }
+  },
+  "plot_coordinates": {
+    "local_x": [
+      0.10796,
+      0.1272867853,
+      0.1312102392
+    ],
+    "hfl_x": [
+      0.119889,
+      0.1237172825,
+      0.1246375956
+    ],
+    "comm_x": [
+      0.011928999999999995,
+      -0.003569502800000013,
+      -0.006572643599999997
+    ],
+    "local_y": [
+      2.09,
+      1.09,
+      0.09
+    ],
+    "hfl_y": [
+      1.91,
+      0.91,
+      -0.09
+    ],
+    "comm_y": [
+      2,
+      1,
+      0
+    ],
+    "left_xlim": [
+      0.0,
+      0.16
+    ],
+    "right_xlim": [
+      -0.0205,
+      0.023
+    ]
+  },
+  "within_seed_vertical_separation": "categorical layout only, not an altered measurement or jittered DSA",
+  "axis_ranges_unchanged_from_v1": true,
+  "font": "TeX Latin Modern; matched to the TikZ diagram candidates",
+  "parent_generator_sha256": "0f23ccc7d52388dda806ecb5c57b3cb6e256f62f35c01d73d92a4c2fcc929874",
+  "template_baseline_sha256": "463553cffbbe706535b7737efa8ae65654cd6c3061757b7a07e22307e68b14bc",
+  "protocol": "12 rounds x 16 local batches; batch 64; fixed seed0_split0",
+  "seed_2_original_verdict": "INCONCLUSIVE_UNDERTRAINED",
+  "claim_boundary": "Matched factorial contrasts; not a sample-level mediation decomposition or communication equivalence test",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "outputs_sha256": {
+    "fig_local_first_multiseed_v2.pdf": "d83d3bbd74744d094db089560cccbe776b961342946cccca02fb1de6e776cd58",
+    "fig_local_first_multiseed_v2.svg": "fd6015a5908e6a234d2b08cbb121667bd5f9d222d2cf818323c8d3240c5f7ab3",
+    "fig_local_first_multiseed_v2.png": "469a752f61153dc655c75b0bd4bf3d7afe4dc1f85c0407aeaf46bdea6fa8a8e4",
+    "fig_local_first_multiseed_v2.csv": "a2f802e9ff5a86bc7903d836675437f96a44c2df7d1c84f9d0bca41e83aafabf",
+    "fig_local_first_multiseed_v2.py": "5316766c14f4d704010e72c72411ef0da49530cd37b6757e483fd53bf9f5e784"
+  }
+}

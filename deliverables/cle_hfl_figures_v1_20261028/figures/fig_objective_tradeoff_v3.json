@@ -1,0 +1,174 @@
+{
+  "title": "Axis-I shortcut--utility across three training seeds",
+  "sources": [
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/analysis/RESULT_SUMMARY.json",
+      "sha256": "3214f0bb6162276c0a3d5803a98d9fabd7201e5a7efb9f0ba9cfe7d23e78bb23"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/analysis/RESULT_SUMMARY.json",
+      "sha256": "54104ac255913e77a7aaa4fb6cc22f26435537b46b126518176eb78869e0153b"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/analysis/RESULT_SUMMARY.json",
+      "sha256": "c0af307ab7fe95a2fa86337961bd4c1905a992087c3285d1db0746a92264cc49"
+    },
+    {
+      "path": "deliverables/cle_hfl_map2_multiseed_20260922/MULTISEED_SUMMARY.json",
+      "sha256": "8bf2cd3c1b916a419a4fa322234cd85e7237e96f391412206cc044b87e2d0301"
+    },
+    {
+      "path": "deliverables/cle_hfl_map2_multiseed_20260922/RESULT_SUMMARY_ZH.md",
+      "sha256": "c6679263abe95cb12c227918d807a67ffd3f9ed3319cef0b7160d63bf82d215d"
+    }
+  ],
+  "recipe": "academic.error_analysis",
+  "n_training_seeds": 3,
+  "units": {
+    "x": "operator-grid accuracy percent",
+    "y": "DSA probability scale"
+  },
+  "uncertainty": "Axis-aligned mean +/- one sample SD (ddof=1) across training seeds, not a joint confidence region",
+  "statistics": {
+    "erm": {
+      "accuracy_mean": 20.495,
+      "accuracy_sd": 0.37184599560092674,
+      "dsa_mean": 0.25052979712756157,
+      "dsa_sd": 0.00866974789494319
+    },
+    "cvar_dro": {
+      "accuracy_mean": 19.220555555555556,
+      "accuracy_sd": 1.1054691479354075,
+      "dsa_mean": 0.0866540295571741,
+      "dsa_sd": 0.0055135100595004065
+    },
+    "pew_groupdro": {
+      "accuracy_mean": 21.451666666666668,
+      "accuracy_sd": 0.5783189239319231,
+      "dsa_mean": 0.20541682382504756,
+      "dsa_sd": 0.008045093471831133
+    },
+    "pew_ber": {
+      "accuracy_mean": 25.177222222222223,
+      "accuracy_sd": 1.2521562883164252,
+      "dsa_mean": 0.07147005604958062,
+      "dsa_sd": 0.01128833101622673
+    }
+  },
+  "protocol": "mechanism protocol; held-out map2; 40 rounds x 16 local batches; same AsymHFL; no AugMix/JSD/DCL/CDep",
+  "scope": "Pooled comparison at fixed partition and binding map; no all-client dominance or continuous frontier claim",
+  "size_inches": [
+    7.06,
+    3.05
+  ],
+  "plot_coordinates": [
+    {
+      "train_seed": 0,
+      "arm": "erm",
+      "dsa": 0.26030849975649867,
+      "grid_accuracy": 20.306666666666665
+    },
+    {
+      "train_seed": 0,
+      "arm": "cvar_dro",
+      "dsa": 0.08898156697152626,
+      "grid_accuracy": 20.456666666666667
+    },
+    {
+      "train_seed": 0,
+      "arm": "pew_groupdro",
+      "dsa": 0.21457534665363046,
+      "grid_accuracy": 20.788333333333334
+    },
+    {
+      "train_seed": 0,
+      "arm": "pew_ber",
+      "dsa": 0.07774146028300048,
+      "grid_accuracy": 23.743333333333336
+    },
+    {
+      "train_seed": 1,
+      "arm": "erm",
+      "dsa": 0.2437837660526104,
+      "grid_accuracy": 20.923333333333332
+    },
+    {
+      "train_seed": 1,
+      "arm": "cvar_dro",
+      "dsa": 0.09062209486570871,
+      "grid_accuracy": 18.878333333333334
+    },
+    {
+      "train_seed": 1,
+      "arm": "pew_groupdro",
+      "dsa": 0.20218464209260273,
+      "grid_accuracy": 21.85
+    },
+    {
+      "train_seed": 1,
+      "arm": "pew_ber",
+      "dsa": 0.05843846924085407,
+      "grid_accuracy": 26.055
+    },
+    {
+      "train_seed": 2,
+      "arm": "erm",
+      "dsa": 0.24749712557357562,
+      "grid_accuracy": 20.255
+    },
+    {
+      "train_seed": 2,
+      "arm": "cvar_dro",
+      "dsa": 0.08035842683428733,
+      "grid_accuracy": 18.326666666666668
+    },
+    {
+      "train_seed": 2,
+      "arm": "pew_groupdro",
+      "dsa": 0.19949048272890943,
+      "grid_accuracy": 21.716666666666665
+    },
+    {
+      "train_seed": 2,
+      "arm": "pew_ber",
+      "dsa": 0.07823023862488733,
+      "grid_accuracy": 25.733333333333334
+    }
+  ],
+  "axis_ranges": {
+    "x": [
+      17.2,
+      29.4
+    ],
+    "y": [
+      0.0,
+      0.29
+    ]
+  },
+  "parent_generator": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/generate_objective_tradeoff.py",
+    "sha256": "160f3aa89abaf7dc64c35059aadefd742876c5ede445f992e7abbfe78f28ddc7"
+  },
+  "refined_style": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/refined_data_style.py",
+    "sha256": "62bf898076fd0b78975eca8829782d20aab05a1777965e06ed67a3d3dd9c58fd"
+  },
+  "design_changes": "Latin Modern; shorter canvas; hollow seed markers; smaller filled means; neutral baselines; no BER ring or oversized title",
+  "figure": "fig_objective_tradeoff_v3",
+  "runtime": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "shared_helper": {
+    "path": "deliverables/cle_hfl_figures_v1_20261028/figures/figure_common.py",
+    "sha256": "c26aa03836ee19ac8b3a86bc57fe0174e18660db79e1166f5249eabecaeee597"
+  },
+  "outputs_sha256": {
+    "fig_objective_tradeoff_v3.pdf": "bb1f6f1d93bffe86729284b1c8904612d4a6abf4ebe4381a9d48b93efcbd4354",
+    "fig_objective_tradeoff_v3.svg": "021b2f5473770051f6365d31749415fd02e93213681bddb0aa5e337a68393098",
+    "fig_objective_tradeoff_v3.png": "d8f93373251b674191a8ec15f7638c8113289e5337301ddbd4de3b31c0561e3e",
+    "fig_objective_tradeoff_v3.csv": "ec2ff606c30bb23b3ffc5bce663cd3d6b0fd75cd776a3ffac24921a1f0a70cce",
+    "fig_objective_tradeoff_v3.py": "60ad26bc78188b5f8689e5ed452e9326fb0da1f6f479dcb197b4bf0b790ba83e"
+  }
+}

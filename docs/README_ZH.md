@@ -1,6 +1,16 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-10-31
+Updated: 2026-11-04
+
+## 2026-11-04 八行HFL领域表剩余三项启动卡
+
+主评价表已完成5/8行；FedDF/AugHFL/RAHFL仍待单臂Formal。已核对远端代码、输入hash、
+全部网页参数、冻结预算及结果名，11项聚焦检查通过，三个下载目录已创建；未启动付费任务。
+用户可以先补该表，后移CIFAR-100。完整照填设置与余额条件：
+
+```text
+docs/experiments/current/CLE_MAIN_AXIS2_REMAINING_THREE_OPENI_2026_11_04_ZH.md
+```
 
 ## 2026-10-31 当前网页端审稿材料
 

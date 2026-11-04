@@ -1,6 +1,17 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-10-31
+Updated: 2026-11-04
+
+## 2026-11-04 主评价八行表剩余三行启动卡已核验
+
+用户选择可先后移CIFAR-100，询问八行表剩余FedDF/AugHFL/RAHFL的完整启动设置。
+三项共用现有893421220-byte主评价包及`openi_cle_v2_moderate_entry.py`，只换单臂shard；
+表已完成5/8行，旧机制FedDF A/B不能抵本表待跑行。11项配置/回传聚焦检查再次通过；输入
+SHA256重新核验一致。GitHub main只读确认`32f4050`，实验代码与当前本地一致，无需推送论文。
+完整卡：`docs/experiments/current/CLE_MAIN_AXIS2_REMAINING_THREE_OPENI_2026_11_04_ZH.md`。
+FedDF按约100积分保守规划，AugHFL/RAHFL建议单号110--120、优先120积分；不保证刚100够。
+三个`outputs/openi_downloads/main_axis2_*_formal_s0_20261104/`目录已创建。
+本轮只准备说明、核验和目录，没有创建OpenI任务或运行训练。下一步由用户选择预算合适的单臂。
 
 ## 2026-10-31 V0.11网页端写作审稿包已准备
 

@@ -1,6 +1,16 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-04
+Updated: 2026-11-05
+
+## 2026-11-05 Axis I的40×16历史定义
+
+局部历史回溯明确：原四臂三seed为40联邦轮×每轮16个local batches×每batch64，
+历史fit总量33994，满预算约4.82个等效fit遍历。解释9月预算升级与10月保留固定预算
+证据的取舍，并与当前64-batch代码默认分开；没有重写旧结果或启动训练。
+
+```text
+docs/research/status/CLE_AXIS1_FROZEN_BUDGET_HISTORY_2026_11_05_ZH.md
+```
 
 ## 2026-11-04 JTT公平性审计与协议草案
 

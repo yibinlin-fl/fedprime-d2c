@@ -1,0 +1,196 @@
+{
+  "date": "2026-11-04",
+  "git_head": "eb936974ae775c8f14d262fa22c70824e48e91d6",
+  "status": "BLOCKED_NOT_READY_FOR_JTT_FORMAL_AGAINST_FROZEN_AXIS_I",
+  "training_started": false,
+  "sources": [
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/configs/map2_erm_trainseed0.json",
+      "sha256": "d994cada2d34f5f0b0e297a65a5487b98dbc4be87f67bcdcf6efc2e51e07e7ff"
+    },
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/configs/map2_cvar_dro_trainseed0.json",
+      "sha256": "b82cc63a14dd30e7432d51324fb3b3f7c87c5715f7b03d6df081368fea413fbe"
+    },
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/configs/map2_pew_groupdro_trainseed0.json",
+      "sha256": "d8be0d73929e1041ab2fa558b4ec2de509d052e2af17c47fefc1af3b53034d87"
+    },
+    {
+      "path": "outputs/openi_downloads/cle_v2_spurious_final_map2_formal/extracted/configs/map2_pew_ber_trainseed0.json",
+      "sha256": "adf6b4a80c0f1c000998cd4194c39a1edb02dc4710fda8cf930c2d19de2c2304"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/configs/map2_erm_trainseed1.json",
+      "sha256": "13231dd75bae94106e9d6c457a9b13b08fd9ad833be325534eea2398cf69cd0d"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/configs/map2_cvar_dro_trainseed1.json",
+      "sha256": "14be15ed7556e9540976de2a4e3ea875f60ee1c7176f4d48c6857492e9d6b623"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/configs/map2_pew_groupdro_trainseed1.json",
+      "sha256": "ba1a7cdf8592a6cf447124e0e04cc5acc5f9252b6c2f044b531ac947ab2637f7"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed1/configs/map2_pew_ber_trainseed1.json",
+      "sha256": "851a8f4dc9815e71e694cec95330d6c69b5cfc07b0383de8f9d40008ab78a3aa"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/configs/map2_erm_trainseed2.json",
+      "sha256": "185e445c8693f1e24b829f1ad320d965c8f06b73e7682051b75f456b0905a590"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/configs/map2_cvar_dro_trainseed2.json",
+      "sha256": "6441e62e6f338d9459e18a271ce7a44de6801f778c489416912ef4da79d851c3"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/configs/map2_pew_groupdro_trainseed2.json",
+      "sha256": "dcb76c5a78f00c90cc09690e2d2b6059936a4f1df4b528ced9ed50d030132cf0"
+    },
+    {
+      "path": "outputs/openi_downloads/m1_map2_multiseed/extracted_seed2/configs/map2_pew_ber_trainseed2.json",
+      "sha256": "342164e3ae2326683691f3aad1ca09a2a26dc54eff9f25852b9503676cacc272"
+    }
+  ],
+  "frozen_contract": {
+    "training_seeds": [
+      0,
+      1,
+      2
+    ],
+    "map_seed": 2,
+    "rounds": 40,
+    "local_batches": 16,
+    "batch_size": 64,
+    "public_batch_size": 128,
+    "public_batches_per_round": 4,
+    "pretrain_epochs": 0,
+    "optimizer": {
+      "name": "adam",
+      "lr": 0.001,
+      "weight_decay": 0.0
+    },
+    "skip_nonfinite": true,
+    "models": [
+      "ResNet10",
+      "ResNet12",
+      "ShuffleNet",
+      "Mobilenetv2"
+    ]
+  },
+  "frozen_four_arm_traces": [
+    {
+      "train_seed": 0,
+      "four_arm_trace_sha256": "d85116ca32f9d1cc921a7b42c801372f98c0f704a973ca1da0d7d70a32cbd16c"
+    },
+    {
+      "train_seed": 1,
+      "four_arm_trace_sha256": "775d587c4eea8d38e00adb5c97e223bd09552a2cb798fc049e125cb479952ed8"
+    },
+    {
+      "train_seed": 2,
+      "four_arm_trace_sha256": "615ad01824d83432fbbaa004227eae9462ab5207f46ab0999ea0ed847ebfabb5"
+    }
+  ],
+  "current_generic_runner_vs_frozen": [
+    {
+      "field": "train.max_local_batches",
+      "frozen": 16,
+      "candidate": 64
+    },
+    {
+      "field": "train.skip_nonfinite",
+      "frozen": true,
+      "candidate": false
+    }
+  ],
+  "legacy_jtt_erm_vs_frozen": [
+    {
+      "field": "data.scenario_id",
+      "frozen": "cle_hfl_v2_cross_map2_seed0_split0",
+      "candidate": "<missing>"
+    }
+  ],
+  "legacy_jtt_train_seed_support": [
+    0
+  ],
+  "stage2_initial_weights_same_as_frozen_erm_config": true,
+  "minibatch_counterexample": {
+    "N": 4,
+    "batch_size": 2,
+    "upweight": 20,
+    "losses": [
+      1.0,
+      4.0,
+      4.0,
+      4.0
+    ],
+    "error_mask": [
+      true,
+      false,
+      false,
+      false
+    ],
+    "normalized_full_dataset_repetition_risk": 1.391304347826087,
+    "expected_legacy_batch_normalized_loss": 2.571428571428571,
+    "expected_fixed_global_normalized_loss": 1.391304347826087,
+    "importance": "Exact batch repetition arithmetic does not prove a global minibatch equivalence"
+  },
+  "mask_unit_check": {
+    "fit_indices": [
+      4,
+      1,
+      2
+    ],
+    "audit_indices": [
+      0,
+      3,
+      5
+    ],
+    "visited_indices": [
+      4,
+      1,
+      2
+    ],
+    "full_mask": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "passed": true,
+    "producer_manifest_keys": [
+      "audit_labels_used",
+      "final_test_labels_used",
+      "fit_only",
+      "protocol",
+      "records",
+      "source"
+    ]
+  },
+  "protocol_draft_not_authorized": {
+    "stage1_rounds_candidate": 12,
+    "stage2_rounds": 40,
+    "local_batches": 16,
+    "upweight_candidate": 20,
+    "final_stage_budget_matched": true,
+    "total_training_budget_equal_to_40_round_erm": false,
+    "total_rounds": 52,
+    "extra_local_updates_fraction": 0.3,
+    "primary_fidelity_option": "Fixed fit-only error set, resampled stage2, mean CE; new sampler gate required",
+    "alternative": "Same-batch global-normalized reweighting must be labelled an adaptation",
+    "hyperparameter_rule": "No map2 final-test/DSA/true-environment tuning; select and freeze using permitted development protocol"
+  },
+  "known_missing_gates": [
+    "map2-specific input and seed identity",
+    "stage1 early-stop selection protocol",
+    "mask provenance/coverage checks",
+    "global target objective or faithful resampling",
+    "sampler-aware pairing audit",
+    "stage-specific recovery uploads and fail-closed context",
+    "matched final analysis and finite-value/completion gates"
+  ]
+}

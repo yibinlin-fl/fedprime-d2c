@@ -2,6 +2,18 @@
 
 Updated: 2026-11-04
 
+## 2026-11-04 JTT与冻结Axis I公平性审计完成，旧入口暂不可启动
+
+用户仅授权审计。已检查12个实际四臂配置、三seed配对trace、旧JTT runner/入口/损失及原论文。
+发现当前通用runner已变40×64，而已完成四臂是40×16；JTT补充必须锚定冻结配置。
+旧JTT默认原map/seed0、两阶段均40轮，batch自归一化一般不等于全数据重采样目标，
+且没有阶段性checkpoint回传、分析仍CUDA-only。fit-only mask索引与重新初始化路径通过核验。
+CPU数值反例和mock索引审计已保存，现有五项局部测试通过；没有修改训练代码或启动训练。
+报告：`docs/research/status/CLE_JTT_FAIRNESS_AUDIT_2026_11_04_ZH.md`；配套MATCHED_PROTOCOL_DRAFT同目录。
+机器证据及网页增量：`deliverables/cle_jtt_fairness_audit_20261104/`。旧12轮适配结果不能推广为JTT本体无效。
+候选方案：同map2/seed、最终40×16，独立早期识别与固定错误集重采样；12+40/lambda20仅草案，
+不声称同总算力。下一步需独立入口实现/恢复保护/小型smoke/benchmark后才可讨论Formal。
+
 ## 2026-11-04 主评价八行表剩余三行启动卡已核验
 
 用户选择可先后移CIFAR-100，询问八行表剩余FedDF/AugHFL/RAHFL的完整启动设置。

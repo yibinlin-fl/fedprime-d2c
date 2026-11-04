@@ -2,6 +2,20 @@
 
 Updated: 2026-11-04
 
+## 2026-11-04 JTT公平性审计与协议草案
+
+按已完成四臂40×16配置审计JTT，未启动训练、未改训练源码。旧入口不能直接补入当前map2
+三seed表；数据/seed、识别阶段、全局目标、mask身份与分阶段恢复均需修复。CPU反例与
+fit-only索引核验已保存，现有五项局部测试通过；新增协议仍为候选，不是启动授权。
+
+```text
+docs/research/status/CLE_JTT_FAIRNESS_AUDIT_2026_11_04_ZH.md
+docs/research/status/CLE_JTT_MATCHED_PROTOCOL_DRAFT_2026_11_04_ZH.md
+deliverables/cle_jtt_fairness_audit_20261104/audit_jtt_fairness.py
+deliverables/cle_jtt_fairness_audit_20261104/AUDIT_EVIDENCE.json
+deliverables/cle_jtt_fairness_audit_20261104/WEB_ADDENDUM_ZH.md
+```
+
 ## 2026-11-04 八行HFL领域表剩余三项启动卡
 
 主评价表已完成5/8行；FedDF/AugHFL/RAHFL仍待单臂Formal。已核对远端代码、输入hash、

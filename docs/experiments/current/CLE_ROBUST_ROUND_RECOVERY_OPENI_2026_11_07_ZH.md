@@ -21,7 +21,7 @@
 
 ## 首次启动卡
 
-代码已创建本地提交，推送后以本次交付给出的commit核对OpenI选择。旧远端 `32f4050` 没有本指南的训练中回传功能。
+功能提交 `d51e4387223fb6089923cc10691bdefa974cafa6` 已推送并通过远端只读核对。首次启动选 `main`，以本次交付启动卡给出的最终远端commit核对并保留任务记录。恢复时固定使用原任务实际commit。旧版本 `32f4050` 没有本指南的训练中回传功能。
 
 | 字段 | AugHFL | RAHFL |
 |---|---|---|
@@ -35,7 +35,7 @@
 | `data_source` | 空字符串，可不添加 | 相同 |
 | `resume_source` | 空字符串，可不添加 | 相同 |
 
-两账号各130积分。按此前6积分/小时费率，各可覆盖21小时40分；历史benchmark外推训练约16–17小时，按约120积分预留，实际耗时及费率以平台记录为准。GPU各1×V100 32GB、CPU8、内存50GB，镜像 `ubuntu22.04-cuda11.8-py310-torch2.1.0-tf2.14.0`，访问Internet选是。
+用户选择两账号各160积分。按此前6积分/小时费率，各可覆盖26小时40分；历史benchmark外推训练约16–17小时，按约120积分预留，实际耗时及费率以平台记录为准。GPU各1×V100 32GB、CPU8、内存50GB，镜像 `ubuntu22.04-cuda11.8-py310-torch2.1.0-tf2.14.0`，访问Internet选是。
 
 复用数据集 `chujiu/CLE_v2_Moderate_Alpha10_Rho05_Map2_Seed0_PEW_20261013`。本机输入文件为 `C:\Users\asus\Desktop\FedPRIME-D2C\local_runs\cle_v2_moderate_alpha10_rho05\cle_hfl_v2_moderate_alpha10_rho05_map2_seed0_split0_with_pew.tar.gz`，893421220 bytes，SHA256 `DEA800EC1465C45037E74E4B948DFB8D778F1354E8522B551438C6A515C9E588`。禁用旧cross-binding/factorial机制包以及CIFAR-100-private包。
 

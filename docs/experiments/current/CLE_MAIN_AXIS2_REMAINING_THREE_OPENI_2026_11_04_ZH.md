@@ -5,7 +5,7 @@
 
 2026-11-07增量：FedDF已验收，表完成6/8行，实测训练与分析合计约5h23m，按此前费率折算32.29积分。
 AugHFL/RAHFL将使用20/30/40轮中途回传的新版本，启动请改用
-`CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`；该新代码本地已验证，尚待推送。
+`CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`；该新代码本地已验证，提交d51e438已推送。
 
 ## 1. 八行表的准确状态
 

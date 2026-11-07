@@ -7,9 +7,9 @@ Updated: 2026-11-07
 用户确认固定在20/30/40轮回传，训练前先上传身份记录。新增仅对AugHFL/RAHFL单臂Formal启用的
 完整状态快照与恢复，输入/代码/环境身份冲突拒绝续训。原训练结束后、分析前的recovery与正式包保留。
 22项CPU聚焦检查通过，两方法实际通信/本地目标的小模型smoke中连续/带快照/中断恢复的最终权重、
-指标和trace一致。OpenI真实中途上传尚待首次任务验证。新实现仅本地提交，旧远端32f4050不具备此功能。
-两号各130积分的启动与恢复卡：`docs/experiments/current/CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`。
-下一步先推送用户授权的代码版本，再由用户启动两个单臂任务。第20轮前只有身份回执，未完成上传的进度
+指标和trace一致。OpenI真实中途上传尚待首次任务验证。实现提交d51e438已按用户授权推送并核对远端。
+用户准备使用两号各160积分，启动与恢复卡：`docs/experiments/current/CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`。
+下一步由用户分别启动AugHFL与RAHFL单臂Formal并保留实际commit。第20轮前只有身份回执，未完成上传的进度
 仍可能随平台硬停丢失。续跑所需的是progress包，不能把旧纯权重recovery称为完整续训状态。
 
 ## 2026-11-07 Axis II FedDF Formal 通过验收

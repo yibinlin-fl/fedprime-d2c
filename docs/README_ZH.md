@@ -8,7 +8,7 @@ Updated: 2026-11-07
 
 `docs/experiments/current/CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`。
 
-22项CPU检查通过，真实OpenI中途上传待首次云端任务核对，旧远端入口仍需推送更新。
+22项CPU检查通过，实现提交d51e438已推送。用户准备两号各160积分分别启动，真实OpenI中途上传待首次云端任务核对。
 
 ## 2026-11-07 主评价 FedDF Formal
 

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -41,7 +43,11 @@ def main() -> None:
     method = config.get("method_name")
     if not method:
         raise ValueError("Configuration must define method_name")
-    build_experiment(method, config).run()
+    experiment = build_experiment(method, config)
+    if os.environ.get("CLE_ROUND_RECOVERY"):
+        from fedprime.engine.round_recovery import RoundRecovery
+        experiment.round_recovery = RoundRecovery(config, json.loads(os.environ["CLE_ROUND_RECOVERY"]))
+    experiment.run()
 
 
 if __name__ == "__main__":

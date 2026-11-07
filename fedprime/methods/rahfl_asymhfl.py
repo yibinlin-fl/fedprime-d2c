@@ -410,7 +410,11 @@ class AsymHFLExperiment:
                 ),
                 public_view_clients=num_clients,
             )
-            public_iter = iter(public_loader)
+            if getattr(self, "round_recovery", None) is not None:
+                from fedprime.engine.round_recovery import ReplayablePublicIterator
+                public_iter = ReplayablePublicIterator(public_loader)
+            else:
+                public_iter = iter(public_loader)
 
         print("[setup] building heterogeneous client models", flush=True)
         models = build_models(model_cfg["names"], num_classes)
@@ -429,6 +433,16 @@ class AsymHFLExperiment:
                 train_cfg,
             )
 
+        start_round = 0
+        recovery = getattr(self, "round_recovery", None)
+        if recovery is not None:
+            recovery_generators = self._capture_private_loader_generator_states(
+                [*private_loaders, *self._routing_audit_loaders.values(), test_loader]
+            )
+            start_round, public_iter = recovery.restore(
+                self, models, optimizers, public_loader, public_iter, recovery_generators
+            )
+        log_mode = "a" if start_round else "w"
         metrics_path = self.output_dir / "metrics.csv"
         group_names = getattr(self, "_corruption_group_names", [])
         operator_metadata = load_operator_metadata(data_cfg["private_root"])
@@ -445,15 +459,15 @@ class AsymHFLExperiment:
         class_corruption_metrics_path = self.output_dir / "class_corruption_acc.csv"
         operator_split_metrics_path = self.output_dir / "operator_split_metrics.csv"
         teacher_edges_path = self.output_dir / "teacher_edges.csv"
-        group_file = group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
-        client_group_file = client_group_metrics_path.open("w", newline="", encoding="utf-8") if group_names else None
+        group_file = group_metrics_path.open(log_mode, newline="", encoding="utf-8") if group_names else None
+        client_group_file = client_group_metrics_path.open(log_mode, newline="", encoding="utf-8") if group_names else None
         class_corruption_file = (
-            class_corruption_metrics_path.open("w", newline="", encoding="utf-8")
+            class_corruption_metrics_path.open(log_mode, newline="", encoding="utf-8")
             if group_names
             else None
         )
         operator_split_file = (
-            operator_split_metrics_path.open("w", newline="", encoding="utf-8")
+            operator_split_metrics_path.open(log_mode, newline="", encoding="utf-8")
             if operator_metadata
             else None
         )
@@ -476,7 +490,7 @@ class AsymHFLExperiment:
                 ],
             )
             teacher_edges_writer.writeheader()
-        with metrics_path.open("w", newline="", encoding="utf-8") as f:
+        with metrics_path.open(log_mode, newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
                 fieldnames=[
@@ -526,7 +540,8 @@ class AsymHFLExperiment:
                     "baseline_server_updates",
                 ],
             )
-            writer.writeheader()
+            if not start_round:
+                writer.writeheader()
             group_writer = None
             client_group_writer = None
             class_corruption_writer = None
@@ -536,19 +551,22 @@ class AsymHFLExperiment:
                     group_file,
                     fieldnames=["round", *group_names, "worst_group_acc"],
                 )
-                group_writer.writeheader()
+                if not start_round:
+                    group_writer.writeheader()
             if client_group_file is not None:
                 client_group_writer = csv.DictWriter(
                     client_group_file,
                     fieldnames=["round", "client", *group_names, "worst_client_group_acc"],
                 )
-                client_group_writer.writeheader()
+                if not start_round:
+                    client_group_writer.writeheader()
             if class_corruption_file is not None:
                 class_corruption_writer = csv.DictWriter(
                     class_corruption_file,
                     fieldnames=["round", "client", "class_id", "group", "acc", "total"],
                 )
-                class_corruption_writer.writeheader()
+                if not start_round:
+                    class_corruption_writer.writeheader()
             if operator_split_file is not None:
                 operator_split_writer = csv.DictWriter(
                     operator_split_file,
@@ -563,9 +581,10 @@ class AsymHFLExperiment:
                         "cfg",
                     ],
                 )
-                operator_split_writer.writeheader()
+                if not start_round:
+                    operator_split_writer.writeheader()
 
-            for round_idx in range(int(train_cfg["rounds"])):
+            for round_idx in range(start_round, int(train_cfg["rounds"])):
                 round_started = time.perf_counter()
                 if self.device.type == "cuda":
                     torch.cuda.reset_peak_memory_stats(self.device)
@@ -789,6 +808,8 @@ class AsymHFLExperiment:
                 completed_round = round_idx + 1
                 if completed_round in save_rounds:
                     self._save_models(models, subdirectory=f"round_{completed_round:03d}")
+                if recovery is not None:
+                    recovery.save(self, models, optimizers, public_iter, recovery_generators, completed_round)
 
         if group_file is not None:
             group_file.close()

@@ -2,6 +2,14 @@
 
 Updated: 2026-11-07
 
+## 2026-11-07 AugHFL / RAHFL 中途回传与恢复
+
+20/30/40轮独立progress包、启动回执、完整优化器/RNG/公共迭代状态及同commit恢复说明：
+
+`docs/experiments/current/CLE_ROBUST_ROUND_RECOVERY_OPENI_2026_11_07_ZH.md`。
+
+22项CPU检查通过，真实OpenI中途上传待首次云端任务核对，旧远端入口仍需推送更新。
+
 ## 2026-11-07 主评价 FedDF Formal
 
 FedDF 第 4 行已验收，主评价八行表完成 6/8。结果、逐客户端 DSA、可填表数值、

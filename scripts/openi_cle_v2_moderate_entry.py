@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import subprocess
 import sys
 import tarfile
 import time
@@ -33,6 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--confirm_formal", choices=("false", "true"), default="false")
     parser.add_argument("--data_source", default="")
     parser.add_argument("--skip_install", choices=("false", "true"), default="false")
+    parser.add_argument("--resume_source", default="")
     return parser.parse_args()
 
 
@@ -88,6 +91,42 @@ def extract_archive(source: Path, destination: Path) -> Path:
     if not package_root.is_dir():
         raise FileNotFoundError(package_root)
     return package_root
+
+
+def extract_round_resume(source: Path, destination: Path, shard: str) -> Path:
+    if not source.is_file() or f"_{shard}_formal_progress_round_" not in source.name:
+        raise ValueError("resume_source must name the selected arm's completed round archive")
+    if destination.exists():
+        raise FileExistsError(destination)
+    with tarfile.open(source, "r:gz") as archive:
+        members = archive.getmembers()
+        base = destination.resolve()
+        for member in members:
+            target = (destination / member.name).resolve()
+            if (base != target and base not in target.parents) or not (member.isfile() or member.isdir()):
+                raise ValueError(f"Unsafe progress archive member: {member.name}")
+        destination.mkdir(parents=True)
+        archive.extractall(destination)
+    status = json.loads((destination / "PROGRESS.json").read_text(encoding="utf-8"))
+    actual_hash = hashlib.sha256((destination / "round_state.pt").read_bytes()).hexdigest()
+    if status["shard"] != shard or actual_hash != status["state_sha256"]:
+        raise ValueError("Progress archive identity/hash mismatch")
+    return destination
+
+
+def find_round_resume(value: str, roots: list[Path], shard: str) -> Path:
+    source = Path(value)
+    if source.is_file():
+        return source
+    if source.name != value or f"_{shard}_formal_progress_round_" not in value:
+        raise FileNotFoundError(f"Resume archive not found: {value}")
+    matches = set()
+    for root in roots:
+        if root.is_dir():
+            matches.update(path.resolve() for path in root.rglob(value))
+    if len(matches) != 1:
+        raise FileNotFoundError(f"Expected exactly one resume archive {value}; found {len(matches)}")
+    return matches.pop()
 
 
 def package_recovery_outputs(
@@ -148,6 +187,7 @@ def main() -> None:
     os.chdir(ROOT)
     environment = os.environ.copy()
     environment["PYTHONUNBUFFERED"] = "1"
+    environment.pop("CLE_ROUND_RECOVERY", None)
     context = prepare_c2net()
     require_upload_context(context)
     if args.skip_install != "true":
@@ -159,6 +199,27 @@ def main() -> None:
     configs_root = ROOT / "local_runs" / f"{run_name}_configs"
     analysis_root = ROOT / "outputs" / f"{run_name}_analysis"
     outputs_root.mkdir(parents=True, exist_ok=True)
+    robust_progress = args.mode == "formal" and args.shard in {"aughfl_fidelity", "rahfl_fidelity"}
+    if args.resume_source and not robust_progress:
+        raise ValueError("resume_source is supported only for the two robust single-arm Formal tasks")
+    if robust_progress:
+        resume_root = None
+        if args.resume_source:
+            resume_root = extract_round_resume(
+                find_round_resume(args.resume_source, candidate_roots(args, context), args.shard),
+                ROOT / "local_runs/openi_cle_round_resume", args.shard
+            )
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        digest = hashlib.sha256()
+        with source.open("rb") as handle:
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+        environment["CLE_ROUND_RECOVERY"] = json.dumps({
+            "shard": args.shard, "save_rounds": [20, 30, 40], "configs_root": str(configs_root),
+            "archive": str(ROOT / f"{run_name}_progress_outputs.tar.gz"),
+            "input_sha256": digest.hexdigest(), "code_commit": commit,
+            "resume_root": str(resume_root) if resume_root else None,
+        })
     command = [
         sys.executable, "-u", "scripts/run_cle_v2_moderate.py",
         "--package-root", str(package_root), "--mode", args.mode, "--shard", args.shard,
@@ -166,6 +227,16 @@ def main() -> None:
     ]
     if args.mode == "formal":
         command.append("--confirm-formal")
+    if robust_progress:
+        # Publish task identity before the expensive child process starts.
+        run([*command, "--prepare-only"], environment)
+        started_manifest = outputs_root / "RUN_STARTED.json"
+        started_manifest.write_text(json.dumps({
+            "status": "ready_to_train", "scientific_evidence": False,
+            "shard": args.shard, "target_rounds": 40,
+            "progress_rounds": [20, 30, 40], "identity": json.loads(environment["CLE_ROUND_RECOVERY"]),
+        }, indent=2), encoding="utf-8")
+        upload(context, [started_manifest, configs_root / f"CONTRACT_{args.shard}.json"])
     timing = outputs_root / "RUN_TIMING.json"
     recovery_archive = ROOT / f"cle_v2_moderate_{args.shard}_{args.mode}_recovery_outputs.tar.gz"
     final_archive = ROOT / f"cle_v2_moderate_{args.shard}_{args.mode}_outputs.tar.gz"

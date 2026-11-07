@@ -1,6 +1,12 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-05
+Updated: 2026-11-07
+
+## 2026-11-07 主评价 FedDF Formal
+
+FedDF 第 4 行已验收，主评价八行表完成 6/8。结果、逐客户端 DSA、可填表数值、
+回传包哈希和时间见 `docs/research/status/CLE_AXIS2_FEDDF_FORMAL_2026_11_07_ZH.md`。
+待补 AugHFL 与 RAHFL。
 
 ## 2026-11-05 Axis I的40×16历史定义
 

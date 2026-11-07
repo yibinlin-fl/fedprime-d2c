@@ -1,6 +1,15 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-05
+Updated: 2026-11-07
+
+## 2026-11-07 Axis II FedDF Formal 通过验收
+
+主评价八行表现在完成 6/8 行，AugHFL 和 RAHFL 待补。FedDF map2、seed 0、40 轮 × 64 本地
+batches 协议、40 轮记录、四权重及双包一致性已核验。与已有五行的 160 个首 batch 哈希全部一致，
+六行 DSA 和 grid accuracy 已用预测缓存复算。第 4 行 DSA/Grid/Clean/Corrupt/Mixed =
+`0.149599 / 40.557 / 53.250 / 40.057 / 46.653`。训练 5h20m56s，分析 1m59s，
+按此前 V100 费率折算约 32.29 积分（账单另核）。FedDF 的实测不用于外推两条鲁棒基线。
+报告与可填表行：`docs/research/status/CLE_AXIS2_FEDDF_FORMAL_2026_11_07_ZH.md`。
 
 ## 2026-11-05 已完成Axis I预算历史已澄清
 

@@ -75,7 +75,7 @@ def test_round_snapshot_continuation_matches_uninterrupted_adam(tmp_path, monkey
     seed()
     exp = make_experiment(tmp_path / "original", arm)
     options = {
-        "shard": arm, "save_rounds": [1, 2, 3], "input_sha256": "frozen", "code_commit": "commit",
+        "shard": arm, "save_rounds": [1, 2, 3], "input_sha256": "frozen", "code_sha256": "source",
         "configs_root": str(tmp_path), "archive": str(tmp_path / "progress.tar.gz"),
     }
     hook = recovery.RoundRecovery(exp.config, options)
@@ -125,6 +125,9 @@ def test_round_snapshot_continuation_matches_uninterrupted_adam(tmp_path, monkey
     wrong = recovery.RoundRecovery(new_exp.config, {**options, "input_sha256": "other", "resume_root": str(state_root)})
     with pytest.raises(ValueError, match="identity mismatch"):
         wrong.restore(new_exp, {0: new_model}, {0: new_opt}, loader, None, generators)
+    wrong_code = recovery.RoundRecovery(new_exp.config, {**options, "code_sha256": "changed", "resume_root": str(state_root)})
+    with pytest.raises(ValueError, match="identity mismatch: code_sha256"):
+        wrong_code.restore(new_exp, {0: new_model}, {0: new_opt}, loader, None, generators)
 
 
 def test_progress_upload_retains_previous_round_on_next_failure(tmp_path, monkeypatch):
@@ -168,20 +171,26 @@ def test_progress_extract_rejects_links_and_wrong_arm(tmp_path):
         extract_round_resume(archive, tmp_path / "wrong", "rahfl_fidelity")
 
 
-def test_robust_entry_publishes_identity_before_training(tmp_path, monkeypatch):
+def test_robust_entry_publishes_identity_from_export_without_git(tmp_path, monkeypatch):
     import scripts.openi_cle_v2_moderate_entry as entry
     import sys
     package = tmp_path / "input"
     package.mkdir()
     source = tmp_path / "input.tar.gz"
     source.write_bytes(b"input")
+    for name in entry.RECOVERY_SOURCE_DIRS:
+        (tmp_path / name).mkdir()
+    (tmp_path / "requirements.txt").write_text("torch\n")
+    (tmp_path / "fedprime/runner.py").write_text("enabled = True\n")
+    assert not (tmp_path / ".git").exists()
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
+    fingerprint = entry.recovery_source_sha256(tmp_path)
     events = []
     monkeypatch.setattr(entry, "ROOT", tmp_path)
     monkeypatch.setattr(entry.os, "chdir", lambda path: None)
     monkeypatch.setattr(entry, "prepare_c2net", lambda: SimpleNamespace(output_path=str(tmp_path / "remote")))
     monkeypatch.setattr(entry, "find_archive", lambda roots: source)
     monkeypatch.setattr(entry, "extract_archive", lambda *args: package)
-    monkeypatch.setattr(entry.subprocess, "check_output", lambda *args, **kwargs: "frozen-commit")
 
     def run(command, environment):
         if "--prepare-only" in command:
@@ -192,6 +201,7 @@ def test_robust_entry_publishes_identity_before_training(tmp_path, monkeypatch):
         elif "scripts/run_cle_v2_moderate.py" in command:
             options = json.loads(environment["CLE_ROUND_RECOVERY"])
             assert options["save_rounds"] == [20, 30, 40]
+            assert options["code_sha256"] == fingerprint
             events.append("training")
         else:
             events.append("analysis")
@@ -206,6 +216,22 @@ def test_robust_entry_publishes_identity_before_training(tmp_path, monkeypatch):
     assert events[2] == "training"
     assert events[3][0].endswith("_recovery_outputs.tar.gz")
     assert events[4] == "analysis"
+    assert json.loads(next(tmp_path.glob("outputs/*/RUN_STARTED.json")).read_text())["identity"]["code_sha256"] == fingerprint
+
+
+def test_recovery_fingerprint_checks_runner_and_vendor_source(tmp_path):
+    import scripts.openi_cle_v2_moderate_entry as entry
+
+    for name in entry.RECOVERY_SOURCE_DIRS:
+        (tmp_path / name).mkdir()
+    (tmp_path / "requirements.txt").write_text("torch\n")
+    vendor = tmp_path / "RAHFL-master/loss.py"
+    vendor.write_text("weight = 1\n")
+    first = entry.recovery_source_sha256(tmp_path)
+    (tmp_path / "README.md").write_text("Documentation update")
+    assert entry.recovery_source_sha256(tmp_path) == first
+    vendor.write_text("weight = 2\n")
+    assert entry.recovery_source_sha256(tmp_path) != first
 
 
 class SmallViewDataset(torch.utils.data.Dataset):
@@ -294,7 +320,7 @@ def test_full_runner_resume_matches_control_with_real_communication(tmp_path, mo
             exp.round_recovery = recovery.RoundRecovery(cfg, {
                 "shard": arm, "save_rounds": [2, 4], "configs_root": str(configs),
                 "archive": str(tmp_path / name / f"cle_{arm}_formal_progress_outputs.tar.gz"),
-                "input_sha256": "same-data", "code_commit": "same-code",
+                "input_sha256": "same-data", "code_sha256": "same-code",
                 "resume_root": str(resume) if resume else None,
             })
         exp.run()

@@ -16,6 +16,10 @@ import numpy as np
 import torch
 
 
+RECOVERY_SCHEMA = 2
+IDENTITY_KEYS = ("shard", "input_sha256", "code_sha256")
+
+
 def rng_state():
     return {
         "python": random.getstate(), "numpy": np.random.get_state(),
@@ -138,11 +142,11 @@ class RoundRecovery:
             return 0, public_iter
         state_path = self.resume_root / "round_state.pt"
         state = torch.load(state_path, map_location="cpu", weights_only=False)
-        if state["schema"] != 1 or state["config"] != self.config:
+        if state["schema"] != RECOVERY_SCHEMA or state["config"] != self.config:
             raise ValueError("Resume scientific configuration mismatch")
         if state["runtime"] != runtime_signature():
             raise ValueError("Resume PyTorch/CUDA/device environment mismatch")
-        for key in ("shard", "input_sha256", "code_commit"):
+        for key in IDENTITY_KEYS:
             if state["identity"][key] != self.options[key]:
                 raise ValueError(f"Resume identity mismatch: {key}")
         completed = int(state["completed_rounds"])
@@ -177,9 +181,9 @@ class RoundRecovery:
         current = rng_state()
         try:
             state = {
-                "schema": 1, "completed_rounds": completed, "config": self.config,
+                "schema": RECOVERY_SCHEMA, "completed_rounds": completed, "config": self.config,
                 "runtime": runtime_signature(),
-                "identity": {key: self.options[key] for key in ("shard", "input_sha256", "code_commit")},
+                "identity": {key: self.options[key] for key in IDENTITY_KEYS},
                 "models": {key: model.state_dict() for key, model in models.items()},
                 "model_training": {key: model.training for key, model in models.items()},
                 "optimizers": {key: opt.state_dict() for key, opt in optimizers.items()},

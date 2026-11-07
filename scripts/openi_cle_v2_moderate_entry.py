@@ -5,7 +5,6 @@ import argparse
 import hashlib
 import json
 import os
-import subprocess
 import sys
 import tarfile
 import time
@@ -26,6 +25,26 @@ INPUT_ARCHIVE = f"{PACKAGE_NAME}_with_pew.tar.gz"
 FORMAL_SINGLE_ARM_SHARDS = frozenset(
     shard for shard, arms in SHARDS.items() if len(arms) == 1
 )
+RECOVERY_SOURCE_DIRS = ("scripts", "fedprime", "configs", "RAHFL-master", "PRIME-augmentations-main")
+RECOVERY_SOURCE_SUFFIXES = {".py", ".json", ".yaml", ".yml"}
+
+
+def recovery_source_sha256(root: Path) -> str:
+    """Identify the runnable source in an OpenI export without Git metadata."""
+    paths = [root / "requirements.txt"]
+    for name in RECOVERY_SOURCE_DIRS:
+        directory = root / name
+        if not directory.is_dir():
+            raise FileNotFoundError(f"Missing recovery source directory: {directory}")
+        paths.extend(
+            path for path in directory.rglob("*")
+            if path.suffix in RECOVERY_SOURCE_SUFFIXES and path.is_file()
+        )
+    digest = hashlib.sha256()
+    for path in sorted(paths, key=lambda p: p.relative_to(root).as_posix()):
+        digest.update(path.relative_to(root).as_posix().encode("utf-8") + b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
 
 
 def parse_args() -> argparse.Namespace:
@@ -209,7 +228,6 @@ def main() -> None:
                 find_round_resume(args.resume_source, candidate_roots(args, context), args.shard),
                 ROOT / "local_runs/openi_cle_round_resume", args.shard
             )
-        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
         digest = hashlib.sha256()
         with source.open("rb") as handle:
             for block in iter(lambda: handle.read(1024 * 1024), b""):
@@ -217,7 +235,7 @@ def main() -> None:
         environment["CLE_ROUND_RECOVERY"] = json.dumps({
             "shard": args.shard, "save_rounds": [20, 30, 40], "configs_root": str(configs_root),
             "archive": str(ROOT / f"{run_name}_progress_outputs.tar.gz"),
-            "input_sha256": digest.hexdigest(), "code_commit": commit,
+            "input_sha256": digest.hexdigest(), "code_sha256": recovery_source_sha256(ROOT),
             "resume_root": str(resume_root) if resume_root else None,
         })
     command = [

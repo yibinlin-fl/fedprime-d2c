@@ -2,6 +2,11 @@
 
 Updated: 2026-11-08
 
+## 2026-11-08 主评价 RAHFL 恢复与八行结果
+
+OpenI训练完成后在分析阶段停止，四权重已回传。本机同协议补评估通过，主评价表完成8/8（seed 0）。
+恢复证据、完整八行、配对比较和本机结果位置见 `docs/research/status/CLE_AXIS2_RAHFL_RECOVERY_2026_11_08_ZH.md`。
+
 ## 2026-11-08 主评价 AugHFL Formal
 
 AugHFL第5行已验收（seed 0），主评价表完成7/8行。复算、配对检查、与PEW+BER/FedDF比较及

@@ -2,6 +2,14 @@
 
 Updated: 2026-11-08
 
+## 2026-11-08 Axis II RAHFL 补分析通过，八行齐全
+
+OpenI原任务40轮训练及四权重回传完整，分析中停止。用原checkpoint和经核对的输入在本机RTX3050补评估
+约86秒。8行seed-0协议、160条首batch标签及预测缓存核对通过。第6行DSA/Grid/Clean/Corrupt/Mixed =
+`0.074984 / 45.882 / 51.225 / 45.277 / 48.251`。RAHFL的DSA低于AugHFL和AsymHFL+PEW+BER，
+Mixed最高。匹配AsymHFL两臂仍支持PEW+BER降低DSA，同时Mixed有代价。原V0.11待集中回填。
+完整八行和恢复依据：`docs/research/status/CLE_AXIS2_RAHFL_RECOVERY_2026_11_08_ZH.md`。
+
 ## 2026-11-08 Axis II AugHFL Formal 通过验收
 
 主评价八行表现已验收7/8行。AugHFL仅training seed 0，40轮 × 64本地batch，输入/源码身份及

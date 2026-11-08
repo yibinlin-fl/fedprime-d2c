@@ -1,6 +1,16 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-07
+Updated: 2026-11-08
+
+## 2026-11-08 Axis II AugHFL Formal 通过验收
+
+主评价八行表现已验收7/8行。AugHFL仅training seed 0，40轮 × 64本地batch，输入/源码身份及
+与已有六行的160条首batch标签记录匹配。第5行DSA/Grid/Clean/Corrupt/Mixed =
+`0.084157 / 44.765 / 50.500 / 43.808 / 47.154`，DSA和Grid已从缓存复算。
+AugHFL比AsymHFL+PEW+BER的DSA低0.005867、Mixed高5.593pp，属于固定seed跨方法比较。
+训练23h12m57s、分析1h19m17s，按此前费率合计约147.22积分。OpenI日志确认20/30/40轮回传。
+报告：`docs/research/status/CLE_AXIS2_AUGHFL_FORMAL_2026_11_08_ZH.md`。
+RAHFL平台状态STOPPED但页面显示40轮progress包与训练恢复包，待用户下载后审计并本机补分析。
 
 ## 2026-11-07 修复 OpenI 无 Git 元数据时的鲁棒基线启动失败
 

@@ -1,6 +1,12 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-07
+Updated: 2026-11-08
+
+## 2026-11-08 主评价 AugHFL Formal
+
+AugHFL第5行已验收（seed 0），主评价表完成7/8行。复算、配对检查、与PEW+BER/FedDF比较及
+耗时见 `docs/research/status/CLE_AXIS2_AUGHFL_FORMAL_2026_11_08_ZH.md`。
+RAHFL待接收训练恢复包并补分析。
 
 ## 2026-11-07 AugHFL / RAHFL 中途回传与恢复
 

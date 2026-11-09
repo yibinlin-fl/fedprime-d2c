@@ -1,6 +1,13 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-08
+Updated: 2026-11-09
+
+## 2026-11-09 学位论文开题备选 A 归档
+
+12月10日开题。作者优先探索与小论文同属图像损坏与模型异构联邦学习、但独立于CLE的新问题。
+备选A保留五章规划，小论文为第3章，第4章新增同边际强弱训练 × 参考/换绑测试的配对对照。
+已有四客户端元数据、64对图像渲染和缓存预检；严格两臂训练尚未运行。
+规划和验收清单：`docs/research/status/HFL_CORRUPTION_THESIS_BACKUP_PLAN_2026_11_09_ZH.md`。
 
 ## 2026-11-08 Axis II RAHFL 补分析通过，八行齐全
 

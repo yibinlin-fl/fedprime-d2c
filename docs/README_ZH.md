@@ -1,6 +1,12 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-08
+Updated: 2026-11-09
+
+## 2026-11-09 学位论文开题备选 A
+
+五章分工、大小论文关系、同边际换绑鲁棒性新增实验与开题验收见
+`docs/research/status/HFL_CORRUPTION_THESIS_BACKUP_PLAN_2026_11_09_ZH.md`。
+当前优先探索独立于CLE的同主题方案B。备选A的严格训练试验仍未运行。
 
 ## 2026-11-08 主评价 RAHFL 恢复与八行结果
 

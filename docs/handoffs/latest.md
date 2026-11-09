@@ -1,6 +1,13 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-09
+Updated: 2026-11-10
+
+## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检已准备
+
+普通图像损坏下固定目标客户端与全系统损坏量，比较 RAHFL-Local、均匀、集中 A、集中 B，训练种子 0/1。
+代码与固定输入已打包，解包后的本地八臂 CPU smoke 通过；完整输入配额和预算到点退出已核对。
+按作者要求跳过 Kaggle benchmark，直接用固定 5 epoch 预训练和 8 轮、8 小时软上限做预检；云端结果待回传。
+入口、私有输入包、Notebook 单元和下载位置见 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
 
 ## 2026-11-09 学位论文开题备选 A 归档
 

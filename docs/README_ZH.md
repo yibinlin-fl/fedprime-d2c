@@ -1,12 +1,21 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-09
+Updated: 2026-11-10
+
+## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检
+
+两种子 × Local/均匀/集中 A/集中 B 的独立入口、固定普通损坏输入及本地 smoke 已准备。
+直接运行和下载说明见 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
 
 ## 2026-11-09 学位论文开题备选 A
 
 五章分工、大小论文关系、同边际换绑鲁棒性新增实验与开题验收见
 `docs/research/status/HFL_CORRUPTION_THESIS_BACKUP_PLAN_2026_11_09_ZH.md`。
 当前优先探索独立于CLE的同主题方案B。备选A的严格训练试验仍未运行。
+方案 B 的候选仍待筛选。可外发的讨论材料见
+`docs/research/status/HFL_CORRUPTION_THESIS_TOPIC_DISCUSSION_2026_11_09_ZH.md`。
+方案 B 的 RAHFL 三臂数据、配对与失败判据讨论稿见
+`docs/research/status/HFL_PEER_CORRUPTION_PROPOSAL_PROTOCOL_2026_11_09_ZH.md`。保留初版三臂设计，执行以 11 月 10 日八臂启动卡为准。
 
 ## 2026-11-08 主评价 RAHFL 恢复与八行结果
 

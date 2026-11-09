@@ -5,7 +5,8 @@ Updated: 2026-11-10
 ## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检
 
 两种子 × Local/均匀/集中 A/集中 B 的独立入口、固定普通损坏输入及本地 smoke 已准备。
-直接运行和下载说明见 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
+第 8/12 轮双里程碑的直接运行和下载说明见
+`docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`，复用已上传的 Dataset。
 
 ## 2026-11-09 学位论文开题备选 A
 

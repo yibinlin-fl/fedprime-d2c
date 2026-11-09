@@ -127,7 +127,7 @@ def evaluation_loaders(arrays, role):
     return [loader(NumpyImageClassificationDataset(view, labels, _private_test_transform()), 128) for view in views]
 
 
-def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, deadline, out):
+def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, deadline, out, previous=None):
     from Dataset.dataaug import AugMixDataset
 
     check_deadline(deadline)
@@ -138,7 +138,14 @@ def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, de
     batch_size = 16 if args.smoke else 64
     public_batch_size = 16 if args.smoke else 128
     base, weak, preprocess = _rahfl_augmix_view_transforms()
-    write_json(out / "status.json", {"state": "pretraining", "arm": arm, "seed": seed})
+    if previous is None:
+        write_json(out / "status.json", {"state": "pretraining", "arm": arm, "seed": seed})
+        previous_weights = {}
+    else:
+        previous_weights = torch.load(previous / "weights.pt", map_location="cpu", weights_only=True)
+        previous_status = json.loads((previous / "status.json").read_text(encoding="utf-8"))
+        if previous_status["state"] != "complete" or set(previous_weights) != set(clients):
+            raise ValueError(f"Invalid completed first-stage arm: {previous}")
     for i in clients:
         labels = arrays["fit_labels"][i]
         ids = arrays["fit_ids"][i]
@@ -146,13 +153,16 @@ def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, de
         key = (i, digest(images, labels))
         seed_everything(10_000 * (seed + 1) + i)
         model = build_models([MODELS[i]], 10)[0].to(args.device)
-        if key not in pretrained:
+        if previous is not None:
+            model.load_state_dict(previous_weights[i])
+        elif key not in pretrained:
             print(f"[pretrain] seed={seed} arm={arm} client={i}", flush=True)
             ds = NumpyImageClassificationDataset(images, labels, _private_train_transform(False))
             fit_pretrain(model, loader(ds, batch_size, shuffle=True, seed=seed + i),
                          args.pretrain_epochs, args.device, deadline)
             pretrained[key] = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
-        model.load_state_dict(pretrained[key])
+        if previous is None:
+            model.load_state_dict(pretrained[key])
         models[i] = model
         raw = NumpyImageClassificationDataset(images, labels, TwoViewTransform(base, weak))
         private[i] = AugMixDataset(raw, preprocess, jsd_or_nojsd="jsd")
@@ -162,9 +172,16 @@ def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, de
         T.Compose([T.RandomCrop(32, padding=4), T.RandomHorizontalFlip(), T.RandomRotation(15),
                    T.ToTensor(), T.Normalize(CIFAR100_MEAN, CIFAR100_STD)]),
     )
-    initial_hash, trace, rounds = weights_hash(models[0]), [], []
-    write_json(out / "status.json", {"state": "training", "rounds_completed": 0})
-    for round_no in range(1, args.rounds + 1):
+    if previous is None:
+        initial_hash, trace, rounds = weights_hash(models[0]), [], []
+    else:
+        initial_hash = previous_status["initial_c0"]
+        trace = previous_status["batch_trace_c0"]
+        rounds = json.loads((previous / "rounds.json").read_text(encoding="utf-8"))
+        if len(trace) != len(rounds) or not 0 < len(rounds) < args.rounds:
+            raise ValueError(f"Invalid first-stage round count: {previous}")
+    write_json(out / "status.json", {"state": "training", "rounds_completed": len(rounds)})
+    for round_no in range(len(rounds) + 1, args.rounds + 1):
         check_deadline(deadline)
         entry = {"round": round_no}
         if arm != "local":
@@ -207,7 +224,7 @@ def fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, de
                 trace.append(hashes)
         rounds.append(entry)
         write_json(out / "rounds.json", rounds)
-        if not args.smoke and round_no == args.rounds // 2:
+        if not args.smoke and previous is None and round_no == args.rounds // 2:
             save_weights(out / "midpoint_weights.pt", models)
         write_json(out / "status.json", {"state": "training", "rounds_completed": round_no})
         print(f"[round] seed={seed} arm={arm} {round_no}/{args.rounds}", flush=True)
@@ -278,6 +295,23 @@ def summarize(output, arrays, seeds, smoke):
     return complete
 
 
+def run_matrix(output, arrays, seeds, args, deadline, route_loaders, eval_loaders, previous=None):
+    for seed in seeds:
+        pretrained = {}
+        for arm in ARMS:
+            check_deadline(deadline)
+            relative = Path(f"seed_{seed}") / arm
+            out = output / relative
+            out.mkdir(parents=True)
+            fit_arm(
+                arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, deadline, out,
+                previous / relative if previous is not None else None,
+            )
+            summarize(output, arrays, seeds, args.smoke)
+    if not summarize(output, arrays, seeds, args.smoke):
+        raise RuntimeError(f"The paired matrix is incomplete: {output}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
@@ -291,6 +325,7 @@ def main():
     if args.device == "cuda" and not torch.cuda.is_available():
         parser.error("A CUDA GPU is required for --device cuda")
     args.rounds, args.pretrain_epochs = (1, 1) if args.smoke else (8, 5)
+    final_rounds = 2 if args.smoke else 12
     seeds = (0, 1)
     torch.set_num_threads(4)
     args.output.mkdir(parents=True, exist_ok=False)
@@ -306,7 +341,8 @@ def main():
     write_json(args.output / "run_config.json", {
         "device": args.device, "gpu": torch.cuda.get_device_name(0) if args.device == "cuda" else None,
         "torch": torch.__version__, "torchvision": torchvision.__version__, "models": MODELS,
-        "seeds": seeds, "arms": ARMS, "rounds": args.rounds, "pretrain_epochs": args.pretrain_epochs,
+        "seeds": seeds, "arms": ARMS, "round_milestones": [args.rounds, final_rounds],
+        "pretrain_epochs": args.pretrain_epochs,
         "private_batch_size": 16 if args.smoke else 64, "public_batch_size": 16 if args.smoke else 128,
         "local_epochs_per_round": 1, "learning_rate": LEARNING_RATE, "limit_hours": args.limit_hours,
     })
@@ -315,27 +351,39 @@ def main():
     import_module("Dataset.utils")  # Load the vendored module before applying per-arm seeds.
 
     route_loaders, eval_loaders = (evaluation_loaders(arrays, role) for role in ("route", "eval"))
-    write_json(args.output / "status.json", {"state": "running"})
+    first = args.output / f"round_{args.rounds:02}"
+    second = args.output / f"round_{final_rounds:02}"
+    first.mkdir()
+    stage = first
+    completed = []
+    write_json(args.output / "status.json", {"state": "running", "stage": stage.name})
     try:
-        for seed in seeds:
-            pretrained = {}
-            for arm in ARMS:
-                check_deadline(deadline)
-                out = args.output / f"seed_{seed}" / arm
-                out.mkdir(parents=True)
-                fit_arm(arm, seed, arrays, route_loaders, eval_loaders, pretrained, args, deadline, out)
-                summarize(args.output, arrays, seeds, args.smoke)
+        run_matrix(first, arrays, seeds, args, deadline, route_loaders, eval_loaders)
+        completed.append(args.rounds)
+        stage = second
+        args.rounds = final_rounds
+        second.mkdir()
+        write_json(args.output / "status.json", {
+            "state": "running", "stage": stage.name, "completed_milestones": completed,
+        })
+        run_matrix(second, arrays, seeds, args, deadline, route_loaders, eval_loaders, previous=first)
+        completed.append(final_rounds)
     except DeadlineReached:
-        summarize(args.output, arrays, seeds, args.smoke)
-        write_json(args.output / "status.json", {"state": "budget_stopped", "formal_evidence": False})
+        summarize(stage, arrays, seeds, args.smoke)
+        write_json(args.output / "status.json", {
+            "state": "budget_stopped", "stage": stage.name, "completed_milestones": completed,
+            "formal_evidence": False,
+        })
         return
     except Exception as exc:
-        write_json(args.output / "status.json", {"state": "failed", "error": str(exc), "formal_evidence": False})
+        write_json(args.output / "status.json", {
+            "state": "failed", "stage": stage.name, "completed_milestones": completed,
+            "error": str(exc), "formal_evidence": False,
+        })
         raise
-    complete = summarize(args.output, arrays, seeds, args.smoke)
-    if not complete:
-        raise RuntimeError("The planned paired matrix is incomplete")
-    write_json(args.output / "status.json", {"state": "complete", "formal_evidence": False})
+    write_json(args.output / "status.json", {
+        "state": "complete", "completed_milestones": completed, "formal_evidence": False,
+    })
 
 
 if __name__ == "__main__":

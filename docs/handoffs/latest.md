@@ -2,12 +2,13 @@
 
 Updated: 2026-11-10
 
-## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检已准备
+## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检已验收
 
 普通图像损坏下固定目标客户端与全系统损坏量，比较 RAHFL-Local、均匀、集中 A、集中 B，训练种子 0/1。
-代码与固定输入已打包，解包后的本地八臂 CPU smoke 通过；完整输入配额和预算到点退出已核对。
-按作者要求跳过 Kaggle benchmark。固定 5 epoch 预训练，先完成第 8 轮全矩阵，再续至第 12 轮，
-共用 8 小时软上限。复用原私有 Dataset，新 Notebook 单元加载双里程碑入口；云端结果待回传。
+Kaggle 第 8/12 轮均完整，预测复算与配对核验通过。均匀获益且集中受损的 ±1.0 pp 预检门槛未达成；
+第 12 轮集中对均匀的差异随 seed 反向。单轮公共协作前后变化混合公共前向状态与蒸馏，未完成归因。
+短预算证据暂不支持把该现象作为开题主线或启动新方法。详见
+`docs/research/status/HFL_PEER_CORRUPTION_KAGGLE_RESULTS_2026_11_10_ZH.md`。
 入口、私有输入包、Notebook 单元和下载位置见 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
 
 ## 2026-11-09 学位论文开题备选 A 归档

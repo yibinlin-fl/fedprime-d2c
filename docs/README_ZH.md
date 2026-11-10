@@ -8,8 +8,10 @@ Updated: 2026-11-10
 数据与证据边界见 `docs/research/status/HFL_PEER_CORRUPTION_KAGGLE_RESULTS_2026_11_10_ZH.md`。
 作者确认收住该候选；原运行配置保留于 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
 
-新选题「预算受限的客户端图像恢复」仅进入纸面筛查。见
+「预算受限的客户端图像恢复」经纸面筛查后由作者否决。见
 `docs/research/status/HFL_INPUT_RECOVERY_BUDGET_TOPIC_SCREEN_2026_11_10_ZH.md`。
+新一轮候选「训练端短时损坏后的协作恢复」见
+`docs/research/status/HFL_TRANSIENT_CORRUPTION_TOPIC_SCREEN_2026_11_10_ZH.md`，尚未定题。
 
 ## 2026-11-09 学位论文开题备选 A
 

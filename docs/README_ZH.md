@@ -6,8 +6,10 @@ Updated: 2026-11-10
 
 两种子 × Local/均匀/集中 A/集中 B 已完成第 8/12 轮。逐图复算与配对通过，预检门槛未达成。
 数据与证据边界见 `docs/research/status/HFL_PEER_CORRUPTION_KAGGLE_RESULTS_2026_11_10_ZH.md`。
-第 8/12 轮双里程碑的直接运行和下载说明见
-`docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`，复用已上传的 Dataset。
+作者确认收住该候选；原运行配置保留于 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
+
+新选题「预算受限的客户端图像恢复」仅进入纸面筛查。见
+`docs/research/status/HFL_INPUT_RECOVERY_BUDGET_TOPIC_SCREEN_2026_11_10_ZH.md`。
 
 ## 2026-11-09 学位论文开题备选 A
 
@@ -17,7 +19,7 @@ Updated: 2026-11-10
 方案 B 的候选仍待筛选。可外发的讨论材料见
 `docs/research/status/HFL_CORRUPTION_THESIS_TOPIC_DISCUSSION_2026_11_09_ZH.md`。
 方案 B 的 RAHFL 三臂数据、配对与失败判据讨论稿见
-`docs/research/status/HFL_PEER_CORRUPTION_PROPOSAL_PROTOCOL_2026_11_09_ZH.md`。保留初版三臂设计，执行以 11 月 10 日八臂启动卡为准。
+`docs/research/status/HFL_PEER_CORRUPTION_PROPOSAL_PROTOCOL_2026_11_09_ZH.md`。保留初版三臂设计。
 
 ## 2026-11-08 主评价 RAHFL 恢复与八行结果
 

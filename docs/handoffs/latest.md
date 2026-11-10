@@ -7,9 +7,9 @@ Updated: 2026-11-10
 普通图像损坏下固定目标客户端与全系统损坏量，比较 RAHFL-Local、均匀、集中 A、集中 B，训练种子 0/1。
 Kaggle 第 8/12 轮均完整，预测复算与配对核验通过。均匀获益且集中受损的 ±1.0 pp 预检门槛未达成；
 第 12 轮集中对均匀的差异随 seed 反向。单轮公共协作前后变化混合公共前向状态与蒸馏，未完成归因。
-短预算证据暂不支持把该现象作为开题主线或启动新方法。详见
+作者确认收住该候选，追加训练和方法开发停止。详见
 `docs/research/status/HFL_PEER_CORRUPTION_KAGGLE_RESULTS_2026_11_10_ZH.md`。
-入口、私有输入包、Notebook 单元和下载位置见 `docs/experiments/current/HFL_PEER_CORRUPTION_KAGGLE_PILOT_ZH.md`。
+新选题继续查重。预算受限的客户端图像恢复仅进入纸面筛查，尚未定题或实现。
 
 ## 2026-11-09 学位论文开题备选 A 归档
 

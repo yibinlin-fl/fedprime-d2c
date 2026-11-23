@@ -1,6 +1,10 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-23
+Updated: 2026-11-24
+
+## 2026-11-24 TF-SACI Gate 1 开发集来源审计（仅 exp/tf-saci）
+
+10,000 个候选 CIFAR-10 train ID 与当前 fit/audit 无交集，但至少 8,363 个在已核验历史实验中出现，其余 1,637 个无法证明独立。状态 `HOLD_DEV_PROVENANCE`。独立开发集和 lambda 待冻结，Gate 1 未启动。候选外部开发资产、原协议配对、CE-anchor、选参和 Go/No-Go 门槛见 `experiments/tf_saci/GATE1_DEV_AUDIT_2026_11_24_ZH.md` 与 `experiments/tf_saci/gate1_protocol.json`。现有 runner 会构造正式测试 loader 并每轮评估，Gate 1 需要在候选训练和选参阶段隔离该路径。V0.11 不改。
 
 ## 2026-11-23 TF-SACI 候选方法（仅 exp/tf-saci）
 

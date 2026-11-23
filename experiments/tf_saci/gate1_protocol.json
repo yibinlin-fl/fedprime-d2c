@@ -1,0 +1,57 @@
+{
+  "status": "HOLD_DEV_PROVENANCE",
+  "allow_formal_training": false,
+  "dev_manifest_sha256": null,
+  "selected_lambda": null,
+  "backbone_protocol": {
+    "dataset": "cle_hfl_v2_moderate_alpha10_rho05_map2_seed0_split0",
+    "communication": "asymhfl_val",
+    "training_seed": 0,
+    "partition_seed": 0,
+    "binding_map_seed": 2,
+    "fit_loader_seed": 20260909,
+    "dirichlet_alpha": 1.0,
+    "corruption_rate": 0.5,
+    "gamma": 0.9,
+    "pretrain_epochs": 0,
+    "rounds": 40,
+    "local_epochs": 1,
+    "private_batch_size": 64,
+    "max_local_batches_per_client_per_round": 64,
+    "public_dataset": "cifar100",
+    "public_batch_size": 128,
+    "public_batches_per_round": 4
+  },
+  "probe": {"descriptor": "phi_tex", "config_file": "gate0.json", "condition": "gamma09", "bias_input_view": "stored_private_fit_pixels_before_standard_transform"},
+  "arms": {
+    "ssa_poe": {"poe_weight": 1.0},
+    "ssa_poe_ce_anchor": {"poe_weight": 0.5}
+  },
+  "development_rule": {
+    "lambda_candidates": [0.5, 1.0],
+    "shared_lambda": true,
+    "checkpoint": "round_40_only",
+    "comparison_reference": "frozen_asymhfl_erm_checkpoint_on_same_dev",
+    "max_clean_drop_pp": 1.0,
+    "max_mixed_drop_pp": 1.0,
+    "eligibility": "both arms must satisfy both dev utility margins",
+    "rank": "max_mean_dev_mixed_across_both_arms",
+    "tie_break": "smaller_lambda",
+    "if_no_candidate": "NO_GO_DEV_UTILITY_STOP_BEFORE_SEALED"
+  },
+  "formal_go_per_arm": {
+    "max_dsa": 0.090024,
+    "min_dsa_reduction_vs_erm": 0.094490,
+    "min_clean_accuracy_percent": 48.700,
+    "min_mixed_accuracy_percent": 42.354,
+    "decision_precision_decimals": {"dsa": 6, "accuracy_percent": 3},
+    "must_pass_all": true
+  },
+  "sealed_reporting": [
+    "DSA", "Clean", "Corrupted", "Mixed", "Operator-grid", "WCCA", "CFG",
+    "per-client metrics and counts", "source-paired DSA uncertainty",
+    "probe preprocessing and fit time", "per-round and total training time",
+    "evaluation time", "peak GPU memory"
+  ],
+  "if_both_arms_fail_formal": "NO_GO_STOP_SSA_AND_DO_NOT_IMPLEMENT_CC_MIX_OR_PS_PID"
+}

@@ -1,6 +1,11 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-23
+Updated: 2026-11-24
+
+## 2026-11-24 TF-SACI Gate 1 开发集审计（exp/tf-saci）
+
+- 来源、计数、替代开发集和协议见 `experiments/tf_saci/GATE1_DEV_AUDIT_2026_11_24_ZH.md`。
+- 阻断状态及预注册规则见 `experiments/tf_saci/gate1_protocol.json`。复算入口为 `experiments/tf_saci/audit_dev_sources.py`，聚合快照为 `experiments/tf_saci/gate1_dev_audit.json`。
 
 ## 2026-11-23 TF-SACI SSA Gate 0（exp/tf-saci）
 

@@ -1,0 +1,58 @@
+{
+  "decision": "HOLD_DEV_PROVENANCE",
+  "namespace": "original CIFAR-10 train split",
+  "candidate_size": 10000,
+  "candidate_sorted_le_int64_sha256": "a682cd96657a861a7cb6eaed06fa50d7398c9eafba142baa907553b34cd18675",
+  "main_map2": {
+    "fit": {
+      "size": 33995,
+      "overlap": 0
+    },
+    "audit": {
+      "size": 6005,
+      "overlap": 0
+    }
+  },
+  "phase_a1a_40_round_formal": {
+    "fit": {
+      "size": 33994,
+      "overlap": 6826
+    },
+    "audit": {
+      "size": 6006,
+      "overlap": 1138
+    }
+  },
+  "axis1_map2_formal": {
+    "fit": {
+      "size": 33994,
+      "overlap": 6826
+    },
+    "audit": {
+      "size": 6006,
+      "overlap": 1138
+    }
+  },
+  "peer_corruption_kaggle_pilot": {
+    "fit": {
+      "size": 8000,
+      "overlap": 1606
+    },
+    "route": {
+      "size": 1000,
+      "overlap": 203
+    },
+    "eval": {
+      "size": 1000,
+      "overlap": 206
+    }
+  },
+  "confirmed_historical_overlap_union": 8363,
+  "unverified_remainder": 1637,
+  "manifest_sha256": {
+    "cle_v2_moderate_alpha10_rho05/cle_hfl_v2_moderate_alpha10_rho05_map2_seed0_split0": "7255cd082055c9ca7135df1f26634765a2baf6d36d9559970e1b09ef5ee6db02",
+    "cle_shortcut_amplification_phase_a1a/cle_shortcut_amplification_phase_a1a_seed0": "a314bc4d1ad79d5bf784e20679e0f55220a4d51d825ca186d3e571d63cfc55f6",
+    "cle_hfl_learning_floor_validation/cle_hfl_v2_cross_maps1_2_seed0_split0_with_pew/cle_hfl_v2_cross_map2_seed0_split0": "a5d272149f6f31fc1ce117c6b936aa35fb12b423a1449a076dbd8a6094535196"
+  },
+  "peer_input_sha256": "29a9f8625ab432b2e552de07f2828fbdc97ba8d4477973cfd553a010a59def47"
+}

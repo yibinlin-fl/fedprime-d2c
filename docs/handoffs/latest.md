@@ -2,6 +2,12 @@
 
 Updated: 2026-11-23
 
+## 2026-11-23 TF-SACI 候选方法（仅 exp/tf-saci）
+
+SSA Gate 0 已完成，两次 CPU 运行的 16 份 OOF 缓存逐字节一致。主描述符在同源损坏 fit 子集的平衡准确率从 25.97% 到 56.14%，干净 fit 子集仍为 29.42%–33.44%，四端均触发语义警示。下一步先验明独立开发集，再决定是否进入 SSA-PoE / CE-anchor 的匹配 Gate 1。CC-Mix、PS-PID 未启动，V0.11 继续作为论文底本。
+
+分支实验入口和边界见 `experiments/tf_saci/README.md`，结果见 `experiments/tf_saci/RESULTS_2026_11_23_ZH.md`。源图级缓存留在原工作区的 `local_runs/tf_saci_gate0_verified_20261123/`。
+
 ## 2026-11-23 恢复 CLE-HFL 主线，准备重构方法部分
 
 当前任务回到 CLE-HFL 小论文。方法重构的范围待作者明确，可能涉及论文组织、PEW+BER 算法设计或实现。论文底本和事实来源分开索引，便于换窗口或压缩上下文后恢复。大论文备选方向的讨论和预检保留在下文。

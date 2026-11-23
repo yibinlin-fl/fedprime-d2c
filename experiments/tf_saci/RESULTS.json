@@ -1,0 +1,368 @@
+{
+  "date": "2026-11-23",
+  "decision": "GATE0_COMPLETE_SEMANTIC_WARNING_GATE1_ON_HOLD",
+  "fit_manifest_sha256": "decd0ce68878e7ba9cdce01a0e1dcd05675920f4beeff57806406cad01fa0f4d",
+  "base_commit": "81d7a7854d7b92ed18bc6c25ba8fd4b0a5b93e87",
+  "config": {
+    "base_commit": "81d7a7854d7b92ed18bc6c25ba8fd4b0a5b93e87",
+    "protocol": "cle_hfl_v2_moderate_alpha10_rho05_gamma_grid_seed0_split0_v1",
+    "package_manifest_sha256": "7255cd082055c9ca7135df1f26634765a2baf6d36d9559970e1b09ef5ee6db02",
+    "paper_v011_pdf_sha256": "aeb642c7cec60f49fc28c1ffb81dc253463430efe016655a7056fd86deb72596",
+    "proposal_zip_sha256": "4ad20b06d7b90a2da9da293abc9e0decb9e148812c47bc28bbb23d7094323329",
+    "baseline_recovery_archives_sha256": {
+      "cle_v2_moderate_asymhfl_erm_formal_recovery_outputs.tar.gz": "47514880bb0838b28a78bf11bd4decb4970f553bee28727807f301b4c515c4bd",
+      "cle_v2_moderate_asymhfl_pew_ber_formal_recovery_outputs.tar.gz": "029aadefbeea4a381a63553fe42c8881bcd5fbcf4b16c1ab05a1bf05d797f9e"
+    },
+    "conditions": [
+      "gamma00",
+      "gamma09"
+    ],
+    "clients": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "features": [
+      "phi_tex",
+      "phi_full"
+    ],
+    "primary_feature": "phi_tex",
+    "probe": {
+      "classes": 10,
+      "folds": 5,
+      "fold_seed": 20261123,
+      "l2": 0.01,
+      "clip": 3.0
+    },
+    "clean_warning_pp": 5.0,
+    "tf_saci": {
+      "ssa": false,
+      "cc_mix": false,
+      "ps_pid": false
+    }
+  },
+  "environment": {
+    "python": "3.12.7",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "torch": "2.12.0+cpu",
+    "threadpool_limit": 1
+  },
+  "split_sha256": "49cbb6cf3b3359e029de0ceddee079f2de4a4db4e5e04084d093c65cb7c24537",
+  "reference_files": {
+    "scripts/run_cle_v2_moderate.py": "da7486aeb66a432843d42c5232ed5a2fb7451d89c217955e13218a31a7c899c6",
+    "scripts/analyze_cle_v2_moderate.py": "d5efa1140bbb82a853a31d5389a47deb9b99d7b34f4843e978bebdc63ab789e0",
+    "fedprime/engine/cle_v2_factorial.py": "fd2c62afbdd988ad2d5f76e21dfbf61ff933490ed87c0cf34de4dad7ee58b925",
+    "docs/research/status/CLE_AXIS2_RAHFL_RECOVERY_2026_11_08_ZH.md": "8a396f89aa5229de5deb7d6771fb7a87dd7072413680c37e6935ebf3ad584a0f"
+  },
+  "checks": {
+    "unit_tests_passed": 11,
+    "byte_matched_oof_caches": 16,
+    "byte_matched_slice_csv": true,
+    "identical_paired_contrasts": true
+  },
+  "client_fit_counts": [
+    8501,
+    8500,
+    8496,
+    8498
+  ],
+  "slice_count": 288,
+  "supported_operator_slice_count": 176,
+  "clean_semantic_warnings": [
+    {
+      "condition": "gamma00",
+      "client": 0,
+      "excess_over_prior_pp": 19.152108148234824
+    },
+    {
+      "condition": "gamma00",
+      "client": 1,
+      "excess_over_prior_pp": 28.121709200101797
+    },
+    {
+      "condition": "gamma00",
+      "client": 2,
+      "excess_over_prior_pp": 21.856131447606643
+    },
+    {
+      "condition": "gamma00",
+      "client": 3,
+      "excess_over_prior_pp": 20.358171857834346
+    },
+    {
+      "condition": "gamma09",
+      "client": 0,
+      "excess_over_prior_pp": 15.528789608502455
+    },
+    {
+      "condition": "gamma09",
+      "client": 1,
+      "excess_over_prior_pp": 24.879636509097708
+    },
+    {
+      "condition": "gamma09",
+      "client": 2,
+      "excess_over_prior_pp": 18.535262775952578
+    },
+    {
+      "condition": "gamma09",
+      "client": 3,
+      "excess_over_prior_pp": 14.458075428512055
+    }
+  ],
+  "balanced_accuracy_summary": {
+    "phi_tex": {
+      "gamma00": {
+        "all": {
+          "n": 33995,
+          "client_macro_balanced_accuracy_percent": 29.699741,
+          "client_balanced_accuracy_percent": [
+            25.484542,
+            38.102981,
+            27.938052,
+            27.27339
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "clean": {
+          "n": 17029,
+          "client_macro_balanced_accuracy_percent": 33.443459,
+          "client_balanced_accuracy_percent": [
+            29.152108,
+            42.407423,
+            31.856131,
+            30.358172
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "corrupted": {
+          "n": 16966,
+          "client_macro_balanced_accuracy_percent": 25.97271,
+          "client_balanced_accuracy_percent": [
+            21.805934,
+            33.931905,
+            23.805541,
+            24.347459
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        }
+      },
+      "gamma09": {
+        "all": {
+          "n": 33995,
+          "client_macro_balanced_accuracy_percent": 42.801907,
+          "client_balanced_accuracy_percent": [
+            35.898509,
+            52.448689,
+            42.373179,
+            40.48725
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "clean": {
+          "n": 17029,
+          "client_macro_balanced_accuracy_percent": 29.42187,
+          "client_balanced_accuracy_percent": [
+            25.52879,
+            39.165351,
+            28.535263,
+            24.458075
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "corrupted": {
+          "n": 16966,
+          "client_macro_balanced_accuracy_percent": 56.141096,
+          "client_balanced_accuracy_percent": [
+            45.81495,
+            66.562345,
+            56.116181,
+            56.070911
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        }
+      }
+    },
+    "phi_full": {
+      "gamma00": {
+        "all": {
+          "n": 33995,
+          "client_macro_balanced_accuracy_percent": 31.843618,
+          "client_balanced_accuracy_percent": [
+            28.181867,
+            39.488417,
+            30.941525,
+            28.762661
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "clean": {
+          "n": 17029,
+          "client_macro_balanced_accuracy_percent": 35.31019,
+          "client_balanced_accuracy_percent": [
+            31.305139,
+            43.122924,
+            34.135574,
+            32.677121
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "corrupted": {
+          "n": 16966,
+          "client_macro_balanced_accuracy_percent": 28.357291,
+          "client_balanced_accuracy_percent": [
+            25.040379,
+            35.981883,
+            27.400795,
+            25.006109
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        }
+      },
+      "gamma09": {
+        "all": {
+          "n": 33995,
+          "client_macro_balanced_accuracy_percent": 47.397767,
+          "client_balanced_accuracy_percent": [
+            40.796638,
+            56.533113,
+            47.011987,
+            45.249329
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "clean": {
+          "n": 17029,
+          "client_macro_balanced_accuracy_percent": 30.549013,
+          "client_balanced_accuracy_percent": [
+            26.299936,
+            38.997628,
+            31.292015,
+            25.606473
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        },
+        "corrupted": {
+          "n": 16966,
+          "client_macro_balanced_accuracy_percent": 64.520802,
+          "client_balanced_accuracy_percent": [
+            54.988661,
+            75.291435,
+            63.116469,
+            64.686642
+          ],
+          "client_prior_balanced_accuracy_percent": [
+            10.0,
+            14.285714,
+            10.0,
+            10.0
+          ]
+        }
+      }
+    }
+  },
+  "paired_gamma_contrasts": {
+    "phi_tex": {
+      "clean_both": {
+        "client_delta_pp": [
+          -3.623319,
+          -3.242073,
+          -3.320869,
+          -5.900096
+        ],
+        "client_macro_delta_pp": -4.021589
+      },
+      "corrupted_both": {
+        "client_delta_pp": [
+          24.009016,
+          32.63044,
+          32.31064,
+          31.723452
+        ],
+        "client_macro_delta_pp": 30.168387
+      }
+    },
+    "phi_full": {
+      "clean_both": {
+        "client_delta_pp": [
+          -5.005203,
+          -4.125296,
+          -2.843559,
+          -7.070648
+        ],
+        "client_macro_delta_pp": -4.761177
+      },
+      "corrupted_both": {
+        "client_delta_pp": [
+          29.948282,
+          39.309552,
+          35.715674,
+          39.680533
+        ],
+        "client_macro_delta_pp": 36.16351
+      }
+    }
+  },
+  "first_run_cpu_seconds": {
+    "input_validation_and_descriptors": 11.515,
+    "probe_fitting": 13.091
+  }
+}

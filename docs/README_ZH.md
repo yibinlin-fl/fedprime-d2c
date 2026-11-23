@@ -2,6 +2,11 @@
 
 Updated: 2026-11-23
 
+## 2026-11-23 TF-SACI SSA Gate 0（exp/tf-saci）
+
+- 代码审查、执行步骤和主评价配对约束见 `experiments/tf_saci/README.md`，固定探针配置见 `experiments/tf_saci/gate0.json`。
+- Gate 0 结果、干净图语义警示、基线锚点与后续条件见 `experiments/tf_saci/RESULTS_2026_11_23_ZH.md` 和 `experiments/tf_saci/RESULTS.json`。此实验仍在分支内，正式论文 V0.11 保留原稿。
+
 ## 2026-11-23 CLE-HFL 方法部分恢复入口
 
 - 先看 `docs/handoffs/latest.md` 中的 11 月 23 日交接。

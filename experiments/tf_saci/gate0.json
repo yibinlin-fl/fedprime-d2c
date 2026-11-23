@@ -1,0 +1,18 @@
+{
+  "base_commit": "81d7a7854d7b92ed18bc6c25ba8fd4b0a5b93e87",
+  "protocol": "cle_hfl_v2_moderate_alpha10_rho05_gamma_grid_seed0_split0_v1",
+  "package_manifest_sha256": "7255cd082055c9ca7135df1f26634765a2baf6d36d9559970e1b09ef5ee6db02",
+  "paper_v011_pdf_sha256": "aeb642c7cec60f49fc28c1ffb81dc253463430efe016655a7056fd86deb72596",
+  "proposal_zip_sha256": "4ad20b06d7b90a2da9da293abc9e0decb9e148812c47bc28bbb23d7094323329",
+  "baseline_recovery_archives_sha256": {
+    "cle_v2_moderate_asymhfl_erm_formal_recovery_outputs.tar.gz": "47514880bb0838b28a78bf11bd4decb4970f553bee28727807f301b4c515c4bd",
+    "cle_v2_moderate_asymhfl_pew_ber_formal_recovery_outputs.tar.gz": "029aadefbeea4a381a63553fe42c8881bcd5fbcf4b16c1ab05a1bf05d797f9e"
+  },
+  "conditions": ["gamma00", "gamma09"],
+  "clients": [0, 1, 2, 3],
+  "features": ["phi_tex", "phi_full"],
+  "primary_feature": "phi_tex",
+  "probe": {"classes": 10, "folds": 5, "fold_seed": 20261123, "l2": 0.01, "clip": 3.0},
+  "clean_warning_pp": 5.0,
+  "tf_saci": {"ssa": false, "cc_mix": false, "ps_pid": false}
+}

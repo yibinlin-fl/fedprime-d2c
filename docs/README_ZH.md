@@ -1,6 +1,13 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-10
+Updated: 2026-11-23
+
+## 2026-11-23 CLE-HFL 方法部分恢复入口
+
+- 先看 `docs/handoffs/latest.md` 中的 11 月 23 日交接。
+- V0.11 LaTeX 底本为 `deliverables/cle_hfl_latex_v0_11_20261028/source/main.tex`，方法正文为同目录的 `sections/method.tex`。网页交接见 `deliverables/cle_hfl_full_paper_web_handoff_20261031/README_ZH.md`。当前证据还需结合 11 月 8 日 Axis II 八行报告。
+- DSA 识别、BER 有效分布及代理不可识别分别见 `docs/research/status/CLE_DSA_IDENTIFICATION_THEORY_2026_09_11_ZH.md`、`docs/research/status/CLE_BER_MECHANISM_THEORY_2026_09_11_ZH.md`、`docs/research/status/CLE_PROXY_NONIDENTIFIABILITY_THEORY_2026_09_13_ZH.md`。
+- Axis I 的预算和证据边界见 `docs/research/status/CLE_AXIS1_FROZEN_BUDGET_HISTORY_2026_11_05_ZH.md`。Axis II 的完整结果见 `docs/research/status/CLE_AXIS2_RAHFL_RECOVERY_2026_11_08_ZH.md`。科研图可从 `deliverables/cle_hfl_figures_v1_20261028/FIGURE_VERSION_LOG.md` 恢复。
 
 ## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检
 

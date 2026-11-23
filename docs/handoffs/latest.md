@@ -1,6 +1,15 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-10
+Updated: 2026-11-23
+
+## 2026-11-23 恢复 CLE-HFL 主线，准备重构方法部分
+
+当前任务回到 CLE-HFL 小论文。方法重构的范围待作者明确，可能涉及论文组织、PEW+BER 算法设计或实现。论文底本和事实来源分开索引，便于换窗口或压缩上下文后恢复。大论文备选方向的讨论和预检保留在下文。
+
+- 论文底本为 V0.11。主文件在 `deliverables/cle_hfl_latex_v0_11_20261028/source/main.tex`，方法文件在同目录的 `sections/method.tex`，按 Problem Setup、Paired Diagnosis and Identification、Taxonomy-Assisted Local Mitigation 组织。网页审稿交接在 `deliverables/cle_hfl_full_paper_web_handoff_20261031/`。该包先于 11 月 8 日 Axis II 最终结果，使用时需同时核对下文结果报告。
+- 已有证据链包括 strong CLE 的 paired counterfactual 与 DSA、本地优先形成的 HFL-vs-Local 归因、独立机制协议与主评价协议、粗粒度 PEW+BER 的匹配评估和效用边界。PEW 使用公共合成损坏族标签，私有样本得到伪环境，BER 做类别内环境支持平衡。DSA 在具体损坏算子层评价。区分训练期分组与评价粒度，保留 DSA 识别理论、代理不可识别结果和 BER 的条件界。
+- 复用结论时区分 Axis I 固定 map2 的四臂三训练种子（40 轮，每轮每端最多 16 个私有 batch）与 Axis II 主评价八行（seed 0，报告见下文）。匹配 AsymHFL 对照支持 PEW+BER 降低 DSA，同时记录性能代价。完整 RAHFL 在该 Axis II 协议下的 DSA 更低、Mixed 更高。
+- 研究证据、理论、五图版本及论文交接入口见 `docs/README_ZH.md`。复用历史方法前核对相应 verdict，包括 CVRS 及其他冻结的负结果。若重构涉及改算法，先写清目标、假设、可观测量、与已有方法的差异、最小证伪对照及成本，再由作者确认。
 
 ## 2026-11-10 学位论文备选 B｜Kaggle 八臂预检已验收
 

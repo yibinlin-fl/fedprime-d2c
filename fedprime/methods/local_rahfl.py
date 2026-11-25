@@ -34,6 +34,7 @@ def train_local_augmix_dcl_epoch(
     context: str = "RAHFL local phase",
     communication_loss_fn=None,
     batch_trace_fn=None,
+    task_loss_fn=None,
 ) -> float:
     add_vendor_paths()
     from loss import DCLLoss, SupConLoss
@@ -44,9 +45,15 @@ def train_local_augmix_dcl_epoch(
     sara_cfg = sara_cfg or {}
     losses = []
 
-    for batch_idx, (images, labels) in enumerate(loader):
+    for batch_idx, batch in enumerate(loader):
         if max_batches is not None and batch_idx >= max_batches:
             break
+        if task_loss_fn is None:
+            images, labels = batch
+        else:
+            images, labels, identity = batch
+            if isinstance(images, (tuple, list)):
+                raise ValueError("Per-sample task loss supports a single standard view only")
         if batch_trace_fn is not None:
             batch_trace_fn(batch_idx=batch_idx, images=images, labels=labels)
 
@@ -57,11 +64,14 @@ def train_local_augmix_dcl_epoch(
             clean_images = images
             logits = forward_logits(model, images)
             clean_logits = logits
-            loss = (
-                symmetric_cross_entropy(logits, labels, num_classes=num_classes)
-                if cl_module == "rhfl_sce"
-                else criterion(logits, labels)
-            )
+            if task_loss_fn is not None:
+                loss = task_loss_fn(logits, labels, identity, batch_idx, images)
+            else:
+                loss = (
+                    symmetric_cross_entropy(logits, labels, num_classes=num_classes)
+                    if cl_module == "rhfl_sce"
+                    else criterion(logits, labels)
+                )
         else:
             images = [img.to(device, non_blocking=True) for img in images]
             clean_images = images[0]

@@ -67,8 +67,9 @@ from fedprime.utils.env import resolve_device, seed_everything
 class AsymHFLExperiment:
     """Unified runner for RAHFL-style AsymHFL and CLE-HFL experiments."""
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, *, isolated_training=None):
         self.config = config
+        self.isolated_training = isolated_training
         self.device = resolve_device(config.get("device", "auto"))
         self.output_dir = Path(config["output_root"]) / config["experiment_name"]
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -132,7 +133,26 @@ class AsymHFLExperiment:
         strict_fit_audit = bool(strict_cfg.get("enabled", False))
         self._routing_audit_loaders = {}
         pretrain_loaders = None
-        if scenario == "corruption_label_coupling":
+        if self.isolated_training is not None:
+            if (
+                scenario != "cle_hfl_v2" or not strict_fit_audit or use_prime
+                or method_cfg.get("communication") != "asymhfl_val"
+                or method_cfg.get("local_loader_mode") != "standard"
+                or method_cfg.get("cl_module") != "none"
+                or int(train_cfg.get("pretrain_epochs", 0)) != 0
+                or int(self.config.get("num_workers", 0)) != 0
+            ):
+                raise ValueError("Isolated training requires the frozen standard CE / strict AsymHFL setup")
+            private_loaders, self._routing_audit_loaders, self._client_class_counts = (
+                self.isolated_training.loaders(self.config)
+            )
+            if set(self._routing_audit_loaders) != set(range(num_clients)):
+                raise ValueError("Isolated AsymHFL requires all client routing audit loaders")
+            self._client_class_environment_counts = {}
+            self._corruption_group_names = []
+            test_loader = None
+            prime_aug = None
+        elif scenario == "corruption_label_coupling":
             if use_prime:
                 raise ValueError("corruption-label coupling Phase-A freezes the RAHFL AugMix/DCL base")
             if not strict_fit_audit:
@@ -445,7 +465,9 @@ class AsymHFLExperiment:
         log_mode = "a" if start_round else "w"
         metrics_path = self.output_dir / "metrics.csv"
         group_names = getattr(self, "_corruption_group_names", [])
-        operator_metadata = load_operator_metadata(data_cfg["private_root"])
+        operator_metadata = (
+            load_operator_metadata(data_cfg["private_root"]) if test_loader is not None else None
+        )
         if operator_metadata:
             print(
                 "[setup] CLE-HFL v2 operator evaluation enabled: "
@@ -672,7 +694,15 @@ class AsymHFLExperiment:
                         stats=stats,
                         round_idx=round_idx,
                     )
-                if group_names:
+                if test_loader is None:
+                    # The historical evaluation opened one sequential 0-worker
+                    # DataLoader iterator per model. Keep its CPU RNG draw, so
+                    # suppressing evaluation does not shift later public batches.
+                    for _ in models:
+                        torch.empty((), dtype=torch.int64).random_()
+                    accs = None
+                    group_summary = {}
+                elif group_names:
                     group_summary = self._evaluate_corruption_groups(models, test_loader, group_names, num_classes)
                     accs = group_summary.get("client_accs")
                     if accs is None:
@@ -693,8 +723,8 @@ class AsymHFLExperiment:
                         if self.device.type == "cuda"
                         else 0.0
                     ),
-                    "avg_acc": sum(accs) / len(accs),
-                    "worst_acc": min(accs),
+                    "avg_acc": sum(accs) / len(accs) if accs is not None else "",
+                    "worst_acc": min(accs) if accs is not None else "",
                     **{
                         f"routing_acc_c{client_id}": accs_before[client_id]
                         for client_id in range(num_clients)
@@ -775,8 +805,8 @@ class AsymHFLExperiment:
                     )
                 print(
                     f"[round {round_idx:03d}] "
-                    f"avg_acc={row['avg_acc']:.2f} "
-                    f"worst_acc={row['worst_acc']:.2f} "
+                    + (f"avg_acc={row['avg_acc']:.2f} worst_acc={row['worst_acc']:.2f} "
+                       if accs is not None else "evaluation=sealed ")
                     + (
                         f"worst_group_acc={float(row['worst_group_acc']):.2f} "
                         f"worst_client_group_acc={float(row['worst_client_group_acc']):.2f} "
@@ -1581,6 +1611,10 @@ class AsymHFLExperiment:
                             )
                             if hasattr(self._communication_strategy, "local_loss")
                             else None
+                        ),
+                        task_loss_fn=(
+                            self.isolated_training.task_loss(client_id, round_idx)
+                            if self.isolated_training is not None else None
                         ),
                         batch_trace_fn=(
                             self._build_local_batch_trace_fn(

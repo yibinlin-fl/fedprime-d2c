@@ -1,6 +1,10 @@
 # FedPRIME-D2C Session Handoff
 
-Updated: 2026-11-24
+Updated: 2026-11-25
+
+## 2026-11-25 TF-SACI Gate 1-Pilot（仅 exp/tf-saci）
+
+作者批准固定 `phi_tex`、lambda 0.5 的两臂探索性实验，eta=1.0 和 0.5，原 AsymHFL-val map2 seed 0 的 40×64 预算。原 Gate 1 开发集 HOLD 不变。17 项单测、两臂小批 GPU smoke、原 ERM 的 8 条首批次配对均通过。两臂拟按独立 OpenI V100 任务执行，两个第 40 轮模型冻结后才做统一 sealed 评价。实现、回传、结果边界见 `experiments/tf_saci/GATE1_PILOT_2026_11_25_ZH.md`。主分支和 V0.11 不改。
 
 ## 2026-11-24 TF-SACI Gate 1 开发集来源审计（仅 exp/tf-saci）
 

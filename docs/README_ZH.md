@@ -1,6 +1,11 @@
 # FedPRIME-D2C 文档总索引
 
-Updated: 2026-11-24
+Updated: 2026-11-25
+
+## 2026-11-25 TF-SACI Gate 1-Pilot（exp/tf-saci）
+
+- 固定参数、协议隔离、配对 smoke 和回传流程见 `experiments/tf_saci/GATE1_PILOT_2026_11_25_ZH.md`。
+- 独立配置为 `experiments/tf_saci/gate1_pilot.json`。OpenI 训练入口为 `scripts/openi_tf_saci_pilot_entry.py`，联合评价入口为 `experiments/tf_saci/pilot_evaluate.py`。
 
 ## 2026-11-24 TF-SACI Gate 1 开发集审计（exp/tf-saci）
 
